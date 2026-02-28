@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p2
 issue_id: "007"
 tags: [code-review, docs, quality, ci]
@@ -82,7 +82,7 @@ dependencies: []
 
 ## Recommended Action
 
-(트리아지 시 결정)
+완료. CI trigger에 `README.md`를 포함시키고, `uap-docs.sh` preflight에서 root README 명령/경로 계약을 검증하도록 반영했다.
 
 ## Technical Details
 
@@ -97,9 +97,9 @@ dependencies: []
 
 ## Acceptance Criteria
 
-- [ ] 루트 README 변경 시 문서 검증 잡이 항상 실행된다.
-- [ ] README의 핵심 링크/명령 드리프트를 자동 탐지할 수 있다.
-- [ ] canonical/workbench 검증 정책과 중복 없이 운영된다.
+- [x] 루트 README 변경 시 문서 검증 잡이 항상 실행된다.
+- [x] README의 핵심 링크/명령 드리프트를 자동 탐지할 수 있다.
+- [x] canonical/workbench 검증 정책과 중복 없이 운영된다.
 
 ## Work Log
 
@@ -115,6 +115,19 @@ dependencies: []
 **Learnings:**
 - 문서 허브의 책임이 커질수록 검증 트리거 누락은 실제 운영 리스크로 이어진다.
 - "어떤 파일을 검증할지"와 "언제 검증할지"를 분리해서 관리해야 재발을 줄일 수 있다.
+
+### 2026-02-28 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- `.github/workflows/uap-docs-check.yml`의 `pull_request.paths`에 `README.md`를 추가했다.
+- `uap-docs.sh`에 root README contract check를 추가해 workbench 경로/검증 명령 표준(`--profile canonical`, `--profile all`) 유무를 검사하도록 구현했다.
+- profile-all check/sync 재검증으로 guard 동작과 정상 시나리오 통과를 확인했다.
+
+**Learnings:**
+- README를 운영 계약 허브로 사용할 경우, 스크립트 preflight와 workflow trigger를 같이 묶어야 검증 공백이 사라진다.
+- README 검증은 최소 문자열 계약부터 시작해 필요 시 링크 파싱 검증으로 점진 강화하는 방식이 안전하다.
 
 ## Notes
 

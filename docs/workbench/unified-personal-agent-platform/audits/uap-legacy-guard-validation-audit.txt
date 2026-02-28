@@ -1,0 +1,56 @@
+# uap-legacy-guard-validation-audit
+# date: 2026-02-28
+
+## Scope
+- P1: legacy path regression guard (`docs/brainstorms`, `docs/plans`)
+- P2: root README validation trigger/contract guard
+
+## Commands and Results
+
+1) Normal validation
+- command: `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all`
+- result:
+  - canonical check passed
+  - workbench check passed
+  - check passed for profile 'all'
+
+2) Normal sync
+- command: `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync --profile all`
+- result:
+  - catalog generated
+  - canonical check passed
+  - workbench check passed
+  - check passed for profile 'all'
+
+3) Legacy path regression reproduction
+- setup:
+  - `mkdir -p docs/brainstorms`
+  - `echo '# legacy test' > docs/brainstorms/test-legacy.md`
+- command: `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all`
+- result:
+  - `[ERR] legacy docs path detected: docs/brainstorms`
+  - `[ERR] legacy path guard failed: 1 path(s) detected`
+  - `preflight guard failed for profile 'all'`
+- cleanup:
+  - `rm -f docs/brainstorms/test-legacy.md`
+  - `rmdir docs/brainstorms`
+
+4) Root README contract drift reproduction
+- setup:
+  - backup: `cp README.md README.md.bak.codex`
+  - mutation: remove `uap-docs.sh check --profile all` command line
+- command: `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all`
+- result:
+  - `[ERR] root README missing all profile check command`
+  - `[ERR] root README contract check failed: 1 error(s)`
+  - `preflight guard failed for profile 'all'`
+- cleanup:
+  - restore backup: `mv README.md.bak.codex README.md`
+
+## CI Coverage
+- `README.md`, `docs/brainstorms/**`, `docs/plans/**` added to docs-check trigger paths.
+- docs-check executes profile-all validation, which now includes preflight guards.
+
+## Conclusion
+- Legacy root path reintroduction now fails fast in local and CI validation path.
+- Root README contract presence is checked before profile validation.

@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p1
 issue_id: "006"
 tags: [code-review, docs, governance, ci]
@@ -81,7 +81,7 @@ dependencies: []
 
 ## Recommended Action
 
-(트리아지 시 결정)
+완료. `uap-docs.sh`에 stale legacy path guard를 추가하고, CI docs-check trigger/검증 경로를 보강해 재유입 회귀를 fail-fast로 차단했다.
 
 ## Technical Details
 
@@ -102,10 +102,10 @@ dependencies: []
 
 ## Acceptance Criteria
 
-- [ ] `docs/brainstorms/**`, `docs/plans/**` 경로 재유입 시 `check`가 실패한다.
-- [ ] CI에서도 동일 회귀가 fail-fast로 탐지된다.
-- [ ] 실패 메시지에 위반 경로가 명시된다.
-- [ ] 정상 canonical/workbench 변경은 기존처럼 통과한다.
+- [x] `docs/brainstorms/**`, `docs/plans/**` 경로 재유입 시 `check`가 실패한다.
+- [x] CI에서도 동일 회귀가 fail-fast로 탐지된다.
+- [x] 실패 메시지에 위반 경로가 명시된다.
+- [x] 정상 canonical/workbench 변경은 기존처럼 통과한다.
 
 ## Work Log
 
@@ -121,6 +121,20 @@ dependencies: []
 **Learnings:**
 - 현 구조는 "새 경로 검증"은 강하지만 "구 경로 재유입 차단"은 비어 있다.
 - 문서 토폴로지 리팩터링의 안정성은 stale-path guard 유무에 크게 의존한다.
+
+### 2026-02-28 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- `uap-docs.sh`에 preflight guard(`check_stale_legacy_paths`)를 추가해 `docs/brainstorms`, `docs/plans` 존재 시 즉시 실패하도록 구현했다.
+- `check/sync` 경로에서 preflight를 선행 실행하도록 연결했다.
+- CI workflow에 `README.md` 트리거를 추가하고 `check --profile all` 검증 체인을 유지했다.
+- legacy 경로 재현 테스트(`docs/plans/test-legacy.md`)로 실패 동작을 검증하고 cleanup 후 정상 경로 green을 확인했다.
+
+**Learnings:**
+- stale-path guard는 스캔 범위 기반 검증보다 먼저 실행해야 catalog/update 비용을 줄이고 원인을 명확히 전달할 수 있다.
+- 로컬/CI 공통 스크립트 가드가 있어야 문서 토폴로지 계약 회귀를 안정적으로 차단할 수 있다.
 
 ## Notes
 
