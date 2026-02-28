@@ -1,0 +1,25 @@
+{
+  "generated_at_utc": "2026-02-28T05:10:51.036458+00:00",
+  "samples": [
+    {
+      "type": "MISSING_ENTITY",
+      "severity": "high",
+      "example": "plan item exists but issue missing"
+    },
+    {
+      "type": "FIELD_MISMATCH",
+      "severity": "medium",
+      "example": "project status != plan status"
+    },
+    {
+      "type": "ILLEGAL_MANUAL_CHANGE",
+      "severity": "high",
+      "example": "initiative field edited manually"
+    },
+    {
+      "type": "ORPHAN_ITEM",
+      "severity": "medium",
+      "example": "project card has no plan mapping"
+    }
+  ]
+}
