@@ -1,0 +1,31 @@
+# UAP Path Contract Alignment Audit
+# Date: 2026-02-28
+
+## Scope
+- docs/initiatives/unified-personal-agent-platform/00-governance/uap-doc-governance.meta.md
+- docs/initiatives/unified-personal-agent-platform/AGENT-START.md
+- docs/initiatives/unified-personal-agent-platform/90-navigation/uap-document-map.navigation.md
+- docs/initiatives/unified-personal-agent-platform/README.md
+- docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-new-doc.sh
+
+## Validation Commands
+1) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+- Result: check passed: frontmatter and related_docs are valid
+
+2) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync
+- Result: catalog generated + check passed
+
+## Consistency Searches
+3) rg -n "initiative 루트 기준 상대경로" <core docs>
+- Result: no matches
+
+4) rg -n "bash ./00-governance/scripts/uap-(docs|new-doc).sh" <core docs + generator script>
+- Result: no matches
+
+5) rg -n "[AGENT-START](./AGENT-START.md)|[Document Map](../90-navigation/uap-document-map.navigation.md) (this document)" <entry core docs>
+- Result: no matches
+
+## Summary
+- Path contract semantics aligned to file-relative links and repo-relative commands.
+- Command examples standardized to repo-root form.
+- Entry Core self-reference noise removed from list rendering.

@@ -1,0 +1,31 @@
+# UAP Command Path Drift Audit
+# Date: 2026-02-28
+
+## Scope
+- docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh
+- docs/initiatives/unified-personal-agent-platform/2026-02-27-uap-frontmatter-catalog.navigation.md
+- docs/initiatives/unified-personal-agent-platform/30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
+- README.md
+
+## Actions
+1) Updated catalog generator template command path to repo-root style.
+2) Updated legacy migration plan verification command to repo-root style.
+3) Updated root README quick-start commands to repo-root style.
+
+## Verification Commands
+1) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+- Result: check passed: frontmatter and related_docs are valid
+
+2) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync
+- Result: catalog generated + check passed
+
+3) rg -n 'bash \./00-governance/scripts/uap-docs\.sh catalog' docs/initiatives/unified-personal-agent-platform/2026-02-27-uap-frontmatter-catalog.navigation.md docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh
+- Result: no matches
+
+4) rg -n 'bash \./00-governance/scripts/uap-docs\.sh check' docs/initiatives/unified-personal-agent-platform/30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md README.md
+- Result: no matches
+
+## Summary
+- Drift source in generator template removed.
+- Generated catalog now keeps repo-root command examples.
+- Legacy plan and root README command examples aligned to the same command-path contract.

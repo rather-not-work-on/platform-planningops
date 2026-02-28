@@ -1,0 +1,14 @@
+# UAP Core 7 Reference Audit
+# Date: 2026-02-28
+# Scope 1: docs/initiatives/unified-personal-agent-platform
+# Pattern: old Core 7 dated filenames
+
+Command:
+rg -n "2026-02-27-uap-(monday-identity\\.meta|document-map\\.navigation|github-planningops-sync\\.execution-plan|doc-governance\\.meta|planningops-tradeoff-decision-framework\\.quality)\\.md" docs/initiatives/unified-personal-agent-platform
+
+Result:
+(no matches)
+
+Notes:
+- Old dated Core 7 references remain only in historical planning artifacts under docs/plans/.
+- Operational docs under docs/initiatives/unified-personal-agent-platform are canonicalized.
