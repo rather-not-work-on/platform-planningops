@@ -1,0 +1,10 @@
+{
+  "items": [
+    {"plan_item_id": "item-101", "title": "Contracts bootstrap", "target_repo": "rather-not-work-on/platform-contracts", "status": "active", "execution_order": 130},
+    {"plan_item_id": "item-102", "title": "Contracts semver", "target_repo": "rather-not-work-on/platform-contracts", "status": "active", "execution_order": 140},
+    {"plan_item_id": "item-103", "title": "Provider baseline", "target_repo": "rather-not-work-on/platform-provider-gateway", "status": "active", "execution_order": 150},
+    {"plan_item_id": "item-104", "title": "O11y baseline", "target_repo": "rather-not-work-on/platform-observability-gateway", "status": "active", "execution_order": 160},
+    {"plan_item_id": "item-105", "title": "Runtime handoff", "target_repo": "rather-not-work-on/monday", "status": "active", "execution_order": 170},
+    {"plan_item_id": "item-106", "title": "Runtime scheduler", "target_repo": "rather-not-work-on/monday", "status": "active", "execution_order": 180}
+  ]
+}

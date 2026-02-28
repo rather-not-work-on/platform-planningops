@@ -1,0 +1,50 @@
+{
+  "generated_at_utc": "2026-02-28T06:19:24.574500+00:00",
+  "run_id": "multi-repo-a",
+  "summary_path": "planningops/artifacts/sync-summary/multi-repo-a.json",
+  "repo_count": 4,
+  "projection_key_collision_count": 0,
+  "duplicate_projection_keys": [],
+  "by_repo": {
+    "rather-not-work-on/platform-contracts": {
+      "create": 2,
+      "update": 0,
+      "noop": 0,
+      "drift": {
+        "MISSING_ENTITY": 2,
+        "FIELD_MISMATCH": 0,
+        "IN_SYNC": 0
+      }
+    },
+    "rather-not-work-on/platform-provider-gateway": {
+      "create": 1,
+      "update": 0,
+      "noop": 0,
+      "drift": {
+        "MISSING_ENTITY": 1,
+        "FIELD_MISMATCH": 0,
+        "IN_SYNC": 0
+      }
+    },
+    "rather-not-work-on/platform-observability-gateway": {
+      "create": 1,
+      "update": 0,
+      "noop": 0,
+      "drift": {
+        "MISSING_ENTITY": 1,
+        "FIELD_MISMATCH": 0,
+        "IN_SYNC": 0
+      }
+    },
+    "rather-not-work-on/monday": {
+      "create": 2,
+      "update": 0,
+      "noop": 0,
+      "drift": {
+        "MISSING_ENTITY": 2,
+        "FIELD_MISMATCH": 0,
+        "IN_SYNC": 0
+      }
+    }
+  }
+}
