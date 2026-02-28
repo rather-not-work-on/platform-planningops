@@ -40,8 +40,19 @@ related_docs:
   - org project `rather-not-work-on/projects/2` 사용 중.
   - 필드 스키마(`Status`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 및 데모 검증 완료.
 - 레포 토폴로지:
-  - 존재: `platform-planningops`, `monday`.
-  - 미생성(계획상 필요): `platform-contracts`, `platform-provider-gateway`, `platform-observability-gateway`.
+  - 존재: `platform-planningops`, `monday`, `platform-contracts`, `platform-provider-gateway`, `platform-observability-gateway`.
+  - 신규 3개 레포는 `public` 정책으로 생성 완료.
+
+## Decision Snapshot (Locked, `2026-02-28`)
+1. 레포 생성 정책:
+   - `platform-contracts`, `platform-provider-gateway`, `platform-observability-gateway` 생성 + public 운영.
+2. 네이밍 고정:
+   - 외부 계약 용어 `Executor`, 내부 구현 용어 `Worker`.
+3. LiteLLM/provider 정책:
+   - 작업별(task key별) provider/runtime override 허용.
+4. 운영 환경:
+   - LiteLLM/LangFuse/NanoClaw는 local-first.
+   - 일부 워크로드는 Oracle Cloud profile로 점진 이행 가능해야 하며, 이행은 profile 전환으로 처리.
 
 ## Topology Contract (Execution Surfaces)
 ### Control plane (already active)
@@ -122,6 +133,6 @@ related_docs:
   - 관련 CI 체인 통과(계약 검증 + dry-run + replay)
 
 ## Immediate Next Actions (Start Today)
-1. P0/P1 항목을 GitHub 이슈로 재등록하고 execution_order 110~140 배치
-2. `platform-contracts` 레포 생성 여부를 기준으로 C1~C8 source location 전환 계획 확정
-3. LiteLLM/LangFuse 최소 계약(C4/C5)을 repo bootstrap issue acceptance criteria로 고정
+1. `#14~#23` 실행 큐를 execution_order 기준으로 pull 실행(칸반 정책 유지)
+2. `platform-contracts`를 C1~C8 canonical source로 전환하는 migration patch 설계
+3. `planningops/config/runtime-profiles.json` 기반 task별 runtime/provider override 운영 시작

@@ -28,6 +28,37 @@ def run_cmd(args):
     return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
 
 
+def load_runtime_context(profile_file: Path, task_key: str):
+    if not profile_file.exists():
+        raise ValueError(f"runtime profile file not found: {profile_file}")
+
+    doc = json.loads(profile_file.read_text(encoding="utf-8"))
+    profiles = doc.get("profiles", {})
+    if not profiles:
+        raise ValueError("runtime profile file has no 'profiles' map")
+
+    active_profile = doc.get("active_profile", "local")
+    overrides = doc.get("task_overrides", {})
+
+    default_override = overrides.get("default", {})
+    task_override = overrides.get(task_key, {})
+
+    selected_profile = task_override.get("runtime_profile") or default_override.get("runtime_profile") or active_profile
+    profile_payload = profiles.get(selected_profile)
+    if not profile_payload:
+        raise ValueError(f"runtime profile '{selected_profile}' is not defined")
+
+    provider_policy = task_override.get("provider_policy") or default_override.get("provider_policy") or {}
+
+    return {
+        "profile_file": str(profile_file),
+        "task_key": task_key,
+        "selected_profile": selected_profile,
+        "profile": profile_payload,
+        "provider_policy": provider_policy,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="Local Ralph Loop harness")
     parser.add_argument("--issue-number", type=int, required=True)
@@ -36,6 +67,16 @@ def main():
         "--ecp-ref",
         default="planningops/templates/ecp-template.md",
         help="ECP reference path",
+    )
+    parser.add_argument(
+        "--runtime-profile-file",
+        default="planningops/config/runtime-profiles.json",
+        help="Runtime profile catalog path",
+    )
+    parser.add_argument(
+        "--task-key",
+        default=None,
+        help="Task key for per-task runtime override (default: issue-<issue-number>)",
     )
     args = parser.parse_args()
 
@@ -82,6 +123,41 @@ def main():
         print("loop failed at intake: missing_input")
         return 1
 
+    task_key = args.task_key or f"issue-{args.issue_number}"
+    try:
+        runtime_ctx = load_runtime_context(Path(args.runtime_profile_file), task_key)
+    except ValueError as exc:
+        reason = "missing_input"
+        write_json(
+            verification_path,
+            {
+                "issue_number": args.issue_number,
+                "loop_id": loop_id,
+                "verdict": "fail",
+                "reason_code": reason,
+                "stage": "runtime_context",
+                "error": str(exc),
+                "executed_at_utc": now.isoformat(),
+            },
+        )
+        append_ndjson(
+            transition_log_path,
+            {
+                "transition_id": f"{loop_id}-runtime-context-fail",
+                "run_id": loop_id,
+                "card_id": args.issue_number,
+                "from_state": "Todo",
+                "to_state": "Blocked",
+                "transition_reason": "context.invalid_runtime_profile",
+                "actor_type": "agent",
+                "actor_id": "ralph-loop-local",
+                "decided_at_utc": now.isoformat(),
+                "replanning_flag": True,
+            },
+        )
+        print(f"loop failed at runtime context: {exc}")
+        return 1
+
     write_json(
         intake_path,
         {
@@ -89,6 +165,7 @@ def main():
             "loop_id": loop_id,
             "mode": args.mode,
             "ecp_ref": args.ecp_ref,
+            "runtime_context": runtime_ctx,
             "checked_at_utc": now.isoformat(),
             "result": "ok",
         },
@@ -147,6 +224,8 @@ def main():
                 "",
                 f"- mode: {args.mode}",
                 f"- issue_number: {args.issue_number}",
+                f"- task_key: {runtime_ctx['task_key']}",
+                f"- runtime_profile: {runtime_ctx['selected_profile']}",
                 "- execute command: parser_diff_dry_run",
                 "",
                 "## Output",
@@ -202,6 +281,7 @@ def main():
             "loop_id": loop_id,
             "verdict": verdict,
             "reason_code": reason,
+            "runtime_context": runtime_ctx,
             "artifacts": {
                 "intake_check": str(intake_path),
                 "simulation_report": str(simulation_path),
@@ -221,6 +301,8 @@ def main():
                 "",
                 f"- issue_number: {args.issue_number}",
                 f"- mode: {args.mode}",
+                f"- task_key: {runtime_ctx['task_key']}",
+                f"- runtime_profile: {runtime_ctx['selected_profile']}",
                 f"- verdict: {verdict}",
                 f"- reason_code: {reason}",
                 "",

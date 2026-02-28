@@ -6,12 +6,18 @@
 3. Each loop must produce deterministic artifacts for the same input and commit.
 4. Verification must emit one verdict from `pass|fail|inconclusive`.
 5. Feedback must post result comments to issue and update project status.
+6. Runtime and provider policy must be resolvable by task key (`issue-<number>` with `default` fallback).
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
 2. Time bounds: loop timeout and retry limit must be configurable.
 3. Traceability: every state transition must be recorded in `transition-log.ndjson`.
 4. Reproducibility: dry-run mode must simulate updates without remote writes.
+5. Portability: local-first runtime must be migratable to Oracle Cloud by profile switch without contract shape change.
+
+## Naming Contract
+- External contract term is fixed to `Executor`.
+- Internal implementation unit term is fixed to `Worker`.
 
 ## Definition of Ready (DoR)
 - issue has execution metadata (`execution_order`, `depends_on`),

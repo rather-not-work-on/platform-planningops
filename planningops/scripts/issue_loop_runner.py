@@ -82,6 +82,11 @@ def main():
     parser.add_argument("--project-num", type=int, default=2)
     parser.add_argument("--project-id", default="PVT_kwDOD8NujM4BQYNE")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="apply")
+    parser.add_argument(
+        "--runtime-profile-file",
+        default="planningops/config/runtime-profiles.json",
+        help="Runtime profile catalog path used by local harness",
+    )
     args = parser.parse_args()
 
     rc, out, err = run(
@@ -148,6 +153,10 @@ def main():
             str(issue_num),
             "--mode",
             args.mode,
+            "--runtime-profile-file",
+            args.runtime_profile_file,
+            "--task-key",
+            f"issue-{issue_num}",
         ]
     )
 
@@ -286,6 +295,7 @@ def main():
         "loop_stderr": err_loop,
         "verify_stderr": err_verify,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "runtime_profile_file": args.runtime_profile_file,
     }
     out_path = Path("planningops/artifacts/loop-runner/last-run.json")
     save_json(out_path, result)
