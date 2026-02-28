@@ -5,7 +5,7 @@ doc_type: quality
 domain: quality
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-02-28
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-issue-closure-matrix
 tags:
@@ -27,7 +27,7 @@ related_docs:
 ## Purpose
 리뷰에서 식별된 이슈가 브레인스토밍 문서 어디에서 어떤 게이트로 닫히는지 명확히 연결한다.
 
-`001~007` legacy TODO는 이 문서로 통합되어 관리하며, 별도 `todos/` 파일 의존은 유지하지 않는다.
+`001~007` legacy TODO의 canonical 추적 기준은 이 문서다. `todos/`는 작업 이력/증빙 보조 용도로만 사용한다.
 
 게이트 네임스페이스 규칙:
 - 이 매트릭스의 `Gate A~G`는 Foundation 실행계획 게이트를 의미한다.
