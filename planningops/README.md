@@ -18,6 +18,7 @@ This directory contains Ralph Loop issue-resolution runtime artifacts.
 
 ## Runtime Profiles
 - Profile catalog: `planningops/config/runtime-profiles.json`
+- Contract reference map: `planningops/config/contract-ref-map.json`
 - `active_profile` defines the default runtime surface.
 - `task_overrides.<task_key>` can override:
   - `runtime_profile`

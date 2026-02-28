@@ -1,0 +1,15 @@
+{
+  "source_repo": "rather-not-work-on/platform-contracts",
+  "path_rule": "repo-relative",
+  "workspace_root_policy": "resolve paths from platform-planningops repository root",
+  "contracts": {
+    "C1": "../platform-contracts/schemas/c1-run-lifecycle.schema.json",
+    "C2": "../platform-contracts/schemas/c2-subtask-handoff.schema.json",
+    "C3": "../platform-contracts/schemas/c3-executor-result.schema.json",
+    "C4": "../platform-contracts/schemas/c4-provider-invocation.schema.json",
+    "C5": "../platform-contracts/schemas/c5-observability-event.schema.json",
+    "C6": "../platform-contracts/schemas/c6-public-status-projection.schema.json",
+    "C7": "../platform-contracts/schemas/c7-manual-override-policy.schema.json",
+    "C8": "../platform-contracts/schemas/c8-plan-to-github-projection.schema.json"
+  }
+}
