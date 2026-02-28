@@ -1,0 +1,13 @@
+{
+  "gate_id": "sync-gate-a",
+  "issue_number": 0,
+  "loop_id": "loop-000",
+  "verdict": "pass",
+  "required_artifacts": {
+    "intake_check": "planningops/artifacts/intake/2026-02-28/loop-000/intake-check.json",
+    "simulation_report": "planningops/artifacts/simulation/2026-02-28/loop-000/simulation-report.md",
+    "verification_report": "planningops/artifacts/verification/2026-02-28/loop-000/verification-report.json",
+    "transition_log": "planningops/artifacts/transition-log/2026-02-28.ndjson"
+  },
+  "generated_at_utc": "2026-02-28T00:00:00Z"
+}

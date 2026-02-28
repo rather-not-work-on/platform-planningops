@@ -1,0 +1,46 @@
+{
+  "owner": "rather-not-work-on",
+  "project_number": 2,
+  "project_id": "PVT_kwDOD8NujM4BQYNE",
+  "initiative": "unified-personal-agent-platform",
+  "target_repo_default": "platform-planningops",
+  "fields": {
+    "status": {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hBm0",
+      "options": {
+        "todo": "f75ad846",
+        "in_progress": "47fc9ee4",
+        "done": "98236657"
+      }
+    },
+    "initiative": {
+      "id": "PVTF_lADOD8NujM4BQYNEzg-hBrQ"
+    },
+    "target_repo": {
+      "id": "PVTF_lADOD8NujM4BQYNEzg-hBrM"
+    },
+    "component": {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hBsE",
+      "options": {
+        "planningops": "1a47f1d9",
+        "contracts": "ac884f5a",
+        "provider_gateway": "f6ceeede",
+        "observability_gateway": "2a19b378",
+        "runtime": "d55bc97a",
+        "orchestrator": "9233c6ef"
+      }
+    },
+    "execution_order": {
+      "id": "PVTF_lADOD8NujM4BQYNEzg-hM3Y"
+    },
+    "plan_lane": {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hM3c",
+      "options": {
+        "m0_bootstrap": "c12b812b",
+        "m1_contract_freeze": "0f566f80",
+        "m2_sync_core": "196964ba",
+        "m3_guardrails": "6b2c1c64"
+      }
+    }
+  }
+}
