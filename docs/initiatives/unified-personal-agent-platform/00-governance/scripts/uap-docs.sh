@@ -42,6 +42,13 @@ ALLOWED_PROFILE=(
   all
 )
 
+LEGACY_BLOCKED_PATHS=(
+  docs/brainstorms
+  docs/plans
+)
+
+ROOT_README_PATH="$REPO_ROOT/README.md"
+
 contains_value() {
   local needle="$1"
   shift
@@ -85,6 +92,98 @@ cleanup_appledouble() {
     | while IFS= read -r -d '' file; do
         rm -f "$file"
       done
+}
+
+check_stale_legacy_paths() {
+  local errors=0
+
+  for rel in "${LEGACY_BLOCKED_PATHS[@]}"; do
+    local abs
+    abs="$REPO_ROOT/$rel"
+
+    if [[ -e "$abs" ]]; then
+      echo "[ERR] legacy docs path detected: $rel"
+
+      if [[ -d "$abs" ]]; then
+        local listed=0
+        while IFS= read -r path; do
+          listed=1
+          echo "      - $path"
+        done < <(find "$abs" -mindepth 1 ! -name "._*" | sort)
+
+        if (( listed == 0 )); then
+          echo "      - (empty directory still forbidden)"
+        fi
+      else
+        echo "      - $abs"
+      fi
+
+      errors=$((errors + 1))
+    fi
+  done
+
+  if (( errors > 0 )); then
+    echo "[ERR] legacy path guard failed: $errors path(s) detected"
+    echo "      move files under docs/workbench/unified-personal-agent-platform/*"
+    return 1
+  fi
+
+  return 0
+}
+
+check_root_readme_contract() {
+  local errors=0
+
+  if [[ ! -f "$ROOT_README_PATH" ]]; then
+    echo "[ERR] root README not found: $ROOT_README_PATH"
+    return 1
+  fi
+
+  if ! rg -q 'docs/workbench/unified-personal-agent-platform' "$ROOT_README_PATH"; then
+    echo "[ERR] root README missing workbench path contract"
+    errors=$((errors + 1))
+  fi
+
+  if ! rg -q 'uap-docs\.sh check --profile canonical' "$ROOT_README_PATH"; then
+    echo "[ERR] root README missing canonical profile check command"
+    errors=$((errors + 1))
+  fi
+
+  if ! rg -q 'uap-docs\.sh check --profile all' "$ROOT_README_PATH"; then
+    echo "[ERR] root README missing all profile check command"
+    errors=$((errors + 1))
+  fi
+
+  if (( errors > 0 )); then
+    echo "[ERR] root README contract check failed: $errors error(s)"
+    return 1
+  fi
+
+  return 0
+}
+
+run_preflight_guards() {
+  local profile="$1"
+  local errors=0
+  local guard_errors=0
+
+  check_stale_legacy_paths || guard_errors=$?
+  if (( guard_errors > 0 )); then
+    errors=$((errors + guard_errors))
+  fi
+
+  guard_errors=0
+  check_root_readme_contract || guard_errors=$?
+  if (( guard_errors > 0 )); then
+    errors=$((errors + guard_errors))
+  fi
+
+  if (( errors > 0 )); then
+    echo "preflight guard failed for profile '$profile'"
+    return 1
+  fi
+
+  return 0
 }
 
 expected_doc_type() {
@@ -462,6 +561,7 @@ Usage:
 Notes:
   - catalog always targets canonical docs.
   - sync runs catalog -> check for the selected profile (default: canonical).
+  - check/sync enforce legacy-path guard and root README contract validation.
 EOF_USAGE
 }
 
@@ -495,6 +595,7 @@ main() {
       ;;
     check)
       cleanup_appledouble
+      run_preflight_guards "$profile"
       check_docs "$profile"
       cleanup_appledouble
       ;;
@@ -505,6 +606,7 @@ main() {
       ;;
     sync)
       cleanup_appledouble
+      run_preflight_guards "$profile"
       generate_catalog
       check_docs "$profile"
       cleanup_appledouble

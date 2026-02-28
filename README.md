@@ -51,18 +51,32 @@ platform-planningops/
 ```bash
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
-bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync --profile all
 ```
 
 ## Working Rules
 
 - canonical 문서는 `docs/initiatives/...` 하위에서만 운영합니다.
 - 비영속 작업 산출물은 `docs/workbench/...` 하위에서만 운영합니다.
+- 레거시 경로(`docs/brainstorms`, `docs/plans`)는 재생성 금지이며, 검증 시 실패 처리됩니다.
 - 문서 참조는 상대경로를 사용합니다.
 - 경로/구조 변경 시 `README`와 `90-navigation`을 함께 갱신합니다.
 - 변경 후 `uap-docs.sh sync`를 실행해 카탈로그와 링크 무결성을 확인합니다.
 - PR에서는 `.github/workflows/uap-docs-check.yml`로 문서 검증이 자동 실행됩니다.
+  - trigger: `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`
 - org/repo/agent 식별자 변경은 identity 문서를 먼저 갱신합니다.
+
+## Validation Guards
+
+- `uap-docs.sh check/sync`는 실행 전에 preflight guard를 수행합니다.
+- legacy path guard:
+  - `docs/brainstorms`, `docs/plans` 존재 시 즉시 실패합니다.
+- root README contract guard:
+  - `docs/workbench/unified-personal-agent-platform` 경로 문구가 없으면 실패합니다.
+  - `uap-docs.sh check --profile canonical` 명령 문구가 없으면 실패합니다.
+  - `uap-docs.sh check --profile all` 명령 문구가 없으면 실패합니다.
+
+Guard 실패 시 위반 항목을 수정한 뒤 `uap-docs.sh check --profile all`을 다시 실행합니다.
 
 ## Source of Truth Policy
 

@@ -128,6 +128,11 @@ Core 7 canonical filename 예외(무날짜 고정):
 - `check --profile canonical`: canonical frontmatter/링크 규칙 검증
 - `check --profile workbench`: workbench 최소 frontmatter/링크 규칙 검증
 - `check --profile all`: canonical + workbench 검증
+- `check/sync` 공통 guard:
+  - `docs/brainstorms`, `docs/plans` 레거시 경로 재유입 시 fail
+  - root `README.md`의 workbench 경로/검증 명령 계약 드리프트 시 fail
+- CI `uap-docs-check` trigger:
+  - `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`
 - `catalog`: frontmatter 기반 카탈로그 문서 생성
 - `sync`: `catalog -> check --profile canonical` 순서로 동기화
 

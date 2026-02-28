@@ -3,6 +3,9 @@ name: UAP Docs Check
 on:
   pull_request:
     paths:
+      - "README.md"
+      - "docs/brainstorms/**"
+      - "docs/plans/**"
       - "docs/initiatives/unified-personal-agent-platform/**"
       - "docs/workbench/unified-personal-agent-platform/**"
       - ".github/workflows/uap-docs-check.yml"
