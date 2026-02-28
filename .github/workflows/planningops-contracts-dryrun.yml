@@ -1,0 +1,31 @@
+name: PlanningOps Contracts Dry-Run
+
+on:
+  pull_request:
+    paths:
+      - "planningops/**"
+      - "docs/workbench/unified-personal-agent-platform/**"
+      - ".github/workflows/planningops-contracts-dryrun.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-and-dry-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate C1-C5 contracts
+        run: python3 planningops/scripts/validate_contracts.py
+
+      - name: Dry-run parser diff pipeline
+        run: python3 planningops/scripts/parser_diff_dry_run.py --run-id ci-dry-run --mode dry-run
+
+      - name: Upload dry-run artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: planningops-dry-run-artifacts
+          path: |
+            planningops/artifacts/sync-summary/ci-dry-run.json
+            planningops/artifacts/idempotency/ledger.json

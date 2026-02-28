@@ -1,0 +1,15 @@
+{
+  "executed_at_utc": "2026-02-28T05:16:12.457762+00:00",
+  "loop_dir": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11",
+  "transition_log": "planningops/artifacts/transition-log/2026-02-28.ndjson",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "errors": [],
+  "trigger_detection": {
+    "scoped_row_count": 1,
+    "repeated_reason_trigger": false,
+    "replanning_flag_trigger": false,
+    "inconclusive_trigger": false,
+    "replanning_triggered": false
+  }
+}

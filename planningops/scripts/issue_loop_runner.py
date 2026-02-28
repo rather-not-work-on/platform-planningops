@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+from datetime import datetime, timezone
+
+
+IDEMPOTENCY_PATH = Path("planningops/artifacts/loop-runner/idempotency.json")
+
+
+def run(args):
+    cp = subprocess.run(args, capture_output=True, text=True)
+    return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
+
+
+def load_json(path: Path, default):
+    if not path.exists():
+        return default
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def save_json(path: Path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=True, indent=2), encoding="utf-8")
+
+
+def parse_depends_on(issue_body: str):
+    deps = set()
+    for line in issue_body.splitlines():
+        if "depends_on:" in line:
+            deps.update(int(n) for n in re.findall(r"#(\d+)", line))
+    return sorted(deps)
+
+
+def issue_is_closed(issue_num: int):
+    rc, out, err = run(["gh", "issue", "view", str(issue_num), "--json", "state", "--jq", ".state"])
+    if rc != 0:
+        return False
+    return out.strip().upper() == "CLOSED"
+
+
+def ensure_text_field(owner: str, project_num: int, field_name: str):
+    rc, out, err = run(["gh", "project", "field-list", str(project_num), "--owner", owner, "--format", "json"])
+    if rc != 0:
+        raise RuntimeError(f"failed field-list: {err}")
+    doc = json.loads(out)
+    for f in doc.get("fields", []):
+        if f.get("name") == field_name:
+            return f.get("id")
+
+    rc2, out2, err2 = run(
+        [
+            "gh",
+            "project",
+            "field-create",
+            str(project_num),
+            "--owner",
+            owner,
+            "--name",
+            field_name,
+            "--data-type",
+            "TEXT",
+            "--format",
+            "json",
+            "--jq",
+            ".id",
+        ]
+    )
+    if rc2 != 0:
+        raise RuntimeError(f"failed field-create {field_name}: {err2}")
+    return out2.strip()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Issue intake and feedback loop runner")
+    parser.add_argument("--owner", default="rather-not-work-on")
+    parser.add_argument("--project-num", type=int, default=2)
+    parser.add_argument("--project-id", default="PVT_kwDOD8NujM4BQYNE")
+    parser.add_argument("--mode", choices=["dry-run", "apply"], default="apply")
+    args = parser.parse_args()
+
+    rc, out, err = run(
+        [
+            "gh",
+            "project",
+            "item-list",
+            str(args.project_num),
+            "--owner",
+            args.owner,
+            "--limit",
+            "200",
+            "--format",
+            "json",
+        ]
+    )
+    if rc != 0:
+        print(f"failed to list project items: {err}")
+        return 1
+
+    items = json.loads(out).get("items", [])
+    candidates = []
+    for it in items:
+        content = it.get("content", {})
+        if content.get("type") != "Issue":
+            continue
+        if content.get("repository") != "rather-not-work-on/platform-planningops":
+            continue
+        if it.get("status") != "Todo":
+            continue
+        number = content.get("number")
+        order = it.get("execution_order") or 0
+        candidates.append({"item": it, "number": number, "order": order})
+
+    candidates.sort(key=lambda x: (x["order"], x["number"]))
+
+    selected = None
+    for c in candidates:
+        num = c["number"]
+        rc_i, out_i, err_i = run(["gh", "issue", "view", str(num), "--json", "body,state"])
+        if rc_i != 0:
+            continue
+        issue_doc = json.loads(out_i)
+        if issue_doc.get("state") != "OPEN":
+            continue
+        deps = parse_depends_on(issue_doc.get("body", ""))
+        if all(issue_is_closed(dep) for dep in deps):
+            c["deps"] = deps
+            selected = c
+            break
+
+    if selected is None:
+        print("no eligible Todo issue found")
+        return 2
+
+    issue_num = selected["number"]
+
+    # run loop
+    rc_loop, out_loop, err_loop = run(
+        [
+            "python3",
+            "planningops/scripts/ralph_loop_local.py",
+            "--issue-number",
+            str(issue_num),
+            "--mode",
+            args.mode,
+        ]
+    )
+
+    # find latest loop dir for this issue
+    loop_root = Path("planningops/artifacts/loops")
+    loop_dirs = sorted(loop_root.glob(f"*/loop-*-issue-{issue_num}"))
+    if not loop_dirs:
+        print("loop execution did not produce artifacts")
+        return 1
+    loop_dir = loop_dirs[-1]
+    date_part = loop_dir.parent.name
+    transition_log = Path(f"planningops/artifacts/transition-log/{date_part}.ndjson")
+
+    rc_verify, out_verify, err_verify = run(
+        [
+            "python3",
+            "planningops/scripts/verify_loop_run.py",
+            "--loop-dir",
+            str(loop_dir),
+            "--transition-log",
+            str(transition_log),
+            "--output",
+            f"planningops/artifacts/verification/issue-{issue_num}-verification.json",
+            "--project-payload",
+            f"planningops/artifacts/verification/issue-{issue_num}-project-payload.json",
+        ]
+    )
+
+    verification = load_json(
+        Path(f"planningops/artifacts/verification/issue-{issue_num}-verification.json"),
+        {},
+    )
+    payload = load_json(
+        Path(f"planningops/artifacts/verification/issue-{issue_num}-project-payload.json"),
+        {},
+    )
+
+    loop_id = verification.get("loop_dir", "")
+    idem_key = hashlib.sha256(f"issue:{issue_num}:{loop_id}:{payload.get('last_verdict','')}".encode("utf-8")).hexdigest()
+    idem = load_json(IDEMPOTENCY_PATH, {"processed_keys": []})
+    seen = set(idem.get("processed_keys", []))
+
+    already_processed = idem_key in seen
+
+    comment_body = "\n".join(
+        [
+            f"Ralph Loop result for issue #{issue_num}",
+            f"- verdict: {payload.get('last_verdict', 'unknown')}",
+            f"- reason_code: {payload.get('reason_code', 'unknown')}",
+            f"- replanning_triggered: {payload.get('replanning_triggered', False)}",
+            f"- verification: planningops/artifacts/verification/issue-{issue_num}-verification.json",
+            f"- payload: planningops/artifacts/verification/issue-{issue_num}-project-payload.json",
+        ]
+    )
+
+    if not already_processed:
+        # comment on issue
+        run(["gh", "issue", "comment", str(issue_num), "--body", comment_body])
+
+        # project status + verdict fields
+        rc_fields, out_fields, err_fields = run(
+            ["gh", "project", "field-list", str(args.project_num), "--owner", args.owner, "--format", "json"]
+        )
+        if rc_fields == 0:
+            fields_doc = json.loads(out_fields)
+            status_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "Status"), None)
+            done_opt = next((o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == "Done"), None)
+            progress_opt = next((o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == "In Progress"), None)
+
+            item_id = selected["item"].get("id")
+            target_opt = done_opt if payload.get("last_verdict") == "pass" else progress_opt
+            if item_id and status_field and target_opt:
+                run(
+                    [
+                        "gh",
+                        "project",
+                        "item-edit",
+                        "--id",
+                        item_id,
+                        "--project-id",
+                        args.project_id,
+                        "--field-id",
+                        status_field.get("id"),
+                        "--single-select-option-id",
+                        target_opt,
+                    ]
+                )
+
+            # ensure verdict text fields exist
+            verdict_field_id = ensure_text_field(args.owner, args.project_num, "last_verdict")
+            reason_field_id = ensure_text_field(args.owner, args.project_num, "last_reason")
+            if item_id:
+                run(
+                    [
+                        "gh",
+                        "project",
+                        "item-edit",
+                        "--id",
+                        item_id,
+                        "--project-id",
+                        args.project_id,
+                        "--field-id",
+                        verdict_field_id,
+                        "--text",
+                        str(payload.get("last_verdict", "unknown")),
+                    ]
+                )
+                run(
+                    [
+                        "gh",
+                        "project",
+                        "item-edit",
+                        "--id",
+                        item_id,
+                        "--project-id",
+                        args.project_id,
+                        "--field-id",
+                        reason_field_id,
+                        "--text",
+                        str(payload.get("reason_code", "unknown")),
+                    ]
+                )
+
+        seen.add(idem_key)
+        save_json(IDEMPOTENCY_PATH, {"processed_keys": sorted(seen)})
+
+    result = {
+        "selected_issue": issue_num,
+        "deps": selected.get("deps", []),
+        "loop_rc": rc_loop,
+        "verify_rc": rc_verify,
+        "already_processed": already_processed,
+        "idempotency_key": idem_key,
+        "loop_stdout": out_loop,
+        "verify_stdout": out_verify,
+        "loop_stderr": err_loop,
+        "verify_stderr": err_verify,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    out_path = Path("planningops/artifacts/loop-runner/last-run.json")
+    save_json(out_path, result)
+    print(json.dumps(result, ensure_ascii=True, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

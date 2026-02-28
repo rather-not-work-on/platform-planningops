@@ -1,0 +1,14 @@
+{
+  "issue_number": 11,
+  "loop_id": "loop-20260228T051458Z-issue-11",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "artifacts": {
+    "intake_check": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/intake-check.json",
+    "simulation_report": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/simulation-report.md",
+    "verification_report": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json",
+    "transition_log": "planningops/artifacts/transition-log/2026-02-28.ndjson",
+    "sync_summary": "planningops/artifacts/sync-summary/loop-20260228T051458Z-issue-11.json"
+  },
+  "executed_at_utc": "2026-02-28T05:14:58.213361+00:00"
+}

@@ -1,0 +1,17 @@
+{
+  "selected_issue": 11,
+  "deps": [
+    9,
+    10,
+    12
+  ],
+  "loop_rc": 0,
+  "verify_rc": 0,
+  "already_processed": false,
+  "idempotency_key": "9a353f7ebe6d72cc18b0fb27a786cd64ebee27e71cb38d334f317e492cb060f5",
+  "loop_stdout": "loop completed: verdict=pass reason=ok loop_id=loop-20260228T051458Z-issue-11\nartifacts root: planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11",
+  "verify_stdout": "verification result: planningops/artifacts/verification/issue-11-verification.json\nproject payload: planningops/artifacts/verification/issue-11-project-payload.json\nverdict=pass reason=ok replanning_triggered=True",
+  "loop_stderr": "",
+  "verify_stderr": "",
+  "generated_at_utc": "2026-02-28T05:15:08.077654+00:00"
+}
