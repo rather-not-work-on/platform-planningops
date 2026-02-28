@@ -21,16 +21,18 @@ Use lowercase prefixes and stable keys.
 
 ## Required Filters
 - `initiative == unified-personal-agent-platform`
-- `Status in (Todo, In Progress, Done)` as needed
+- `Status in (Todo, In Progress, Blocked, Done)` as needed
+- `workflow_state` filter를 목적에 맞게 병행(`ready-contract`, `ready-implementation`, `blocked`, `done`)
 - optional: `target_repo == rather-not-work-on/<repo>`
 
 ## Sort and Group Defaults
 - Primary sort: `execution_order` ascending
-- Secondary sort: `Status` (Todo -> In Progress -> Done)
+- Secondary sort: `workflow_state` (ready-contract -> in-progress -> review-gate -> ready-implementation -> blocked -> done)
 - Group options:
   - `plan_lane`
   - `component`
   - `Status`
+  - `workflow_state`
 
 ## Field Consistency Rules
 - `initiative` is mandatory on all cards.

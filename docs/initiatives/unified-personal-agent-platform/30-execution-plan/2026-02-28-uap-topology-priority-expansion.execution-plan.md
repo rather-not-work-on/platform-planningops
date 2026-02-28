@@ -40,7 +40,7 @@ related_docs:
   - `planningops/`에 C1~C8 참조 맵, multi-repo fan-out 리포트, end-to-end simulation evidence bundle 구축 완료.
 - GitHub Project:
   - org project `rather-not-work-on/projects/2` 사용 중.
-  - 필드 스키마(`Status`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 검증 스크립트 기준 통과.
+  - 필드 스키마(`Status`, `workflow_state`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 검증 스크립트 기준 통과.
 - 레포 토폴로지:
   - 존재: `platform-planningops`, `monday`, `platform-contracts`, `platform-provider-gateway`, `platform-observability-gateway`.
   - 신규 3개 레포는 `public` 정책으로 생성 완료.
@@ -100,7 +100,7 @@ related_docs:
 `backlog -> ready-contract -> in-progress -> review-gate -> ready-implementation -> done`
 
 ### Pull rule
-- agent는 `ready-*` 카드만 pull.
+- agent는 `Status=Todo` AND `workflow_state in {ready-contract, ready-implementation}` 카드만 pull.
 - prerequisite 불충족 카드는 `blocked`로 강등 후 원인 코드(`contract|permission|context|runtime`) 기록.
 
 ### WIP limits
@@ -167,7 +167,7 @@ related_docs:
   - `README`/`document-map` 링크 정합성 유지
 - 실행:
   - 각 큐 항목별 최소 1개 gate evidence artifact 생성
-  - GitHub Project 필드(`component`, `initiative`, `target_repo`, `execution_order`) 누락 0건
+  - GitHub Project 필드(`component`, `initiative`, `target_repo`, `execution_order`, `workflow_state`) 누락 0건
 - 검증:
   - `uap-docs.sh check --profile all` 통과
   - 관련 CI 체인 통과(계약 검증 + dry-run + replay)

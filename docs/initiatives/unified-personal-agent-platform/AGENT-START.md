@@ -41,7 +41,7 @@ related_docs:
 
 ## Canonical Core 7
 ### Entry Core (next reads)
-`AGENT-START`(현재 문서)는 Entry Core anchor다. 아래 4개 문서를 이어서 읽는다.
+`AGENT-START`(현재 문서)는 Entry Core anchor다. 아래 5개 문서를 이어서 읽는다.
 
 1. [AGENT Principles](./AGENT.md)
 2. [Project Identity](./00-governance/uap-monday-identity.meta.md)
@@ -54,7 +54,7 @@ related_docs:
 2. [Trade-off Decision Framework](./40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 
 ## Mandatory Read Order (Minimal)
-1. Entry Core anchor(현재 문서) + Entry Core next reads 4
+1. Entry Core anchor(현재 문서) + Entry Core next reads 5
 2. Policy Core 2
 3. [README](./README.md) for broad context
 4. [Foundation Execution Plan](./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)

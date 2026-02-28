@@ -84,7 +84,7 @@ def main():
     items = item_doc.get("items", [])
 
     required_field_checks = []
-    for key in ["status", "initiative", "target_repo", "component", "execution_order", "plan_lane"]:
+    for key in ["status", "initiative", "target_repo", "component", "execution_order", "plan_lane", "workflow_state"]:
         expected = expected_fields.get(key, {})
         field_id = expected.get("id")
         ok = bool(field_id and field_id in fields_by_id)
@@ -94,7 +94,7 @@ def main():
             "exists": ok,
             "actual_name": fields_by_id.get(field_id, {}).get("name") if ok else None,
         }
-        if key in ["status", "component", "plan_lane"]:
+        if key in ["status", "component", "plan_lane", "workflow_state"]:
             expected_opts = (expected.get("options") or {}).values()
             actual_opts = {o.get("id") for o in (fields_by_id.get(field_id, {}).get("options") or [])}
             missing_opts = sorted([opt for opt in expected_opts if opt not in actual_opts])
@@ -120,6 +120,8 @@ def main():
         issue_number = content.get("number")
         target_repo = find_item_field_value(item, "target_repo")
         component_value = find_item_field_value(item, "component")
+        workflow_state = find_item_field_value(item, "workflow_state")
+        status_value = item.get("status")
         repo_value = content.get("repository")
 
         if not initiative_value:
@@ -150,6 +152,16 @@ def main():
                     "item_id": item_id,
                     "issue_number": issue_number,
                     "message": "target_repo field is required for initiative cards",
+                }
+            )
+        if not workflow_state:
+            violations.append(
+                {
+                    "type": "MISSING_FIELD",
+                    "field": "workflow_state",
+                    "item_id": item_id,
+                    "issue_number": issue_number,
+                    "message": "workflow_state field is required for initiative cards",
                 }
             )
 
@@ -188,6 +200,31 @@ def main():
                         "expected": repo_value,
                         "actual": target_repo,
                         "message": "target_repo must match built-in Issue repository for non-control repo cards",
+                    }
+                )
+
+        if workflow_state and status_value:
+            expected_status = None
+            if workflow_state in {"backlog", "ready-contract", "ready-implementation"}:
+                expected_status = "Todo"
+            elif workflow_state in {"in-progress", "review-gate"}:
+                expected_status = "In Progress"
+            elif workflow_state == "blocked":
+                expected_status = "Blocked"
+            elif workflow_state == "done":
+                expected_status = "Done"
+
+            if expected_status and status_value != expected_status:
+                violations.append(
+                    {
+                        "type": "STATUS_WORKFLOW_MISMATCH",
+                        "field": "workflow_state",
+                        "item_id": item_id,
+                        "issue_number": issue_number,
+                        "workflow_state": workflow_state,
+                        "expected_status": expected_status,
+                        "actual_status": status_value,
+                        "message": "Status projection must match workflow_state contract",
                     }
                 )
 

@@ -37,11 +37,15 @@ def parse_depends_on(issue_body: str):
     return sorted(deps)
 
 
-def issue_is_closed(issue_num: int):
-    rc, out, err = run(["gh", "issue", "view", str(issue_num), "--json", "state", "--jq", ".state"])
+def issue_is_closed(issue_num: int, repo: str):
+    rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "state", "--jq", ".state"])
     if rc != 0:
         return False
     return out.strip().upper() == "CLOSED"
+
+
+def parse_csv(value: str):
+    return [x.strip() for x in value.split(",") if x.strip()]
 
 
 def ensure_text_field(owner: str, project_num: int, field_name: str):
@@ -79,15 +83,22 @@ def ensure_text_field(owner: str, project_num: int, field_name: str):
 def main():
     parser = argparse.ArgumentParser(description="Issue intake and feedback loop runner")
     parser.add_argument("--owner", default="rather-not-work-on")
+    parser.add_argument("--control-repo", default="rather-not-work-on/platform-planningops")
     parser.add_argument("--project-num", type=int, default=2)
     parser.add_argument("--project-id", default="PVT_kwDOD8NujM4BQYNE")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="apply")
+    parser.add_argument(
+        "--pull-workflow-states",
+        default="ready-contract,ready-implementation",
+        help="Comma-separated workflow_state values eligible for intake",
+    )
     parser.add_argument(
         "--runtime-profile-file",
         default="planningops/config/runtime-profiles.json",
         help="Runtime profile catalog path used by local harness",
     )
     args = parser.parse_args()
+    allowed_workflow_states = set(parse_csv(args.pull_workflow_states))
 
     rc, out, err = run(
         [
@@ -113,27 +124,30 @@ def main():
         content = it.get("content", {})
         if content.get("type") != "Issue":
             continue
-        if content.get("repository") != "rather-not-work-on/platform-planningops":
+        if content.get("repository") != args.control_repo:
             continue
         if it.get("status") != "Todo":
             continue
+        workflow_state = it.get("workflow_state")
+        if workflow_state not in allowed_workflow_states:
+            continue
         number = content.get("number")
         order = it.get("execution_order") or 0
-        candidates.append({"item": it, "number": number, "order": order})
+        candidates.append({"item": it, "number": number, "order": order, "workflow_state": workflow_state})
 
     candidates.sort(key=lambda x: (x["order"], x["number"]))
 
     selected = None
     for c in candidates:
         num = c["number"]
-        rc_i, out_i, err_i = run(["gh", "issue", "view", str(num), "--json", "body,state"])
+        rc_i, out_i, err_i = run(["gh", "issue", "view", str(num), "--repo", args.control_repo, "--json", "body,state"])
         if rc_i != 0:
             continue
         issue_doc = json.loads(out_i)
         if issue_doc.get("state") != "OPEN":
             continue
         deps = parse_depends_on(issue_doc.get("body", ""))
-        if all(issue_is_closed(dep) for dep in deps):
+        if all(issue_is_closed(dep, args.control_repo) for dep in deps):
             c["deps"] = deps
             selected = c
             break
@@ -214,7 +228,7 @@ def main():
 
     if not already_processed:
         # comment on issue
-        run(["gh", "issue", "comment", str(issue_num), "--body", comment_body])
+        run(["gh", "issue", "comment", str(issue_num), "--repo", args.control_repo, "--body", comment_body])
 
         # project status + verdict fields
         rc_fields, out_fields, err_fields = run(
@@ -223,12 +237,20 @@ def main():
         if rc_fields == 0:
             fields_doc = json.loads(out_fields)
             status_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "Status"), None)
-            done_opt = next((o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == "Done"), None)
-            progress_opt = next((o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == "In Progress"), None)
+            workflow_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "workflow_state"), None)
+            status_target_name = str(payload.get("status_update", "Blocked"))
+            status_target_opt = next(
+                (o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == status_target_name),
+                None,
+            )
+            workflow_target_name = "done" if payload.get("last_verdict") == "pass" else "blocked"
+            workflow_target_opt = next(
+                (o.get("id") for o in (workflow_field or {}).get("options", []) if o.get("name") == workflow_target_name),
+                None,
+            )
 
             item_id = selected["item"].get("id")
-            target_opt = done_opt if payload.get("last_verdict") == "pass" else progress_opt
-            if item_id and status_field and target_opt:
+            if item_id and status_field and status_target_opt:
                 run(
                     [
                         "gh",
@@ -241,7 +263,23 @@ def main():
                         "--field-id",
                         status_field.get("id"),
                         "--single-select-option-id",
-                        target_opt,
+                        status_target_opt,
+                    ]
+                )
+            if item_id and workflow_field and workflow_target_opt:
+                run(
+                    [
+                        "gh",
+                        "project",
+                        "item-edit",
+                        "--id",
+                        item_id,
+                        "--project-id",
+                        args.project_id,
+                        "--field-id",
+                        workflow_field.get("id"),
+                        "--single-select-option-id",
+                        workflow_target_opt,
                     ]
                 )
 
@@ -285,7 +323,10 @@ def main():
 
     result = {
         "selected_issue": issue_num,
+        "selected_workflow_state": selected.get("workflow_state"),
         "deps": selected.get("deps", []),
+        "candidate_count": len(candidates),
+        "allowed_workflow_states": sorted(allowed_workflow_states),
         "loop_rc": rc_loop,
         "verify_rc": rc_verify,
         "already_processed": already_processed,

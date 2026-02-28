@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-28T06:06:26.949516+00:00",
+  "generated_at_utc": "2026-02-28T08:17:06.912706+00:00",
   "project": {
     "owner": "rather-not-work-on",
     "project_num": 2,
@@ -47,12 +47,20 @@
       "actual_name": "plan_lane",
       "missing_option_ids": [],
       "options_ok": true
+    },
+    {
+      "field_key": "workflow_state",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hxGo",
+      "exists": true,
+      "actual_name": "workflow_state",
+      "missing_option_ids": [],
+      "options_ok": true
     }
   ],
-  "evaluated_items": 25,
+  "evaluated_items": 33,
   "violation_count": 0,
   "violations": [],
-  "info_count": 6,
+  "info_count": 10,
   "infos": [
     {
       "type": "CROSS_REPO_MAPPING",
@@ -104,6 +112,42 @@
       "field": "target_repo",
       "item_id": "PVTI_lADOD8NujM4BQYNEzgmXEsU",
       "issue_number": 21,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXM2k",
+      "issue_number": 26,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXM3U",
+      "issue_number": 27,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXM4I",
+      "issue_number": 28,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-contracts",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXM5M",
+      "issue_number": 29,
       "control_repo": "rather-not-work-on/platform-planningops",
       "target_repo": "rather-not-work-on/monday",
       "message": "control-repo issue intentionally targets external repository"

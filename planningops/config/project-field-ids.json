@@ -8,9 +8,10 @@
     "status": {
       "id": "PVTSSF_lADOD8NujM4BQYNEzg-hBm0",
       "options": {
-        "todo": "f75ad846",
-        "in_progress": "47fc9ee4",
-        "done": "98236657"
+        "todo": "e225d619",
+        "in_progress": "18f5944b",
+        "blocked": "1184a4e7",
+        "done": "cffcdc7d"
       }
     },
     "initiative": {
@@ -40,6 +41,18 @@
         "m1_contract_freeze": "0f566f80",
         "m2_sync_core": "196964ba",
         "m3_guardrails": "6b2c1c64"
+      }
+    },
+    "workflow_state": {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hxGo",
+      "options": {
+        "backlog": "5635cc18",
+        "ready_contract": "1da67253",
+        "in_progress": "c8b7cc9f",
+        "review_gate": "18a75432",
+        "ready_implementation": "c8b07c0f",
+        "blocked": "41f8c85f",
+        "done": "c8db8ee1"
       }
     }
   }

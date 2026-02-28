@@ -1,11 +1,11 @@
 # Ralph Loop Requirements Contract
 
 ## Functional Requirements
-1. Intake must select only `Todo` issues and enforce `execution_order` ascending.
+1. Intake must select only issues where `Status=Todo` and `workflow_state in {ready-contract, ready-implementation}`, then enforce `execution_order` ascending.
 2. Intake must block issues with unsatisfied `depends_on`.
 3. Each loop must produce deterministic artifacts for the same input and commit.
 4. Verification must emit one verdict from `pass|fail|inconclusive`.
-5. Feedback must post result comments to issue and update project status.
+5. Feedback must post result comments to issue and update project fields (`Status`, `workflow_state`).
 6. Runtime and provider policy must be resolvable by task key (`issue-<number>` with `default` fallback).
 
 ## Non-Functional Requirements

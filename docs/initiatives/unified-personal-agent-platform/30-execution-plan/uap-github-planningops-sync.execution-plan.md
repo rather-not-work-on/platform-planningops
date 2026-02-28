@@ -246,11 +246,12 @@ flowchart LR
 ### Demo-validated GitHub Project field schema (`2026-02-28`)
 | Field | Type | Required | Source | Rule |
 |---|---|---|---|---|
-| `Status` | SINGLE_SELECT(built-in) | yes | sync engine | C3 매핑 규칙 적용 |
+| `Status` | SINGLE_SELECT(built-in) | yes | sync engine | `Todo, In Progress, Blocked, Done`만 허용 |
 | `Repository` | built-in(system) | Issue/PR only | GitHub linked content | canonical repo(`Issue/PR`) |
 | `initiative` | TEXT(custom) | yes | `initiative_id` | draft/issue 모두 필수 |
 | `component` | SINGLE_SELECT(custom) | yes | `component` | 허용값: `planningops, contracts, provider-gateway, observability-gateway, runtime, orchestrator` |
 | `target_repo` | TEXT(custom) | DraftIssue yes / Issue optional | `target_repo` | DraftIssue canonical repo, Issue에서는 `Repository`와 일치해야 함 |
+| `workflow_state` | SINGLE_SELECT(custom) | yes | sync engine | `backlog, ready-contract, in-progress, review-gate, ready-implementation, blocked, done`만 허용 |
 
 운영 규칙:
 - `component` 옵션 ID 매핑은 `project_field_ids.component.options`로 버전 관리한다.
@@ -262,14 +263,16 @@ Plan item lifecycle:
 - Internal: `draft | active | blocked | done`
 - GitHub Issue state: `open | closed`
 - Project Status field: `Todo | In Progress | Blocked | Done` (project 설정명 기준)
+- Project workflow_state field: `backlog | ready-contract | in-progress | review-gate | ready-implementation | blocked | done`
 - Gate verdict: `pass | fail | inconclusive`
 
 매핑 규칙:
-- `done` -> issue `closed` + project status `Done`
-- `blocked` -> issue `open` + project status `Blocked`
-- `active` -> issue `open` + project status `In Progress`
-- `draft` -> issue `open` + project status `Todo`
+- `done` -> issue `closed` + project status `Done` + workflow_state `done`
+- `blocked` -> issue `open` + project status `Blocked` + workflow_state `blocked`
+- `active`(execute 중) -> issue `open` + project status `In Progress` + workflow_state `in-progress|review-gate`
+- `draft`(대기열) -> issue `open` + project status `Todo` + workflow_state `backlog|ready-contract|ready-implementation`
 - `done` 판정은 `gate pass`를 선행 조건으로 사용한다. issue가 먼저 closed 되어도 gate evidence가 없으면 drift/audit 대상이다.
+- intake 규칙은 `Status=Todo`와 `workflow_state in {ready-contract, ready-implementation}`을 동시에 만족해야 한다.
 
 ## C4 Sync Idempotency Contract
 - `sync_key = <plan_doc_id>:<plan_item_id>:<version>:<target_repo>`
@@ -431,7 +434,7 @@ Plan item lifecycle:
 | Permission readiness | pilot 대상 모든 레포/App 설치 + 최소권한 검증 완료 | 특정 레포에서 `401/403` 반복 |
 | Project field readiness | status/gate/owner/date 필드 ID 고정 완료 | field rename 추적 불가 |
 | Rate-limit readiness | pilot 부하에서 GraphQL remaining budget 안정 | secondary limit 다발 |
-| Ops readiness | dry-run/apply/reconcile runbook 리허설 완료 | rollback/재시도 책임자 미정 |
+| Ops readiness | dry-run/apply/reconcile runbook 리허설 완료 | 지정된 책임자(`PlanningOps DRI` 1차, `Runtime DRI` 2차) 부재 |
 
 ## Preflight Checklist (Before Phase 1 Apply)
 - [ ] org-level Project number / node ID 기록 완료
@@ -587,26 +590,25 @@ Companion docs:
 - artifact 포맷(`sync-summary`, `drift-report`, `kpi`) 고정
 - runbook/운영 체크리스트 초안 작성
 
-### Track B: Decision-Dependent Work (Wait for Selection)
-- milestone 단위 확정 후 C2 key 최종 고정
-- done precedence 확정 후 C3 verdict precedence 고정
-- trigger cadence 확정 후 workflow schedule/dispatch 정책 확정
-- override 강도 확정 후 C7 허용/금지 surface 고정
-- webhook 반응 모드 확정 후 reconcile 전략 고정
+### Track B: Decision-Dependent Work (Now Unblocked by Locked Defaults)
+- milestone 단위를 `initiative x repo`로 고정하고 C2 key를 그대로 구현한다.
+- done precedence를 `gate-first`로 고정하고 C3 verdict precedence를 구현한다.
+- trigger cadence를 `push + dispatch + nightly`로 고정해 workflow를 구성한다.
+- override 강도를 `strict`로 고정해 C7 허용/금지 surface를 구현한다.
+- webhook 모드를 `observe-only`로 고정해 reconcile 백스톱을 유지한다.
 
-## Deferred Decisions (With Active Defaults)
-| Decision | Active default | Candidate options | Revisit trigger |
-|---|---|---|---|
-| Milestone granularity | `initiative x repo` 1개 | `initiative x repo`, `initiative x release x repo` | 분기 내 milestone 20개 초과 또는 release cadence 불일치 발생 |
-| Done source precedence | `gate pass` 우선 | `gate-first`, `issue-first`, `dual-confirm` | false-positive close 1건 이상 또는 gate pass 지연 3회 이상 |
-| Trigger cadence tuning | `push + dispatch + nightly` | `push + dispatch + nightly`, `push + nightly`, `dispatch + nightly`, `nightly-only` | nightly drift low=0 3일 연속 또는 sync run 과부하 |
-| Manual override strictness | labels+제한 필드만 허용 | `strict`, `moderate`, `open-with-audit` | 운영팀의 수동 개입 요청 빈도 주 5회 이상 |
-| Webhook mode | observe-only | `observe-only`, `reactive-reconcile`, `reactive-apply` | webhook delivery 품질이 2주 연속 안정적일 때 |
+## Locked Decisions (Wave B Baseline)
+| Decision | Locked default | Revisit trigger |
+|---|---|---|
+| Milestone granularity | `initiative x repo` 1개 | 분기 내 milestone 20개 초과 또는 release cadence 불일치 발생 |
+| Done source precedence | `gate-first` (`gate pass` 선행) | false-positive close 1건 이상 또는 gate pass 지연 3회 이상 |
+| Trigger cadence tuning | `push + dispatch + nightly` | nightly drift low=0 3일 연속 또는 sync run 과부하 |
+| Manual override strictness | `strict` (labels+제한 필드만 허용) | 운영팀의 수동 개입 요청 빈도 주 5회 이상 |
+| Webhook mode | `observe-only` | webhook delivery 품질이 2주 연속 안정적일 때 |
 
 운영 원칙:
-- `Deferred Decisions`는 재검토 조건을 포함한 정책 백로그다.
-- `Working Defaults`는 현재 실행에 즉시 적용되는 운영 기본값이다.
-- 선택 전에는 Track A만 진척시키고 Track B 구현은 인터페이스 스텁까지만 허용한다.
+- 위 5개 결정은 Wave B 동안 `locked` 상태로 운영한다.
+- 재검토는 표의 trigger 충족 시에만 수행한다.
 
 ## Decision Impact Matrix (How Direction Changes)
 아래 표는 운영 요약본이다. 옵션 점수화/최종 판정 기준의 canonical source는 `../40-quality/uap-planningops-tradeoff-decision-framework.quality.md`로 유지한다.
@@ -639,10 +641,16 @@ Companion docs:
 ## Resolved Decisions
 - GitHub Project topology는 단일 org-level Project 1개로 통합 운영한다.
 - Phase 1 운영 범위는 단일 org으로 제한한다(multi-org는 후속 단계 검토).
+- Milestone granularity는 `initiative x repo`로 고정한다.
+- Done precedence는 `gate-first`로 고정한다.
+- Trigger cadence는 `push + dispatch + nightly`로 고정한다.
+- Manual override strictness는 `strict`로 고정한다.
+- Webhook mode는 `observe-only`로 고정한다.
+- rollback/재시도 책임자는 `PlanningOps DRI`(1차), `Runtime DRI`(2차)로 고정한다.
 
 ## Working Defaults (Until Explicitly Changed)
 - GitHub Project topology: 단일 org-level Project 1개(canonical) + repo/component saved view
-- Project field schema: `initiative(TEXT)`, `component(SINGLE_SELECT)`, `target_repo(TEXT)`, built-in `Repository`(Issue/PR canonical)
+- Project field schema: `initiative(TEXT)`, `component(SINGLE_SELECT)`, `target_repo(TEXT)`, `workflow_state(SINGLE_SELECT)`, built-in `Repository`(Issue/PR canonical)
 - Sync direction: one-way(plan -> GitHub)
 - Completion source of truth: gate pass 우선, issue closed는 파생 상태
 - Trigger strategy: push + workflow_dispatch + nightly schedule
@@ -681,7 +689,8 @@ Companion docs:
 ### Workflow states and pull policy
 - 상태 흐름: `backlog -> ready-contract -> in-progress -> review-gate -> ready-implementation -> done`
 - Pull 우선순위: `uncertainty reduction > contract mismatch risk > integration dependency > convenience`
-- 에이전트는 `ready-*` 열에서만 pull한다. prerequisite 미충족 항목 pull 금지.
+- 에이전트 pull 조건은 `Status=Todo` AND `workflow_state in {ready-contract, ready-implementation}`이다.
+- prerequisite 미충족 항목 pull 금지.
 
 ### WIP limits and service-level expectations
 | Lane | WIP limit | Service-level expectation |
@@ -909,6 +918,6 @@ docs/operations/planningops-rollout-checklist.md
   - pilot 대상 레포 2개와 org-level project number 확정
   - GitHub App 권한/설치 범위 합의
   - CI에 `validate-contracts -> dry-run` 필수 체인 연결
-  - Deferred Decisions 5개에 대해 decision pack(증거 4종) 수집 시작
+  - Locked Decisions 5개에 대해 trigger 기반 재검토용 decision pack(증거 4종)만 수집
   - Ralph Loop 이슈 해결 루프 기준 계획: `docs/workbench/unified-personal-agent-platform/plans/2026-02-28-plan-ralph-loop-issue-resolution-loop-plan.md`
   - Ralph Loop 관련 이슈 세트 동기화: #7, #8, #9, #10, #11, #12
