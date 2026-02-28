@@ -14,7 +14,7 @@ tags:
   - contracts
   - infrastructure
   - kanban
-summary: Topology-first priority plan that extends the current planningops MVP toward contracts/provider/o11y/runtime repositories with Kanban execution order.
+summary: Topology-first priority plan with Wave A completion snapshot, Wave B issue-map registration, and refined local-first multi-repo execution queue.
 related_docs:
   - ./uap-github-planningops-sync.execution-plan.md
   - ../20-repos/README.md
@@ -34,14 +34,30 @@ related_docs:
 
 ## Current State Snapshot (`2026-02-28`)
 - `platform-planningops`:
-  - PlanningOps MVP 이슈 `#2~#13` 전부 `Done` 상태.
-  - `planningops/`에 C1~C5 schema, dry-run parser, local harness, verifier, issue loop runner, CI chain(`validate-contracts -> dry-run`) 구축 완료.
+  - PlanningOps MVP 이슈 `#2~#13` 전부 `Done`.
+  - Topology expansion queue `#14~#23` 전부 `Done`.
+  - Wave B queue `#24~#31` 생성 및 Project 필드 스키마 정렬 완료(`Todo`).
+  - `planningops/`에 C1~C8 참조 맵, multi-repo fan-out 리포트, end-to-end simulation evidence bundle 구축 완료.
 - GitHub Project:
   - org project `rather-not-work-on/projects/2` 사용 중.
-  - 필드 스키마(`Status`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 및 데모 검증 완료.
+  - 필드 스키마(`Status`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 검증 스크립트 기준 통과.
 - 레포 토폴로지:
   - 존재: `platform-planningops`, `monday`, `platform-contracts`, `platform-provider-gateway`, `platform-observability-gateway`.
   - 신규 3개 레포는 `public` 정책으로 생성 완료.
+
+## Wave A Completion Snapshot (`#14~#23`)
+| Execution Order | Issue | Result |
+|---|---|---|
+| 110 | #14 | topology bootstrap ADR/checklist 완료 |
+| 120 | #15 | project field schema guard v2 완료 |
+| 130 | #16 | `platform-contracts` C1~C8 seed 완료 |
+| 140 | #17 | semver policy + compatibility CI 완료 |
+| 150 | #18 | provider-gateway C4 fallback smoke 완료 |
+| 160 | #19 | observability-gateway C5 replay/dedupe smoke 완료 |
+| 170 | #20 | monday Executor/Worker handoff mapping 완료 |
+| 180 | #21 | monday scheduler queue/idempotent dequeue 완료 |
+| 190 | #22 | planningops multi-repo fan-out 리포트 완료 |
+| 200 | #23 | dry-run -> apply -> reconcile simulation bundle 완료 |
 
 ## Decision Snapshot (Locked, `2026-02-28`)
 1. 레포 생성 정책:
@@ -94,26 +110,50 @@ related_docs:
 - PlanningOps lane: 2
 - Ops lane: 1
 
-## Dependency-Ordered Work Queue (Now)
+## Dependency-Ordered Work Queue (Wave A Completed)
 | Execution Order | Priority | Component | Target Repo | Work Item | Depends On |
 |---|---|---|---|---|---|
-| 110 | P0 | planningops | rather-not-work-on/platform-planningops | Multi-repo topology bootstrap ADR + repo creation checklist | - |
-| 120 | P0 | planningops | rather-not-work-on/platform-planningops | GitHub Project field schema v2 (`component/repo/initiative` guard) | 110 |
-| 130 | P1 | contracts | rather-not-work-on/platform-contracts | `platform-contracts` bootstrap and C1~C8 seed schema migration | 110 |
-| 140 | P1 | contracts | rather-not-work-on/platform-contracts | compatibility CI and semver policy (`major/minor/patch`) | 130 |
-| 150 | P2 | provider-gateway | rather-not-work-on/platform-provider-gateway | LiteLLM gateway skeleton + C4 adapter contract | 130 |
-| 160 | P3 | observability-gateway | rather-not-work-on/platform-observability-gateway | LangFuse trace sink + C5 ingest contract | 130 |
-| 170 | P4 | runtime | rather-not-work-on/monday | Executor/worker naming ADR + harness integration contract | 150, 160 |
-| 180 | P5 | orchestrator | rather-not-work-on/monday | task scheduler(queue) baseline + idempotent dequeue | 170 |
-| 190 | P6 | planningops | rather-not-work-on/platform-planningops | multi-repo parser/sync expansion (`target_repo` fan-out) | 140, 150, 160 |
-| 200 | P6 | planningops | rather-not-work-on/platform-planningops | end-to-end simulation (2+ repos) + gate evidence bundle | 190 |
+| 110 | P0 | planningops | rather-not-work-on/platform-planningops | Multi-repo topology bootstrap ADR + repo creation checklist | done |
+| 120 | P0 | planningops | rather-not-work-on/platform-planningops | GitHub Project field schema v2 (`component/repo/initiative` guard) | done |
+| 130 | P1 | contracts | rather-not-work-on/platform-contracts | `platform-contracts` bootstrap and C1~C8 seed schema migration | done |
+| 140 | P1 | contracts | rather-not-work-on/platform-contracts | compatibility CI and semver policy (`major/minor/patch`) | done |
+| 150 | P2 | provider-gateway | rather-not-work-on/platform-provider-gateway | LiteLLM gateway skeleton + C4 adapter contract | done |
+| 160 | P3 | observability-gateway | rather-not-work-on/platform-observability-gateway | LangFuse trace sink + C5 ingest contract | done |
+| 170 | P4 | runtime | rather-not-work-on/monday | Executor/worker naming ADR + harness integration contract | done |
+| 180 | P5 | orchestrator | rather-not-work-on/monday | task scheduler(queue) baseline + idempotent dequeue | done |
+| 190 | P6 | planningops | rather-not-work-on/platform-planningops | multi-repo parser/sync expansion (`target_repo` fan-out) | done |
+| 200 | P6 | planningops | rather-not-work-on/platform-planningops | end-to-end simulation (2+ repos) + gate evidence bundle | done |
 
-## Checkpoints (Absolute Dates)
-- Checkpoint T0 (`2026-03-03`): P0 완료, 레포 생성/소유권/브랜치 보호 기준 확정
-- Checkpoint T1 (`2026-03-10`): P1 완료, `platform-contracts` C1~C8 + compatibility CI 통과
-- Checkpoint T2 (`2026-03-17`): P2/P3 완료, LiteLLM/LangFuse baseline trace 확인
-- Checkpoint T3 (`2026-03-24`): P4/P5 완료, `monday`에서 loop->scheduler 최소 동작
-- Checkpoint T4 (`2026-03-31`): P6 완료, multi-repo sync dry-run/apply/reconcile 증빙 확보
+## Refined Queue (Wave B, Local-First Hardening)
+| Execution Order | Priority | Component | Target Repo | Work Item | Depends On |
+|---|---|---|---|---|---|
+| 210 | P7 | planningops | rather-not-work-on/platform-planningops | cross-repo issue intake runner (remove single-repo filter) | 200 |
+| 220 | P7 | planningops | rather-not-work-on/platform-planningops | repo-specific execution adapter hooks (contracts/provider/o11y/runtime) | 210 |
+| 230 | P8 | provider-gateway | rather-not-work-on/platform-provider-gateway | local LiteLLM stack launcher + profile override drill | 210 |
+| 240 | P8 | observability-gateway | rather-not-work-on/platform-observability-gateway | local LangFuse stack launcher + replay/backfill drill | 210 |
+| 250 | P8 | contracts | rather-not-work-on/platform-contracts | C1~C8 consumer conformance checks across repos | 220, 230, 240 |
+| 260 | P9 | runtime | rather-not-work-on/monday | scheduler-runner integration with planningops loop handoff | 220 |
+| 270 | P9 | planningops | rather-not-work-on/platform-planningops | federated CI check matrix across 4 repos | 250, 260 |
+| 280 | P10 | planningops | rather-not-work-on/platform-planningops | 7-day local pilot + Oracle profile partial migration rehearsal | 270 |
+
+## Wave B Issue Map (Registered, `2026-02-28`)
+| Execution Order | Issue | Component | Target Repo | Status |
+|---|---|---|---|---|
+| 210 | #24 | planningops | rather-not-work-on/platform-planningops | Todo |
+| 220 | #25 | planningops | rather-not-work-on/platform-planningops | Todo |
+| 230 | #26 | provider-gateway | rather-not-work-on/platform-provider-gateway | Todo |
+| 240 | #27 | observability-gateway | rather-not-work-on/platform-observability-gateway | Todo |
+| 250 | #28 | contracts | rather-not-work-on/platform-contracts | Todo |
+| 260 | #29 | runtime | rather-not-work-on/monday | Todo |
+| 270 | #30 | planningops | rather-not-work-on/platform-planningops | Todo |
+| 280 | #31 | planningops | rather-not-work-on/platform-planningops | Todo |
+
+## Checkpoints (Absolute Dates, Refined)
+- Checkpoint T0 (`2026-02-28`): Wave A(`110~200`) 완료
+- Checkpoint T1 (`2026-03-05`): `210~220` planningops cross-repo execution path 통과
+- Checkpoint T2 (`2026-03-12`): `230~240` local LiteLLM/LangFuse launch/replay drill 통과
+- Checkpoint T3 (`2026-03-19`): `250~260` conformance + runtime integration 통과
+- Checkpoint T4 (`2026-03-26`): `270~280` federated CI + pilot rehearsal 통과
 
 ## Replanning Triggers
 - `blocked` 24시간 초과: 하위 작업 분해 + owner 재지정
@@ -133,6 +173,6 @@ related_docs:
   - 관련 CI 체인 통과(계약 검증 + dry-run + replay)
 
 ## Immediate Next Actions (Start Today)
-1. `#14~#23` 실행 큐를 execution_order 기준으로 pull 실행(칸반 정책 유지)
-2. `platform-contracts`를 C1~C8 canonical source로 전환하는 migration patch 설계
-3. `planningops/config/runtime-profiles.json` 기반 task별 runtime/provider override 운영 시작
+1. `#24` 착수: `issue_loop_runner.py`의 single-repo filter 제거 + selection trace 증빙
+2. `#25` 설계 병행: repo-specific adapter hook 인터페이스/실패 reason taxonomy 고정
+3. `#26/#27` 사전 준비: local LiteLLM/LangFuse launcher 표준 스크립트 뼈대와 artifact 경로 규약 확정
