@@ -19,6 +19,7 @@ related_docs:
   - ./00-governance/uap-monday-identity.meta.md
   - ./20-repos/README.md
   - ./30-domains/README.md
+  - ./30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md
   - ./30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
   - ./90-navigation/uap-document-map.navigation.md
   - ./2026-02-27-uap-frontmatter-catalog.navigation.md
@@ -60,12 +61,13 @@ related_docs:
 5. [Contract Boundaries](20-architecture/2026-02-27-uap-contract-boundaries.architecture.md)
 6. [Foundation Execution Plan](20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
 7. [GitHub PlanningOps Sync Plan](30-execution-plan/uap-github-planningops-sync.execution-plan.md)
-8. [Lifecycle Scenario Playbook](30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
-9. [Doc Structure Migration Plan](30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md)
-10. [Trade-off Decision Framework](40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
-11. [Issue Closure Matrix](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md)
-12. [Document Map](90-navigation/uap-document-map.navigation.md)
-13. [Frontmatter Catalog](2026-02-27-uap-frontmatter-catalog.navigation.md)
+8. [Topology Priority Expansion Plan](30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md)
+9. [Lifecycle Scenario Playbook](30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
+10. [Doc Structure Migration Plan](30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md)
+11. [Trade-off Decision Framework](40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
+12. [Issue Closure Matrix](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md)
+13. [Document Map](90-navigation/uap-document-map.navigation.md)
+14. [Frontmatter Catalog](2026-02-27-uap-frontmatter-catalog.navigation.md)
 
 ## New Agent Fast Path
 - 1페이지 시작점: [AGENT-START](AGENT-START.md)

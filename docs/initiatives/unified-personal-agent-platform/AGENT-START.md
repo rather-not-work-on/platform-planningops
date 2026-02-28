@@ -22,6 +22,7 @@ related_docs:
   - ./40-quality/uap-planningops-tradeoff-decision-framework.quality.md
   - ./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ./30-execution-plan/uap-github-planningops-sync.execution-plan.md
+  - ./30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md
 ---
 
 # UAP Agent Start Guide
@@ -46,6 +47,7 @@ related_docs:
 2. [Project Identity](./00-governance/uap-monday-identity.meta.md)
 3. [Document Map](./90-navigation/uap-document-map.navigation.md)
 4. [PlanningOps Sync Plan](./30-execution-plan/uap-github-planningops-sync.execution-plan.md)
+5. [Topology Priority Expansion Plan](./30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md)
 
 ### Policy Core (apply before implementation)
 1. [Doc Governance](./00-governance/uap-doc-governance.meta.md)
