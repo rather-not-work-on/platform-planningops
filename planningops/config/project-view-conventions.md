@@ -1,0 +1,41 @@
+# GitHub Project View Conventions
+
+## Scope
+Issue: #15  
+Project: `rather-not-work-on/projects/2`
+
+## Naming Contract
+Use lowercase prefixes and stable keys.
+
+### Queue views
+- `queue/<initiative>/<repo>`
+- example: `queue/unified-personal-agent-platform/platform-planningops`
+
+### Lane views
+- `lane/<initiative>/<plan_lane>`
+- example: `lane/unified-personal-agent-platform/m2-sync-core`
+
+### Component views
+- `component/<initiative>/<component>`
+- example: `component/unified-personal-agent-platform/provider-gateway`
+
+## Required Filters
+- `initiative == unified-personal-agent-platform`
+- `Status in (Todo, In Progress, Done)` as needed
+- optional: `target_repo == rather-not-work-on/<repo>`
+
+## Sort and Group Defaults
+- Primary sort: `execution_order` ascending
+- Secondary sort: `Status` (Todo -> In Progress -> Done)
+- Group options:
+  - `plan_lane`
+  - `component`
+  - `Status`
+
+## Field Consistency Rules
+- `initiative` is mandatory on all cards.
+- `component` is mandatory on all cards.
+- `target_repo` is mandatory for draft issue cards.
+- For issue cards:
+  - if built-in repository is control repo (`rather-not-work-on/platform-planningops`), cross-repo `target_repo` is allowed.
+  - otherwise, `target_repo` must match built-in repository full name.

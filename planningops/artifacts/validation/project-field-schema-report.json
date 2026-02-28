@@ -1,0 +1,113 @@
+{
+  "generated_at_utc": "2026-02-28T06:06:26.949516+00:00",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_num": 2,
+    "initiative": "unified-personal-agent-platform"
+  },
+  "required_field_checks": [
+    {
+      "field_key": "status",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hBm0",
+      "exists": true,
+      "actual_name": "Status",
+      "missing_option_ids": [],
+      "options_ok": true
+    },
+    {
+      "field_key": "initiative",
+      "expected_id": "PVTF_lADOD8NujM4BQYNEzg-hBrQ",
+      "exists": true,
+      "actual_name": "initiative"
+    },
+    {
+      "field_key": "target_repo",
+      "expected_id": "PVTF_lADOD8NujM4BQYNEzg-hBrM",
+      "exists": true,
+      "actual_name": "target_repo"
+    },
+    {
+      "field_key": "component",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hBsE",
+      "exists": true,
+      "actual_name": "component",
+      "missing_option_ids": [],
+      "options_ok": true
+    },
+    {
+      "field_key": "execution_order",
+      "expected_id": "PVTF_lADOD8NujM4BQYNEzg-hM3Y",
+      "exists": true,
+      "actual_name": "execution_order"
+    },
+    {
+      "field_key": "plan_lane",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hM3c",
+      "exists": true,
+      "actual_name": "plan_lane",
+      "missing_option_ids": [],
+      "options_ok": true
+    }
+  ],
+  "evaluated_items": 25,
+  "violation_count": 0,
+  "violations": [],
+  "info_count": 6,
+  "infos": [
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXEnM",
+      "issue_number": 16,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-contracts",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXEoY",
+      "issue_number": 17,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-contracts",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXEp4",
+      "issue_number": 18,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXEq0",
+      "issue_number": 19,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXErY",
+      "issue_number": 20,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgmXEsU",
+      "issue_number": 21,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    }
+  ],
+  "verdict": "pass"
+}
