@@ -29,6 +29,12 @@ def save_json(path: Path, data):
     path.write_text(json.dumps(data, ensure_ascii=True, indent=2), encoding="utf-8")
 
 
+def append_ndjson(path: Path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(data, ensure_ascii=True) + "\n")
+
+
 def parse_depends_on(issue_body: str):
     deps = set()
     for line in issue_body.splitlines():
@@ -46,6 +52,71 @@ def issue_is_closed(issue_num: int, repo: str):
 
 def parse_csv(value: str):
     return [x.strip() for x in value.split(",") if x.strip()]
+
+
+def normalize_candidates(items, allowed_workflow_states):
+    candidates = []
+    for it in items:
+        content = it.get("content", {})
+        if content.get("type") != "Issue":
+            continue
+        if it.get("status") != "Todo":
+            continue
+
+        workflow_state = it.get("workflow_state")
+        if workflow_state not in allowed_workflow_states:
+            continue
+
+        issue_repo = content.get("repository")
+        number = content.get("number")
+        if not issue_repo or not number:
+            continue
+
+        target_repo = it.get("target_repo") or issue_repo
+        order = it.get("execution_order") or 0
+        candidates.append(
+            {
+                "item": it,
+                "number": number,
+                "order": order,
+                "workflow_state": workflow_state,
+                "issue_repo": issue_repo,
+                "target_repo": target_repo,
+            }
+        )
+
+    candidates.sort(key=lambda x: (x["order"], x["number"]))
+    return candidates
+
+
+def build_selection_trace(candidates, selected, attempts, allowed_workflow_states):
+    selected_ref = None
+    if selected is not None:
+        selected_ref = {
+            "number": selected.get("number"),
+            "order": selected.get("order"),
+            "workflow_state": selected.get("workflow_state"),
+            "issue_repo": selected.get("issue_repo"),
+            "target_repo": selected.get("target_repo"),
+            "depends_on": selected.get("deps", []),
+        }
+
+    return {
+        "allowed_workflow_states": sorted(allowed_workflow_states),
+        "candidate_count": len(candidates),
+        "candidates": [
+            {
+                "number": c.get("number"),
+                "order": c.get("order"),
+                "workflow_state": c.get("workflow_state"),
+                "issue_repo": c.get("issue_repo"),
+                "target_repo": c.get("target_repo"),
+            }
+            for c in candidates
+        ],
+        "attempts": attempts,
+        "selected": selected_ref,
+    }
 
 
 def ensure_text_field(owner: str, project_num: int, field_name: str):
@@ -88,6 +159,11 @@ def main():
     parser.add_argument("--project-id", default="PVT_kwDOD8NujM4BQYNE")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="apply")
     parser.add_argument(
+        "--no-feedback",
+        action="store_true",
+        help="Skip issue/project feedback writes (for non-destructive smoke runs)",
+    )
+    parser.add_argument(
         "--pull-workflow-states",
         default="ready-contract,ready-implementation",
         help="Comma-separated workflow_state values eligible for intake",
@@ -119,41 +195,64 @@ def main():
         return 1
 
     items = json.loads(out).get("items", [])
-    candidates = []
-    for it in items:
-        content = it.get("content", {})
-        if content.get("type") != "Issue":
-            continue
-        if content.get("repository") != args.control_repo:
-            continue
-        if it.get("status") != "Todo":
-            continue
-        workflow_state = it.get("workflow_state")
-        if workflow_state not in allowed_workflow_states:
-            continue
-        number = content.get("number")
-        order = it.get("execution_order") or 0
-        candidates.append({"item": it, "number": number, "order": order, "workflow_state": workflow_state})
-
-    candidates.sort(key=lambda x: (x["order"], x["number"]))
+    candidates = normalize_candidates(items, allowed_workflow_states)
 
     selected = None
+    selection_attempts = []
     for c in candidates:
         num = c["number"]
-        rc_i, out_i, err_i = run(["gh", "issue", "view", str(num), "--repo", args.control_repo, "--json", "body,state"])
+        issue_repo = c.get("issue_repo") or args.control_repo
+        rc_i, out_i, err_i = run(["gh", "issue", "view", str(num), "--repo", issue_repo, "--json", "body,state"])
         if rc_i != 0:
+            selection_attempts.append(
+                {
+                    "number": num,
+                    "issue_repo": issue_repo,
+                    "result": "issue_fetch_error",
+                    "error": err_i,
+                }
+            )
             continue
         issue_doc = json.loads(out_i)
         if issue_doc.get("state") != "OPEN":
+            selection_attempts.append(
+                {
+                    "number": num,
+                    "issue_repo": issue_repo,
+                    "result": "issue_not_open",
+                    "state": issue_doc.get("state"),
+                }
+            )
             continue
         deps = parse_depends_on(issue_doc.get("body", ""))
-        if all(issue_is_closed(dep, args.control_repo) for dep in deps):
+        closed_checks = [{"dep": dep, "closed": issue_is_closed(dep, issue_repo)} for dep in deps]
+        if all(x["closed"] for x in closed_checks):
             c["deps"] = deps
             selected = c
+            selection_attempts.append(
+                {
+                    "number": num,
+                    "issue_repo": issue_repo,
+                    "result": "selected",
+                    "depends_on": deps,
+                    "dep_checks": closed_checks,
+                }
+            )
             break
+        selection_attempts.append(
+            {
+                "number": num,
+                "issue_repo": issue_repo,
+                "result": "dependency_blocked",
+                "depends_on": deps,
+                "dep_checks": closed_checks,
+            }
+        )
+
+    selection_trace = build_selection_trace(candidates, selected, selection_attempts, allowed_workflow_states)
 
     if selected is None:
-        print("no eligible Todo issue found")
+        print(json.dumps({"result": "no_eligible_todo_issue", "selection_trace": selection_trace}, ensure_ascii=True))
         return 2
 
     issue_num = selected["number"]
@@ -182,7 +281,22 @@ def main():
         return 1
     loop_dir = loop_dirs[-1]
     date_part = loop_dir.parent.name
+    loop_id = loop_dir.name
     transition_log = Path(f"planningops/artifacts/transition-log/{date_part}.ndjson")
+    selection_event = {
+        "transition_id": f"{loop_id}-intake-selection",
+        "run_id": loop_id,
+        "card_id": issue_num,
+        "from_state": "Todo",
+        "to_state": selected.get("workflow_state", "ready-contract"),
+        "transition_reason": "intake.selection.target_repo",
+        "actor_type": "agent",
+        "actor_id": "issue-loop-runner",
+        "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+        "replanning_flag": False,
+        "selection_trace": selection_trace,
+    }
+    append_ndjson(transition_log, selection_event)
 
     rc_verify, out_verify, err_verify = run(
         [
@@ -226,9 +340,9 @@ def main():
         ]
     )
 
-    if not already_processed:
+    if not already_processed and not args.no_feedback:
         # comment on issue
-        run(["gh", "issue", "comment", str(issue_num), "--repo", args.control_repo, "--body", comment_body])
+        run(["gh", "issue", "comment", str(issue_num), "--repo", selected.get("issue_repo"), "--body", comment_body])
 
         # project status + verdict fields
         rc_fields, out_fields, err_fields = run(
@@ -323,10 +437,14 @@ def main():
 
     result = {
         "selected_issue": issue_num,
+        "selected_issue_repo": selected.get("issue_repo"),
+        "selected_target_repo": selected.get("target_repo"),
         "selected_workflow_state": selected.get("workflow_state"),
         "deps": selected.get("deps", []),
         "candidate_count": len(candidates),
         "allowed_workflow_states": sorted(allowed_workflow_states),
+        "selection_trace": selection_trace,
+        "selection_transition_id": selection_event["transition_id"],
         "loop_rc": rc_loop,
         "verify_rc": rc_verify,
         "already_processed": already_processed,
@@ -337,6 +455,7 @@ def main():
         "verify_stderr": err_verify,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "runtime_profile_file": args.runtime_profile_file,
+        "no_feedback": args.no_feedback,
     }
     out_path = Path("planningops/artifacts/loop-runner/last-run.json")
     save_json(out_path, result)
