@@ -183,7 +183,7 @@ summary: $summary
 EOF
 
   echo "created: $out_path"
-  echo "next: bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check"
+  echo "next: bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical"
 }
 
 main "$@"

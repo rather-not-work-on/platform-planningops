@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "docs/initiatives/unified-personal-agent-platform/**"
+      - "docs/workbench/unified-personal-agent-platform/**"
       - ".github/workflows/uap-docs-check.yml"
   workflow_dispatch:
 
@@ -14,8 +15,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate docs
-        run: bash ./docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+      - name: Validate docs (all profiles)
+        run: bash ./docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
 
       - name: Ensure generated catalog is committed
         run: |

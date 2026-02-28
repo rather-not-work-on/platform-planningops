@@ -3,10 +3,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
-CATALOG_PATH="$ROOT_DIR/2026-02-27-uap-frontmatter-catalog.navigation.md"
+CANONICAL_DIR="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/../../../../.." && pwd)"
+WORKBENCH_DIR="$REPO_ROOT/docs/workbench/unified-personal-agent-platform"
+CATALOG_PATH="$CANONICAL_DIR/2026-02-27-uap-frontmatter-catalog.navigation.md"
 
-REQUIRED_KEYS=(
+CANONICAL_REQUIRED_KEYS=(
   doc_id
   title
   doc_type
@@ -18,25 +20,27 @@ REQUIRED_KEYS=(
   summary
 )
 
+WORKBENCH_REQUIRED_KEYS=(
+  title
+  type
+  date
+  initiative
+  lifecycle
+  status
+  summary
+)
+
 ALLOWED_STATUS=(
   active
   reference
   deprecated
 )
 
-list_docs() {
-  find "$ROOT_DIR" -type f -name "*.md" \
-    ! -name "._*" \
-    ! -path "*/00-governance/scripts/*" \
-    | sort
-}
-
-cleanup_appledouble() {
-  find "$ROOT_DIR" -type f -name "._*" -print0 \
-    | while IFS= read -r -d '' file; do
-        rm -f "$file"
-      done
-}
+ALLOWED_PROFILE=(
+  canonical
+  workbench
+  all
+)
 
 contains_value() {
   local needle="$1"
@@ -50,9 +54,42 @@ contains_value() {
   return 1
 }
 
+ensure_valid_profile() {
+  local profile="$1"
+  if ! contains_value "$profile" "${ALLOWED_PROFILE[@]}"; then
+    echo "[ERR] invalid profile '$profile'"
+    echo "      allowed: ${ALLOWED_PROFILE[*]}"
+    exit 1
+  fi
+}
+
+list_canonical_docs() {
+  find "$CANONICAL_DIR" -type f -name "*.md" \
+    ! -name "._*" \
+    ! -path "*/00-governance/scripts/*" \
+    | sort
+}
+
+list_workbench_docs() {
+  if [[ ! -d "$WORKBENCH_DIR" ]]; then
+    return 0
+  fi
+
+  find "$WORKBENCH_DIR" -type f -name "*.md" \
+    ! -name "._*" \
+    | sort
+}
+
+cleanup_appledouble() {
+  find "$REPO_ROOT/docs" -type f -name "._*" -print0 2>/dev/null \
+    | while IFS= read -r -d '' file; do
+        rm -f "$file"
+      done
+}
+
 expected_doc_type() {
   local file="$1"
-  local rel="${file#$ROOT_DIR/}"
+  local rel="${file#$CANONICAL_DIR/}"
 
   if [[ "$(basename "$rel")" == "README.md" ]]; then
     echo "hub"
@@ -73,7 +110,7 @@ expected_doc_type() {
 
 expected_domain() {
   local file="$1"
-  local rel="${file#$ROOT_DIR/}"
+  local rel="${file#$CANONICAL_DIR/}"
 
   if [[ "$(basename "$rel")" == "README.md" ]]; then
     echo "navigation"
@@ -146,7 +183,53 @@ extract_markdown_links() {
     | sort -u
 }
 
-check_docs() {
+check_relative_references() {
+  local file="$1"
+  local errors=0
+  local base_dir
+  base_dir="$(dirname "$file")"
+
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    if [[ "$rel" == http://* || "$rel" == https://* ]]; then
+      continue
+    fi
+    if [[ "$rel" == /* ]]; then
+      echo "[ERR] related_docs must be relative path: $file -> $rel"
+      errors=$((errors + 1))
+      continue
+    fi
+
+    local target_path
+    target_path="$base_dir/$rel"
+    if [[ ! -f "$target_path" ]]; then
+      echo "[ERR] related_docs target not found: $file -> $rel"
+      errors=$((errors + 1))
+    fi
+  done < <(extract_related_docs "$file")
+
+  while IFS= read -r link; do
+    [[ -z "$link" ]] && continue
+    if [[ "$link" == http://* || "$link" == https://* || "$link" == mailto:* || "$link" == \#* ]]; then
+      continue
+    fi
+
+    local normalized
+    normalized="${link%%#*}"
+    [[ -z "$normalized" ]] && continue
+
+    local link_target
+    link_target="$base_dir/$normalized"
+    if [[ ! -e "$link_target" ]]; then
+      echo "[ERR] markdown link target not found: $file -> $link"
+      errors=$((errors + 1))
+    fi
+  done < <(extract_markdown_links "$file")
+
+  return "$errors"
+}
+
+check_canonical_docs() {
   local errors=0
   local seen_doc_ids_file
   seen_doc_ids_file="$(mktemp)"
@@ -158,7 +241,7 @@ check_docs() {
       continue
     fi
 
-    for key in "${REQUIRED_KEYS[@]}"; do
+    for key in "${CANONICAL_REQUIRED_KEYS[@]}"; do
       local value
       value="$(extract_scalar "$file" "$key" || true)"
       if [[ -z "$value" ]]; then
@@ -182,18 +265,16 @@ check_docs() {
       fi
     fi
 
-    local doc_type
+    local doc_type expected_type
     doc_type="$(extract_scalar "$file" "doc_type" || true)"
-    local expected_type
     expected_type="$(expected_doc_type "$file")"
     if [[ -n "$expected_type" && "$doc_type" != "$expected_type" ]]; then
       echo "[ERR] doc_type mismatch: $file (expected '$expected_type', got '$doc_type')"
       errors=$((errors + 1))
     fi
 
-    local domain
+    local domain expected_dom
     domain="$(extract_scalar "$file" "domain" || true)"
-    local expected_dom
     expected_dom="$(expected_domain "$file")"
     if [[ -z "$expected_dom" ]]; then
       echo "[ERR] unknown directory mapping for domain check: $file"
@@ -210,50 +291,94 @@ check_docs() {
       errors=$((errors + 1))
     fi
 
-    while IFS= read -r rel; do
-      [[ -z "$rel" ]] && continue
-      if [[ "$rel" == http://* || "$rel" == https://* ]]; then
-        continue
-      fi
-      if [[ "$rel" == /* ]]; then
-        echo "[ERR] related_docs must be relative path: $file -> $rel"
-        errors=$((errors + 1))
-        continue
-      fi
-      local base_dir target_path
-      base_dir="$(dirname "$file")"
-      target_path="$base_dir/$rel"
-      if [[ ! -f "$target_path" ]]; then
-        echo "[ERR] related_docs target not found: $file -> $rel"
-        errors=$((errors + 1))
-      fi
-    done < <(extract_related_docs "$file")
-
-    while IFS= read -r link; do
-      [[ -z "$link" ]] && continue
-      if [[ "$link" == http://* || "$link" == https://* || "$link" == mailto:* || "$link" == \#* ]]; then
-        continue
-      fi
-      local normalized
-      normalized="${link%%#*}"
-      [[ -z "$normalized" ]] && continue
-      local link_target
-      link_target="$base_dir/$normalized"
-      if [[ ! -e "$link_target" ]]; then
-        echo "[ERR] markdown link target not found: $file -> $link"
-        errors=$((errors + 1))
-      fi
-    done < <(extract_markdown_links "$file")
-  done < <(list_docs)
+    local ref_errors=0
+    check_relative_references "$file" || ref_errors=$?
+    if (( ref_errors > 0 )); then
+      errors=$((errors + ref_errors))
+    fi
+  done < <(list_canonical_docs)
 
   rm -f "$seen_doc_ids_file"
 
   if (( errors > 0 )); then
-    echo "check failed: $errors error(s)"
+    echo "canonical check failed: $errors error(s)"
     return 1
   fi
 
-  echo "check passed: frontmatter and related_docs are valid"
+  echo "canonical check passed"
+}
+
+check_workbench_docs() {
+  local errors=0
+
+  while IFS= read -r file; do
+    if [[ "$(head -n 1 "$file")" != "---" ]]; then
+      echo "[ERR] frontmatter missing: $file"
+      errors=$((errors + 1))
+      continue
+    fi
+
+    for key in "${WORKBENCH_REQUIRED_KEYS[@]}"; do
+      local value
+      value="$(extract_scalar "$file" "$key" || true)"
+      if [[ -z "$value" ]]; then
+        echo "[ERR] missing key '$key': $file"
+        errors=$((errors + 1))
+      fi
+    done
+
+    local initiative lifecycle status
+    initiative="$(extract_scalar "$file" "initiative" || true)"
+    lifecycle="$(extract_scalar "$file" "lifecycle" || true)"
+    status="$(extract_scalar "$file" "status" || true)"
+
+    if [[ "$initiative" != "unified-personal-agent-platform" ]]; then
+      echo "[ERR] invalid initiative '$initiative': $file"
+      errors=$((errors + 1))
+    fi
+
+    if [[ "$lifecycle" != "workbench" ]]; then
+      echo "[ERR] workbench doc must set lifecycle: workbench -> $file"
+      errors=$((errors + 1))
+    fi
+
+    if ! contains_value "$status" "${ALLOWED_STATUS[@]}"; then
+      echo "[ERR] invalid status '$status': $file (allowed: active,reference,deprecated)"
+      errors=$((errors + 1))
+    fi
+
+    local ref_errors=0
+    check_relative_references "$file" || ref_errors=$?
+    if (( ref_errors > 0 )); then
+      errors=$((errors + ref_errors))
+    fi
+  done < <(list_workbench_docs)
+
+  if (( errors > 0 )); then
+    echo "workbench check failed: $errors error(s)"
+    return 1
+  fi
+
+  echo "workbench check passed"
+}
+
+check_docs() {
+  local profile="$1"
+
+  case "$profile" in
+    canonical)
+      check_canonical_docs
+      ;;
+    workbench)
+      check_workbench_docs
+      ;;
+    all)
+      check_canonical_docs
+      check_workbench_docs
+      ;;
+  esac
+
+  echo "check passed for profile '$profile'"
 }
 
 generate_catalog() {
@@ -264,7 +389,7 @@ generate_catalog() {
 
   while IFS= read -r file; do
     local rel doc_id title doc_type domain status summary
-    rel="${file#$ROOT_DIR/}"
+    rel="${file#$CANONICAL_DIR/}"
     doc_id="$(extract_scalar "$file" "doc_id" || true)"
     title="$(extract_scalar "$file" "title" || true)"
     doc_type="$(extract_scalar "$file" "doc_type" || true)"
@@ -276,11 +401,11 @@ generate_catalog() {
     printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
       "$domain" "$doc_type" "$doc_id" "$status" "$rel" "$title" "$summary" \
       >> "$tmp_rows"
-  done < <(list_docs)
+  done < <(list_canonical_docs)
 
   sort -t$'\t' -k1,1 -k2,2 -k5,5 "$tmp_rows" > "${tmp_rows}.sorted"
 
-  cat > "$tmp_file" <<EOF
+  cat > "$tmp_file" <<EOF_CAT
 ---
 doc_id: uap-frontmatter-catalog
 title: UAP Frontmatter Catalog
@@ -313,7 +438,7 @@ related_docs:
 
 | domain | type | doc_id | status | path | title | summary |
 |---|---|---|---|---|---|---|
-EOF
+EOF_CAT
 
   while IFS=$'\t' read -r domain doc_type doc_id status rel title summary; do
     printf "| %s | %s | %s | %s | [%s](%s) | %s | %s |\n" \
@@ -327,17 +452,42 @@ EOF
 }
 
 usage() {
-  cat <<'EOF'
+  cat <<'EOF_USAGE'
 Usage:
-  uap-docs.sh clean     # Remove macOS AppleDouble artifacts (._*)
-  uap-docs.sh check     # Validate frontmatter and related_docs links
-  uap-docs.sh catalog   # Generate frontmatter catalog
-  uap-docs.sh sync      # Run catalog -> check
-EOF
+  uap-docs.sh clean
+  uap-docs.sh check [--profile canonical|workbench|all]
+  uap-docs.sh catalog
+  uap-docs.sh sync [--profile canonical|workbench|all]
+
+Notes:
+  - catalog always targets canonical docs.
+  - sync runs catalog -> check for the selected profile (default: canonical).
+EOF_USAGE
 }
 
 main() {
   local cmd="${1:-sync}"
+  shift || true
+
+  local profile="canonical"
+  if (( $# > 0 )); then
+    if [[ "${1:-}" != "--profile" ]]; then
+      usage
+      exit 1
+    fi
+    profile="${2:-}"
+    if [[ -z "$profile" ]]; then
+      usage
+      exit 1
+    fi
+    if (( $# > 2 )); then
+      usage
+      exit 1
+    fi
+  fi
+
+  ensure_valid_profile "$profile"
+
   case "$cmd" in
     clean)
       cleanup_appledouble
@@ -345,7 +495,7 @@ main() {
       ;;
     check)
       cleanup_appledouble
-      check_docs
+      check_docs "$profile"
       cleanup_appledouble
       ;;
     catalog)
@@ -356,7 +506,7 @@ main() {
     sync)
       cleanup_appledouble
       generate_catalog
-      check_docs
+      check_docs "$profile"
       cleanup_appledouble
       ;;
     *)
