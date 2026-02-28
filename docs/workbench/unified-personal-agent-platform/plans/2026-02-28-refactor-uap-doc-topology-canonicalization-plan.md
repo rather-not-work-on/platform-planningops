@@ -2,7 +2,11 @@
 title: refactor: Canonicalize UAP Core Documentation Topology
 type: refactor
 date: 2026-02-28
-source_brainstorm: docs/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
+initiative: unified-personal-agent-platform
+lifecycle: workbench
+status: reference
+summary: Plan to stabilize Core 7 canonical filenames, status taxonomy, and documentation entry paths.
+source_brainstorm: docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
 ---
 
 # refactor: Canonicalize UAP Core Documentation Topology
@@ -113,11 +117,11 @@ Found brainstorm from `2026-02-28`: `uap-doc-topology-canonicalization`. Using a
 Tasks:
 - Core 7 대상 `git mv` rename 수행
 - Core 문서들의 `related_docs`, 본문 링크를 새 경로로 교체
-- 영향 파일 목록 정리: `docs/plans/assets/uap-core7-reference-audit.txt`
+- 영향 파일 목록 정리: `docs/workbench/unified-personal-agent-platform/audits/uap-core7-reference-audit.txt`
 
 Deliverables:
 - renamed core files (7개 중 5개 rename)
-- `docs/plans/assets/uap-core7-rename-map.tsv`
+- `docs/workbench/unified-personal-agent-platform/audits/uap-core7-rename-map.tsv`
 
 ### Phase 2: Policy and status model alignment
 Tasks:
@@ -151,7 +155,7 @@ Tasks:
 Deliverables:
 - green validation output
 - updated frontmatter catalog
-- rollout note (`docs/plans/assets/uap-core7-rollout-note.md`)
+- rollout note (`docs/workbench/unified-personal-agent-platform/audits/uap-core7-rollout-note.md`)
 
 ## Acceptance Criteria
 ### Functional
@@ -188,7 +192,7 @@ Deliverables:
 
 ## References & Research
 ### Internal references
-- `docs/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md`
+- `docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md`
 - `docs/initiatives/unified-personal-agent-platform/00-governance/uap-doc-governance.meta.md`
 - `docs/initiatives/unified-personal-agent-platform/90-navigation/uap-document-map.navigation.md`
 - `docs/initiatives/unified-personal-agent-platform/AGENT-START.md`
@@ -198,17 +202,17 @@ Deliverables:
 - `docs/solutions/`에는 본 주제와 연계할 institutional learning 문서가 현재 없다.
 
 ## MVP Pseudo Worklist
-### docs/plans/assets/uap-core7-rename-map.tsv
+### docs/workbench/unified-personal-agent-platform/audits/uap-core7-rename-map.tsv
 ```text
 current_path\ttarget_path\tclass
 ```
 
-### docs/plans/assets/uap-core7-reference-audit.txt
+### docs/workbench/unified-personal-agent-platform/audits/uap-core7-reference-audit.txt
 ```text
 <file_path>:<line_number> -> <old_reference>
 ```
 
-### docs/plans/assets/uap-core7-rollout-note.md
+### docs/workbench/unified-personal-agent-platform/audits/uap-core7-rollout-note.md
 ```markdown
 # rollout note
 - changed paths

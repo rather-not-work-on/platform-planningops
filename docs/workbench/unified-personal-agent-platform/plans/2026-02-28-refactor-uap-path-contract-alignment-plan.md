@@ -2,7 +2,11 @@
 title: refactor: Align UAP Path Contract and Command Context
 type: refactor
 date: 2026-02-28
-source_brainstorm: docs/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
+initiative: unified-personal-agent-platform
+lifecycle: workbench
+status: reference
+summary: Plan to align path semantics and command context across docs, scripts, and onboarding entries.
+source_brainstorm: docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
 source_review_todos:
   - todos/001-complete-p2-path-rule-semantics-mismatch.md
   - todos/002-complete-p2-command-path-contract-mismatch.md
@@ -133,7 +137,7 @@ Tasks:
 Deliverables:
 - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check` green
 - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync` green
-- `docs/plans/assets/uap-path-contract-alignment-audit.txt`
+- `docs/workbench/unified-personal-agent-platform/audits/uap-path-contract-alignment-audit.txt`
 
 ## Acceptance Criteria
 ### Functional
@@ -167,14 +171,14 @@ Deliverables:
 
 ## References & Research
 ### Internal references
-- `docs/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md`
+- `docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md`
 - `todos/001-complete-p2-path-rule-semantics-mismatch.md`
 - `todos/002-complete-p2-command-path-contract-mismatch.md`
 - `todos/003-complete-p3-entry-core-self-reference-noise.md`
 - `docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh:223`
 
 ## MVP Pseudo Worklist
-### docs/plans/assets/uap-path-contract-alignment-audit.txt
+### docs/workbench/unified-personal-agent-platform/audits/uap-path-contract-alignment-audit.txt
 ```text
 # path-contract alignment audit
 # files checked

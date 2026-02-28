@@ -1,5 +1,11 @@
 ---
+title: UAP Documentation Topology Consolidation Brainstorm
+type: brainstorm
 date: 2026-02-28
+initiative: unified-personal-agent-platform
+lifecycle: workbench
+status: reference
+summary: Defines Core 7 canonicalization strategy and path/term consistency decisions.
 topic: uap-doc-topology-canonicalization
 ---
 

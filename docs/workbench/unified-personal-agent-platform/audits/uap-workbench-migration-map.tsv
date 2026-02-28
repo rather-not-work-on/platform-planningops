@@ -1,0 +1,13 @@
+from_path	to_path	status
+
+docs/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md	docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md	moved
+docs/brainstorms/2026-02-28-doc-topology-permanence-separation-brainstorm.md	docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-doc-topology-permanence-separation-brainstorm.md	moved
+docs/plans/2026-02-28-refactor-uap-doc-topology-canonicalization-plan.md	docs/workbench/unified-personal-agent-platform/plans/2026-02-28-refactor-uap-doc-topology-canonicalization-plan.md	moved
+docs/plans/2026-02-28-refactor-uap-path-contract-alignment-plan.md	docs/workbench/unified-personal-agent-platform/plans/2026-02-28-refactor-uap-path-contract-alignment-plan.md	moved
+docs/plans/2026-02-28-fix-uap-command-path-drift-plan.md	docs/workbench/unified-personal-agent-platform/plans/2026-02-28-fix-uap-command-path-drift-plan.md	moved
+docs/plans/2026-02-28-refactor-uap-doc-topology-workbench-separation-plan.md	docs/workbench/unified-personal-agent-platform/plans/2026-02-28-refactor-uap-doc-topology-workbench-separation-plan.md	moved
+docs/plans/assets/uap-command-path-drift-audit.txt	docs/workbench/unified-personal-agent-platform/audits/uap-command-path-drift-audit.txt	moved
+docs/plans/assets/uap-core7-reference-audit.txt	docs/workbench/unified-personal-agent-platform/audits/uap-core7-reference-audit.txt	moved
+docs/plans/assets/uap-core7-rename-map.tsv	docs/workbench/unified-personal-agent-platform/audits/uap-core7-rename-map.tsv	moved
+docs/plans/assets/uap-core7-rollout-note.md	docs/workbench/unified-personal-agent-platform/audits/uap-core7-rollout-note.md	moved
+docs/plans/assets/uap-path-contract-alignment-audit.txt	docs/workbench/unified-personal-agent-platform/audits/uap-path-contract-alignment-audit.txt	moved

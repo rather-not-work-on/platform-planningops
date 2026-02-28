@@ -3,6 +3,7 @@
 Org-level 단일 계획 저장소입니다.
 
 이 레포는 `rather-not-work-on` 조직의 계획/설계/추적 문서를 위한 canonical source이며, `monday` 같은 실행 레포와 독립적으로 운영합니다.
+문서는 `canonical`과 `workbench`를 분리해 운영합니다.
 
 ## Scope
 
@@ -13,6 +14,7 @@ Org-level 단일 계획 저장소입니다.
 ## Current Initiative
 
 - `docs/initiatives/unified-personal-agent-platform`
+- `docs/workbench/unified-personal-agent-platform`
 
 핵심 진입점:
 
@@ -36,17 +38,26 @@ platform-planningops/
         30-execution-plan/
         40-quality/
         90-navigation/
+    workbench/
+      unified-personal-agent-platform/
+        brainstorms/
+        plans/
+        reviews/
+        audits/
 ```
 
 ## Quick Start
 
 ```bash
-bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync
 ```
 
 ## Working Rules
 
+- canonical 문서는 `docs/initiatives/...` 하위에서만 운영합니다.
+- 비영속 작업 산출물은 `docs/workbench/...` 하위에서만 운영합니다.
 - 문서 참조는 상대경로를 사용합니다.
 - 경로/구조 변경 시 `README`와 `90-navigation`을 함께 갱신합니다.
 - 변경 후 `uap-docs.sh sync`를 실행해 카탈로그와 링크 무결성을 확인합니다.

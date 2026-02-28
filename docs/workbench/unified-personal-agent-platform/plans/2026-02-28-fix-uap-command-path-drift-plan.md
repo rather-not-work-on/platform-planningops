@@ -2,7 +2,11 @@
 title: fix: Eliminate UAP Command Path Drift in Generated and Legacy Docs
 type: fix
 date: 2026-02-28
-source_brainstorm: docs/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
+initiative: unified-personal-agent-platform
+lifecycle: workbench
+status: reference
+summary: Plan to remove command-style drift from generators and legacy documentation.
+source_brainstorm: docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
 source_review_todos:
   - todos/004-complete-p2-catalog-generator-command-path-drift.md
   - todos/005-complete-p3-legacy-plan-command-style-drift.md
@@ -115,7 +119,7 @@ Tasks:
 - 정적 검색으로 구 명령 스타일 잔여 확인
 
 Deliverables:
-- `docs/plans/assets/uap-command-path-drift-audit.txt`
+- `docs/workbench/unified-personal-agent-platform/audits/uap-command-path-drift-audit.txt`
 
 ## Acceptance Criteria
 ### Functional
@@ -158,7 +162,7 @@ Deliverables:
 - `README.md:45`
 
 ## MVP Pseudo Worklist
-### docs/plans/assets/uap-command-path-drift-audit.txt
+### docs/workbench/unified-personal-agent-platform/audits/uap-command-path-drift-audit.txt
 ```text
 # command-path drift audit
 # search patterns

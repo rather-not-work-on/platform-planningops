@@ -29,6 +29,11 @@ related_docs:
 ## Goal
 문맥이 없는 신규 에이전트가 5분 내에 문서 구조, 현재 기본값, 착수 순서를 파악하도록 돕는다.
 
+## Canonical vs Workbench
+- canonical source: `docs/initiatives/unified-personal-agent-platform`
+- workbench outputs: `docs/workbench/unified-personal-agent-platform`
+- 구현 판단의 기준(SoT)은 canonical 문서에서만 가져온다.
+
 ## Path Root Rule (Mandatory)
 - 문서 본문 링크는 문서 파일 기준 상대경로(`./`, `../`)만 사용한다.
 - 셸/CI 명령에서 파일 지정은 repo 루트 기준 상대경로(`docs/initiatives/unified-personal-agent-platform/...`)를 사용한다.
@@ -55,7 +60,8 @@ related_docs:
 ## Quick Checks Before Any Work
 1. 문서 검증 실행:
 ```bash
-bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
 ```
 2. 게이트 네임스페이스 확인:
 - `Gate A~G` = Foundation 게이트

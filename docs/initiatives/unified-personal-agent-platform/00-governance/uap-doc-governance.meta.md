@@ -20,12 +20,18 @@ related_docs:
   - ../30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
   - ../90-navigation/uap-document-map.navigation.md
   - ../2026-02-27-uap-frontmatter-catalog.navigation.md
+  - ../../../workbench/unified-personal-agent-platform/README.md
 ---
 
 # UAP Documentation Governance
 
 ## Purpose
 문서 산개를 방지하고, 브레인스토밍에서 실행계획으로 이어지는 흐름을 도메인 단위로 고정한다.
+
+## Topology Ownership
+- canonical: `docs/initiatives/unified-personal-agent-platform/*`
+- workbench: `docs/workbench/unified-personal-agent-platform/*`
+- canonical은 운영 기준(source of truth), workbench는 실행 중 산출물 저장소로 운영한다.
 
 ## Prefix Rules (Directory)
 - `00-governance`: 거버넌스/규칙/공통 정책
@@ -89,16 +95,41 @@ Core 7 canonical filename 예외(무날짜 고정):
 - `related_docs`는 상대경로를 사용한다.
 - `domain↔directory` 매핑이 없는 경로에 문서를 추가하면 검증 실패로 처리한다(허용 디렉토리만 운영).
 
+### Workbench Frontmatter (Minimal)
+- 필수 키: `title`, `type`, `date`, `initiative`, `lifecycle`, `status`, `summary`
+- `lifecycle`는 `workbench`로 고정한다.
+- `status` 허용값: `active`, `reference`, `deprecated`
+- workbench 문서는 `doc_id/domain/doc_type`를 강제하지 않는다.
+
+## Lifecycle Contract
+- canonical 문서는 `lifecycle: canonical`을 권장한다.
+- workbench 문서는 `lifecycle: workbench`를 필수로 사용한다.
+- canonical 문서는 workbench 문서를 규범(SoT)으로 직접 인용하지 않는다.
+- workbench -> canonical 승격 시 canonical 문서를 갱신하고 workbench 문서는 `reference`로 전환한다.
+
 ## Path Root Contract
 - 문서 본문 링크/`related_docs`는 문서 파일 기준 상대경로(`./`, `../`)를 사용한다.
 - CLI/CI 명령에서 파일 인수는 repo 루트 기준 상대경로(`docs/initiatives/unified-personal-agent-platform/...`)를 사용한다.
+- workbench CLI 인수는 repo 루트 기준 상대경로(`docs/workbench/unified-personal-agent-platform/...`)를 사용한다.
+
+## GitHub Project Field Contract
+- 필수 필드:
+  - `initiative`: `unified-personal-agent-platform`
+  - `repo`: `platform-planningops`
+  - `component`: `docs-topology` | `docs-governance` | `docs-tooling`
+- 권장 필드:
+  - `lifecycle`: `canonical` | `workbench`
+  - `state`: `Backlog` | `Ready` | `Doing` | `Review` | `Done`
+- 목적: planningops 카드 분류를 고정해 에이전트 실행 시 판단 분기를 줄인다.
 
 ## Automation
 - 스크립트: `docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh`
 - 초안 문서 생성: `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-new-doc.sh <target-dir> <subject-slug> <postfix> <domain> "<title>" "<summary>" [status]`
-- `check`: frontmatter 필수 키/`doc_id` 유일성/`doc_type↔postfix`/`domain↔directory`/`status`/`related_docs`/Markdown 링크 규칙 검증
+- `check --profile canonical`: canonical frontmatter/링크 규칙 검증
+- `check --profile workbench`: workbench 최소 frontmatter/링크 규칙 검증
+- `check --profile all`: canonical + workbench 검증
 - `catalog`: frontmatter 기반 카탈로그 문서 생성
-- `sync`: `catalog -> check` 순서로 동기화
+- `sync`: `catalog -> check --profile canonical` 순서로 동기화
 
 ## Reference Contract
 - 참조는 상대 경로 링크를 우선한다.

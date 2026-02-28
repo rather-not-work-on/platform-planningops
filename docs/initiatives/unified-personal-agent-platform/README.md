@@ -22,11 +22,13 @@ related_docs:
   - ./30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
   - ./90-navigation/uap-document-map.navigation.md
   - ./2026-02-27-uap-frontmatter-catalog.navigation.md
+  - ../../workbench/unified-personal-agent-platform/README.md
 ---
 
 # Unified Personal Agent Platform Docs Hub
 
-이 디렉토리는 개인 에이전트 플랫폼 관련 브레인스토밍, 아키텍처, 실행계획 문서를 단일 루트에서 관리한다.
+이 디렉토리는 개인 에이전트 플랫폼의 canonical 문서를 관리한다.
+실행 중 생성되는 비영속 산출물은 `docs/workbench/unified-personal-agent-platform`에서 관리한다.
 
 ## Directory Layout
 - `00-governance`: 문서 운영 규칙, 네이밍 규칙, 변경 정책
@@ -37,6 +39,11 @@ related_docs:
 - `30-execution-plan`: 공통/크로스컷 실행 계획
 - `40-quality`: 공통/크로스컷 품질 추적 문서
 - `90-navigation`: 문서 맵, 읽기 순서, 참조 그래프
+
+## Workbench
+- [Workbench Hub](../../workbench/unified-personal-agent-platform/README.md)
+- 용도: 브레인스토밍, 실행 계획 초안, 리뷰 로그, 감사 산출물
+- 규칙: workbench 문서는 canonical SoT로 승격되기 전까지 운영 산출물로 취급한다.
 
 ## Naming Convention
 - 파일 패턴: `YYYY-MM-DD-uap-<subject>.<postfix>.md`
@@ -96,7 +103,9 @@ related_docs:
 - 새 문서 생성(초안):
   - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-new-doc.sh <target-dir> <subject-slug> <postfix> <domain> "<title>" "<summary>" [status]`
 - 검증:
-  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check`
+  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical`
+- 검증(all):
+  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all`
 - 카탈로그 생성:
   - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh catalog`
 - 전체 동기화(카탈로그 갱신 + 검증):
@@ -118,5 +127,5 @@ graph TD
 ```
 
 ## Migration Note
-- 기존 `docs/brainstorms/*`, `docs/plans/*` 문서는 이 루트로 이동되었다.
-- 새 문서는 반드시 이 루트 하위에 생성한다.
+- 기존 루트 브레인스토밍/계획 디렉토리 문서는 `docs/workbench/unified-personal-agent-platform/*`로 이동되었다.
+- canonical 문서는 반드시 이 루트(`docs/initiatives/unified-personal-agent-platform`) 하위에서 생성한다.

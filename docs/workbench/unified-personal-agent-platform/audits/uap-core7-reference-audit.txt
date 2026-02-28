@@ -10,5 +10,5 @@ Result:
 (no matches)
 
 Notes:
-- Old dated Core 7 references remain only in historical planning artifacts under docs/plans/.
+- Old dated Core 7 references remain only in historical planning artifacts under docs/workbench/unified-personal-agent-platform/plans/.
 - Operational docs under docs/initiatives/unified-personal-agent-platform are canonicalized.

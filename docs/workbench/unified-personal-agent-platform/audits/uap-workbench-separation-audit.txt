@@ -1,0 +1,38 @@
+# uap-workbench-separation-audit
+# date: 2026-02-28
+
+## topology snapshot
+- docs/initiatives/unified-personal-agent-platform
+- docs/workbench/unified-personal-agent-platform/{brainstorms,plans,reviews,audits}
+- legacy root directories removed: docs/brainstorms, docs/plans
+
+## validation commands
+1) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical
+- canonical check passed
+- check passed for profile 'canonical'
+
+2) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile workbench
+- workbench check passed
+- check passed for profile 'workbench'
+
+3) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
+- canonical check passed
+- workbench check passed
+- check passed for profile 'all'
+
+4) bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync --profile all
+- catalog generated
+- canonical check passed
+- workbench check passed
+- check passed for profile 'all'
+
+## stale path scan (canonical + automation scope)
+command:
+- rg -n "docs/brainstorms|docs/plans" README.md docs/initiatives .github -g '*.md' -g '*.sh'
+
+result:
+- no matches
+
+## notes
+- historical migration references remain inside workbench plans/brainstorms/audits by design.
+- canonical docs and automation entrypoints are aligned to workbench paths.

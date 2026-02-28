@@ -1,7 +1,11 @@
 ---
 title: UAP Core 7 Canonicalization Rollout Note
+type: audit
 date: 2026-02-28
+initiative: unified-personal-agent-platform
+lifecycle: workbench
 status: active
+summary: Captures path canonicalization outcome and follow-up items for Core 7 docs.
 owner: planningops
 ---
 
