@@ -29,3 +29,6 @@ summary: Initiative-scoped workbench for ephemeral planning artifacts, reviews, 
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile workbench
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
 ```
+
+## Active Plans
+- [Ralph Loop Issue Resolution Loop Plan](./plans/2026-02-28-plan-ralph-loop-issue-resolution-loop-plan.md)

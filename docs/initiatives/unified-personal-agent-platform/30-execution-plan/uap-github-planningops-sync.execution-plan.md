@@ -910,3 +910,5 @@ docs/operations/planningops-rollout-checklist.md
   - GitHub App 권한/설치 범위 합의
   - CI에 `validate-contracts -> dry-run` 필수 체인 연결
   - Deferred Decisions 5개에 대해 decision pack(증거 4종) 수집 시작
+  - Ralph Loop 이슈 해결 루프 기준 계획: `docs/workbench/unified-personal-agent-platform/plans/2026-02-28-plan-ralph-loop-issue-resolution-loop-plan.md`
+  - Ralph Loop 관련 이슈 세트 동기화: #7, #8, #9, #10, #11, #12
