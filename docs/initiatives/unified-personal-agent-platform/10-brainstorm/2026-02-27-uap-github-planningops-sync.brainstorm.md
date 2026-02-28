@@ -100,7 +100,7 @@ Approach A로 시작한다.
 
 ## Open Questions
 아래 항목은 브레인스토밍 시점 질문이다. 구현 착수 전 최종 판단/기본값은
-`../30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md`
+`../30-execution-plan/uap-github-planningops-sync.execution-plan.md`
 의 `Deferred Decisions`와 `Working Defaults`를 canonical source로 사용한다.
 
 - milestone 단위를 initiative 단위로 통일할지, 레포 단위로 분할할지

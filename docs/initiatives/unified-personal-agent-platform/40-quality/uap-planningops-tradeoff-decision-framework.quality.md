@@ -15,7 +15,7 @@ tags:
   - framework
 summary: Provides a decision framework, scoring model, and impact map so deferred planning decisions can be made quickly with clear consequences.
 related_docs:
-  - ../30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md
+  - ../30-execution-plan/uap-github-planningops-sync.execution-plan.md
   - ../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md
   - ../20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md
 ---

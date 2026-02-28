@@ -19,7 +19,7 @@ related_docs:
   - ../20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md
   - ../30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ../../../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md
-  - ../../../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md
+  - ../../../40-quality/uap-planningops-tradeoff-decision-framework.quality.md
 ---
 
 # Issue Closure Matrix (Review -> Brainstorm Integration)

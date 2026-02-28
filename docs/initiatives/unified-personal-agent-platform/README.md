@@ -5,7 +5,7 @@ doc_type: hub
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-02-28
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -15,12 +15,12 @@ summary: Root entry point for UAP documentation structure, naming rules, and rea
 related_docs:
   - ./AGENT-START.md
   - ./AGENT.md
-  - ./00-governance/2026-02-27-uap-doc-governance.meta.md
-  - ./00-governance/2026-02-27-uap-monday-identity.meta.md
+  - ./00-governance/uap-doc-governance.meta.md
+  - ./00-governance/uap-monday-identity.meta.md
   - ./20-repos/README.md
   - ./30-domains/README.md
   - ./30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
-  - ./90-navigation/2026-02-27-uap-document-map.navigation.md
+  - ./90-navigation/uap-document-map.navigation.md
   - ./2026-02-27-uap-frontmatter-catalog.navigation.md
 ---
 
@@ -40,6 +40,7 @@ related_docs:
 
 ## Naming Convention
 - 파일 패턴: `YYYY-MM-DD-uap-<subject>.<postfix>.md`
+- Core 7 canonical 문서는 날짜 없이 고정 파일명을 사용한다.
 - `<postfix>`: `brainstorm`, `simulation`, `strategy`, `architecture`, `execution-plan`, `quality`, `navigation`, `meta`
 - 디렉토리 prefix(`00`, `10`, `20`...)는 읽기 우선순위와 안정성 순서를 의미한다.
 
@@ -51,12 +52,12 @@ related_docs:
 4. [Contract-First Requirements](20-repos/monday/20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md)
 5. [Contract Boundaries](20-architecture/2026-02-27-uap-contract-boundaries.architecture.md)
 6. [Foundation Execution Plan](20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
-7. [GitHub PlanningOps Sync Plan](30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md)
+7. [GitHub PlanningOps Sync Plan](30-execution-plan/uap-github-planningops-sync.execution-plan.md)
 8. [Lifecycle Scenario Playbook](30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
 9. [Doc Structure Migration Plan](30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md)
-10. [Trade-off Decision Framework](40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md)
+10. [Trade-off Decision Framework](40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 11. [Issue Closure Matrix](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md)
-12. [Document Map](90-navigation/2026-02-27-uap-document-map.navigation.md)
+12. [Document Map](90-navigation/uap-document-map.navigation.md)
 13. [Frontmatter Catalog](2026-02-27-uap-frontmatter-catalog.navigation.md)
 
 ## New Agent Fast Path
@@ -64,14 +65,14 @@ related_docs:
 - 근본 원칙/행동 규약: [AGENT Principles](AGENT.md)
 
 ## Project Identity
-- Canonical identity source: [M.O.N.D.A.Y. Identity](00-governance/2026-02-27-uap-monday-identity.meta.md)
+- Canonical identity source: [M.O.N.D.A.Y. Identity](00-governance/uap-monday-identity.meta.md)
 - GitHub coordinate: `rather-not-work-on/monday`
 - Agent-specific naming: `monday*`
 - Shared platform naming: `platform-*`
 
 ## Gate Namespace Guide
 - `Gate A~G`: Foundation 게이트 (`20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md` 기준)
-- `Sync Gate A~F`: PlanningOps Sync 게이트 (`30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md` 기준)
+- `Sync Gate A~F`: PlanningOps Sync 게이트 (`30-execution-plan/uap-github-planningops-sync.execution-plan.md` 기준)
 - 품질 매트릭스의 기본 게이트 참조는 Foundation(`Gate A~G`)를 기준으로 해석한다.
 
 ## Cross-Directory Reference Policy
@@ -90,12 +91,18 @@ related_docs:
   - `rg -n "^status: active$|^doc_id:|^title:" . -g "*.md"`
 
 ## Docs Automation
+명령 예시는 repo 루트(`platform-planningops/`)에서 실행한다.
+
+- 새 문서 생성(초안):
+  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-new-doc.sh <target-dir> <subject-slug> <postfix> <domain> "<title>" "<summary>" [status]`
 - 검증:
-  - `bash ./00-governance/scripts/uap-docs.sh check`
+  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check`
 - 카탈로그 생성:
-  - `bash ./00-governance/scripts/uap-docs.sh catalog`
+  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh catalog`
 - 전체 동기화(카탈로그 갱신 + 검증):
-  - `bash ./00-governance/scripts/uap-docs.sh sync`
+  - `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync`
+- PR 검증:
+  - `.github/workflows/uap-docs-check.yml`에서 문서 체크 + 카탈로그 동기화 검증 실행
 
 ## Reference Graph
 ```mermaid

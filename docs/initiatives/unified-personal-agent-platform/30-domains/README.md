@@ -27,3 +27,5 @@ related_docs:
 - [planningops](./planningops/README.md)
 - [contract-evolution](./contract-evolution/README.md)
 - [observability](./observability/README.md)
+
+현재 각 도메인 버킷은 `draft` 상태이며, 각 버킷 README의 Activation Criteria 충족 시 `active`로 전환한다.

@@ -29,3 +29,5 @@ related_docs:
 - [platform-contracts](./platform-contracts/README.md): 공용 계약 저장소 관련 문서
 - [platform-provider-gateway](./platform-provider-gateway/README.md): LLM/provider gateway 관련 문서
 - [platform-observability-gateway](./platform-observability-gateway/README.md): o11y gateway 관련 문서
+
+`monday`를 제외한 버킷은 현재 `draft` 상태이며, 각 버킷 README의 Activation Criteria 충족 시 `active`로 전환한다.

@@ -16,7 +16,7 @@ summary: Minimal non-negotiable invariants for any agent operating on this plann
 related_docs:
   - ./AGENT-START.md
   - ./README.md
-  - ./00-governance/2026-02-27-uap-doc-governance.meta.md
+  - ./00-governance/uap-doc-governance.meta.md
 ---
 
 # UAP Agent Working Principles

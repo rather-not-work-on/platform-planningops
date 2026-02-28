@@ -15,10 +15,10 @@ tags:
   - operations
 summary: Defines concrete post-planning scenarios for plan item update, deletion, completion, reopen, and drift handling with deterministic operational steps.
 related_docs:
-  - ./2026-02-27-uap-github-planningops-sync.execution-plan.md
+  - ./uap-github-planningops-sync.execution-plan.md
   - ../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ../20-architecture/2026-02-27-uap-contract-boundaries.architecture.md
-  - ../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md
+  - ../40-quality/uap-planningops-tradeoff-decision-framework.quality.md
   - ../20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md
 ---
 

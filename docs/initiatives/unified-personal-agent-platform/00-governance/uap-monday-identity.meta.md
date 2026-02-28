@@ -16,7 +16,7 @@ summary: Canonical identity source for project naming, repository namespace poli
 related_docs:
   - ../README.md
   - ../AGENT-START.md
-  - ./2026-02-27-uap-doc-governance.meta.md
+  - ./uap-doc-governance.meta.md
 ---
 
 # UAP Project Identity (M.O.N.D.A.Y.)

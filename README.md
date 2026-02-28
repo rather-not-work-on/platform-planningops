@@ -18,7 +18,8 @@ Org-level 단일 계획 저장소입니다.
 
 1. `docs/initiatives/unified-personal-agent-platform/AGENT-START.md`
 2. `docs/initiatives/unified-personal-agent-platform/README.md`
-3. `docs/initiatives/unified-personal-agent-platform/90-navigation/2026-02-27-uap-document-map.navigation.md`
+
+상세 읽기 순서와 문서 관계는 initiative README의 `Recommended Reading Flow`와 `90-navigation` 문서를 단일 기준으로 사용합니다.
 
 ## Repository Layout
 
@@ -40,9 +41,8 @@ platform-planningops/
 ## Quick Start
 
 ```bash
-cd docs/initiatives/unified-personal-agent-platform
-bash ./00-governance/scripts/uap-docs.sh check
-bash ./00-governance/scripts/uap-docs.sh sync
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync
 ```
 
 ## Working Rules
@@ -50,6 +50,7 @@ bash ./00-governance/scripts/uap-docs.sh sync
 - 문서 참조는 상대경로를 사용합니다.
 - 경로/구조 변경 시 `README`와 `90-navigation`을 함께 갱신합니다.
 - 변경 후 `uap-docs.sh sync`를 실행해 카탈로그와 링크 무결성을 확인합니다.
+- PR에서는 `.github/workflows/uap-docs-check.yml`로 문서 검증이 자동 실행됩니다.
 - org/repo/agent 식별자 변경은 identity 문서를 먼저 갱신합니다.
 
 ## Source of Truth Policy
@@ -57,4 +58,3 @@ bash ./00-governance/scripts/uap-docs.sh sync
 - 계획의 단일 SoT는 이 레포 문서입니다.
 - GitHub Issues/Projects 연동은 문서 -> 트래커 단방향 동기화를 기본으로 합니다.
 - 실행 레포(`monday`, `platform-*`)는 이 레포의 계획을 참조해 구현합니다.
-

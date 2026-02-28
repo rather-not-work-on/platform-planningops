@@ -5,21 +5,23 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-02-28
 initiative: unified-personal-agent-platform
 tags:
   - uap
   - onboarding
   - agent
   - start
-summary: Fast entrypoint for agents with no prior context to understand scope, canonical docs, and immediate next actions.
+summary: Fast entrypoint for agents with no prior context to identify Core 7, path rules, and immediate next actions.
 related_docs:
   - ./README.md
   - ./AGENT.md
-  - ./00-governance/2026-02-27-uap-monday-identity.meta.md
-  - ./90-navigation/2026-02-27-uap-document-map.navigation.md
+  - ./00-governance/uap-doc-governance.meta.md
+  - ./00-governance/uap-monday-identity.meta.md
+  - ./90-navigation/uap-document-map.navigation.md
+  - ./40-quality/uap-planningops-tradeoff-decision-framework.quality.md
   - ./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
-  - ./30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md
+  - ./30-execution-plan/uap-github-planningops-sync.execution-plan.md
 ---
 
 # UAP Agent Start Guide
@@ -27,24 +29,33 @@ related_docs:
 ## Goal
 문맥이 없는 신규 에이전트가 5분 내에 문서 구조, 현재 기본값, 착수 순서를 파악하도록 돕는다.
 
-## 60-Second Orientation
-- 이 레포의 기본 진입점은 `README.md`다.
-- 핵심 원칙은 `AGENT.md`가 single source다.
-- 프로젝트 식별자(이름/org/repo)는 identity 문서가 single source다.
-- 구현 시작 기준은 `30-execution-plan` 문서가 결정한다.
+## Path Root Rule (Mandatory)
+- 문서 본문 링크는 문서 파일 기준 상대경로(`./`, `../`)만 사용한다.
+- 셸/CI 명령에서 파일 지정은 repo 루트 기준 상대경로(`docs/initiatives/unified-personal-agent-platform/...`)를 사용한다.
+
+## Canonical Core 7
+### Entry Core (next reads)
+`AGENT-START`(현재 문서)는 Entry Core anchor다. 아래 4개 문서를 이어서 읽는다.
+
+1. [AGENT Principles](./AGENT.md)
+2. [Project Identity](./00-governance/uap-monday-identity.meta.md)
+3. [Document Map](./90-navigation/uap-document-map.navigation.md)
+4. [PlanningOps Sync Plan](./30-execution-plan/uap-github-planningops-sync.execution-plan.md)
+
+### Policy Core (apply before implementation)
+1. [Doc Governance](./00-governance/uap-doc-governance.meta.md)
+2. [Trade-off Decision Framework](./40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 
 ## Mandatory Read Order (Minimal)
-1. [README](./README.md)
-2. [Project Identity](./00-governance/2026-02-27-uap-monday-identity.meta.md)
-3. [AGENT Principles](./AGENT.md)
-4. [Document Map](./90-navigation/2026-02-27-uap-document-map.navigation.md)
-5. [Foundation Execution Plan](./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
-6. [PlanningOps Sync Plan](./30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md)
+1. Entry Core anchor(현재 문서) + Entry Core next reads 4
+2. Policy Core 2
+3. [README](./README.md) for broad context
+4. [Foundation Execution Plan](./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
 
 ## Quick Checks Before Any Work
 1. 문서 검증 실행:
 ```bash
-bash ./00-governance/scripts/uap-docs.sh check
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
 ```
 2. 게이트 네임스페이스 확인:
 - `Gate A~G` = Foundation 게이트

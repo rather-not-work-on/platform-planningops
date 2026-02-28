@@ -15,9 +15,9 @@ tags:
 summary: Defines a phased, reference-safe migration from current layer-first docs layout to repo-first plus domain-second layout.
 related_docs:
   - ../README.md
-  - ../00-governance/2026-02-27-uap-doc-governance.meta.md
-  - ../00-governance/2026-02-27-uap-monday-identity.meta.md
-  - ../90-navigation/2026-02-27-uap-document-map.navigation.md
+  - ../00-governance/uap-doc-governance.meta.md
+  - ../00-governance/uap-monday-identity.meta.md
+  - ../90-navigation/uap-document-map.navigation.md
 ---
 
 # UAP Documentation Structure Migration Plan
@@ -162,7 +162,7 @@ Exit criteria:
 
 검증 명령:
 ```bash
-bash ./00-governance/scripts/uap-docs.sh check
+bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
 ```
 
 링크 영향 탐색(권장):

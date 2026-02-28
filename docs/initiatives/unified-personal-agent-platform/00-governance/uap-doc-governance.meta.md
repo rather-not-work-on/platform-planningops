@@ -5,7 +5,7 @@ doc_type: meta
 domain: governance
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-02-28
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-doc-governance
 tags:
@@ -16,9 +16,9 @@ tags:
 summary: Defines prefix and postfix rules, domain ownership, reference contract, and document change policy.
 related_docs:
   - ../README.md
-  - ./2026-02-27-uap-monday-identity.meta.md
+  - ./uap-monday-identity.meta.md
   - ../30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
-  - ../90-navigation/2026-02-27-uap-document-map.navigation.md
+  - ../90-navigation/uap-document-map.navigation.md
   - ../2026-02-27-uap-frontmatter-catalog.navigation.md
 ---
 
@@ -52,6 +52,13 @@ related_docs:
 - `AGENT-START.md`: 신규 에이전트 1페이지 온보딩
 - `AGENT.md`: 공통 행동 원칙
 
+Core 7 canonical filename 예외(무날짜 고정):
+- `00-governance/uap-monday-identity.meta.md`
+- `90-navigation/uap-document-map.navigation.md`
+- `30-execution-plan/uap-github-planningops-sync.execution-plan.md`
+- `00-governance/uap-doc-governance.meta.md`
+- `40-quality/uap-planningops-tradeoff-decision-framework.quality.md`
+
 ## Domain Ownership
 - `10-brainstorm`: 제품/문제정의 도메인
 - `20-architecture`: 계약/경계 도메인
@@ -75,11 +82,20 @@ related_docs:
 - `doc_id`는 initiative 내 유일해야 한다.
 - `doc_type`은 postfix와 일치해야 한다. (`.brainstorm.md` -> `doc_type: brainstorm`)
 - 예외: 루트 `README.md`는 `doc_type: hub`를 허용한다.
+- `status` 의미:
+  - `active`: 현재 기준 문서
+  - `reference`: 배경/맥락 참조 문서(직접 실행 기준 아님)
+  - `deprecated`: 대체 문서가 존재하며 직접 참조를 중단한 문서
 - `related_docs`는 상대경로를 사용한다.
 - `domain↔directory` 매핑이 없는 경로에 문서를 추가하면 검증 실패로 처리한다(허용 디렉토리만 운영).
 
+## Path Root Contract
+- 문서 본문 링크/`related_docs`는 문서 파일 기준 상대경로(`./`, `../`)를 사용한다.
+- CLI/CI 명령에서 파일 인수는 repo 루트 기준 상대경로(`docs/initiatives/unified-personal-agent-platform/...`)를 사용한다.
+
 ## Automation
-- 스크립트: `./scripts/uap-docs.sh`
+- 스크립트: `docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh`
+- 초안 문서 생성: `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-new-doc.sh <target-dir> <subject-slug> <postfix> <domain> "<title>" "<summary>" [status]`
 - `check`: frontmatter 필수 키/`doc_id` 유일성/`doc_type↔postfix`/`domain↔directory`/`status`/`related_docs`/Markdown 링크 규칙 검증
 - `catalog`: frontmatter 기반 카탈로그 문서 생성
 - `sync`: `catalog -> check` 순서로 동기화
@@ -94,5 +110,5 @@ related_docs:
 - 경계/상태/계약 변경: ADR 또는 동등한 결정 기록 필수
 - 파일명 변경: 루트 `README.md`와 `90-navigation` 맵 동시 갱신
 - 신규 문서 추가: postfix 규칙을 따르지 않으면 병합 금지
-- org/repo/agent naming 변경: `2026-02-27-uap-monday-identity.meta.md`를 canonical source로 먼저 갱신
+- org/repo/agent naming 변경: `uap-monday-identity.meta.md`를 canonical source로 먼저 갱신
 - 구조 마이그레이션은 `2026-02-27-uap-doc-structure-migration.execution-plan.md`의 phase 순서를 따른다

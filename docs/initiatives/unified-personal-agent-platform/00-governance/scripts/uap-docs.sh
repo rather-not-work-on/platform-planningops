@@ -20,8 +20,8 @@ REQUIRED_KEYS=(
 
 ALLOWED_STATUS=(
   active
-  draft
-  archived
+  reference
+  deprecated
 )
 
 list_docs() {
@@ -206,7 +206,7 @@ check_docs() {
     local status
     status="$(extract_scalar "$file" "status" || true)"
     if ! contains_value "$status" "${ALLOWED_STATUS[@]}"; then
-      echo "[ERR] invalid status '$status': $file (allowed: active,draft,archived)"
+      echo "[ERR] invalid status '$status': $file (allowed: active,reference,deprecated)"
       errors=$((errors + 1))
     fi
 
@@ -298,16 +298,16 @@ tags:
 summary: Auto-generated catalog for quick navigation across UAP documents.
 related_docs:
   - ./README.md
-  - ./90-navigation/2026-02-27-uap-document-map.navigation.md
-  - ./00-governance/2026-02-27-uap-doc-governance.meta.md
+  - ./90-navigation/uap-document-map.navigation.md
+  - ./00-governance/uap-doc-governance.meta.md
 ---
 
 # UAP Frontmatter Catalog
 
 이 문서는 frontmatter 기반으로 자동 생성된다.
 
-- 생성 스크립트: \`00-governance/scripts/uap-docs.sh\`
-- 생성 명령: \`bash ./00-governance/scripts/uap-docs.sh catalog\`
+- 생성 스크립트: \`docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh\`
+- 생성 명령: \`bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh catalog\`
 
 ## Table
 

@@ -459,7 +459,7 @@ evidence 최소 구조:
 Deliverables:
 - `<docs-root>/20-architecture/2026-02-27-uap-contract-boundaries.architecture.md` 최종화
 - `<docs-root>/20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md` 업데이트
-- `<docs-root>/90-navigation/2026-02-27-uap-document-map.navigation.md` 읽기 순서/관계 반영
+- `<docs-root>/90-navigation/uap-document-map.navigation.md` 읽기 순서/관계 반영
 - `<docs-root>/20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md`
 - `<docs-root>/2026-02-27-uap-frontmatter-catalog.navigation.md` 최신화
 
@@ -585,7 +585,7 @@ Must verify:
 - `../20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md`
 - `../10-discovery/2026-02-27-uap-failure-simulation.simulation.md`
 - `../40-quality/2026-02-27-uap-issue-closure-matrix.quality.md`
-- `../00-governance/2026-02-27-uap-doc-governance.meta.md`
+- `../00-governance/uap-doc-governance.meta.md`
 - `../00-governance/scripts/uap-docs.sh`
 - `../2026-02-27-uap-frontmatter-catalog.navigation.md`
 

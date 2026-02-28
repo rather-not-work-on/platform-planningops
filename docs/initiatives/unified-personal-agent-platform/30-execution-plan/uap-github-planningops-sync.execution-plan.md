@@ -5,7 +5,7 @@ doc_type: execution-plan
 domain: planning
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-02-28
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -19,20 +19,23 @@ related_docs:
   - ../20-repos/monday/10-discovery/2026-02-27-uap-core.brainstorm.md
   - ../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ./2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md
-  - ../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md
+  - ../40-quality/uap-planningops-tradeoff-decision-framework.quality.md
   - ../20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md
 ---
 
 # feat: UAP GitHub PlanningOps Sync Foundation
 
-## Enhancement Summary (Deepened: 2026-02-27)
-- 강화 범위: 성공기준, 계약 설계, 운영 runbook, 실패 시뮬레이션, 단계별 검증 게이트
+## Enhancement Summary (Deepened: 2026-02-28)
+- 강화 범위: 성공기준, 계약 설계, 운영 runbook, 실패 시뮬레이션, 단계별 검증 게이트, 통합 실행순서
 - 적용 관점: architecture, spec-flow, security, performance, operability, simplicity
 - 핵심 개선:
   - KPI를 측정 계약으로 고정해 gate verdict 재현성을 확보
   - 내부 상세 상태와 외부 공개 상태를 분리해 캡슐화 유지
   - 남은 의사결정은 기본값 + 재검토 트리거 방식으로 운영해 진행 정체 방지
   - 실행 명령/산출물 경로를 명시해 운영자 편차 축소
+  - 사용자 백로그(1~9) 정렬표와 8주 현실 로드맵을 추가해 즉시 착수 경로를 명확화
+  - 비정기 에이전트 실행을 전제로 스프린트형 서술을 칸반형 운영/게이트 모델로 전환
+  - LLM 컨텍스트 엔지니어링 가드레일과 시뮬레이션-우선 원칙을 실행 계약으로 명문화
 
 ## Overview
 이 계획은 계획 전용 레포(`uap-plans`)를 기준 소스로 삼아, 문서 변경(commit/push)을 GitHub 실행 단위(Issues, Milestones, Projects v2)로 자동 동기화하는 PlanningOps 기반을 정의한다.
@@ -77,7 +80,7 @@ Found brainstorm from `2026-02-27`: `uap-github-planningops-sync`. Planning cont
 ### Primary inputs
 - `../10-brainstorm/2026-02-27-uap-github-planningops-sync.brainstorm.md`
 - `../20-repos/monday/10-discovery/2026-02-27-uap-core.brainstorm.md`
-- `./2026-02-27-uap-contract-first-foundation.execution-plan.md`
+- `../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md`
 
 ### Local research summary
 - 현재 UAP 문서는 initiative 계층(`00/10/20/30/40/90`)과 frontmatter governance를 기반으로 운영 중.
@@ -224,7 +227,7 @@ flowchart LR
 ## C1 Plan Item Contract
 필수:
 - `initiative_id`, `plan_doc_id`, `plan_item_id`, `title`, `description`
-- `owner`, `priority`, `target_repo`, `status`, `gate_refs`
+- `owner`, `priority`, `component`, `target_repo`, `status`, `gate_refs`
 - `sync_policy`, `version`, `updated_at`
 
 ## C2 GitHub Mapping Contract
@@ -232,11 +235,27 @@ flowchart LR
 - `plan_item_id -> issue_number`
 - `initiative_id + target_repo -> milestone_number`
 - `issue_node_id -> project_item_id`
-- `project_field_ids` (status/gate/owner/date)
+- `project_field_ids` (status/gate/owner/date/initiative/component/target_repo/repository)
 
 불변성:
 - 동일 `plan_item_id`는 동일 레포에서 단일 issue로 수렴
 - mapping은 append/update만 허용, 임의 재할당 금지
+- `Issue/PR` item에서는 built-in `Repository` 필드를 canonical repo source로 사용한다.
+- `DraftIssue` item에서는 custom `target_repo` 필드를 canonical repo source로 사용한다.
+
+### Demo-validated GitHub Project field schema (`2026-02-28`)
+| Field | Type | Required | Source | Rule |
+|---|---|---|---|---|
+| `Status` | SINGLE_SELECT(built-in) | yes | sync engine | C3 매핑 규칙 적용 |
+| `Repository` | built-in(system) | Issue/PR only | GitHub linked content | canonical repo(`Issue/PR`) |
+| `initiative` | TEXT(custom) | yes | `initiative_id` | draft/issue 모두 필수 |
+| `component` | SINGLE_SELECT(custom) | yes | `component` | 허용값: `planningops, contracts, provider-gateway, observability-gateway, runtime, orchestrator` |
+| `target_repo` | TEXT(custom) | DraftIssue yes / Issue optional | `target_repo` | DraftIssue canonical repo, Issue에서는 `Repository`와 일치해야 함 |
+
+운영 규칙:
+- `component` 옵션 ID 매핑은 `project_field_ids.component.options`로 버전 관리한다.
+- `initiative`는 오타 방지를 위해 `^[a-z0-9-]+$` 패턴을 강제한다.
+- `Issue/PR` item에서 `target_repo`가 존재하면 `Repository`와 mismatch 시 `FIELD_MISMATCH`로 분류한다.
 
 ## C3 Status Contract
 Plan item lifecycle:
@@ -293,12 +312,18 @@ Plan item lifecycle:
 | initiative | milestone (repo별 1개) | `initiative_id + target_repo` |
 | plan item | issue | `plan_doc_id + plan_item_id + target_repo` |
 | issue projection | project item | `issue_node_id` |
+| `initiative_id` | project field `initiative` | `project_item_id + initiative_id` |
+| `component` | project field `component` | `project_item_id + component` |
+| `target_repo` | project field `target_repo` or built-in `Repository` | `project_item_id + target_repo` |
 | gate verdict | project field | `project_item_id + gate_name` |
 
 규칙:
 - `addProjectV2ItemById`는 이미 추가된 item이면 기존 item ID를 반환하므로 idempotent 연결 단계로 사용한다.
 - item 추가와 field 업데이트는 동일 call에서 처리하지 않고 분리 단계로 수행한다.
 - projection key는 문서 버전 변경에도 안정적으로 유지되도록 `plan_item_id`를 불변 식별자로 사용한다.
+- `Issue/PR`는 built-in `Repository`를 우선 사용하고 `target_repo`는 검증 보조 필드로만 사용한다.
+- `DraftIssue`는 built-in `Repository`가 비어 있으므로 `target_repo`를 필수로 채운다.
+- issue 생성 시점에 `DraftIssue.target_repo -> Issue.Repository` 일치 여부를 검증하고 mismatch면 apply를 중단한다.
 
 ## Synchronization Strategy
 
@@ -553,7 +578,7 @@ pnpm planningops report --type=drift --date $(date -u +%F)
 
 Companion docs:
 - lifecycle 처리 시나리오: `./2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md`
-- trade-off 판단 기준: `../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md`
+- trade-off 판단 기준: `../40-quality/uap-planningops-tradeoff-decision-framework.quality.md`
 
 ### Track A: Decision-Agnostic Work (Start Now)
 - C1~C8 schema 골격 및 validator 구현
@@ -584,7 +609,7 @@ Companion docs:
 - 선택 전에는 Track A만 진척시키고 Track B 구현은 인터페이스 스텁까지만 허용한다.
 
 ## Decision Impact Matrix (How Direction Changes)
-아래 표는 운영 요약본이다. 옵션 점수화/최종 판정 기준의 canonical source는 `../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md`로 유지한다.
+아래 표는 운영 요약본이다. 옵션 점수화/최종 판정 기준의 canonical source는 `../40-quality/uap-planningops-tradeoff-decision-framework.quality.md`로 유지한다.
 
 | Decision | Option | Architecture impact | Contract impact | Ops impact | Risk profile |
 |---|---|---|---|---|---|
@@ -616,17 +641,233 @@ Companion docs:
 - Phase 1 운영 범위는 단일 org으로 제한한다(multi-org는 후속 단계 검토).
 
 ## Working Defaults (Until Explicitly Changed)
-- GitHub Project topology: 단일 org-level Project 1개
+- GitHub Project topology: 단일 org-level Project 1개(canonical) + repo/component saved view
+- Project field schema: `initiative(TEXT)`, `component(SINGLE_SELECT)`, `target_repo(TEXT)`, built-in `Repository`(Issue/PR canonical)
 - Sync direction: one-way(plan -> GitHub)
 - Completion source of truth: gate pass 우선, issue closed는 파생 상태
 - Trigger strategy: push + workflow_dispatch + nightly schedule
+
+## Integrated Delivery Alignment (Requested 1~9)
+이 섹션은 사용자 백로그(1~9)를 Foundation + Sync 문서 기준으로 정렬해, 필요한 작업/후순위 작업을 명확히 분리한다.
+
+### Backlog-to-Plan Alignment Matrix
+| # | Requested item | Current plan alignment | Decision | Canonical location |
+|---|---|---|---|---|
+| 1 | 계획 세우기 | Aligned | 지금 즉시 진행 | Foundation Phase 0, Sync Phase -1/0 |
+| 2 | 프로젝트 연결 및 관리 체계 수립 | Aligned | 지금 즉시 진행 | Sync `Single Plan Repo Operating Contract`, Phase -1~2 |
+| 3 | 계획-프로젝트 자동 동기화 시스템 구축 | Aligned | 지금 즉시 진행 | Sync Phase 1~4, Sync Gate A~F |
+| 4 | 공통 계약 레포 설계 및 구축 | Aligned | 지금 즉시 진행 | Foundation `Repo D: platform-contracts`, Phase 1 |
+| 5 | 작업 실행 에이전트 구축(`Ralph-Loop`, Executor/worker 네이밍) | Partially aligned | 네이밍 고정 후 진행 | Foundation `executor-ralph-loop`, Phase 2~3 |
+| 6 | 기본 Infra 구축(LiteLLM) | Partially aligned | provider-gateway baseline으로 즉시 진행 | Foundation `platform-provider-gateway`, Phase 2~4 |
+| 7 | NanoClaw 구축 | Aligned | executor 최소 동작 이후 진행 | Foundation `Planning & Delegation`, Phase 2~3 |
+| 8 | o11y(LangFuse) | Aligned | MVP부터 baseline 적용 | Foundation Phase 3, Sync run artifacts |
+| 9 | task scheduler(queue) | Partially aligned | Sync MVP 이후 확장 적용 | Sync Phase 4 + Foundation Gate F 전제 |
+
+### Needed Now vs Later
+`Needed now`:
+- 1, 2, 3, 4
+- 5의 네이밍 결정(`Executor` 외부 계약명, `worker` 내부 구현명)
+- 6의 최소 라우팅 baseline(LiteLLM adapter + fallback policy)
+- 8의 최소 추적 baseline(trace_id/run_id/event_id 강제)
+
+`Later`:
+- 7 NanoClaw의 고급 플래닝 전략(우선은 단순 분해/위임만)
+- 9 queue 고도화(우선은 scheduler + idempotency + dedupe부터)
+- 2/3의 양방향 동기화 및 포트폴리오 BI
+
+## Kanban Operating Model (Agent-Driven, Irregular Runs)
+이 레포의 실행은 정해진 스프린트가 아니라 비정기 에이전트 실행을 전제로 한다. 따라서 시간박스보다 `pull + WIP + gate`를 중심으로 운영한다.
+
+### Workflow states and pull policy
+- 상태 흐름: `backlog -> ready-contract -> in-progress -> review-gate -> ready-implementation -> done`
+- Pull 우선순위: `uncertainty reduction > contract mismatch risk > integration dependency > convenience`
+- 에이전트는 `ready-*` 열에서만 pull한다. prerequisite 미충족 항목 pull 금지.
+
+### WIP limits and service-level expectations
+| Lane | WIP limit | Service-level expectation |
+|---|---:|---|
+| Contract lane | 2 | `ready-contract` 진입 후 72시간 내 첫 증빙 산출 |
+| Runtime lane | 2 | 착수 후 96시간 내 smoke 결과 기록 |
+| PlanningOps lane | 2 | 변경 후 24시간 내 dry-run diff 산출 |
+| O11y lane | 1 | 변경 후 48시간 내 trace chain 검증 |
+| Ops lane | 1 | high drift/blocked 항목 24시간 내 triage |
+
+### Calendar checkpoints (absolute dates, non-sprint)
+- Checkpoint A (`2026-03-08`): M0 bootstrap 완료 여부 확인
+- Checkpoint B (`2026-03-15`): M1 contracts freeze 완료 여부 확인
+- Checkpoint C (`2026-03-29`): M2 runtime skeleton 완료 여부 확인
+- Checkpoint D (`2026-04-12`): M3 planningops sync MVP 완료 여부 확인
+- Checkpoint E (`2026-04-26`): M4 hardening/pilot 운영 완료 여부 확인
+
+### Replanning triggers (Kanban)
+| Trigger | Detection signal | Mandatory action | SLA |
+|---|---|---|---|
+| Ready card staleness | `ready-*` 상태 72시간 초과 | scope 재검토 후 `backlog` 또는 `in-progress`로 재배치 | 24h |
+| Blocked overflow | `blocked` 상태 24시간 초과 | blocker 원인 분해 + owner 재지정 + unblock 실험 정의 | 24h |
+| Checkpoint miss | checkpoint date 대비 3일 이상 미달성 | milestone 범위 재분할 + exit criteria 재합의 | 48h |
+| Hard-stop recurrence | 동일 hard-stop 7일 내 2회 | 운영 정책 수정안(guardrail/권한/retry) 작성 후 승인 | 48h |
+| Contract drift | C1~C8 필드 변경 발생 | 영향도 평가 후 `ready-contract`으로 롤백 | 24h |
+| Context conflict | ECP와 delta note 충돌 2회 | authoritative pack 재발행 + 기존 실행 중단 | 즉시 |
+
+## Execution Order and Dependency Milestones
+| Milestone | Target window | DRI role | Entry criteria | Exit criteria |
+|---|---|---|---|---|
+| M0 Bootstrap | `2026-03-02` ~ `2026-03-08` | PlanningOps DRI | plan repo/bootstrap backlog ready | preflight checklist 100%, Sync Gate A pre-check pass |
+| M1 Contract Freeze | `2026-03-09` ~ `2026-03-15` | Contracts DRI | M0 exit + schema draft ready | C1~C5 freeze, Foundation Gate A/E/F 1차 통과 |
+| M2 Runtime Skeleton | `2026-03-16` ~ `2026-03-29` | Runtime DRI | M1 exit + provider baseline ready | Mission A/B pass, cancel p95<=5s, cross-provider mismatch 0 |
+| M3 Sync MVP | `2026-03-30` ~ `2026-04-12` | PlanningOps DRI | M2 exit + parser/diff stable | Sync Gate A/B/C pass, duplicate 0%, idempotent convergence 100% |
+| M4 Hardening + Pilot | `2026-04-13` ~ `2026-04-26` | O11y/Ops DRI | M3 exit + reconcile cadence stable | Sync Gate D/E/F + Foundation Gate C/D/G pass, runbook drill complete |
+
+## Context Engineering Guardrails (Primary Objective)
+이 레포의 궁극 목표는 구현 전에 불확실성/판단 변동/계약 불일치/반복 수정을 제거하는 것이다. 이를 위해 아래 규칙을 강제한다.
+
+### No-context-no-execution rule
+- 구현 요청은 반드시 `Execution Context Pack(ECP)`를 포함해야 한다.
+- ECP 필수 항목:
+  - objective and non-goals
+  - contract refs(C1~C8, Gate namespace)
+  - source docs(경로 + 버전/커밋)
+  - acceptance checks and failure signals
+  - out-of-scope decisions(이번 작업에서 하지 않을 판단)
+- ECP 누락 요청은 `ready-contract`으로 되돌리고 즉시 구현 금지.
+
+### Prompt compounding risk controls
+- 하나의 작업에서 authoritative context는 1개 pack만 사용한다.
+- 추가 지시는 `delta note`로만 누적하며 기존 pack과 충돌 시 기존 pack 우선.
+- 에이전트 산출물은 항상 `source doc reference + contract id + gate evidence path`를 포함한다.
+
+### Agent behavior simulation procedure
+| Step | Agent input | Decision rule | Output artifact | State transition |
+|---|---|---|---|---|
+| 1 Intake | card + ECP + latest delta | ECP 유효성/버전 확인 실패 시 즉시 중단 | `intake-check.json` | `backlog -> ready-contract` 또는 `backlog -> blocked` |
+| 2 Contract check | contract refs(C1~C8), gate namespace | 필수 contract ref 누락 시 구현 금지 | `contract-check.md` | `ready-contract -> in-progress` 또는 `ready-contract -> blocked` |
+| 3 Simulation | scenario matrix + pseudo flow | counterexample 미작성 시 gate review 불가 | `simulation-report.md` | `in-progress -> review-gate` |
+| 4 Dry execution | parser/diff/dry-run 결과 | dry-run diff와 expected mismatch면 apply 금지 | `sync-summary/<run_id>.json` | `review-gate -> in-progress` 또는 `review-gate -> blocked` |
+| 5 Gate review | gate evidence bundle | required gate fail/inconclusive면 승격 금지 | `gate/<gate-id>/manifest.json` | `review-gate -> ready-implementation` 또는 `review-gate -> blocked` |
+| 6 Implementation handoff | approved pack + evidence refs | handoff packet 누락 시 실행 착수 금지 | `handoff-packet.md` | `ready-implementation -> done` |
+
+## Simulation-First Loop (Pseudo-Implementation Mode)
+이 레포는 실제 구현 전 "구현한 것처럼 시뮬레이션"하는 단계다. pseudo code와 시나리오 검증을 구현 착수의 선행조건으로 둔다.
+
+### Required simulation artifacts
+- `scenario matrix`: 정상/경계/실패/복구 경로
+- `pseudo execution flow`: 상태 전이, API 호출, idempotency key 흐름
+- `counterexample list`: 계약 위반/드리프트/중복 생성 전파 경로
+- `expected evidence`: gate 통과에 필요한 로그/리포트/manifest 경로
+
+### Implementation entry rule
+- M2~M4 구현 작업은 해당 범위의 pseudo flow + counterexample review가 완료되어야 `ready-implementation`으로 이동 가능.
+
+### Transition log contract (for agent replayability)
+- 저장 경로: `planningops/artifacts/transition-log/<date>.ndjson`
+- 필수 필드:
+  - `transition_id`
+  - `run_id`
+  - `card_id`
+  - `from_state`
+  - `to_state`
+  - `transition_reason`
+  - `contract_refs`
+  - `evidence_refs`
+  - `actor_type` (`agent|human`)
+  - `actor_id`
+  - `decided_at_utc`
+  - `replanning_flag`
+- 무결성 규칙:
+  - 모든 상태 전이는 1개 이상의 `contract_ref`와 `evidence_ref`를 포함해야 한다.
+  - `blocked` 전이는 `transition_reason`에 원인 코드(`permission|contract|context|runtime`)를 포함해야 한다.
+  - `ready-implementation -> done` 전이는 gate manifest 경로 없으면 무효 처리한다.
+
+## GitHub Project Portfolio Operating Model
+### Topology options
+| Option | Model | 장점 | 리스크 |
+|---|---|---|---|
+| A | repo별 개별 project | 팀별 자율성 높음 | initiative 전체 정합성 저하, cross-repo drift 증가 |
+| B | 단일 org-level project | 단일 SoT, 전사 가시성 | 레포별 세부 운영 뷰 설계 필요 |
+| C | 하이브리드(단일 canonical + repo별 view/자동필터) | SoT 유지 + 실무 뷰 제공 | view 규칙 관리 필요 |
+| D | planningops 별도 project 분리 | 운영 분리 명확 | 계획/실행 분단 위험 |
+
+### Phase 1 decision
+- Canonical tracking은 `Option C`로 고정한다.
+  - 데이터 SoT: 단일 org-level project 1개
+  - 운영 뷰: repo/component 기반 saved view
+  - planningops 항목: 별도 project 분리 대신 `component=planningops` 필드로 동일 project 내 추적
+- planningops 전용 별도 project는 incident 운영이 장기적으로 과부하일 때만 예외 승인한다.
+
+### Demo validation snapshot (`2026-02-28`)
+- Demo project: `https://github.com/orgs/rather-not-work-on/projects/2`
+- 실험 항목:
+  - linked issue 2개(`rather-not-work-on/platform-planningops`, `rather-not-work-on/monday`)
+  - draft issue 1개(이슈 생성 전 상태)
+- 관찰 결과:
+  - linked issue에는 built-in `Repository`가 자동 채워짐
+  - draft issue에는 built-in `Repository`가 비어 있으므로 `target_repo` 커스텀 필드가 필요
+  - `component`를 single-select로 두면 오타 없는 필터링/집계가 가능
+  - `initiative`는 TEXT가 유연하지만 pattern 검증 없으면 오탈자 드리프트 가능
+
+## Dependency and Stop Rules
+### Critical dependencies
+1. GitHub App 권한 확정 전에는 Phase 2/3 apply 금지
+2. `platform-contracts` C1~C5 freeze 전에는 runtime 코드 병합 금지
+3. Gate F(idempotency/dedupe) fail 상태에서는 scheduler 확장 금지
+4. observability trace chain 누락 시 done 판정 금지
+5. `uap-docs.sh sync` 실패 시 계획 변경 merge 금지
+6. ECP(Execution Context Pack) 없는 구현 요청은 실행 금지
+
+### Hard stop signals
+- 동일 원인 `401/403`가 2회 연속 발생
+- duplicate creation rate > 0%
+- `inconclusive` gate verdict 연속 2회
+- LangFuse ingestion 지연으로 trace chain 단절률 > 0
+- 계약 참조 없는 임의 상태 전이 요청 발생
+- pseudo flow와 실제 변경 산출물이 불일치(2회 연속)
+
+## Capacity and Ownership Assumption
+| Track | DRI role | Backup role | Current focus |
+|---|---|---|---|
+| Contracts | Contracts DRI | Orchestrator DRI | schema/compat/gate evidence |
+| Runtime | Runtime DRI | Provider Gateway DRI | run/cancel/idempotency |
+| PlanningOps | PlanningOps DRI | Docs Governance DRI | parser/sync/reconcile/drift |
+| O11y | O11y DRI | PlanningOps DRI | trace continuity/replay |
+| Operations | Operations DRI | Initiative Owner | runbook/escalation/drill |
+
+DRI naming rule:
+- 각 DRI role은 `2026-03-03`까지 실명 1인으로 매핑한다.
+- 실명 매핑 전에는 gate 판정/승인 권한을 행사할 수 없다.
+
+## Immediate 10-Day Starter Plan
+Day 1-2 (`2026-03-02` ~ `2026-03-03`):
+- pilot repo 2개, org project ID, GitHub App 설치 범위 확정
+- `project_field_ids` 카탈로그 파일 생성
+- Track별 DRI 실명 지정
+
+Day 3-4 (`2026-03-04` ~ `2026-03-05`):
+- `platform-contracts` C1~C5 스키마 초안 + validator 생성
+- Executor/worker 네이밍 ADR 문서화
+- ECP 템플릿 초안 작성
+
+Day 5-6 (`2026-03-06` ~ `2026-03-07`):
+- `planningops` parser + dry-run CLI 구현
+- sample plan item 20개 fixture 확보
+- scenario matrix + pseudo flow 초안 작성
+
+Day 7-8 (`2026-03-08` ~ `2026-03-09`):
+- REST(issues/milestones) adapter + idempotency replay test
+- LangFuse 최소 trace emit 연결(run_id/trace_id/event_id)
+- prompt compounding risk check(충돌 delta note 규칙 적용)
+
+Day 9-10 (`2026-03-10` ~ `2026-03-11`):
+- GraphQL Projects v2 field update 연결
+- dry-run -> apply -> reconcile 전체 리허설 1회 + gate snapshot 기록
+- M0 checkpoint verdict 기록(`pass/fail/inconclusive`)
 
 ## References & Research
 
 ### Internal references
 - `../10-brainstorm/2026-02-27-uap-github-planningops-sync.brainstorm.md`
-- `./2026-02-27-uap-contract-first-foundation.execution-plan.md`
+- `../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md`
 - `../00-governance/scripts/uap-docs.sh`
+- `https://github.com/orgs/rather-not-work-on/projects/2` (field schema demo project)
 
 ### External references
 - https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project

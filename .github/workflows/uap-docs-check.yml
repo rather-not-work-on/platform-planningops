@@ -1,0 +1,27 @@
+name: UAP Docs Check
+
+on:
+  pull_request:
+    paths:
+      - "docs/initiatives/unified-personal-agent-platform/**"
+      - ".github/workflows/uap-docs-check.yml"
+  workflow_dispatch:
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate docs
+        run: bash ./docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check
+
+      - name: Ensure generated catalog is committed
+        run: |
+          set -euo pipefail
+          CATALOG="docs/initiatives/unified-personal-agent-platform/2026-02-27-uap-frontmatter-catalog.navigation.md"
+          BEFORE="$(mktemp)"
+          cp "$CATALOG" "$BEFORE"
+          bash ./docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh catalog
+          diff -u <(grep -v '^updated:' "$BEFORE") <(grep -v '^updated:' "$CATALOG")

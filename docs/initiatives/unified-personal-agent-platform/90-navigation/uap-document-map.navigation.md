@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-02-28
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-document-map
 tags:
@@ -18,19 +18,36 @@ related_docs:
   - ../README.md
   - ../AGENT-START.md
   - ../AGENT.md
-  - ../00-governance/2026-02-27-uap-doc-governance.meta.md
-  - ../00-governance/2026-02-27-uap-monday-identity.meta.md
+  - ../00-governance/uap-doc-governance.meta.md
+  - ../00-governance/uap-monday-identity.meta.md
   - ../20-repos/README.md
   - ../30-domains/README.md
   - ../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ../30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
-  - ../30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md
+  - ../30-execution-plan/uap-github-planningops-sync.execution-plan.md
   - ../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md
-  - ../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md
+  - ../40-quality/uap-planningops-tradeoff-decision-framework.quality.md
   - ../2026-02-27-uap-frontmatter-catalog.navigation.md
 ---
 
 # Document Relationship Map
+
+## Path Root Rule
+- 문서 본문 링크는 문서 파일 기준 상대경로(`./`, `../`)를 사용한다.
+- 셸/CI 명령은 repo 루트 기준 상대경로(`docs/initiatives/unified-personal-agent-platform/...`)를 사용한다.
+
+## Core 7 Topology
+### Entry Core
+- [AGENT-START](../AGENT-START.md)
+- [AGENT Principles](../AGENT.md)
+- [M.O.N.D.A.Y. Identity](../00-governance/uap-monday-identity.meta.md)
+- [GitHub PlanningOps Sync Plan](../30-execution-plan/uap-github-planningops-sync.execution-plan.md)
+
+Note: 이 문서(`uap-document-map.navigation.md`) 자체가 Entry Core 구성요소이며, 목록에서는 self-reference를 생략한다.
+
+### Policy Core
+- [Doc Governance](../00-governance/uap-doc-governance.meta.md)
+- [Trade-off Decision Framework](../40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 
 ## Root
 - [README](../README.md)
@@ -40,16 +57,16 @@ related_docs:
 - 역할: 문맥 없는 신규 에이전트용 1페이지 온보딩 엔트리포인트
 
 - [AGENT Principles](../AGENT.md)
-- 역할: 에이전트 공통 행동 원칙/게이트 네임스페이스/변경 규칙 기준 문서
+- 역할: 에이전트 공통 불변 원칙(invariant) 기준 문서
 
-- [M.O.N.D.A.Y. Identity](../00-governance/2026-02-27-uap-monday-identity.meta.md)
+- [M.O.N.D.A.Y. Identity](../00-governance/uap-monday-identity.meta.md)
 - 역할: agent/org/repo 식별자의 canonical source
 
 - [Frontmatter Catalog](../2026-02-27-uap-frontmatter-catalog.navigation.md)
 - 역할: 전체 문서를 frontmatter 기준으로 빠르게 찾는 자동 생성 카탈로그
 
 ## Governance Layer (`00-governance`)
-- [Doc Governance](../00-governance/2026-02-27-uap-doc-governance.meta.md)
+- [Doc Governance](../00-governance/uap-doc-governance.meta.md)
 - 역할: prefix/postfix 규칙, 도메인 소유권, 변경 정책
 
 ## Repo-Scoped Layer (`20-repos`)
@@ -83,7 +100,7 @@ related_docs:
 - [Foundation Execution Plan](../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
 - 역할: 단계별 구현/검증 계획, gate evidence, working defaults
 
-- [GitHub PlanningOps Sync Plan](../30-execution-plan/2026-02-27-uap-github-planningops-sync.execution-plan.md)
+- [GitHub PlanningOps Sync Plan](../30-execution-plan/uap-github-planningops-sync.execution-plan.md)
 - 역할: plan-repo source of truth 기반 Issues/Milestones/Projects 동기화 실행 계획
 
 - [Lifecycle Scenario Playbook](../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
@@ -96,7 +113,7 @@ related_docs:
 - [Issue Closure Matrix](../20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md)
 - 역할: 리뷰 이슈와 gate/문서 타깃 연결
 
-- [Trade-off Decision Framework](../40-quality/2026-02-27-uap-planningops-tradeoff-decision-framework.quality.md)
+- [Trade-off Decision Framework](../40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 - 역할: 판단 유예 항목의 점수화 기준, 분기 영향, 재평가 트리거 제공
 
 ## Domain Cross-Cut Layer (`30-domains`)
@@ -113,23 +130,25 @@ related_docs:
 - 역할: trace/log/timeline cross-cut 정책 축적
 
 ## Reading Order
-1. governance
-2. repo buckets hub
-3. monday repo hub
-4. core brainstorm
-5. planningops sync brainstorm
-6. failure simulation
-7. requirements
-8. contract boundaries
-9. strategy options
-10. foundation execution plan
-11. planningops sync execution plan
-12. lifecycle scenario playbook
-13. doc structure migration plan
-14. trade-off decision framework
-15. quality matrix
-16. domain hubs
-17. frontmatter catalog
+1. entry core
+2. policy core
+3. governance
+4. repo buckets hub
+5. monday repo hub
+6. core brainstorm
+7. planningops sync brainstorm
+8. failure simulation
+9. requirements
+10. contract boundaries
+11. strategy options
+12. foundation execution plan
+13. planningops sync execution plan
+14. lifecycle scenario playbook
+15. doc structure migration plan
+16. trade-off decision framework
+17. quality matrix
+18. domain hubs
+19. frontmatter catalog
 
 ## Handoff Into Planning
 - 계획 문서는 discovery + architecture + quality 문서를 입력으로 사용한다.
