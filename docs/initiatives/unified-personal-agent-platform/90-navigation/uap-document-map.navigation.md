@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-28
+updated: 2026-03-01
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-document-map
 tags:
@@ -25,6 +25,7 @@ related_docs:
   - ../20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ../30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
   - ../30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md
+  - ../30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md
   - ../30-execution-plan/uap-github-planningops-sync.execution-plan.md
   - ../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md
   - ../40-quality/uap-planningops-tradeoff-decision-framework.quality.md
@@ -113,6 +114,9 @@ Note: 이 문서(`uap-document-map.navigation.md`) 자체가 Entry Core 구성�
 - [Topology Priority Expansion Plan](../30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md)
 - 역할: 현재 상태 스냅샷과 토폴로지 기반 우선순위, cross-repo 확장 큐를 정렬하는 실행 계획
 
+- [Module Refactor Hygiene Loop Plan](../30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md)
+- 역할: 모듈 단위 리팩토링을 외부 의존성 -> 내부 의존성 순서로 수행하고, 중간 checkpoint로 문맥 정리를 강제하는 운영 계획
+
 - [Lifecycle Scenario Playbook](../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
 - 역할: 계획 이후 수정/삭제/완료/재개/분할/병합 처리 표준 시나리오와 운영 절차
 
@@ -161,12 +165,13 @@ Note: 이 문서(`uap-document-map.navigation.md`) 자체가 Entry Core 구성�
 13. planningops sync execution plan
 14. topology priority expansion plan
 15. lifecycle scenario playbook
-16. doc structure migration plan
-17. trade-off decision framework
-18. quality matrix
-19. domain hubs
-20. frontmatter catalog
-21. workbench hub (when needed)
+16. module refactor hygiene loop plan
+17. doc structure migration plan
+18. trade-off decision framework
+19. quality matrix
+20. domain hubs
+21. frontmatter catalog
+22. workbench hub (when needed)
 
 ## Handoff Into Planning
 - 계획 문서는 discovery + architecture + quality 문서를 입력으로 사용한다.

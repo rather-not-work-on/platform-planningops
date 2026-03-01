@@ -1,0 +1,35 @@
+{
+  "scan_roots": [
+    "planningops/scripts"
+  ],
+  "include_extensions": [
+    ".py",
+    ".js",
+    ".ts",
+    ".tsx"
+  ],
+  "exclude_dirs": [
+    ".git",
+    "node_modules",
+    "__pycache__",
+    "artifacts",
+    ".venv"
+  ],
+  "internal_alias_prefixes": [
+    "@/",
+    "~/"
+  ],
+  "legacy_markers": [
+    "legacy",
+    "deprecated",
+    "todo-remove",
+    "old_",
+    "_old"
+  ],
+  "max_modules_per_cycle": 3,
+  "max_files_per_module": 20,
+  "checkpoint_every_tasks": 2,
+  "internal_dependency_budget": {
+    "max_out_degree": 5
+  }
+}

@@ -52,6 +52,7 @@ platform-planningops/
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync --profile all
+python3 planningops/scripts/refactor_hygiene_loop.py --policy-file planningops/config/refactor-hygiene-policy.json
 ```
 
 ## Working Rules

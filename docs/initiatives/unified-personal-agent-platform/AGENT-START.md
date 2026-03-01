@@ -23,6 +23,7 @@ related_docs:
   - ./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md
   - ./30-execution-plan/uap-github-planningops-sync.execution-plan.md
   - ./30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md
+  - ./30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md
 ---
 
 # UAP Agent Start Guide
@@ -48,6 +49,7 @@ related_docs:
 3. [Document Map](./90-navigation/uap-document-map.navigation.md)
 4. [PlanningOps Sync Plan](./30-execution-plan/uap-github-planningops-sync.execution-plan.md)
 5. [Topology Priority Expansion Plan](./30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md)
+6. [Module Refactor Hygiene Loop Plan](./30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md)
 
 ### Policy Core (apply before implementation)
 1. [Doc Governance](./00-governance/uap-doc-governance.meta.md)
@@ -125,6 +127,7 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 1. Decision-agnostic Track A 작업부터 시작
 2. Decision-dependent 작업은 스텁까지만 허용
 3. Gate evidence 저장 경로를 먼저 만들고 산출물 축적
+4. 모듈 리팩토링이 필요한 경우 먼저 hygiene analyzer를 실행해 external-first/internal-next 큐를 확정
 
 ## Do Not Do
 - 계약(C1~C8/C1~C5) 밖의 암묵 상태를 시스템 경계로 노출하지 않는다.
