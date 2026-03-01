@@ -1,0 +1,174 @@
+name: Federated CI Matrix
+
+on:
+  pull_request:
+    paths:
+      - "planningops/**"
+      - ".github/workflows/federated-ci-matrix.yml"
+  workflow_dispatch:
+
+jobs:
+  contract-conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Checkout platform-contracts
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/platform-contracts
+          path: platform-contracts
+
+      - name: Validate contracts and semver
+        run: |
+          set -euo pipefail
+          cd platform-contracts
+          python3 scripts/validate_contracts.py --root .
+          python3 scripts/classify_schema_change.py --enforce-expected
+
+  provider-profile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Checkout provider gateway
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/platform-provider-gateway
+          path: platform-provider-gateway
+
+      - name: Run provider launcher/profile drill
+        run: |
+          set -euo pipefail
+          cd platform-provider-gateway
+          bash scripts/litellm_stack_launcher.sh \
+            --mode dry-run \
+            --runtime-profile-file ../planningops/config/runtime-profiles.json \
+            --profiles local,oracle_cloud \
+            --run-id ci-provider-${{ github.run_id }}
+
+  o11y-replay:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Checkout observability gateway
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/platform-observability-gateway
+          path: platform-observability-gateway
+
+      - name: Run o11y replay/backfill drill
+        run: |
+          set -euo pipefail
+          cd platform-observability-gateway
+          bash scripts/langfuse_stack_launcher.sh --mode dry-run --run-id ci-o11y-${{ github.run_id }}
+
+  runtime-handoff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Checkout monday runtime
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/monday
+          path: monday
+
+      - name: Run handoff/scheduler integration
+        run: |
+          set -euo pipefail
+          cd monday
+          python3 scripts/integrate_planningops_handoff.py \
+            --planningops-last-run ../planningops/artifacts/loop-runner/last-run.json \
+            --run-id ci-runtime-${{ github.run_id }} \
+            --idempotency artifacts/integration/ci-runtime-${{ github.run_id }}-idempotency.json \
+            --transition-log artifacts/integration/ci-runtime-${{ github.run_id }}-scheduler.ndjson
+
+  loop-guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Run guardrail checks
+        run: |
+          set -euo pipefail
+          bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
+          bash planningops/scripts/test_loop_checkpoint_resume.sh
+          bash planningops/scripts/test_lease_lock_watchdog.sh
+          bash planningops/scripts/test_escalation_gate.sh
+
+  federated-summary:
+    runs-on: ubuntu-latest
+    needs:
+      - contract-conformance
+      - provider-profile
+      - o11y-replay
+      - runtime-handoff
+      - loop-guardrails
+    if: always()
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Build federated summary
+        run: |
+          set -euo pipefail
+          mkdir -p planningops/artifacts/ci
+          python3 - <<'PY'
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+needs = {
+  "contract-conformance": "${{ needs.contract-conformance.result }}",
+  "runtime-handoff": "${{ needs.runtime-handoff.result }}",
+  "o11y-replay": "${{ needs.o11y-replay.result }}",
+  "provider-profile": "${{ needs.provider-profile.result }}",
+  "loop-guardrails": "${{ needs.loop-guardrails.result }}",
+}
+
+domain_map = {
+  "contract-conformance": "contract",
+  "runtime-handoff": "runtime",
+  "o11y-replay": "infra",
+  "provider-profile": "infra",
+  "loop-guardrails": "policy",
+}
+
+checks = []
+for name, result in needs.items():
+  verdict = "pass" if result == "success" else "fail"
+  checks.append({"name": name, "result": result, "verdict": verdict, "domain": domain_map[name]})
+
+failures = [c for c in checks if c["verdict"] == "fail"]
+doc = {
+  "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+  "run_id": "ci-${{ github.run_id }}",
+  "required_checks": list(needs.keys()),
+  "checks": checks,
+  "failure_classification": {
+    "count": len(failures),
+    "domains": sorted({f["domain"] for f in failures}),
+    "deterministic_rule": "contract-conformance->contract, provider-profile/o11y-replay->infra, runtime-handoff->runtime, loop-guardrails->policy",
+  },
+  "verdict": "pass" if not failures else "fail",
+}
+
+Path("planningops/artifacts/ci/federated-ci-summary.json").write_text(
+  json.dumps(doc, ensure_ascii=True, indent=2), encoding="utf-8"
+)
+print("summary written: planningops/artifacts/ci/federated-ci-summary.json")
+print(f"verdict={doc['verdict']} failures={len(failures)}")
+PY
+
+      - name: Upload federated summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: federated-ci-summary
+          path: planningops/artifacts/ci/federated-ci-summary.json

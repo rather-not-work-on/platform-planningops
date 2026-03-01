@@ -1,0 +1,17 @@
+{
+  "generated_at_utc": "2026-03-01T05:42:26.364365+00:00",
+  "result": "pass",
+  "covered_repositories": [
+    "rather-not-work-on/monday",
+    "rather-not-work-on/platform-contracts",
+    "rather-not-work-on/platform-observability-gateway",
+    "rather-not-work-on/platform-planningops",
+    "rather-not-work-on/platform-provider-gateway"
+  ],
+  "checks": [
+    "supported_repositories",
+    "hook_result_shape",
+    "unknown_repo_fallback",
+    "error_reason_classification"
+  ]
+}

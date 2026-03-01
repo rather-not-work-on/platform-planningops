@@ -1,0 +1,88 @@
+{
+  "active_profile": "local",
+  "profiles": {
+    "local": {
+      "execution_mode": "local",
+      "litellm_base_url": "http://127.0.0.1:4000",
+      "langfuse_host": "http://127.0.0.1:3001",
+      "nanoclaw_endpoint": "http://127.0.0.1:8787",
+      "notes": "Default local stack for planningops loop development."
+    },
+    "oracle_cloud": {
+      "execution_mode": "hybrid",
+      "litellm_base_url": "https://litellm.example.oracle.cloud",
+      "langfuse_host": "https://langfuse.example.oracle.cloud",
+      "nanoclaw_endpoint": "https://nanoclaw.example.oracle.cloud",
+      "notes": "Migration target profile for OCI deployment."
+    }
+  },
+  "task_overrides": {
+    "default": {
+      "runtime_profile": "local",
+      "provider_policy": {
+        "model": "task-default",
+        "fallback_models": [
+          "task-default-fallback"
+        ],
+        "max_retries": 2,
+        "timeout_ms": 60000
+      }
+    },
+    "issue-18": {
+      "runtime_profile": "local",
+      "provider_policy": {
+        "model": "gateway-smoke",
+        "fallback_models": [
+          "gateway-fallback-a",
+          "gateway-fallback-b"
+        ],
+        "max_retries": 3,
+        "timeout_ms": 45000
+      }
+    },
+    "issue-19": {
+      "runtime_profile": "local",
+      "provider_policy": {
+        "model": "o11y-ingest-smoke",
+        "fallback_models": [
+          "o11y-fallback"
+        ],
+        "max_retries": 2,
+        "timeout_ms": 30000
+      }
+    },
+    "pilot-day-2": {
+      "runtime_profile": "oracle_cloud",
+      "provider_policy": {
+        "model": "pilot-oracle",
+        "fallback_models": [
+          "pilot-oracle-fallback"
+        ],
+        "max_retries": 2,
+        "timeout_ms": 60000
+      }
+    },
+    "pilot-day-4": {
+      "runtime_profile": "oracle_cloud",
+      "provider_policy": {
+        "model": "pilot-oracle",
+        "fallback_models": [
+          "pilot-oracle-fallback"
+        ],
+        "max_retries": 2,
+        "timeout_ms": 60000
+      }
+    },
+    "pilot-day-6": {
+      "runtime_profile": "oracle_cloud",
+      "provider_policy": {
+        "model": "pilot-oracle",
+        "fallback_models": [
+          "pilot-oracle-fallback"
+        ],
+        "max_retries": 2,
+        "timeout_ms": 60000
+      }
+    }
+  }
+}

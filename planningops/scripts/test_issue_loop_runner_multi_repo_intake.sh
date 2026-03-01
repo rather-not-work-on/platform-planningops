@@ -60,6 +60,54 @@ assert trace["candidate_count"] == 2, trace
 assert trace["selected"]["number"] == 77, trace
 assert trace["selected"]["target_repo"] == "rather-not-work-on/platform-planningops", trace
 
+l1_profile = mod.determine_loop_profile(selected, {}, "rather-not-work-on/platform-planningops")
+assert l1_profile == "L1 Contract-Clarification", l1_profile
+
+ready_impl_cross_repo = {
+    "workflow_state": "ready-implementation",
+    "target_repo": "rather-not-work-on/monday",
+    "issue_repo": "rather-not-work-on/platform-planningops",
+}
+l4_profile = mod.determine_loop_profile(ready_impl_cross_repo, {}, "rather-not-work-on/platform-planningops")
+assert l4_profile == "L4 Integration-Reconcile", l4_profile
+
+l5_profile = mod.determine_loop_profile(selected, {"replanning_triggered": True}, "rather-not-work-on/platform-planningops")
+assert l5_profile == "L5 Recovery-Replan", l5_profile
+
+budget_default, budget_errors_default = mod.parse_attempt_budget("no budget fields")
+assert budget_default["max_attempts"] == 3, budget_default
+assert budget_default["max_duration_minutes"] == 30, budget_default
+assert budget_default["max_token_budget"] == 120000, budget_default
+assert budget_errors_default == [], budget_errors_default
+
+budget_custom, budget_errors_custom = mod.parse_attempt_budget(
+    "max_attempts: 5\nmax_duration_minutes: 15\nmax_token_budget: 90000\n"
+)
+assert budget_custom["max_attempts"] == 5, budget_custom
+assert budget_custom["max_duration_minutes"] == 15, budget_custom
+assert budget_custom["max_token_budget"] == 90000, budget_custom
+assert budget_errors_custom == [], budget_errors_custom
+
+_, budget_errors_invalid = mod.parse_attempt_budget("max_attempts: -2\nmax_duration_minutes: foo\n")
+assert budget_errors_invalid, budget_errors_invalid
+
+adapter = mod.resolve_execution_adapter("rather-not-work-on/platform-provider-gateway")
+adapter_pre = mod.invoke_adapter_hook(
+    adapter,
+    "before_loop",
+    {
+        "issue_number": 88,
+        "issue_repo": "rather-not-work-on/platform-planningops",
+        "target_repo": "rather-not-work-on/platform-provider-gateway",
+        "workflow_state": "ready-implementation",
+        "loop_profile": "L3 Implementation-TDD",
+        "mode": "dry-run",
+        "selection_transition_id": "loop-test-intake",
+    },
+)
+assert adapter_pre["status"] == "ok", adapter_pre
+assert adapter_pre["reason_code"] in {"contract", "permission", "context", "runtime", "feedback_failed"}, adapter_pre
+
 event = {
     "transition_id": "loop-test-issue-77-intake-selection",
     "run_id": "loop-test-issue-77",
@@ -71,6 +119,7 @@ event = {
     "actor_id": "issue-loop-runner",
     "decided_at_utc": "2026-02-28T00:00:00+00:00",
     "replanning_flag": False,
+    "loop_profile": l1_profile,
     "selection_trace": trace,
 }
 
@@ -94,6 +143,7 @@ with tempfile.TemporaryDirectory() as td:
     ]:
         assert key in row, key
     assert row["selection_trace"]["selected"]["number"] == 77, row
+    assert row["loop_profile"] == "L1 Contract-Clarification", row
 
 print("issue_loop_runner multi-repo intake trace ok")
 PY

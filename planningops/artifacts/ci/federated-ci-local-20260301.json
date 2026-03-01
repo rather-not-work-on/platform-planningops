@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "name": "contract-conformance",
+      "domain": "contract",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-contract-conformance.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-contract-conformance.stderr.log"
+    },
+    {
+      "name": "provider-profile",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-provider-profile.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-provider-profile.stderr.log"
+    },
+    {
+      "name": "o11y-replay",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-o11y-replay.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-o11y-replay.stderr.log"
+    },
+    {
+      "name": "runtime-handoff",
+      "domain": "runtime",
+      "exit_code": 1,
+      "verdict": "fail",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-runtime-handoff.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-runtime-handoff.stderr.log"
+    },
+    {
+      "name": "loop-guardrails",
+      "domain": "policy",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-loop-guardrails.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-local-20260301-loop-guardrails.stderr.log"
+    }
+  ],
+  "generated_at_utc": "2026-03-01T06:02:43.896167+00:00",
+  "run_id": "federated-ci-local-20260301",
+  "required_checks": [
+    "contract-conformance",
+    "runtime-handoff",
+    "o11y-replay",
+    "provider-profile",
+    "loop-guardrails"
+  ],
+  "failure_classification": {
+    "count": 1,
+    "domains": [
+      "runtime"
+    ],
+    "deterministic_rule": "contract-conformance->contract, provider-profile/o11y-replay->infra, runtime-handoff->runtime, loop-guardrails->policy"
+  },
+  "verdict": "fail"
+}

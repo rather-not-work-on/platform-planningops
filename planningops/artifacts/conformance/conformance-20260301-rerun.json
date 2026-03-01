@@ -1,0 +1,142 @@
+{
+  "generated_at_utc": "2026-03-01T05:52:23.584458+00:00",
+  "run_id": "conformance-20260301-rerun",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "checks": [
+    {
+      "check_id": "contracts.validate",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+      "command": [
+        "python3",
+        "scripts/validate_contracts.py",
+        "--root",
+        "."
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "[PASS] c1-run-lifecycle.schema.json <- c1-run-lifecycle.valid.json\n[PASS] c2-subtask-handoff.schema.json <- c2-subtask-handoff.valid.json\n[PASS] c3-executor-result.schema.json <- c3-executor-result.valid.json\n[PASS] c4-provider-invocation.schema.json <- c4-provider-invocation.valid.json\n[PASS] c5-observability-event.schema.json <- c5-observability-event.valid.json\n[PASS] c6-public-status-projection.schema.json <- c6-public-status-projection.valid.json\n[PASS] c7-manual-override-policy.schema.json <- c7-manual-override-policy.valid.json\n[PASS] c8-plan-to-github-projection.schema.json <- c8-plan-to-github-projection.valid.json\nvalidation passed: all C1~C8 fixtures are valid",
+      "stderr_tail": ""
+    },
+    {
+      "check_id": "contracts.semver_classification",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+      "command": [
+        "python3",
+        "scripts/classify_schema_change.py",
+        "--enforce-expected"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: compatibility/reports/semver-classification-20260301T055223Z.json\nscenario_count=4 mismatch_count=0",
+      "stderr_tail": ""
+    },
+    {
+      "check_id": "provider.primary_success",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "python3",
+        "scripts/litellm_gateway_smoke.py",
+        "--scenario",
+        "primary_success",
+        "--run-id",
+        "conformance-20260301-rerun"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: artifacts/smoke/conformance-20260301-rerun-primary_success.json\nscenario=primary_success verdict=pass attempts=1",
+      "stderr_tail": ""
+    },
+    {
+      "check_id": "provider.contract_violation_fail_fast",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "python3",
+        "scripts/litellm_gateway_smoke.py",
+        "--scenario",
+        "contract_violation",
+        "--run-id",
+        "conformance-20260301-rerun"
+      ],
+      "expected_exit": 1,
+      "exit_code": 1,
+      "verdict": "pass",
+      "stdout_tail": "report written: artifacts/smoke/conformance-20260301-rerun-contract_violation.json\nscenario=contract_violation verdict=fail attempts=1",
+      "stderr_tail": ""
+    },
+    {
+      "check_id": "o11y.delay_and_replay",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "python3",
+        "scripts/langfuse_ingest_smoke.py",
+        "--scenario",
+        "delay_and_replay",
+        "--run-id",
+        "conformance-20260301-rerun"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: artifacts/ingest/conformance-20260301-rerun-delay_and_replay.json\nscenario=delay_and_replay verdict=pass continuity_ok=True duplicates=1",
+      "stderr_tail": ""
+    },
+    {
+      "check_id": "runtime.handoff_mapping",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "python3",
+        "scripts/validate_handoff_mapping.py"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: artifacts/interface/handoff-smoke-report.json\nverdict=pass mismatch_count=0",
+      "stderr_tail": ""
+    }
+  ],
+  "pin_results": [
+    {
+      "consumer_repo": "rather-not-work-on/platform-provider-gateway",
+      "pin_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/config/contract-pin.json",
+      "contract_bundle_version": "2026.02.28",
+      "pinned_contracts": [
+        "c4-provider-invocation"
+      ],
+      "verdict": "pass",
+      "errors": []
+    },
+    {
+      "consumer_repo": "rather-not-work-on/platform-observability-gateway",
+      "pin_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/config/contract-pin.json",
+      "contract_bundle_version": "2026.02.28",
+      "pinned_contracts": [
+        "c5-observability-event"
+      ],
+      "verdict": "pass",
+      "errors": []
+    },
+    {
+      "consumer_repo": "rather-not-work-on/monday",
+      "pin_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/contracts/contract-pin.json",
+      "contract_bundle_version": "2026.02.28",
+      "pinned_contracts": [
+        "c1-run-lifecycle",
+        "c2-subtask-handoff",
+        "c3-executor-result",
+        "c8-plan-to-github-projection"
+      ],
+      "verdict": "pass",
+      "errors": []
+    }
+  ],
+  "incompatibility_example": {
+    "semver_major_example_present": true,
+    "provider_fail_fast_example_present": true,
+    "provider_fail_fast_report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/artifacts/smoke/conformance-20260301-rerun-contract_violation.json",
+    "verdict": "pass"
+  },
+  "verdict": "pass"
+}

@@ -9,8 +9,13 @@ Resolve `platform-planningops` issues autonomously in repeatable loops with expl
 - `issue_body`
 - `execution_order`
 - `depends_on`
+- `workflow_state`
+- `target_repo`
 - `ecp_ref` (Execution Context Pack path)
 - `contract_refs` (C1~C8, policy docs)
+- `loop_profile` (selector output; `L1|L2|L3|L4|L5`)
+- `adapter_context` (repo adapter hook input payload)
+- `attempt_budget` (`max_attempts`, `max_duration_minutes`, `max_token_budget`)
 
 ## Outputs (Required)
 - `patch_summary.md`
@@ -18,6 +23,9 @@ Resolve `platform-planningops` issues autonomously in repeatable loops with expl
 - `verification-report.json`
 - `transition-log.ndjson`
 - `issue_comment_payload.md`
+- `project_field_payload.json` (must include `last_verdict`, `last_reason`, `loop_profile`)
+- `adapter-pre.json` (repo pre-hook result payload)
+- `adapter-post.json` (repo post-hook result payload)
 
 ## Success Condition
 A loop is successful only when:

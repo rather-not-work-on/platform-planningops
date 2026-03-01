@@ -9,6 +9,21 @@
 - `idempotency_conflict`: duplicate key or replay mismatch
 - `runtime_error`: unexpected local execution error
 
+## Adapter Reason Mapping Standard
+Adapter hook reason families are constrained to:
+- `contract`
+- `permission`
+- `context`
+- `runtime`
+- `feedback_failed`
+
+Mapping to loop failure taxonomy:
+- `contract` -> `verification_failed`
+- `permission` -> `permission_denied`
+- `context` -> `missing_input`
+- `runtime` -> `runtime_error`
+- `feedback_failed` -> `feedback_failed`
+
 ## Retry Policy
 - `missing_input`: no retry (requires human/doc update)
 - `dependency_blocked`: no retry until dependency changes

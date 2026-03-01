@@ -84,7 +84,16 @@ def main():
     items = item_doc.get("items", [])
 
     required_field_checks = []
-    for key in ["status", "initiative", "target_repo", "component", "execution_order", "plan_lane", "workflow_state"]:
+    for key in [
+        "status",
+        "initiative",
+        "target_repo",
+        "component",
+        "execution_order",
+        "plan_lane",
+        "workflow_state",
+        "loop_profile",
+    ]:
         expected = expected_fields.get(key, {})
         field_id = expected.get("id")
         ok = bool(field_id and field_id in fields_by_id)
@@ -94,7 +103,7 @@ def main():
             "exists": ok,
             "actual_name": fields_by_id.get(field_id, {}).get("name") if ok else None,
         }
-        if key in ["status", "component", "plan_lane", "workflow_state"]:
+        if key in ["status", "component", "plan_lane", "workflow_state", "loop_profile"]:
             expected_opts = (expected.get("options") or {}).values()
             actual_opts = {o.get("id") for o in (fields_by_id.get(field_id, {}).get("options") or [])}
             missing_opts = sorted([opt for opt in expected_opts if opt not in actual_opts])
@@ -121,6 +130,7 @@ def main():
         target_repo = find_item_field_value(item, "target_repo")
         component_value = find_item_field_value(item, "component")
         workflow_state = find_item_field_value(item, "workflow_state")
+        loop_profile = find_item_field_value(item, "loop_profile")
         status_value = item.get("status")
         repo_value = content.get("repository")
 
@@ -162,6 +172,16 @@ def main():
                     "item_id": item_id,
                     "issue_number": issue_number,
                     "message": "workflow_state field is required for initiative cards",
+                }
+            )
+        if not loop_profile:
+            violations.append(
+                {
+                    "type": "MISSING_FIELD",
+                    "field": "loop_profile",
+                    "item_id": item_id,
+                    "issue_number": issue_number,
+                    "message": "loop_profile field is required for initiative cards",
                 }
             )
 
@@ -225,6 +245,29 @@ def main():
                         "expected_status": expected_status,
                         "actual_status": status_value,
                         "message": "Status projection must match workflow_state contract",
+                    }
+                )
+
+        if workflow_state and loop_profile:
+            expected_profiles = None
+            if workflow_state == "ready-contract":
+                expected_profiles = {"L1 Contract-Clarification", "L2 Simulation"}
+            elif workflow_state == "ready-implementation":
+                expected_profiles = {"L3 Implementation-TDD", "L4 Integration-Reconcile"}
+            elif workflow_state == "blocked":
+                expected_profiles = {"L5 Recovery-Replan"}
+
+            if expected_profiles and loop_profile not in expected_profiles:
+                violations.append(
+                    {
+                        "type": "LOOP_PROFILE_WORKFLOW_MISMATCH",
+                        "field": "loop_profile",
+                        "item_id": item_id,
+                        "issue_number": issue_number,
+                        "workflow_state": workflow_state,
+                        "expected_profiles": sorted(expected_profiles),
+                        "actual": loop_profile,
+                        "message": "loop_profile must match workflow_state default contract",
                     }
                 )
 

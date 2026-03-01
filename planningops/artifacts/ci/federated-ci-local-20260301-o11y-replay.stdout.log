@@ -1,0 +1,7 @@
+[launcher] dry-run mode: running replay/backfill drill
+report written: artifacts/ingest/federated-ci-local-20260301-o11y-normal.json
+scenario=normal verdict=pass continuity_ok=True duplicates=0
+report written: artifacts/ingest/federated-ci-local-20260301-o11y-delay_and_replay.json
+scenario=delay_and_replay verdict=pass continuity_ok=True duplicates=1
+launcher manifest: artifacts/launcher/federated-ci-local-20260301-o11y.json
+continuity_ok=True verdict=pass

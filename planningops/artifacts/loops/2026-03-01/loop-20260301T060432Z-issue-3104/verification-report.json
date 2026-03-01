@@ -1,0 +1,34 @@
+{
+  "issue_number": 3104,
+  "loop_id": "loop-20260301T060432Z-issue-3104",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "runtime_context": {
+    "profile_file": "planningops/artifacts/pilot/pilot-20260301-runtime-profiles.json",
+    "task_key": "pilot-day-4",
+    "selected_profile": "oracle_cloud",
+    "profile": {
+      "execution_mode": "hybrid",
+      "litellm_base_url": "https://litellm.example.oracle.cloud",
+      "langfuse_host": "https://langfuse.example.oracle.cloud",
+      "nanoclaw_endpoint": "https://nanoclaw.example.oracle.cloud",
+      "notes": "Migration target profile for OCI deployment."
+    },
+    "provider_policy": {
+      "model": "pilot-oracle",
+      "fallback_models": [
+        "pilot-oracle-fallback"
+      ],
+      "max_retries": 2,
+      "timeout_ms": 60000
+    }
+  },
+  "artifacts": {
+    "intake_check": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/intake-check.json",
+    "simulation_report": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/simulation-report.md",
+    "verification_report": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/verification-report.json",
+    "transition_log": "planningops/artifacts/transition-log/2026-03-01.ndjson",
+    "sync_summary": "planningops/artifacts/sync-summary/loop-20260301T060432Z-issue-3104.json"
+  },
+  "executed_at_utc": "2026-03-01T06:04:32.078643+00:00"
+}

@@ -1,0 +1,4 @@
+issue_loop_runner multi-repo intake trace ok
+loop checkpoint resume contract smoke ok
+lease lock watchdog contract smoke ok
+escalation gate contract smoke ok

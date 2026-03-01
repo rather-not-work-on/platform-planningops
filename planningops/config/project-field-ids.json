@@ -54,6 +54,16 @@
         "blocked": "41f8c85f",
         "done": "c8db8ee1"
       }
+    },
+    "loop_profile": {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-kZMI",
+      "options": {
+        "l1_contract_clarification": "0aa7a66a",
+        "l2_simulation": "60de8d1a",
+        "l3_implementation_tdd": "e18297a8",
+        "l4_integration_reconcile": "1e144499",
+        "l5_recovery_replan": "9f6cfe0a"
+      }
     }
   }
 }

@@ -3,14 +3,30 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from repo_execution_adapters import invoke_adapter_hook, resolve_execution_adapter
 
 
 IDEMPOTENCY_PATH = Path("planningops/artifacts/loop-runner/idempotency.json")
+CHECKPOINT_DIR = Path("planningops/artifacts/loop-runner/checkpoints")
+LOCK_DIR = Path("planningops/artifacts/loop-runner/locks")
+WATCHDOG_DIR = Path("planningops/artifacts/loop-runner/watchdog")
+ESCALATION_HISTORY_PATH = Path("planningops/artifacts/loop-runner/escalation-history.json")
+DEFAULT_ATTEMPT_BUDGET = {
+    "max_attempts": 3,
+    "max_duration_minutes": 30,
+    "max_token_budget": 120000,
+}
 
 
 def run(args):
@@ -35,6 +51,136 @@ def append_ndjson(path: Path, data):
         f.write(json.dumps(data, ensure_ascii=True) + "\n")
 
 
+def checkpoint_path(issue_num: int):
+    return CHECKPOINT_DIR / f"issue-{issue_num}.json"
+
+
+def load_checkpoint(issue_num: int):
+    path = checkpoint_path(issue_num)
+    return load_json(path, {})
+
+
+def save_checkpoint(issue_num: int, stage: str, data: dict):
+    payload = dict(data)
+    payload["issue_number"] = issue_num
+    payload["stage"] = stage
+    payload["updated_at_utc"] = datetime.now(timezone.utc).isoformat()
+    save_json(checkpoint_path(issue_num), payload)
+
+
+def clear_checkpoint(issue_num: int):
+    path = checkpoint_path(issue_num)
+    if path.exists():
+        path.unlink()
+
+
+def lock_path(issue_num: int):
+    return LOCK_DIR / f"issue-{issue_num}.lock.json"
+
+
+def parse_iso8601(value: str):
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def acquire_issue_lock(issue_num: int, owner_id: str, ttl_seconds: int):
+    now = datetime.now(timezone.utc)
+    path = lock_path(issue_num)
+    LOCK_DIR.mkdir(parents=True, exist_ok=True)
+
+    stale_recovered = False
+    if path.exists():
+        doc = load_json(path, {})
+        expires_at = parse_iso8601(str(doc.get("expires_at_utc", "")))
+        if expires_at and expires_at > now and doc.get("owner_id") != owner_id:
+            return False, doc, stale_recovered
+        stale_recovered = True
+
+    lock_doc = {
+        "issue_number": issue_num,
+        "owner_id": owner_id,
+        "acquired_at_utc": now.isoformat(),
+        "last_heartbeat_utc": now.isoformat(),
+        "expires_at_utc": (now + timedelta(seconds=ttl_seconds)).isoformat(),
+    }
+    save_json(path, lock_doc)
+    return True, lock_doc, stale_recovered
+
+
+def heartbeat_issue_lock(issue_num: int, owner_id: str, ttl_seconds: int):
+    path = lock_path(issue_num)
+    if not path.exists():
+        return False
+    doc = load_json(path, {})
+    if doc.get("owner_id") != owner_id:
+        return False
+
+    now = datetime.now(timezone.utc)
+    doc["last_heartbeat_utc"] = now.isoformat()
+    doc["expires_at_utc"] = (now + timedelta(seconds=ttl_seconds)).isoformat()
+    save_json(path, doc)
+    return True
+
+
+def release_issue_lock(issue_num: int, owner_id: str):
+    path = lock_path(issue_num)
+    if not path.exists():
+        return True
+    doc = load_json(path, {})
+    if doc.get("owner_id") != owner_id:
+        return False
+    path.unlink()
+    return True
+
+
+def evaluate_escalation(issue_num: int, verdict: str, reason_code: str):
+    history = load_json(ESCALATION_HISTORY_PATH, {"issues": {}})
+    issues = history.get("issues", {})
+    issue_key = str(issue_num)
+    rows = issues.get(issue_key, [])
+
+    current = {
+        "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+        "verdict": verdict,
+        "reason_code": reason_code,
+    }
+    rows.append(current)
+    rows = rows[-20:]
+    issues[issue_key] = rows
+    save_json(ESCALATION_HISTORY_PATH, {"issues": issues})
+
+    same_reason_consecutive = 0
+    if reason_code:
+        for row in reversed(rows):
+            if row.get("reason_code") == reason_code:
+                same_reason_consecutive += 1
+            else:
+                break
+
+    inconclusive_consecutive = 0
+    for row in reversed(rows):
+        if row.get("verdict") == "inconclusive":
+            inconclusive_consecutive += 1
+        else:
+            break
+
+    trigger_type = None
+    if same_reason_consecutive >= 3:
+        trigger_type = "same_reason_x3"
+    elif inconclusive_consecutive >= 2:
+        trigger_type = "inconclusive_x2"
+
+    return {
+        "auto_paused": trigger_type is not None,
+        "trigger_type": trigger_type,
+        "same_reason_consecutive": same_reason_consecutive,
+        "inconclusive_consecutive": inconclusive_consecutive,
+        "history_count": len(rows),
+    }
+
+
 def parse_depends_on(issue_body: str):
     deps = set()
     for line in issue_body.splitlines():
@@ -52,6 +198,35 @@ def issue_is_closed(issue_num: int, repo: str):
 
 def parse_csv(value: str):
     return [x.strip() for x in value.split(",") if x.strip()]
+
+
+def parse_attempt_budget(issue_body: str):
+    budget = dict(DEFAULT_ATTEMPT_BUDGET)
+    errors = []
+    for line in issue_body.splitlines():
+        m = re.match(
+            r"\s*(max_attempts|max_duration_minutes|max_token_budget)\s*:\s*(\S+)\s*$",
+            line,
+            re.IGNORECASE,
+        )
+        if not m:
+            continue
+        key = m.group(1).lower()
+        raw = m.group(2).strip()
+        if raw.isdigit():
+            value = int(raw)
+            if value <= 0:
+                errors.append(f"{key} must be positive integer")
+            else:
+                budget[key] = value
+            continue
+
+        if raw.startswith("-") and raw[1:].isdigit():
+            errors.append(f"{key} must be positive integer")
+        else:
+            errors.append(f"{key} must be integer")
+
+    return budget, sorted(set(errors))
 
 
 def normalize_candidates(items, allowed_workflow_states):
@@ -99,6 +274,7 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
             "issue_repo": selected.get("issue_repo"),
             "target_repo": selected.get("target_repo"),
             "depends_on": selected.get("deps", []),
+            "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
         }
 
     return {
@@ -151,6 +327,62 @@ def ensure_text_field(owner: str, project_num: int, field_name: str):
     return out2.strip()
 
 
+def ensure_single_select_field(owner: str, project_num: int, field_name: str, option_names):
+    rc, out, err = run(["gh", "project", "field-list", str(project_num), "--owner", owner, "--format", "json"])
+    if rc != 0:
+        raise RuntimeError(f"failed field-list: {err}")
+    doc = json.loads(out)
+    for f in doc.get("fields", []):
+        if f.get("name") != field_name:
+            continue
+        options = {o.get("name"): o.get("id") for o in (f.get("options") or []) if o.get("name") and o.get("id")}
+        missing = [opt for opt in option_names if opt not in options]
+        if missing:
+            raise RuntimeError(f"field '{field_name}' missing options: {missing}")
+        return f.get("id"), options
+
+    rc2, out2, err2 = run(
+        [
+            "gh",
+            "project",
+            "field-create",
+            str(project_num),
+            "--owner",
+            owner,
+            "--name",
+            field_name,
+            "--data-type",
+            "SINGLE_SELECT",
+            "--single-select-options",
+            ",".join(option_names),
+            "--format",
+            "json",
+        ]
+    )
+    if rc2 != 0:
+        raise RuntimeError(f"failed field-create {field_name}: {err2}")
+    field_doc = json.loads(out2)
+    options = {o.get("name"): o.get("id") for o in (field_doc.get("options") or []) if o.get("name") and o.get("id")}
+    return field_doc.get("id"), options
+
+
+def determine_loop_profile(selected: dict, payload: dict, control_repo: str):
+    if payload.get("replanning_triggered"):
+        return "L5 Recovery-Replan"
+
+    workflow_state = selected.get("workflow_state")
+    target_repo = selected.get("target_repo") or selected.get("issue_repo")
+    if workflow_state == "ready-contract":
+        return "L1 Contract-Clarification"
+    if workflow_state == "ready-implementation":
+        if target_repo and target_repo != control_repo:
+            return "L4 Integration-Reconcile"
+        return "L3 Implementation-TDD"
+    if workflow_state == "blocked":
+        return "L5 Recovery-Replan"
+    return "L1 Contract-Clarification"
+
+
 def main():
     parser = argparse.ArgumentParser(description="Issue intake and feedback loop runner")
     parser.add_argument("--owner", default="rather-not-work-on")
@@ -172,6 +404,23 @@ def main():
         "--runtime-profile-file",
         default="planningops/config/runtime-profiles.json",
         help="Runtime profile catalog path used by local harness",
+    )
+    parser.add_argument(
+        "--resume-from-checkpoint",
+        action="store_true",
+        help="Resume from saved checkpoint for selected issue if available",
+    )
+    parser.add_argument(
+        "--simulate-interrupt-after",
+        choices=["pre_hook", "loop_executed", "verified", "feedback_applied"],
+        default=None,
+        help="Testing hook: stop after a checkpoint stage and return non-zero",
+    )
+    parser.add_argument(
+        "--lease-ttl-seconds",
+        type=int,
+        default=900,
+        help="Lease lock TTL in seconds for duplicate/zombie execution prevention",
     )
     args = parser.parse_args()
     allowed_workflow_states = set(parse_csv(args.pull_workflow_states))
@@ -224,10 +473,23 @@ def main():
                 }
             )
             continue
-        deps = parse_depends_on(issue_doc.get("body", ""))
+        issue_body = issue_doc.get("body", "")
+        deps = parse_depends_on(issue_body)
+        attempt_budget, budget_errors = parse_attempt_budget(issue_body)
+        if budget_errors:
+            selection_attempts.append(
+                {
+                    "number": num,
+                    "issue_repo": issue_repo,
+                    "result": "invalid_attempt_budget",
+                    "attempt_budget_errors": budget_errors,
+                }
+            )
+            continue
         closed_checks = [{"dep": dep, "closed": issue_is_closed(dep, issue_repo)} for dep in deps]
         if all(x["closed"] for x in closed_checks):
             c["deps"] = deps
+            c["attempt_budget"] = attempt_budget
             selected = c
             selection_attempts.append(
                 {
@@ -236,6 +498,7 @@ def main():
                     "result": "selected",
                     "depends_on": deps,
                     "dep_checks": closed_checks,
+                    "attempt_budget": attempt_budget,
                 }
             )
             break
@@ -256,33 +519,201 @@ def main():
         return 2
 
     issue_num = selected["number"]
+    lock_owner_id = f"issue-loop-runner-{os.getpid()}-{int(datetime.now(timezone.utc).timestamp())}"
+    lock_acquired, lock_doc, stale_lock_recovered = acquire_issue_lock(issue_num, lock_owner_id, args.lease_ttl_seconds)
+    watchdog_events = [
+        {
+            "event": "lock_attempt",
+            "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+            "issue_number": issue_num,
+            "lock_owner_id": lock_owner_id,
+            "lock_acquired": lock_acquired,
+            "stale_lock_recovered": stale_lock_recovered,
+        }
+    ]
+    watchdog_path = WATCHDOG_DIR / f"issue-{issue_num}.json"
 
-    # run loop
-    rc_loop, out_loop, err_loop = run(
-        [
-            "python3",
-            "planningops/scripts/ralph_loop_local.py",
-            "--issue-number",
-            str(issue_num),
-            "--mode",
-            args.mode,
-            "--runtime-profile-file",
-            args.runtime_profile_file,
-            "--task-key",
-            f"issue-{issue_num}",
-        ]
+    if not lock_acquired:
+        WATCHDOG_DIR.mkdir(parents=True, exist_ok=True)
+        save_json(
+            watchdog_path,
+            {
+                "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "issue_number": issue_num,
+                "verdict": "lock_conflict",
+                "lock_owner_id": lock_owner_id,
+                "active_lock": lock_doc,
+                "events": watchdog_events,
+            },
+        )
+        print(
+            json.dumps(
+                {
+                    "result": "lock_conflict",
+                    "issue_number": issue_num,
+                    "active_lock_owner": lock_doc.get("owner_id"),
+                    "watchdog_report": str(watchdog_path),
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 4
+
+    resume_checkpoint = load_checkpoint(issue_num) if args.resume_from_checkpoint else {}
+    resume_stage = resume_checkpoint.get("stage") if resume_checkpoint else None
+    selected_loop_profile = determine_loop_profile(selected, {}, args.control_repo)
+    adapter = resolve_execution_adapter(selected.get("target_repo") or selected.get("issue_repo"))
+    adapter_context = {
+        "issue_number": issue_num,
+        "issue_repo": selected.get("issue_repo"),
+        "target_repo": selected.get("target_repo"),
+        "workflow_state": selected.get("workflow_state"),
+        "loop_profile": selected_loop_profile,
+        "mode": args.mode,
+        "runtime_profile_file": args.runtime_profile_file,
+        "selection_trace": selection_trace,
+        "selection_transition_id": "",
+    }
+    if resume_stage in {"pre_hook", "loop_executed", "verified", "feedback_applied"} and resume_checkpoint.get(
+        "adapter_pre_hook"
+    ):
+        pre_hook_result = resume_checkpoint.get("adapter_pre_hook")
+    else:
+        pre_hook_result = invoke_adapter_hook(adapter, "before_loop", context=adapter_context)
+    save_checkpoint(
+        issue_num,
+        "pre_hook",
+        {
+            "selected_issue_repo": selected.get("issue_repo"),
+            "selected_target_repo": selected.get("target_repo"),
+            "selected_workflow_state": selected.get("workflow_state"),
+            "selected_loop_profile": selected_loop_profile,
+            "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+            "adapter_pre_hook": pre_hook_result,
+        },
     )
+    watchdog_events.append(
+        {
+            "event": "pre_hook_checkpoint_saved",
+            "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+            "heartbeat_refreshed": heartbeat_issue_lock(issue_num, lock_owner_id, args.lease_ttl_seconds),
+        }
+    )
+    if args.simulate_interrupt_after == "pre_hook":
+        release_ok = release_issue_lock(issue_num, lock_owner_id)
+        save_json(
+            watchdog_path,
+            {
+                "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "issue_number": issue_num,
+                "verdict": "interrupted",
+                "stage": "pre_hook",
+                "release_ok": release_ok,
+                "events": watchdog_events,
+            },
+        )
+        print(json.dumps({"result": "interrupted", "stage": "pre_hook", "issue_number": issue_num}, ensure_ascii=True))
+        return 3
 
-    # find latest loop dir for this issue
-    loop_root = Path("planningops/artifacts/loops")
-    loop_dirs = sorted(loop_root.glob(f"*/loop-*-issue-{issue_num}"))
-    if not loop_dirs:
-        print("loop execution did not produce artifacts")
-        return 1
-    loop_dir = loop_dirs[-1]
-    date_part = loop_dir.parent.name
-    loop_id = loop_dir.name
+    reused_loop_artifacts = False
+    if args.resume_from_checkpoint and resume_stage in {"loop_executed", "verified", "feedback_applied"}:
+        checkpoint_loop_dir = Path(resume_checkpoint.get("loop_dir", ""))
+        if checkpoint_loop_dir.exists():
+            loop_dir = checkpoint_loop_dir
+            date_part = resume_checkpoint.get("date_part", loop_dir.parent.name)
+            loop_id = resume_checkpoint.get("loop_id", loop_dir.name)
+            rc_loop = int(resume_checkpoint.get("loop_rc", 0))
+            out_loop = str(resume_checkpoint.get("loop_stdout", "resumed-from-checkpoint"))
+            err_loop = str(resume_checkpoint.get("loop_stderr", ""))
+            reused_loop_artifacts = True
+        else:
+            resume_stage = None
+
+    if not reused_loop_artifacts:
+        # run loop
+        rc_loop, out_loop, err_loop = run(
+            [
+                "python3",
+                "planningops/scripts/ralph_loop_local.py",
+                "--issue-number",
+                str(issue_num),
+                "--mode",
+                args.mode,
+                "--runtime-profile-file",
+                args.runtime_profile_file,
+                "--task-key",
+                f"issue-{issue_num}",
+            ]
+        )
+
+        # find latest loop dir for this issue
+        loop_root = Path("planningops/artifacts/loops")
+        loop_dirs = sorted(loop_root.glob(f"*/loop-*-issue-{issue_num}"))
+        if not loop_dirs:
+            release_ok = release_issue_lock(issue_num, lock_owner_id)
+            save_json(
+                watchdog_path,
+                {
+                    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "issue_number": issue_num,
+                    "verdict": "fail",
+                    "stage": "loop_executed",
+                    "reason": "missing_loop_artifacts",
+                    "release_ok": release_ok,
+                    "events": watchdog_events,
+                },
+            )
+            print("loop execution did not produce artifacts")
+            return 1
+        loop_dir = loop_dirs[-1]
+        date_part = loop_dir.parent.name
+        loop_id = loop_dir.name
+        save_checkpoint(
+            issue_num,
+            "loop_executed",
+            {
+                "loop_dir": str(loop_dir),
+                "date_part": date_part,
+                "loop_id": loop_id,
+                "loop_rc": rc_loop,
+                "loop_stdout": out_loop[-2000:],
+                "loop_stderr": err_loop[-2000:],
+                "adapter_pre_hook": pre_hook_result,
+            },
+        )
+        watchdog_events.append(
+            {
+                "event": "loop_executed_checkpoint_saved",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "heartbeat_refreshed": heartbeat_issue_lock(issue_num, lock_owner_id, args.lease_ttl_seconds),
+            }
+        )
+        if args.simulate_interrupt_after == "loop_executed":
+            release_ok = release_issue_lock(issue_num, lock_owner_id)
+            save_json(
+                watchdog_path,
+                {
+                    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "issue_number": issue_num,
+                    "verdict": "interrupted",
+                    "stage": "loop_executed",
+                    "release_ok": release_ok,
+                    "events": watchdog_events,
+                },
+            )
+            print(
+                json.dumps(
+                    {"result": "interrupted", "stage": "loop_executed", "issue_number": issue_num},
+                    ensure_ascii=True,
+                )
+            )
+            return 3
+
     transition_log = Path(f"planningops/artifacts/transition-log/{date_part}.ndjson")
+    adapter_artifact_dir = Path(f"planningops/artifacts/adapter-hooks/{date_part}")
+    adapter_artifact_dir.mkdir(parents=True, exist_ok=True)
+    pre_hook_path = adapter_artifact_dir / f"{loop_id}-adapter-pre.json"
+    save_json(pre_hook_path, pre_hook_result)
     selection_event = {
         "transition_id": f"{loop_id}-intake-selection",
         "run_id": loop_id,
@@ -294,36 +725,140 @@ def main():
         "actor_id": "issue-loop-runner",
         "decided_at_utc": datetime.now(timezone.utc).isoformat(),
         "replanning_flag": False,
+        "loop_profile": selected_loop_profile,
         "selection_trace": selection_trace,
+        "adapter_pre_hook": pre_hook_result,
     }
     append_ndjson(transition_log, selection_event)
+    adapter_context["loop_id"] = loop_id
+    adapter_context["selection_transition_id"] = selection_event["transition_id"]
 
-    rc_verify, out_verify, err_verify = run(
-        [
-            "python3",
-            "planningops/scripts/verify_loop_run.py",
-            "--loop-dir",
-            str(loop_dir),
-            "--transition-log",
-            str(transition_log),
-            "--output",
-            f"planningops/artifacts/verification/issue-{issue_num}-verification.json",
-            "--project-payload",
-            f"planningops/artifacts/verification/issue-{issue_num}-project-payload.json",
-        ]
-    )
+    verification_path = Path(f"planningops/artifacts/verification/issue-{issue_num}-verification.json")
+    payload_path = Path(f"planningops/artifacts/verification/issue-{issue_num}-project-payload.json")
+    reused_verify_artifacts = False
+    if args.resume_from_checkpoint and resume_stage in {"verified", "feedback_applied"}:
+        checkpoint_verification_path = Path(resume_checkpoint.get("verification_path", ""))
+        checkpoint_payload_path = Path(resume_checkpoint.get("payload_path", ""))
+        if checkpoint_verification_path.exists() and checkpoint_payload_path.exists():
+            verification_path = checkpoint_verification_path
+            payload_path = checkpoint_payload_path
+            rc_verify, out_verify, err_verify = 0, "resumed-from-checkpoint", ""
+            reused_verify_artifacts = True
 
-    verification = load_json(
-        Path(f"planningops/artifacts/verification/issue-{issue_num}-verification.json"),
-        {},
-    )
-    payload = load_json(
-        Path(f"planningops/artifacts/verification/issue-{issue_num}-project-payload.json"),
-        {},
-    )
+    if not reused_verify_artifacts:
+        rc_verify, out_verify, err_verify = run(
+            [
+                "python3",
+                "planningops/scripts/verify_loop_run.py",
+                "--loop-dir",
+                str(loop_dir),
+                "--transition-log",
+                str(transition_log),
+                "--output",
+                str(verification_path),
+                "--project-payload",
+                str(payload_path),
+            ]
+        )
+        save_checkpoint(
+            issue_num,
+            "verified",
+            {
+                "loop_dir": str(loop_dir),
+                "date_part": date_part,
+                "loop_id": loop_id,
+                "verification_path": str(verification_path),
+                "payload_path": str(payload_path),
+                "verify_rc": rc_verify,
+                "verify_stdout": out_verify[-2000:],
+                "verify_stderr": err_verify[-2000:],
+                "adapter_pre_hook": pre_hook_result,
+            },
+        )
+        watchdog_events.append(
+            {
+                "event": "verified_checkpoint_saved",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "heartbeat_refreshed": heartbeat_issue_lock(issue_num, lock_owner_id, args.lease_ttl_seconds),
+            }
+        )
+        if args.simulate_interrupt_after == "verified":
+            release_ok = release_issue_lock(issue_num, lock_owner_id)
+            save_json(
+                watchdog_path,
+                {
+                    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "issue_number": issue_num,
+                    "verdict": "interrupted",
+                    "stage": "verified",
+                    "release_ok": release_ok,
+                    "events": watchdog_events,
+                },
+            )
+            print(json.dumps({"result": "interrupted", "stage": "verified", "issue_number": issue_num}, ensure_ascii=True))
+            return 3
 
-    loop_id = verification.get("loop_dir", "")
-    idem_key = hashlib.sha256(f"issue:{issue_num}:{loop_id}:{payload.get('last_verdict','')}".encode("utf-8")).hexdigest()
+    verification = load_json(verification_path, {})
+    payload = load_json(payload_path, {})
+    final_loop_profile = determine_loop_profile(selected, payload, args.control_repo)
+    payload["loop_profile"] = final_loop_profile
+    adapter_context["loop_profile"] = final_loop_profile
+    post_hook_result = invoke_adapter_hook(adapter, "after_loop", context=adapter_context, payload=payload)
+    post_hook_path = adapter_artifact_dir / f"{loop_id}-adapter-post.json"
+    save_json(post_hook_path, post_hook_result)
+
+    escalation = evaluate_escalation(
+        issue_num,
+        str(payload.get("last_verdict", "")),
+        str(payload.get("reason_code", "")),
+    )
+    replan_decision_path = None
+    payload["escalation"] = escalation
+    payload["auto_paused"] = escalation.get("auto_paused", False)
+    if escalation.get("auto_paused"):
+        payload["status_update"] = "Blocked"
+        payload["replanning_triggered"] = True
+        replan_decision_path = Path(
+            f"planningops/artifacts/replan/issue-{issue_num}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.md"
+        )
+        replan_decision_path.parent.mkdir(parents=True, exist_ok=True)
+        replan_decision_path.write_text(
+            "\n".join(
+                [
+                    f"# Replan Decision for issue #{issue_num}",
+                    "",
+                    f"- trigger_type: {escalation.get('trigger_type')}",
+                    f"- same_reason_consecutive: {escalation.get('same_reason_consecutive')}",
+                    f"- inconclusive_consecutive: {escalation.get('inconclusive_consecutive')}",
+                    f"- decided_at_utc: {datetime.now(timezone.utc).isoformat()}",
+                    "",
+                    "Action: auto-pause current execution path and require recovery/replan loop (L5).",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        payload["replan_decision_path"] = str(replan_decision_path)
+        append_ndjson(
+            transition_log,
+            {
+                "transition_id": f"{loop_id}-auto-pause",
+                "run_id": loop_id,
+                "card_id": issue_num,
+                "from_state": selected.get("workflow_state", "ready-contract"),
+                "to_state": "blocked",
+                "transition_reason": "escalation.auto_pause",
+                "actor_type": "agent",
+                "actor_id": "issue-loop-runner",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "replanning_flag": True,
+            },
+        )
+    save_json(payload_path, payload)
+
+    verification_loop_ref = verification.get("loop_dir", "")
+    idem_key = hashlib.sha256(
+        f"issue:{issue_num}:{verification_loop_ref}:{payload.get('last_verdict','')}".encode("utf-8")
+    ).hexdigest()
     idem = load_json(IDEMPOTENCY_PATH, {"processed_keys": []})
     seen = set(idem.get("processed_keys", []))
 
@@ -334,9 +869,17 @@ def main():
             f"Ralph Loop result for issue #{issue_num}",
             f"- verdict: {payload.get('last_verdict', 'unknown')}",
             f"- reason_code: {payload.get('reason_code', 'unknown')}",
+            f"- loop_profile: {final_loop_profile}",
             f"- replanning_triggered: {payload.get('replanning_triggered', False)}",
+            f"- auto_paused: {payload.get('auto_paused', False)}",
+            f"- adapter: {getattr(adapter, 'adapter_id', 'unknown-adapter')} ({selected.get('target_repo')})",
+            f"- adapter_pre: {pre_hook_result.get('status')} / {pre_hook_result.get('reason_code')}",
+            f"- adapter_post: {post_hook_result.get('status')} / {post_hook_result.get('reason_code')}",
             f"- verification: planningops/artifacts/verification/issue-{issue_num}-verification.json",
             f"- payload: planningops/artifacts/verification/issue-{issue_num}-project-payload.json",
+            f"- adapter_pre_artifact: {pre_hook_path}",
+            f"- adapter_post_artifact: {post_hook_path}",
+            f"- replan_decision: {replan_decision_path}" if replan_decision_path else "- replan_decision: none",
         ]
     )
 
@@ -397,10 +940,39 @@ def main():
                     ]
                 )
 
+            loop_profile_field_id, loop_profile_options = ensure_single_select_field(
+                args.owner,
+                args.project_num,
+                "loop_profile",
+                [
+                    "L1 Contract-Clarification",
+                    "L2 Simulation",
+                    "L3 Implementation-TDD",
+                    "L4 Integration-Reconcile",
+                    "L5 Recovery-Replan",
+                ],
+            )
+
             # ensure verdict text fields exist
             verdict_field_id = ensure_text_field(args.owner, args.project_num, "last_verdict")
             reason_field_id = ensure_text_field(args.owner, args.project_num, "last_reason")
             if item_id:
+                if loop_profile_field_id and final_loop_profile in loop_profile_options:
+                    run(
+                        [
+                            "gh",
+                            "project",
+                            "item-edit",
+                            "--id",
+                            item_id,
+                            "--project-id",
+                            args.project_id,
+                            "--field-id",
+                            loop_profile_field_id,
+                            "--single-select-option-id",
+                            loop_profile_options.get(final_loop_profile),
+                        ]
+                    )
                 run(
                     [
                         "gh",
@@ -435,16 +1007,88 @@ def main():
         seen.add(idem_key)
         save_json(IDEMPOTENCY_PATH, {"processed_keys": sorted(seen)})
 
+    checkpoint_payload = {
+        "loop_dir": str(loop_dir),
+        "date_part": date_part,
+        "loop_id": loop_id,
+        "verification_path": str(verification_path),
+        "payload_path": str(payload_path),
+        "adapter_pre_hook": pre_hook_result,
+        "adapter_post_hook": post_hook_result,
+        "already_processed": already_processed,
+        "idempotency_key": idem_key,
+    }
+    save_checkpoint(issue_num, "feedback_applied", checkpoint_payload)
+    watchdog_events.append(
+        {
+            "event": "feedback_applied_checkpoint_saved",
+            "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+            "heartbeat_refreshed": heartbeat_issue_lock(issue_num, lock_owner_id, args.lease_ttl_seconds),
+        }
+    )
+    if args.simulate_interrupt_after == "feedback_applied":
+        release_ok = release_issue_lock(issue_num, lock_owner_id)
+        save_json(
+            watchdog_path,
+            {
+                "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "issue_number": issue_num,
+                "verdict": "interrupted",
+                "stage": "feedback_applied",
+                "release_ok": release_ok,
+                "events": watchdog_events,
+            },
+        )
+        print(json.dumps({"result": "interrupted", "stage": "feedback_applied", "issue_number": issue_num}, ensure_ascii=True))
+        return 3
+    release_ok = release_issue_lock(issue_num, lock_owner_id)
+    watchdog_events.append(
+        {
+            "event": "lock_released",
+            "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+            "release_ok": release_ok,
+        }
+    )
+    save_json(
+        watchdog_path,
+        {
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+            "issue_number": issue_num,
+            "verdict": "pass",
+            "stage": "feedback_applied",
+            "release_ok": release_ok,
+            "stale_lock_recovered": stale_lock_recovered,
+            "events": watchdog_events,
+        },
+    )
+    clear_checkpoint(issue_num)
+
     result = {
         "selected_issue": issue_num,
         "selected_issue_repo": selected.get("issue_repo"),
         "selected_target_repo": selected.get("target_repo"),
         "selected_workflow_state": selected.get("workflow_state"),
+        "selected_loop_profile": selected_loop_profile,
+        "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+        "checkpoint_resumed": bool(args.resume_from_checkpoint and resume_checkpoint),
+        "checkpoint_stage_at_start": resume_stage,
+        "lock_owner_id": lock_owner_id,
+        "stale_lock_recovered": stale_lock_recovered,
+        "watchdog_report": str(watchdog_path),
+        "final_loop_profile": final_loop_profile,
+        "auto_paused": payload.get("auto_paused", False),
+        "escalation": escalation,
+        "replan_decision_path": str(replan_decision_path) if replan_decision_path else None,
         "deps": selected.get("deps", []),
         "candidate_count": len(candidates),
         "allowed_workflow_states": sorted(allowed_workflow_states),
         "selection_trace": selection_trace,
         "selection_transition_id": selection_event["transition_id"],
+        "adapter_id": getattr(adapter, "adapter_id", "unknown-adapter"),
+        "adapter_pre_hook": pre_hook_result,
+        "adapter_post_hook": post_hook_result,
+        "adapter_pre_artifact": str(pre_hook_path),
+        "adapter_post_artifact": str(post_hook_path),
         "loop_rc": rc_loop,
         "verify_rc": rc_verify,
         "already_processed": already_processed,

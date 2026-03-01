@@ -1,0 +1,3 @@
+[launcher] dry-run mode: validating runtime profiles only
+report written: artifacts/launcher/federated-ci-local-20260301-rerun-provider.json
+profiles=local,oracle_cloud verdict=pass

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-28T08:17:06.912706+00:00",
+  "generated_at_utc": "2026-03-01T06:06:09.615882+00:00",
   "project": {
     "owner": "rather-not-work-on",
     "project_num": 2,
@@ -55,9 +55,17 @@
       "actual_name": "workflow_state",
       "missing_option_ids": [],
       "options_ok": true
+    },
+    {
+      "field_key": "loop_profile",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-kZMI",
+      "exists": true,
+      "actual_name": "loop_profile",
+      "missing_option_ids": [],
+      "options_ok": true
     }
   ],
-  "evaluated_items": 33,
+  "evaluated_items": 42,
   "violation_count": 0,
   "violations": [],
   "info_count": 10,

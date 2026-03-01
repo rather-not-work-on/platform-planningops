@@ -5,7 +5,7 @@ doc_type: execution-plan
 domain: planning
 status: active
 date: 2026-02-28
-updated: 2026-02-28
+updated: 2026-03-01
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -36,7 +36,7 @@ related_docs:
 - `platform-planningops`:
   - PlanningOps MVP 이슈 `#2~#13` 전부 `Done`.
   - Topology expansion queue `#14~#23` 전부 `Done`.
-  - Wave B queue `#24~#31` 생성 및 Project 필드 스키마 정렬 완료(`Todo`).
+  - Wave B queue `#24~#32` 생성 및 Project 필드 스키마 정렬 완료(`Todo`).
   - `planningops/`에 C1~C8 참조 맵, multi-repo fan-out 리포트, end-to-end simulation evidence bundle 구축 완료.
 - GitHub Project:
   - org project `rather-not-work-on/projects/2` 사용 중.
@@ -133,10 +133,11 @@ related_docs:
 | 240 | P8 | observability-gateway | rather-not-work-on/platform-observability-gateway | local LangFuse stack launcher + replay/backfill drill | 210 |
 | 250 | P8 | contracts | rather-not-work-on/platform-contracts | C1~C8 consumer conformance checks across repos | 220, 230, 240 |
 | 260 | P9 | runtime | rather-not-work-on/monday | scheduler-runner integration with planningops loop handoff | 220 |
-| 270 | P9 | planningops | rather-not-work-on/platform-planningops | federated CI check matrix across 4 repos | 250, 260 |
+| 265 | P9 | planningops | rather-not-work-on/platform-planningops | bounded Sisyphus guardrails (`attempt budget`, `checkpoint/resume`, `lease lock`, `watchdog`, `escalation gate`) | 260 |
+| 270 | P9 | planningops | rather-not-work-on/platform-planningops | federated CI check matrix across 4 repos | 250, 260, 265 |
 | 280 | P10 | planningops | rather-not-work-on/platform-planningops | 7-day local pilot + Oracle profile partial migration rehearsal | 270 |
 
-## Wave B Issue Map (Registered, `2026-02-28`)
+## Wave B Issue Map (Registered, `2026-03-01`)
 | Execution Order | Issue | Component | Target Repo | Status |
 |---|---|---|---|---|
 | 210 | #24 | planningops | rather-not-work-on/platform-planningops | Todo |
@@ -145,6 +146,7 @@ related_docs:
 | 240 | #27 | observability-gateway | rather-not-work-on/platform-observability-gateway | Todo |
 | 250 | #28 | contracts | rather-not-work-on/platform-contracts | Todo |
 | 260 | #29 | runtime | rather-not-work-on/monday | Todo |
+| 265 | #32 | planningops | rather-not-work-on/platform-planningops | Todo |
 | 270 | #30 | planningops | rather-not-work-on/platform-planningops | Todo |
 | 280 | #31 | planningops | rather-not-work-on/platform-planningops | Todo |
 
@@ -152,8 +154,9 @@ related_docs:
 - Checkpoint T0 (`2026-02-28`): Wave A(`110~200`) 완료
 - Checkpoint T1 (`2026-03-05`): `210~220` planningops cross-repo execution path 통과
 - Checkpoint T2 (`2026-03-12`): `230~240` local LiteLLM/LangFuse launch/replay drill 통과
-- Checkpoint T3 (`2026-03-19`): `250~260` conformance + runtime integration 통과
-- Checkpoint T4 (`2026-03-26`): `270~280` federated CI + pilot rehearsal 통과
+- Checkpoint T3 (`2026-03-19`): `250~265` conformance + runtime integration + bounded guardrails 통과
+- Checkpoint T4 (`2026-03-26`): `270` federated CI 통과
+- Checkpoint T5 (`2026-04-02`): `280` 7-day local pilot + Oracle partial rehearsal 통과
 
 ## Replanning Triggers
 - `blocked` 24시간 초과: 하위 작업 분해 + owner 재지정
@@ -173,6 +176,6 @@ related_docs:
   - 관련 CI 체인 통과(계약 검증 + dry-run + replay)
 
 ## Immediate Next Actions (Start Today)
-1. `#24` 착수: `issue_loop_runner.py`의 single-repo filter 제거 + selection trace 증빙
-2. `#25` 설계 병행: repo-specific adapter hook 인터페이스/실패 reason taxonomy 고정
-3. `#26/#27` 사전 준비: local LiteLLM/LangFuse launcher 표준 스크립트 뼈대와 artifact 경로 규약 확정
+1. `#25` 우선 착수: repo-specific adapter hook 인터페이스/실패 reason taxonomy 고정
+2. `#32` 착수: bounded Sisyphus guardrails(`attempt budget`, `checkpoint/resume`, `lease lock`, `watchdog`, `escalation gate`) 구현
+3. `#26/#27` 병행: local LiteLLM/LangFuse launcher 표준 스크립트와 artifact 경로 규약 확정

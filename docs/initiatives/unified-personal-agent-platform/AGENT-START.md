@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-28
+updated: 2026-03-01
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -71,6 +71,51 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 3. 기본값 원천 확인:
 - Foundation: `Working Defaults`
 - PlanningOps Sync: `Deferred Decisions` + `Working Defaults`
+
+## UX Snapshot (What You Will Experience)
+이 저장소의 계획대로 이슈를 처리하면, 사용자는 아래 UX를 경험한다.
+
+1. 사용자가 카드/문서를 갱신한다.
+- 핵심 필드: `Status`, `workflow_state`, `execution_order`, `depends_on`, `initiative`, `component`, `target_repo`
+2. 에이전트는 비정기 Kanban pull로 카드 하나를 선택한다.
+- pull 조건: `Status=Todo` AND `workflow_state in {ready-contract, ready-implementation}`
+- `depends_on` 미충족이면 즉시 `blocked`로 처리
+3. 에이전트가 `loop_profile`(`L1~L5`)을 결정해 루프 1회를 실행한다.
+4. 실행 결과가 검증되어 `pass|fail|inconclusive`가 산출된다.
+5. 사용자에게 보이는 결과가 자동 반영된다.
+- Issue comment: `verdict`, `reason_code`, `loop_profile`, 증빙 경로
+- Project fields: `Status`, `workflow_state`, `loop_profile`, `last_verdict`, `last_reason`
+6. 반복 실패 시 자동 재계획 경로로 이동한다.
+- 트리거: 동일 `reason_code` 3회 또는 `inconclusive` 2회 연속
+
+운영 원칙:
+- 스프린트 기반이 아니라 비정기 Kanban 기반이다.
+- 진행 판단은 기간보다 증빙/게이트 결과를 우선한다.
+
+현재 구현 기준(`2026-03-01`) 참고:
+- `ready-contract` 기본 선택은 `L1`이다.
+- `L2` 자동 선택 신호 강화는 별도 후속 작업으로 관리 중이다.
+
+## Agent Execution Sequence (How the Agent Works)
+1. Intake: 후보 카드 수집 및 우선순위/의존성 검사
+2. Selector: `loop_profile` 결정 + selection trace 기록
+3. Execute: loop 실행 및 아티팩트 생성
+4. Verify: verdict/reason 및 trigger 판정
+5. Feedback: issue/project 업데이트
+6. Transition log: 상태 전이와 재계획 플래그 기록
+
+필수 증빙:
+- `intake-check.json`
+- `simulation-report.md`
+- `verification-report.json`
+- `transition-log.ndjson`
+
+루프별 추가 증빙:
+- `L1`: `contract-gap-report.md`
+- `L2`: `scenario-matrix.json`
+- `L3`: `test-report.json`
+- `L4`: `sync-summary.json`, `drift-report.json`
+- `L5`: `replan-decision.md`
 
 ## What To Do First (Implementation Start)
 1. Decision-agnostic Track A 작업부터 시작

@@ -1,0 +1,118 @@
+{
+  "generated_at_utc": "2026-03-01T06:04:32.318481+00:00",
+  "run_id": "pilot-20260301",
+  "days": 7,
+  "runs": [
+    {
+      "day": 1,
+      "issue_number": 3101,
+      "task_key": "pilot-day-1",
+      "profile": "local",
+      "exit_code": 0,
+      "elapsed_ms": 92,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060431Z-issue-3101\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3101",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    },
+    {
+      "day": 2,
+      "issue_number": 3102,
+      "task_key": "pilot-day-2",
+      "profile": "oracle_cloud",
+      "exit_code": 0,
+      "elapsed_ms": 81,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060431Z-issue-3102\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3102",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    },
+    {
+      "day": 3,
+      "issue_number": 3103,
+      "task_key": "pilot-day-3",
+      "profile": "local",
+      "exit_code": 0,
+      "elapsed_ms": 77,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060431Z-issue-3103\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3103",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    },
+    {
+      "day": 4,
+      "issue_number": 3104,
+      "task_key": "pilot-day-4",
+      "profile": "oracle_cloud",
+      "exit_code": 0,
+      "elapsed_ms": 77,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060432Z-issue-3104\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    },
+    {
+      "day": 5,
+      "issue_number": 3105,
+      "task_key": "pilot-day-5",
+      "profile": "local",
+      "exit_code": 0,
+      "elapsed_ms": 75,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060432Z-issue-3105\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3105",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    },
+    {
+      "day": 6,
+      "issue_number": 3106,
+      "task_key": "pilot-day-6",
+      "profile": "oracle_cloud",
+      "exit_code": 0,
+      "elapsed_ms": 76,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060432Z-issue-3106\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3106",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    },
+    {
+      "day": 7,
+      "issue_number": 3107,
+      "task_key": "pilot-day-7",
+      "profile": "local",
+      "exit_code": 0,
+      "elapsed_ms": 78,
+      "stdout_tail": "loop completed: verdict=pass reason=ok loop_id=loop-20260301T060432Z-issue-3107\nartifacts root: planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3107",
+      "stderr_tail": "",
+      "verdict": "pass",
+      "hard_stop": false
+    }
+  ],
+  "profiles": {
+    "local": {
+      "run_count": 4,
+      "mean_latency_ms": 80.5,
+      "p95_latency_ms": 78.0,
+      "fail_rate": 0.0,
+      "estimated_cost": 0.008
+    },
+    "oracle_cloud": {
+      "run_count": 3,
+      "mean_latency_ms": 78,
+      "p95_latency_ms": 77.0,
+      "fail_rate": 0.0,
+      "estimated_cost": 0.021
+    }
+  },
+  "hard_stop_count": 0,
+  "hard_stop_taxonomy": [],
+  "rollback_trigger": {
+    "triggered": false,
+    "reasons": []
+  },
+  "next_wave_proposals": [
+    "Keep local-first as default and keep oracle_cloud to scoped workloads until fail-rate parity is stable.",
+    "Promote federated CI required checks as branch protection after 2 consecutive green rehearsal runs.",
+    "Add per-issue token usage capture to replace estimated cost with measured cost in next pilot."
+  ]
+}

@@ -41,6 +41,8 @@ Example task keys:
 ```bash
 python3 planningops/scripts/ralph_loop_local.py --issue-number 18 --mode dry-run
 python3 planningops/scripts/issue_loop_runner.py --mode apply
+python3 planningops/scripts/cross_repo_conformance_check.py
+python3 planningops/scripts/run_local_oracle_rehearsal.py --days 7
 ```
 
 Optional profile override:
