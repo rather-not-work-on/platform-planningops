@@ -1,0 +1,11 @@
+# Default owners
+* @JJBINY
+
+# Core planning source
+/docs/initiatives/unified-personal-agent-platform/** @JJBINY
+
+# Planning runtime and automation scripts/contracts
+/planningops/** @JJBINY
+
+# CI and governance workflows
+/.github/workflows/** @JJBINY

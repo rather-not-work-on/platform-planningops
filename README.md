@@ -65,6 +65,19 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 - PR에서는 `.github/workflows/uap-docs-check.yml`로 문서 검증이 자동 실행됩니다.
   - trigger: `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`
 - org/repo/agent 식별자 변경은 identity 문서를 먼저 갱신합니다.
+- 기본 운영은 `PR-first`입니다. 직접 `main`에 푸시하지 않습니다.
+- PR 본문은 `.github/pull_request_template.md` 형식을 따릅니다.
+- 리뷰 소유자는 `.github/CODEOWNERS`를 기준으로 지정합니다.
+- PR 구조/이슈 연결 검증은 `.github/workflows/pr-review-gate.yml`에서 수행합니다.
+
+## PR and Review Policy
+
+- 브랜치: `feat/*`, `fix/*`, `docs/*`, `chore/*` 중 하나를 사용합니다.
+- 병합 기준:
+  - PR 본문 템플릿 섹션 충족
+  - 관련 이슈 링크 포함
+  - 필수 검증 통과(`uap-docs-check`, `pr-review-gate`, 변경 범위별 추가 CI)
+  - CODEOWNERS 리뷰 승인
 
 ## Validation Guards
 
