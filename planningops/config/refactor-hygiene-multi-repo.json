@@ -1,0 +1,52 @@
+{
+  "workspace_root": ".",
+  "shared_policy_file": "planningops/config/refactor-hygiene-policy.json",
+  "output_root": "planningops/artifacts/refactor-hygiene/multi-repo",
+  "repositories": [
+    {
+      "name": "platform-planningops",
+      "path": ".",
+      "policy_overrides": {
+        "scan_roots": [
+          "planningops/scripts"
+        ]
+      }
+    },
+    {
+      "name": "platform-contracts",
+      "path": "../platform-contracts",
+      "policy_overrides": {
+        "scan_roots": [
+          "scripts"
+        ]
+      }
+    },
+    {
+      "name": "platform-provider-gateway",
+      "path": "../platform-provider-gateway",
+      "policy_overrides": {
+        "scan_roots": [
+          "scripts"
+        ]
+      }
+    },
+    {
+      "name": "platform-observability-gateway",
+      "path": "../platform-observability-gateway",
+      "policy_overrides": {
+        "scan_roots": [
+          "scripts"
+        ]
+      }
+    },
+    {
+      "name": "monday",
+      "path": "../monday",
+      "policy_overrides": {
+        "scan_roots": [
+          "scripts"
+        ]
+      }
+    }
+  ]
+}

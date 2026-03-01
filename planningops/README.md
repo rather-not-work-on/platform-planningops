@@ -44,6 +44,7 @@ python3 planningops/scripts/issue_loop_runner.py --mode apply
 python3 planningops/scripts/cross_repo_conformance_check.py
 python3 planningops/scripts/run_local_oracle_rehearsal.py --days 7
 python3 planningops/scripts/refactor_hygiene_loop.py --policy-file planningops/config/refactor-hygiene-policy.json
+python3 planningops/scripts/refactor_hygiene_multi_repo.py --config-file planningops/config/refactor-hygiene-multi-repo.json --workspace-root .
 ```
 
 Optional profile override:
@@ -65,3 +66,9 @@ python3 planningops/scripts/ralph_loop_local.py \
 Scheduled execution:
 - GitHub Actions workflow: `.github/workflows/refactor-hygiene.yml`
 - cadence: every Monday 03:00 UTC
+
+## Multi-Repo Consistency Mode
+- Matrix config: `planningops/config/refactor-hygiene-multi-repo.json`
+- Runner: `planningops/scripts/refactor_hygiene_multi_repo.py`
+- Aggregate output: `planningops/artifacts/refactor-hygiene/multi-repo/<run-id>/aggregate.json`
+- Scheduled workflow: `.github/workflows/refactor-hygiene-multi-repo.yml` (weekly)

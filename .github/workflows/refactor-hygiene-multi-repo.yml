@@ -1,0 +1,35 @@
+name: refactor-hygiene-multi-repo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 1"
+
+jobs:
+  analyze-multi-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Clone peer repositories
+        run: |
+          git clone --depth 1 https://github.com/rather-not-work-on/platform-contracts.git ../platform-contracts
+          git clone --depth 1 https://github.com/rather-not-work-on/platform-provider-gateway.git ../platform-provider-gateway
+          git clone --depth 1 https://github.com/rather-not-work-on/platform-observability-gateway.git ../platform-observability-gateway
+          git clone --depth 1 https://github.com/rather-not-work-on/monday.git ../monday
+
+      - name: Run multi-repo hygiene analyzer
+        run: |
+          python3 planningops/scripts/refactor_hygiene_multi_repo.py \
+            --config-file planningops/config/refactor-hygiene-multi-repo.json \
+            --workspace-root . \
+            --run-id ci-multi-${{ github.run_id }}
+
+      - name: Upload multi-repo hygiene artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: refactor-hygiene-multi-repo-${{ github.run_id }}
+          path: |
+            planningops/artifacts/refactor-hygiene/multi-repo/ci-multi-${{ github.run_id }}
+            planningops/artifacts/refactor-hygiene/multi-repo/latest.json

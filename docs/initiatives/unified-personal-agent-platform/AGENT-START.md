@@ -77,6 +77,9 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 - 기본값은 `PR-first`이며 직접 `main` 푸시는 금지한다.
 - PR 본문은 `.github/pull_request_template.md`를 사용한다.
 - `pr-review-gate`와 문서/CI 게이트 통과 후 병합한다.
+5. 리팩토링 작업이면 먼저 스코프를 결정한다:
+- 단일 레포: `python3 planningops/scripts/refactor_hygiene_loop.py --policy-file planningops/config/refactor-hygiene-policy.json`
+- 멀티 레포: `python3 planningops/scripts/refactor_hygiene_multi_repo.py --config-file planningops/config/refactor-hygiene-multi-repo.json --workspace-root .`
 
 ## UX Snapshot (What You Will Experience)
 이 저장소의 계획대로 이슈를 처리하면, 사용자는 아래 UX를 경험한다.

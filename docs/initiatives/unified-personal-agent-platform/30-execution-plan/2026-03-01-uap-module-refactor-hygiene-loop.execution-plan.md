@@ -55,6 +55,15 @@ related_docs:
   - `planningops/artifacts/refactor-hygiene/<run-id>/summary.md`
   - `planningops/artifacts/refactor-hygiene/latest.json`
 
+### Multi-Repo Consistency
+- matrix config: `planningops/config/refactor-hygiene-multi-repo.json`
+- runner: `planningops/scripts/refactor_hygiene_multi_repo.py`
+- aggregate outputs:
+  - `planningops/artifacts/refactor-hygiene/multi-repo/<run-id>/aggregate.json`
+  - `planningops/artifacts/refactor-hygiene/multi-repo/<run-id>/summary.md`
+- requirement:
+  - 모든 레포가 동일한 큐 계약(`external_first -> internal_next`)을 만족해야 한다.
+
 ### Queue Order (Mandatory)
 1. `external_first`:
   - 불필요한 외부 의존성 제거

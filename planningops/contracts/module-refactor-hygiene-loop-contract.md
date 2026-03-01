@@ -9,6 +9,7 @@ Define a bounded, repeatable refactor loop that keeps module topology clean with
 - Execution order is fixed:
   1. external dependency cleanup
   2. internal dependency cleanup
+- Single-repo and multi-repo operation must produce the same queue semantics.
 
 ## Invariants
 1. External dependencies must be audited before internal dependency rewiring.
@@ -25,6 +26,10 @@ Define a bounded, repeatable refactor loop that keeps module topology clean with
   - `max_modules_per_cycle`
   - `max_files_per_module`
   - `checkpoint_every_tasks`
+- multi-repo mode:
+  - `multi_repo_config` (JSON)
+  - `workspace_root`
+  - shared policy + per-repo policy overrides
 
 ## Required Outputs
 - `report.json`:
@@ -34,12 +39,16 @@ Define a bounded, repeatable refactor loop that keeps module topology clean with
 - `summary.md`:
   - concise queue view and checkpoint placement
 - `latest.json` pointer
+- multi-repo mode:
+  - `aggregate.json` with per-repo pass/fail and queue contract checks
+  - `summary.md` with cross-repo ordering and next actions
 
 ## Guardrails
 - If no sources are discoverable, fail fast.
 - Parse errors must be reported, not ignored.
 - Queue generation must remain deterministic for same input snapshot.
 - Internal cleanup queue cannot appear before external cleanup queue.
+- Any repo that violates queue ordering contract must be marked failed in aggregate result.
 
 ## Done Criteria
 - Topology report generated.

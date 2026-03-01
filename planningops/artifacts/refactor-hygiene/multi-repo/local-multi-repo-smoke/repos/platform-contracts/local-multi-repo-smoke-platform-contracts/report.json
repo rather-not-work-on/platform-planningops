@@ -1,0 +1,89 @@
+{
+  "run_id": "local-multi-repo-smoke-platform-contracts",
+  "generated_at_utc": "2026-03-01T12:19:52.632243+00:00",
+  "policy_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/policies/platform-contracts.json",
+  "policy": {
+    "scan_roots": [
+      "scripts"
+    ],
+    "include_extensions": [
+      ".py",
+      ".js",
+      ".ts",
+      ".tsx"
+    ],
+    "exclude_dirs": [
+      ".git",
+      "node_modules",
+      "__pycache__",
+      "artifacts",
+      ".venv"
+    ],
+    "internal_alias_prefixes": [
+      "@/",
+      "~/"
+    ],
+    "legacy_markers": [
+      "legacy",
+      "deprecated",
+      "todo-remove",
+      "old_",
+      "_old"
+    ],
+    "max_modules_per_cycle": 3,
+    "max_files_per_module": 20,
+    "checkpoint_every_tasks": 2,
+    "internal_dependency_budget": {
+      "max_out_degree": 5
+    }
+  },
+  "scan": {
+    "repo_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+    "scan_roots": [
+      "scripts"
+    ],
+    "files_scanned": 2,
+    "modules_discovered": 2
+  },
+  "topology": {
+    "internal_edge_count": 0,
+    "cycle_count": 0,
+    "cycles": [],
+    "external_packages": [],
+    "modules": [
+      {
+        "module": "classify_schema_change",
+        "file_count": 1,
+        "files": [
+          "scripts/classify_schema_change.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "validate_contracts",
+        "file_count": 1,
+        "files": [
+          "scripts/validate_contracts.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      }
+    ],
+    "parse_errors": []
+  },
+  "queues": {
+    "external_first": [],
+    "internal_next": [],
+    "execution_order": [],
+    "checkpoints": []
+  }
+}

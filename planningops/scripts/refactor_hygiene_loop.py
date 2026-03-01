@@ -34,6 +34,13 @@ def save_text(path: Path, text: str):
     path.write_text(text, encoding="utf-8")
 
 
+def path_for_manifest(path: Path, base: Path):
+    try:
+        return str(path.resolve().relative_to(base.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Build module-level refactor hygiene queue")
     parser.add_argument("--repo-root", default=".")
@@ -551,8 +558,8 @@ def main():
         {
             "run_id": run_id,
             "generated_at_utc": report["generated_at_utc"],
-            "report": str((run_dir / "report.json").relative_to(repo_root)),
-            "summary": str((run_dir / "summary.md").relative_to(repo_root)),
+            "report": path_for_manifest(run_dir / "report.json", repo_root),
+            "summary": path_for_manifest(run_dir / "summary.md", repo_root),
         },
     )
 
