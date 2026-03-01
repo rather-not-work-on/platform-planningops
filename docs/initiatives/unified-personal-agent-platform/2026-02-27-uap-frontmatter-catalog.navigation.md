@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-28
+updated: 2026-03-01
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -56,7 +56,7 @@ related_docs:
 | planning | execution-plan | uap-contract-first-foundation-plan | active | [20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md](20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md) | feat: Unified Personal Agent Platform Contract-First Foundation | Defines hierarchical phases, gate evidence, defaults, and readiness checks for contract-first implementation. |
 | planning | execution-plan | uap-doc-structure-migration-plan | active | [30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md](30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md) | UAP Documentation Structure Migration Plan | Defines a phased, reference-safe migration from current layer-first docs layout to repo-first plus domain-second layout. |
 | planning | execution-plan | uap-planningops-lifecycle-scenarios-plan | active | [30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md](30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md) | UAP PlanningOps Lifecycle Scenario Playbook | Defines concrete post-planning scenarios for plan item update, deletion, completion, reopen, and drift handling with deterministic operational steps. |
-| planning | execution-plan | uap-topology-priority-expansion-plan | active | [30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md](30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md) | feat: UAP Topology-Priority Expansion Plan | Topology-first priority plan that extends the current planningops MVP toward contracts/provider/o11y/runtime repositories with Kanban execution order. |
+| planning | execution-plan | uap-topology-priority-expansion-plan | active | [30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md](30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md) | feat: UAP Topology-Priority Expansion Plan | Topology-first priority plan with Wave A completion snapshot, Wave B issue-map registration, and refined local-first multi-repo execution queue. |
 | planning | execution-plan | uap-github-planningops-sync-plan | active | [30-execution-plan/uap-github-planningops-sync.execution-plan.md](30-execution-plan/uap-github-planningops-sync.execution-plan.md) | feat: UAP GitHub PlanningOps Sync Foundation | Defines a plan-repo-centric, one-way sync architecture to automate GitHub Issues, Milestones, and Projects v2 tracking across multiple repositories. |
 | quality | quality | uap-issue-closure-matrix | active | [20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md) | UAP Issue Closure Matrix | Maps review issues to architecture documents, closure conditions, and quality gates. |
 | quality | quality | uap-planningops-tradeoff-decision-framework | active | [40-quality/uap-planningops-tradeoff-decision-framework.quality.md](40-quality/uap-planningops-tradeoff-decision-framework.quality.md) | UAP PlanningOps Trade-off Decision Framework | Provides a decision framework, scoring model, and impact map so deferred planning decisions can be made quickly with clear consequences. |
