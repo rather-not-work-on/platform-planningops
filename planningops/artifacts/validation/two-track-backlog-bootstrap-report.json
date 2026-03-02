@@ -1,0 +1,158 @@
+{
+  "mode": "apply-snapshot",
+  "control_repo": "rather-not-work-on/platform-planningops",
+  "project_owner": "rather-not-work-on",
+  "project_number": 2,
+  "items_total_expected": 12,
+  "items_total_found": 12,
+  "issue_range": [
+    46,
+    57
+  ],
+  "results": [
+    {
+      "issue_number": 46,
+      "title": "plan: [100] Gate contract and terminology lock",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L1 Contract-Clarification",
+      "execution_order": 100,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/46"
+    },
+    {
+      "issue_number": 47,
+      "title": "plan: [110] Validation chain runner and evidence manifest",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L1 Contract-Clarification",
+      "execution_order": 110,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/47"
+    },
+    {
+      "issue_number": 48,
+      "title": "plan: [120] loop_profile drift and state-coverage hardening",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L2 Simulation",
+      "execution_order": 120,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/48"
+    },
+    {
+      "issue_number": 49,
+      "title": "plan: [130] Transition log schema and trigger evaluator alignment",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "orchestrator",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L2 Simulation",
+      "execution_order": 130,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/49"
+    },
+    {
+      "issue_number": 50,
+      "title": "plan: [140] KPI baseline capture run",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "ready-implementation",
+      "loop_profile": "L3 Implementation-TDD",
+      "execution_order": 140,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/50"
+    },
+    {
+      "issue_number": 51,
+      "title": "plan: [150] Track 1 Exit Gate dry-run verdict x2",
+      "status": "In Progress",
+      "initiative": "unified-personal-agent-platform",
+      "component": "planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "review-gate",
+      "loop_profile": "L3 Implementation-TDD",
+      "execution_order": 150,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/51"
+    },
+    {
+      "issue_number": 52,
+      "title": "plan: [160] Monday target UX freeze",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "runtime",
+      "target_repo": "rather-not-work-on/monday",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L2 Simulation",
+      "execution_order": 160,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/52"
+    },
+    {
+      "issue_number": 53,
+      "title": "plan: [170] Infra local and OCI profile boundary map",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "provider-gateway",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L2 Simulation",
+      "execution_order": 170,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/53"
+    },
+    {
+      "issue_number": 54,
+      "title": "plan: [180] LangFuse integration boundary map",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "observability-gateway",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L2 Simulation",
+      "execution_order": 180,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/54"
+    },
+    {
+      "issue_number": 55,
+      "title": "plan: [190] NanoClaw fit assessment and adapter strategy",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "orchestrator",
+      "target_repo": "rather-not-work-on/monday",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L2 Simulation",
+      "execution_order": 190,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/55"
+    },
+    {
+      "issue_number": 56,
+      "title": "plan: [200] Track 2 implementation readiness packet",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "component": "runtime",
+      "target_repo": "rather-not-work-on/monday",
+      "workflow_state": "ready-implementation",
+      "loop_profile": "L3 Implementation-TDD",
+      "execution_order": 200,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/56"
+    },
+    {
+      "issue_number": 57,
+      "title": "plan: [210] Recovery and replan policy automation",
+      "status": "Blocked",
+      "initiative": "unified-personal-agent-platform",
+      "component": "planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "blocked",
+      "loop_profile": "L5 Recovery-Replan",
+      "execution_order": 210,
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/57"
+    }
+  ]
+}
