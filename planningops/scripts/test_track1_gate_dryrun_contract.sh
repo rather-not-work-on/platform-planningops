@@ -12,9 +12,24 @@ module_path = Path("planningops/scripts/run_track1_gate_dryrun.py")
 spec = importlib.util.spec_from_file_location("run_track1_gate_dryrun", module_path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
+real_evaluate_kpi = mod.evaluate_kpi
 
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
+    kpi_path = td_path / "kpi-ci.json"
+    kpi_path.write_text(
+        json.dumps(
+            {
+                "metrics": {
+                    "loop_success_rate": 0.95,
+                    "replan_without_evidence": 0,
+                    "schema_drift_recovery_time_p95_hours": 8,
+                }
+            },
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
     mod.VALIDATION_DIR = td_path / "validation"
     mod.CHAIN_REPORT_PATH = mod.VALIDATION_DIR / "track1-validation-chain-report.json"
     mod.KPI_PATH = mod.VALIDATION_DIR / "track1-kpi-baseline.json"
@@ -38,7 +53,7 @@ with tempfile.TemporaryDirectory() as td:
     mod.run = fake_run
     mod.read_json = fake_read_json
 
-    mod.evaluate_kpi = lambda: {
+    mod.evaluate_kpi = lambda _kpi_path: {
         "pass": False,
         "missing_only": True,
         "reasons": ["kpi.loop_success_rate.missing"],
@@ -61,7 +76,7 @@ with tempfile.TemporaryDirectory() as td:
     rc_strict = mod.main()
     assert rc_strict == 1, rc_strict
 
-    mod.evaluate_kpi = lambda: {
+    mod.evaluate_kpi = lambda _kpi_path: {
         "pass": True,
         "missing_only": False,
         "reasons": [],
@@ -75,6 +90,20 @@ with tempfile.TemporaryDirectory() as td:
     sys.argv = ["run_track1_gate_dryrun.py", "--strict"]
     rc_strict_pass = mod.main()
     assert rc_strict_pass == 0, rc_strict_pass
+
+    original_evaluate_kpi = mod.evaluate_kpi
+    mod.evaluate_kpi = real_evaluate_kpi
+    mod.read_json = lambda path: (
+        {"violation_count": 0}
+        if path == mod.SCHEMA_REPORT_PATH
+        else json.loads(path.read_text(encoding="utf-8"))
+    )
+    sys.argv = ["run_track1_gate_dryrun.py", "--strict", "--kpi-path", str(kpi_path)]
+    rc_custom_kpi = mod.main()
+    assert rc_custom_kpi == 0, rc_custom_kpi
+    dryrun_report_custom = json.loads(mod.DRYRUN_REPORT_PATH.read_text(encoding="utf-8"))
+    assert dryrun_report_custom["kpi_source_path"].endswith("kpi-ci.json"), dryrun_report_custom
+    mod.evaluate_kpi = original_evaluate_kpi
 
 print("track1 gate dryrun contract tests ok")
 PY

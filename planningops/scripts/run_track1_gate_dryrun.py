@@ -60,8 +60,22 @@ def ensure_validation_dir():
     VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def evaluate_kpi():
-    doc = read_json(KPI_PATH)
+def resolve_repo_path(raw_path: str) -> Path:
+    p = Path(raw_path)
+    if p.is_absolute():
+        return p
+    return REPO_ROOT / p
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def evaluate_kpi(kpi_path: Path):
+    doc = read_json(kpi_path)
     metrics = doc.get("metrics", {})
     reasons = []
 
@@ -159,7 +173,13 @@ def main():
         action="store_true",
         help="Return non-zero when final verdict is not pass",
     )
+    parser.add_argument(
+        "--kpi-path",
+        default=display_path(KPI_PATH),
+        help="KPI baseline JSON path (repo-relative or absolute)",
+    )
     args = parser.parse_args()
+    kpi_path = resolve_repo_path(args.kpi_path)
 
     ensure_validation_dir()
 
@@ -173,7 +193,7 @@ def main():
         schema_report = read_json(SCHEMA_REPORT_PATH)
         schema_violations = schema_report.get("violation_count")
 
-        kpi_eval = evaluate_kpi()
+        kpi_eval = evaluate_kpi(kpi_path)
         verdict, reasons = decide_verdict(docs_rc == 0, schema_rc == 0, kpi_eval)
 
         run_id = f"track1-gate-dryrun-{idx}"
@@ -266,6 +286,7 @@ def main():
             and run_results[0]["reasons"] == run_results[1]["reasons"]
         ),
         "final_verdict": run_results[-1]["verdict"],
+        "kpi_source_path": display_path(kpi_path),
     }
 
     CHAIN_REPORT_PATH.write_text(json.dumps(chain_report, ensure_ascii=True, indent=2), encoding="utf-8")

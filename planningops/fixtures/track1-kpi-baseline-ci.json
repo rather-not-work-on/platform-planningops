@@ -1,0 +1,15 @@
+{
+  "generated_at_utc": "2026-03-03T00:00:00+00:00",
+  "template": false,
+  "source": "ci-fixture",
+  "sample_window": {
+    "loop_runs": 2,
+    "cards_processed": 2
+  },
+  "metrics": {
+    "loop_success_rate": 0.95,
+    "replan_without_evidence": 0,
+    "schema_drift_recovery_time_p95_hours": 8
+  },
+  "verdict": "pass"
+}

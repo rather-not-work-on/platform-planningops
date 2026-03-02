@@ -91,13 +91,23 @@ jobs:
 
   loop-guardrails:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      repository-projects: read
     steps:
       - name: Checkout planningops
         uses: actions/checkout@v4
 
       - name: Run guardrail checks
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          python3 planningops/scripts/run_track1_gate_dryrun.py \
+            --kpi-path planningops/fixtures/track1-kpi-baseline-ci.json \
+            --strict
+          bash planningops/scripts/test_track1_gate_dryrun_contract.sh
+          bash planningops/scripts/test_bootstrap_two_track_backlog_contract.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_loop_checkpoint_resume.sh
           bash planningops/scripts/test_lease_lock_watchdog.sh

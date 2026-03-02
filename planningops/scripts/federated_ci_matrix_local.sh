@@ -55,7 +55,7 @@ run_check "runtime-handoff" "runtime" \
   bash -lc "cd '${WORKSPACE_DIR}/monday' && python3 scripts/integrate_planningops_handoff.py --run-id '${RUN_ID}-runtime' --idempotency artifacts/integration/${RUN_ID}-idempotency.json --transition-log artifacts/integration/${RUN_ID}-scheduler.ndjson"
 
 run_check "loop-guardrails" "policy" \
-  bash -lc "cd '${ROOT_DIR}' && bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh && bash planningops/scripts/test_loop_checkpoint_resume.sh && bash planningops/scripts/test_lease_lock_watchdog.sh && bash planningops/scripts/test_escalation_gate.sh"
+  bash -lc "cd '${ROOT_DIR}' && python3 planningops/scripts/run_track1_gate_dryrun.py --kpi-path planningops/fixtures/track1-kpi-baseline-ci.json --strict && bash planningops/scripts/test_track1_gate_dryrun_contract.sh && bash planningops/scripts/test_bootstrap_two_track_backlog_contract.sh && bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh && bash planningops/scripts/test_loop_checkpoint_resume.sh && bash planningops/scripts/test_lease_lock_watchdog.sh && bash planningops/scripts/test_escalation_gate.sh"
 
 python3 - <<PY
 import json
