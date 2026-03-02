@@ -5,7 +5,7 @@ doc_type: execution-plan
 domain: planning
 status: active
 date: 2026-02-28
-updated: 2026-03-01
+updated: 2026-03-02
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -36,11 +36,12 @@ related_docs:
 - `platform-planningops`:
   - PlanningOps MVP 이슈 `#2~#13` 전부 `Done`.
   - Topology expansion queue `#14~#23` 전부 `Done`.
-  - Wave B queue `#24~#32` 생성 및 Project 필드 스키마 정렬 완료(`Todo`).
+  - Wave B queue `#24~#32` 구현/검증/증빙 생성까지 완료(`Done`).
+  - Hardening extension `#33~#40`까지 완료(`Done`).
   - `planningops/`에 C1~C8 참조 맵, multi-repo fan-out 리포트, end-to-end simulation evidence bundle 구축 완료.
 - GitHub Project:
   - org project `rather-not-work-on/projects/2` 사용 중.
-  - 필드 스키마(`Status`, `workflow_state`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 검증 스크립트 기준 통과.
+  - 필드 스키마(`Status`, `workflow_state`, `execution_order`, `plan_lane`, `component`, `initiative`, `target_repo`) 검증 스크립트 기준 통과(`violation_count=0`, `2026-03-02`).
 - 레포 토폴로지:
   - 존재: `platform-planningops`, `monday`, `platform-contracts`, `platform-provider-gateway`, `platform-observability-gateway`.
   - 신규 3개 레포는 `public` 정책으로 생성 완료.
@@ -137,18 +138,24 @@ related_docs:
 | 270 | P9 | planningops | rather-not-work-on/platform-planningops | federated CI check matrix across 4 repos | 250, 260, 265 |
 | 280 | P10 | planningops | rather-not-work-on/platform-planningops | 7-day local pilot + Oracle profile partial migration rehearsal | 270 |
 
-## Wave B Issue Map (Registered, `2026-03-01`)
+## Wave B Issue Map (Updated, `2026-03-02`)
 | Execution Order | Issue | Component | Target Repo | Status |
 |---|---|---|---|---|
-| 210 | #24 | planningops | rather-not-work-on/platform-planningops | Todo |
-| 220 | #25 | planningops | rather-not-work-on/platform-planningops | Todo |
-| 230 | #26 | provider-gateway | rather-not-work-on/platform-provider-gateway | Todo |
-| 240 | #27 | observability-gateway | rather-not-work-on/platform-observability-gateway | Todo |
-| 250 | #28 | contracts | rather-not-work-on/platform-contracts | Todo |
-| 260 | #29 | runtime | rather-not-work-on/monday | Todo |
-| 265 | #32 | planningops | rather-not-work-on/platform-planningops | Todo |
-| 270 | #30 | planningops | rather-not-work-on/platform-planningops | Todo |
-| 280 | #31 | planningops | rather-not-work-on/platform-planningops | Todo |
+| 210 | #24 | planningops | rather-not-work-on/platform-planningops | Done |
+| 220 | #25 | planningops | rather-not-work-on/platform-planningops | Done |
+| 230 | #26 | provider-gateway | rather-not-work-on/platform-provider-gateway | Done |
+| 240 | #27 | observability-gateway | rather-not-work-on/platform-observability-gateway | Done |
+| 250 | #28 | contracts | rather-not-work-on/platform-contracts | Done |
+| 260 | #29 | runtime | rather-not-work-on/monday | Done |
+| 265 | #32 | planningops | rather-not-work-on/platform-planningops | Done |
+| 270 | #30 | planningops | rather-not-work-on/platform-planningops | Done |
+| 280 | #31 | planningops | rather-not-work-on/platform-planningops | Done |
+
+### Wave B Hardening Extension (`#33~#40`, `2026-03-01`)
+| Issue | Scope | Status |
+|---|---|---|
+| #33~#36 | adapter contract/hook + integration smoke | Done |
+| #37~#40 | attempt budget/checkpoint/lock/escalation guardrail | Done |
 
 ## Checkpoints (Absolute Dates, Refined)
 - Checkpoint T0 (`2026-02-28`): Wave A(`110~200`) 완료
@@ -175,7 +182,10 @@ related_docs:
   - `uap-docs.sh check --profile all` 통과
   - 관련 CI 체인 통과(계약 검증 + dry-run + replay)
 
-## Immediate Next Actions (Start Today)
-1. `#25` 우선 착수: repo-specific adapter hook 인터페이스/실패 reason taxonomy 고정
-2. `#32` 착수: bounded Sisyphus guardrails(`attempt budget`, `checkpoint/resume`, `lease lock`, `watchdog`, `escalation gate`) 구현
-3. `#26/#27` 병행: local LiteLLM/LangFuse launcher 표준 스크립트와 artifact 경로 규약 확정
+## Immediate Next Actions (Post-Wave-B, `2026-03-02`)
+1. 주간 멀티레포 hygiene 루프 운영 고정:
+   - `.github/workflows/refactor-hygiene-multi-repo.yml` 기반 aggregate 확인
+2. 문서/프로젝트 정합성 유지:
+   - 상태 변화 발생 시 plan 문서의 issue map과 project 필드 동기 갱신
+3. 트리거 기반 재결정 운영:
+   - Locked decisions(D1~D5)는 trigger 충족 시에만 decision pack 재평가

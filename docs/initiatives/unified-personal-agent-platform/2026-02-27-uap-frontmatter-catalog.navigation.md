@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-03-01
+updated: 2026-03-02
 initiative: unified-personal-agent-platform
 tags:
   - uap
