@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
 import subprocess
 import sys
@@ -152,6 +153,14 @@ def write_transition_entries(new_entries):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Run Track1 gate dry-run checks and persist reports")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Return non-zero when final verdict is not pass",
+    )
+    args = parser.parse_args()
+
     ensure_validation_dir()
 
     run_results = []
@@ -215,6 +224,10 @@ def main():
     write_transition_entries(transition_entries)
     transition_ok, transition_missing = check_transition_log_contract(transition_entries)
 
+    final_verdict = run_results[-1]["verdict"]
+    final_reasons = run_results[-1]["reasons"]
+    final_kpi = run_results[-1]["checks"]["kpi_check"]
+
     chain_report = {
         "generated_at_utc": now_utc(),
         "template": False,
@@ -228,20 +241,20 @@ def main():
                 "rc": run_results[-1]["checks"]["schema_check"]["rc"],
                 "violation_count": run_results[-1]["checks"]["schema_check"]["violation_count"],
             },
+            "kpi_gate_validation": {
+                "pass": final_kpi["pass"],
+                "missing_only": final_kpi["missing_only"],
+                "reasons": final_kpi["reasons"],
+            },
             "transition_log_contract_validation": {
                 "pass": transition_ok,
                 "missing": transition_missing,
             },
         },
-        "verdict": (
-            "pass"
-            if (
-                run_results[-1]["checks"]["docs_check"]["pass"]
-                and run_results[-1]["checks"]["schema_check"]["pass"]
-                and transition_ok
-            )
-            else "fail"
-        ),
+        "overall_gate_verdict": final_verdict,
+        "verdict": final_verdict,
+        "reasons": final_reasons,
+        "verdict_source": "track1-gate-dryrun-report.json.final_verdict",
     }
 
     dryrun_report = {
@@ -259,6 +272,8 @@ def main():
     DRYRUN_REPORT_PATH.write_text(json.dumps(dryrun_report, ensure_ascii=True, indent=2), encoding="utf-8")
 
     print(json.dumps(dryrun_report, ensure_ascii=True, indent=2))
+    if args.strict and final_verdict != "pass":
+        return 1
     return 0
 
 

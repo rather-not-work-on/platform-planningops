@@ -218,25 +218,39 @@ def issue_body(item):
     )
 
 
-def list_existing_issues(repo: str):
-    rc, out, err = run(
-        [
-            "gh",
-            "issue",
-            "list",
-            "--repo",
-            repo,
-            "--state",
-            "all",
-            "--limit",
-            "200",
-            "--json",
-            "number,title,body,url",
-        ]
-    )
-    if rc != 0:
-        raise RuntimeError(f"failed to list issues: {err}")
-    return json.loads(out)
+def list_existing_issues(repo: str, state: str):
+    page = 1
+    issues = []
+    while True:
+        rc, out, err = run(
+            [
+                "gh",
+                "api",
+                f"repos/{repo}/issues?state={state}&per_page=100&page={page}",
+            ]
+        )
+        if rc != 0:
+            raise RuntimeError(f"failed to list issues (state={state}, page={page}): {err}")
+        batch = json.loads(out)
+        if not batch:
+            break
+        for issue in batch:
+            # REST /issues includes pull requests; skip to keep dedup strictly issue-based.
+            if issue.get("pull_request"):
+                continue
+            issues.append(
+                {
+                    "number": issue.get("number"),
+                    "title": issue.get("title", ""),
+                    "body": issue.get("body") or "",
+                    "url": issue.get("html_url"),
+                    "state": issue.get("state", "").lower(),
+                }
+            )
+        if len(batch) < 100:
+            break
+        page += 1
+    return issues
 
 
 def find_issue_for_item(issues, plan_item_id: str):
@@ -266,38 +280,116 @@ def create_issue(repo: str, title: str, body: str):
     return out.strip()
 
 
+def reopen_issue(repo: str, issue_number: int):
+    rc, _, err = run(
+        [
+            "gh",
+            "issue",
+            "reopen",
+            str(issue_number),
+            "--repo",
+            repo,
+        ]
+    )
+    if rc != 0:
+        raise RuntimeError(f"failed to reopen issue #{issue_number}: {err}")
+
+
 def normalize_workflow_key(key: str):
     return key.replace("-", "_")
 
 
-def find_project_item_id(owner: str, project_number: int, issue_number: int, issue_repo: str):
-    rc, out, err = run(
-        [
-            "gh",
-            "project",
-            "item-list",
-            str(project_number),
-            "--owner",
-            owner,
-            "--limit",
-            "500",
-            "--format",
-            "json",
-        ]
+def load_project_items_page(owner: str, project_number: int, cursor=None):
+    query = (
+        "query($owner: String!, $number: Int!, $cursor: String) { "
+        "repositoryOwner(login: $owner) { "
+        "__typename "
+        "... on ProjectV2Owner { "
+        "projectV2(number: $number) { "
+        "items(first: 100, after: $cursor) { "
+        "nodes { "
+        "id "
+        "content { "
+        "__typename "
+        "... on Issue { "
+        "number "
+        "repository { nameWithOwner } "
+        "} "
+        "} "
+        "} "
+        "pageInfo { hasNextPage endCursor } "
+        "} "
+        "} "
+        "} "
+        "} "
+        "}"
     )
+    cmd = [
+        "gh",
+        "api",
+        "graphql",
+        "-f",
+        f"query={query}",
+        "-F",
+        f"owner={owner}",
+        "-F",
+        f"number={project_number}",
+    ]
+    if cursor is not None:
+        cmd.extend(["-F", f"cursor={cursor}"])
+    rc, out, err = run(cmd)
     if rc != 0:
-        raise RuntimeError(f"failed to list project items: {err}")
+        raise RuntimeError(f"failed to query project items page: {err}")
     doc = json.loads(out)
-    for item in doc.get("items", []):
-        content = item.get("content") or {}
-        if content.get("type") != "Issue":
-            continue
-        if content.get("number") != issue_number:
-            continue
-        if content.get("repository") != issue_repo:
-            continue
-        return item.get("id")
-    return None
+    if doc.get("errors"):
+        raise RuntimeError(f"project items graphql errors: {doc['errors']}")
+    root = (doc.get("data") or {}).get("repositoryOwner") or {}
+    project = root.get("projectV2") or {}
+    if not project:
+        raise RuntimeError("projectV2 not found while listing project items")
+    items = (project.get("items") or {}).get("nodes") or []
+    page_info = (project.get("items") or {}).get("pageInfo") or {}
+    return items, page_info
+
+
+def build_project_item_issue_index(owner: str, project_number: int):
+    issue_index = {}
+    cursor = None
+    while True:
+        items, page_info = load_project_items_page(owner, project_number, cursor=cursor)
+        for item in items:
+            content = item.get("content") or {}
+            if content.get("__typename") != "Issue":
+                continue
+            number = content.get("number")
+            repo_doc = content.get("repository") or {}
+            repo_name = repo_doc.get("nameWithOwner")
+            if number is None or not repo_name:
+                continue
+            issue_index[(number, repo_name)] = item.get("id")
+        if not page_info.get("hasNextPage"):
+            break
+        cursor = page_info.get("endCursor")
+        if not cursor:
+            break
+    return issue_index
+
+
+def find_project_item_id(
+    owner: str,
+    project_number: int,
+    issue_number: int,
+    issue_repo: str,
+    project_item_issue_index: dict,
+):
+    key = (issue_number, issue_repo)
+    item_id = project_item_issue_index.get(key)
+    if item_id:
+        return item_id
+    refreshed = build_project_item_issue_index(owner, project_number)
+    project_item_issue_index.clear()
+    project_item_issue_index.update(refreshed)
+    return project_item_issue_index.get(key)
 
 
 def ensure_project_item(owner: str, project_number: int, issue_url: str):
@@ -396,8 +488,32 @@ def field_option_id(fields, field_key: str, option_key: str):
     return field["id"], option_id
 
 
-def execute_item(project, item, apply_mode: bool, existing_issues):
-    issue = find_issue_for_item(existing_issues, item["plan_item_id"])
+def execute_item(
+    project,
+    item,
+    apply_mode: bool,
+    open_issues,
+    closed_issues,
+    allow_reopen_closed: bool,
+    project_item_issue_index: dict,
+):
+    issue = find_issue_for_item(open_issues, item["plan_item_id"])
+    reused_closed_issue = False
+    reopened_closed_issue = False
+    dedup_match_state = "open" if issue else None
+
+    if issue is None and allow_reopen_closed:
+        closed_issue = find_issue_for_item(closed_issues, item["plan_item_id"])
+        if closed_issue:
+            issue = dict(closed_issue)
+            reused_closed_issue = True
+            dedup_match_state = "closed"
+            if apply_mode:
+                reopen_issue(CONTROL_REPO, issue["number"])
+                reopened_closed_issue = True
+                issue["state"] = "open"
+            open_issues.append(issue)
+
     created = False
 
     if issue:
@@ -415,11 +531,12 @@ def execute_item(project, item, apply_mode: bool, existing_issues):
 
     if apply_mode and issue_number is None:
         issue_number = int(issue_url.rstrip("/").split("/")[-1])
-        existing_issues.append(
+        open_issues.append(
             {
                 "number": issue_number,
                 "url": issue_url,
                 "body": issue_body(item),
+                "state": "open",
             }
         )
 
@@ -431,6 +548,9 @@ def execute_item(project, item, apply_mode: bool, existing_issues):
         "issue_number": issue_number,
         "issue_url": issue_url,
         "created_issue": created,
+        "dedup_match_state": dedup_match_state,
+        "reused_closed_issue": reused_closed_issue,
+        "reopened_closed_issue": reopened_closed_issue,
         "field_updates": [],
     }
 
@@ -453,6 +573,7 @@ def execute_item(project, item, apply_mode: bool, existing_issues):
             project["project_number"],
             issue_number,
             CONTROL_REPO,
+            project_item_issue_index,
         )
     if not item_id:
         raise RuntimeError(f"could not resolve project item id for issue #{issue_number}")
@@ -506,23 +627,43 @@ def main():
         default="planningops/artifacts/validation/two-track-backlog-bootstrap-report.json",
         help="Output report path",
     )
+    parser.add_argument(
+        "--allow-reopen-closed",
+        action="store_true",
+        help="Allow closed dedup matches and reopen them in apply mode",
+    )
     args = parser.parse_args()
 
     project = load_project_config(Path(args.config))
-    issues = list_existing_issues(CONTROL_REPO)
+    open_issues = list_existing_issues(CONTROL_REPO, "open")
+    closed_issues = list_existing_issues(CONTROL_REPO, "closed") if args.allow_reopen_closed else []
+    project_item_issue_index = {}
 
     report = {
         "mode": "apply" if args.apply else "dry-run",
         "control_repo": CONTROL_REPO,
         "project_owner": project["owner"],
         "project_number": project["project_number"],
+        "allow_reopen_closed": args.allow_reopen_closed,
+        "open_issues_scanned": len(open_issues),
+        "closed_issues_scanned": len(closed_issues),
         "items_total": len(BACKLOG_ITEMS),
         "results": [],
     }
 
     try:
         for item in BACKLOG_ITEMS:
-            report["results"].append(execute_item(project, item, args.apply, issues))
+            report["results"].append(
+                execute_item(
+                    project,
+                    item,
+                    args.apply,
+                    open_issues,
+                    closed_issues,
+                    args.allow_reopen_closed,
+                    project_item_issue_index,
+                )
+            )
     except Exception as exc:
         report["error"] = str(exc)
         out_path = Path(args.output)
