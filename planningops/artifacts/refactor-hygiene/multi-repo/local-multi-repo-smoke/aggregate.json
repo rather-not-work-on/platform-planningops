@@ -1,0 +1,79 @@
+{
+  "run_id": "local-multi-repo-smoke",
+  "generated_at_utc": "2026-03-01T12:19:52.826306+00:00",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops",
+  "config_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/refactor-hygiene-multi-repo.json",
+  "shared_policy_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/refactor-hygiene-policy.json",
+  "repositories_total": 5,
+  "repositories_succeeded": 5,
+  "repositories_failed": 0,
+  "results": [
+    {
+      "name": "monday",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "status": "ok",
+      "report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/repos/monday/local-multi-repo-smoke-monday/report.json",
+      "files_scanned": 3,
+      "modules_discovered": 3,
+      "cycle_count": 0,
+      "external_task_count": 0,
+      "internal_task_count": 0,
+      "execution_order": [],
+      "execution_order_contract_ok": true
+    },
+    {
+      "name": "platform-contracts",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+      "status": "ok",
+      "report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/repos/platform-contracts/local-multi-repo-smoke-platform-contracts/report.json",
+      "files_scanned": 2,
+      "modules_discovered": 2,
+      "cycle_count": 0,
+      "external_task_count": 0,
+      "internal_task_count": 0,
+      "execution_order": [],
+      "execution_order_contract_ok": true
+    },
+    {
+      "name": "platform-observability-gateway",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "status": "ok",
+      "report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/repos/platform-observability-gateway/local-multi-repo-smoke-platform-observability-gateway/report.json",
+      "files_scanned": 1,
+      "modules_discovered": 1,
+      "cycle_count": 0,
+      "external_task_count": 0,
+      "internal_task_count": 0,
+      "execution_order": [],
+      "execution_order_contract_ok": true
+    },
+    {
+      "name": "platform-planningops",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops",
+      "status": "ok",
+      "report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/repos/platform-planningops/local-multi-repo-smoke-platform-planningops/report.json",
+      "files_scanned": 13,
+      "modules_discovered": 13,
+      "cycle_count": 0,
+      "external_task_count": 0,
+      "internal_task_count": 1,
+      "execution_order": [
+        "I01"
+      ],
+      "execution_order_contract_ok": true
+    },
+    {
+      "name": "platform-provider-gateway",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "status": "ok",
+      "report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/repos/platform-provider-gateway/local-multi-repo-smoke-platform-provider-gateway/report.json",
+      "files_scanned": 2,
+      "modules_discovered": 2,
+      "cycle_count": 0,
+      "external_task_count": 0,
+      "internal_task_count": 0,
+      "execution_order": [],
+      "execution_order_contract_ok": true
+    }
+  ]
+}

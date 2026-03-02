@@ -5,7 +5,7 @@ doc_type: hub
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-28
+updated: 2026-03-01
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -20,6 +20,7 @@ related_docs:
   - ./20-repos/README.md
   - ./30-domains/README.md
   - ./30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md
+  - ./30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md
   - ./30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md
   - ./90-navigation/uap-document-map.navigation.md
   - ./2026-02-27-uap-frontmatter-catalog.navigation.md
@@ -62,12 +63,13 @@ related_docs:
 6. [Foundation Execution Plan](20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
 7. [GitHub PlanningOps Sync Plan](30-execution-plan/uap-github-planningops-sync.execution-plan.md)
 8. [Topology Priority Expansion Plan](30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md)
-9. [Lifecycle Scenario Playbook](30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
-10. [Doc Structure Migration Plan](30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md)
-11. [Trade-off Decision Framework](40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
-12. [Issue Closure Matrix](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md)
-13. [Document Map](90-navigation/uap-document-map.navigation.md)
-14. [Frontmatter Catalog](2026-02-27-uap-frontmatter-catalog.navigation.md)
+9. [Module Refactor Hygiene Loop Plan](30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md)
+10. [Lifecycle Scenario Playbook](30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md)
+11. [Doc Structure Migration Plan](30-execution-plan/2026-02-27-uap-doc-structure-migration.execution-plan.md)
+12. [Trade-off Decision Framework](40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
+13. [Issue Closure Matrix](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md)
+14. [Document Map](90-navigation/uap-document-map.navigation.md)
+15. [Frontmatter Catalog](2026-02-27-uap-frontmatter-catalog.navigation.md)
 
 ## New Agent Fast Path
 - 1페이지 시작점: [AGENT-START](AGENT-START.md)

@@ -1,0 +1,266 @@
+{
+  "run_id": "local-multi-repo-smoke-platform-planningops",
+  "generated_at_utc": "2026-03-01T12:19:52.761657+00:00",
+  "policy_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/refactor-hygiene/multi-repo/local-multi-repo-smoke/policies/platform-planningops.json",
+  "policy": {
+    "scan_roots": [
+      "planningops/scripts"
+    ],
+    "include_extensions": [
+      ".py",
+      ".js",
+      ".ts",
+      ".tsx"
+    ],
+    "exclude_dirs": [
+      ".git",
+      "node_modules",
+      "__pycache__",
+      "artifacts",
+      ".venv"
+    ],
+    "internal_alias_prefixes": [
+      "@/",
+      "~/"
+    ],
+    "legacy_markers": [
+      "legacy",
+      "deprecated",
+      "todo-remove",
+      "old_",
+      "_old"
+    ],
+    "max_modules_per_cycle": 3,
+    "max_files_per_module": 20,
+    "checkpoint_every_tasks": 2,
+    "internal_dependency_budget": {
+      "max_out_degree": 5
+    }
+  },
+  "scan": {
+    "repo_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops",
+    "scan_roots": [
+      "planningops/scripts"
+    ],
+    "files_scanned": 13,
+    "modules_discovered": 13
+  },
+  "topology": {
+    "internal_edge_count": 1,
+    "cycle_count": 0,
+    "cycles": [],
+    "external_packages": [],
+    "modules": [
+      {
+        "module": "cross_repo_conformance_check",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/cross_repo_conformance_check.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "github_sync_adapter",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/github_sync_adapter.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "issue_loop_runner",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/issue_loop_runner.py"
+        ],
+        "internal_dependencies": [
+          "repo_execution_adapters"
+        ],
+        "internal_out_degree": 1,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "multi_repo_projection_report",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/multi_repo_projection_report.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "parser_diff_dry_run",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/parser_diff_dry_run.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "ralph_loop_local",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/ralph_loop_local.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "refactor_hygiene_loop",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/refactor_hygiene_loop.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [
+          {
+            "file": "planningops/scripts/refactor_hygiene_loop.py",
+            "marker": "legacy",
+            "location": "content"
+          }
+        ],
+        "in_cycle": false
+      },
+      {
+        "module": "refactor_hygiene_multi_repo",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/refactor_hygiene_multi_repo.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "repo_execution_adapters",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/repo_execution_adapters.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 1,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "run_local_oracle_rehearsal",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/run_local_oracle_rehearsal.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "validate_contracts",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/validate_contracts.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "validate_project_field_schema",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/validate_project_field_schema.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      },
+      {
+        "module": "verify_loop_run",
+        "file_count": 1,
+        "files": [
+          "planningops/scripts/verify_loop_run.py"
+        ],
+        "internal_dependencies": [],
+        "internal_out_degree": 0,
+        "internal_in_degree": 0,
+        "external_dependencies": [],
+        "legacy_hits": [],
+        "in_cycle": false
+      }
+    ],
+    "parse_errors": []
+  },
+  "queues": {
+    "external_first": [],
+    "internal_next": [
+      {
+        "task_id": "I01",
+        "phase": "internal_dependency_cleanup",
+        "module": "refactor_hygiene_loop",
+        "priority_score": 2,
+        "depends_on": [],
+        "coupling_snapshot": {
+          "out_degree": 0,
+          "in_degree": 0,
+          "in_cycle": false,
+          "legacy_hit_count": 1
+        },
+        "constraints": {
+          "max_files_touched": 20,
+          "must_reduce_or_keep_out_degree": true,
+          "must_preserve_behavior": true,
+          "must_record_interface_changes": true
+        },
+        "success_criteria": [
+          "Internal dependency direction is clearer and module boundary is simpler.",
+          "No new bidirectional dependency is introduced."
+        ]
+      }
+    ],
+    "execution_order": [
+      "I01"
+    ],
+    "checkpoints": []
+  }
+}
