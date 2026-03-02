@@ -124,4 +124,4 @@ dependencies: []
 
 ## Notes
 
-- Merge-blocking 성격(P1): 현재 상태로는 strict contract가 운영에서 강제되지 않는다.
+- 해결 완료: strict contract가 CI/로컬 guardrail 경로에서 강제된다.
