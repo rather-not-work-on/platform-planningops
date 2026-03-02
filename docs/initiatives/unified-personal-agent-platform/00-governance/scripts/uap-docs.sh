@@ -48,6 +48,10 @@ LEGACY_BLOCKED_PATHS=(
 )
 
 ROOT_README_PATH="$REPO_ROOT/README.md"
+HAS_RG=0
+if command -v rg >/dev/null 2>&1; then
+  HAS_RG=1
+fi
 
 contains_value() {
   local needle="$1"
@@ -59,6 +63,16 @@ contains_value() {
     fi
   done
   return 1
+}
+
+contains_pattern() {
+  local pattern="$1"
+  local file="$2"
+  if (( HAS_RG == 1 )); then
+    rg -q -- "$pattern" "$file"
+    return $?
+  fi
+  grep -Eq -- "$pattern" "$file"
 }
 
 ensure_valid_profile() {
@@ -139,17 +153,17 @@ check_root_readme_contract() {
     return 1
   fi
 
-  if ! rg -q 'docs/workbench/unified-personal-agent-platform' "$ROOT_README_PATH"; then
+  if ! contains_pattern 'docs/workbench/unified-personal-agent-platform' "$ROOT_README_PATH"; then
     echo "[ERR] root README missing workbench path contract"
     errors=$((errors + 1))
   fi
 
-  if ! rg -q 'uap-docs\.sh check --profile canonical' "$ROOT_README_PATH"; then
+  if ! contains_pattern 'uap-docs\.sh check --profile canonical' "$ROOT_README_PATH"; then
     echo "[ERR] root README missing canonical profile check command"
     errors=$((errors + 1))
   fi
 
-  if ! rg -q 'uap-docs\.sh check --profile all' "$ROOT_README_PATH"; then
+  if ! contains_pattern 'uap-docs\.sh check --profile all' "$ROOT_README_PATH"; then
     echo "[ERR] root README missing all profile check command"
     errors=$((errors + 1))
   fi
@@ -277,7 +291,11 @@ extract_related_docs() {
 
 extract_markdown_links() {
   local file="$1"
-  rg -o '\[[^]]+\]\([^)]+\)' "$file" \
+  if (( HAS_RG == 1 )); then
+    rg -o '\[[^]]+\]\([^)]+\)' "$file" || true
+  else
+    grep -oE '\[[^]]+\]\([^)]+\)' "$file" || true
+  fi \
     | sed -E 's/.*\(([^)]+)\)$/\1/' \
     | sort -u
 }
