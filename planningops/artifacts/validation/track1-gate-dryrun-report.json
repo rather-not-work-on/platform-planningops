@@ -1,0 +1,90 @@
+{
+  "generated_at_utc": "2026-03-02T13:16:36.465303+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-02T13:16:30.481239+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": false,
+          "missing_only": true,
+          "reasons": [
+            "kpi.loop_success_rate.missing",
+            "kpi.replan_without_evidence.missing",
+            "kpi.schema_drift_recovery_time_p95_hours.missing"
+          ],
+          "metrics": {
+            "loop_success_rate": null,
+            "replan_without_evidence": null,
+            "schema_drift_recovery_time_p95_hours": null
+          }
+        }
+      },
+      "verdict": "inconclusive",
+      "reasons": [
+        "kpi.loop_success_rate.missing",
+        "kpi.replan_without_evidence.missing",
+        "kpi.schema_drift_recovery_time_p95_hours.missing"
+      ]
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-02T13:16:36.463450+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": false,
+          "missing_only": true,
+          "reasons": [
+            "kpi.loop_success_rate.missing",
+            "kpi.replan_without_evidence.missing",
+            "kpi.schema_drift_recovery_time_p95_hours.missing"
+          ],
+          "metrics": {
+            "loop_success_rate": null,
+            "replan_without_evidence": null,
+            "schema_drift_recovery_time_p95_hours": null
+          }
+        }
+      },
+      "verdict": "inconclusive",
+      "reasons": [
+        "kpi.loop_success_rate.missing",
+        "kpi.replan_without_evidence.missing",
+        "kpi.schema_drift_recovery_time_p95_hours.missing"
+      ]
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "inconclusive"
+}
