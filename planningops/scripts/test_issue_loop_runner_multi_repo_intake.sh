@@ -63,6 +63,45 @@ assert trace["selected"]["target_repo"] == "rather-not-work-on/platform-planning
 l1_profile = mod.determine_loop_profile(selected, {}, "rather-not-work-on/platform-planningops")
 assert l1_profile == "L1 Contract-Clarification", l1_profile
 
+l2_profile_sim = mod.determine_loop_profile(
+    {"workflow_state": "ready-contract", "simulation_required": True},
+    {},
+    "rather-not-work-on/platform-planningops",
+)
+assert l2_profile_sim == "L2 Simulation", l2_profile_sim
+
+l2_profile_uncertainty = mod.determine_loop_profile(
+    {"workflow_state": "ready-contract", "uncertainty_level": "high"},
+    {},
+    "rather-not-work-on/platform-planningops",
+)
+assert l2_profile_uncertainty == "L2 Simulation", l2_profile_uncertainty
+
+selector_hints = mod.parse_selector_hints("simulation_required: true\nuncertainty_level: critical\n")
+assert selector_hints["simulation_required"] is True, selector_hints
+assert selector_hints["uncertainty_level"] == "critical", selector_hints
+
+blueprint_ok = mod.parse_blueprint_refs(
+    "\n".join(
+        [
+            "interface_contract_refs: planningops/contracts/requirements-contract.md",
+            "package_topology_ref: docs/initiatives/unified-personal-agent-platform/20-architecture/2026-02-27-uap-contract-boundaries.architecture.md",
+            "dependency_manifest_ref: planningops/config/runtime-profiles.json",
+            "file_plan_ref: docs/workbench/unified-personal-agent-platform/plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md",
+        ]
+    )
+)
+assert blueprint_ok["complete"] is True, blueprint_ok
+assert blueprint_ok["missing"] == [], blueprint_ok
+
+blueprint_missing = mod.parse_blueprint_refs("interface_contract_refs: planningops/contracts/problem-contract.md\n")
+assert blueprint_missing["complete"] is False, blueprint_missing
+assert sorted(blueprint_missing["missing"]) == [
+    "dependency_manifest_ref",
+    "file_plan_ref",
+    "package_topology_ref",
+], blueprint_missing
+
 ready_impl_cross_repo = {
     "workflow_state": "ready-implementation",
     "target_repo": "rather-not-work-on/monday",

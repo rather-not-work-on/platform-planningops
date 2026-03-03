@@ -66,6 +66,7 @@ related_docs:
 ```bash
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile canonical
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
+bash planningops/scripts/test_module_readme_contract.sh
 ```
 2. 게이트 네임스페이스 확인:
 - `Gate A~G` = Foundation 게이트
@@ -101,9 +102,9 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 - 스프린트 기반이 아니라 비정기 Kanban 기반이다.
 - 진행 판단은 기간보다 증빙/게이트 결과를 우선한다.
 
-현재 구현 기준(`2026-03-01`) 참고:
+현재 구현 기준(`2026-03-03`) 참고:
 - `ready-contract` 기본 선택은 `L1`이다.
-- `L2` 자동 선택 신호 강화는 별도 후속 작업으로 관리 중이다.
+- issue body에 `simulation_required: true` 또는 `uncertainty_level: medium|high|critical`가 있으면 `L2`를 선택한다.
 
 ## Agent Execution Sequence (How the Agent Works)
 1. Intake: 후보 카드 수집 및 우선순위/의존성 검사

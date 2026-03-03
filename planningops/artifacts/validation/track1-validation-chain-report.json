@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-02T13:16:36.465298+00:00",
+  "generated_at_utc": "2026-03-03T06:31:01.548736+00:00",
   "template": false,
   "checks": {
     "uap_docs_profile_all": {
@@ -11,10 +11,18 @@
       "rc": 0,
       "violation_count": 0
     },
+    "kpi_gate_validation": {
+      "pass": true,
+      "missing_only": false,
+      "reasons": []
+    },
     "transition_log_contract_validation": {
       "pass": true,
       "missing": []
     }
   },
-  "verdict": "pass"
+  "overall_gate_verdict": "pass",
+  "verdict": "pass",
+  "reasons": [],
+  "verdict_source": "track1-gate-dryrun-report.json.final_verdict"
 }

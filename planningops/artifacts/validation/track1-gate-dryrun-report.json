@@ -1,10 +1,10 @@
 {
-  "generated_at_utc": "2026-03-02T13:16:36.465303+00:00",
+  "generated_at_utc": "2026-03-03T06:31:01.548742+00:00",
   "template": false,
   "runs": [
     {
       "run_id": "track1-gate-dryrun-1",
-      "executed_at_utc": "2026-03-02T13:16:30.481239+00:00",
+      "executed_at_utc": "2026-03-03T06:30:55.374291+00:00",
       "checks": {
         "docs_check": {
           "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
@@ -22,30 +22,22 @@
           "violation_count": 0
         },
         "kpi_check": {
-          "pass": false,
-          "missing_only": true,
-          "reasons": [
-            "kpi.loop_success_rate.missing",
-            "kpi.replan_without_evidence.missing",
-            "kpi.schema_drift_recovery_time_p95_hours.missing"
-          ],
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
           "metrics": {
-            "loop_success_rate": null,
-            "replan_without_evidence": null,
-            "schema_drift_recovery_time_p95_hours": null
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
           }
         }
       },
-      "verdict": "inconclusive",
-      "reasons": [
-        "kpi.loop_success_rate.missing",
-        "kpi.replan_without_evidence.missing",
-        "kpi.schema_drift_recovery_time_p95_hours.missing"
-      ]
+      "verdict": "pass",
+      "reasons": []
     },
     {
       "run_id": "track1-gate-dryrun-2",
-      "executed_at_utc": "2026-03-02T13:16:36.463450+00:00",
+      "executed_at_utc": "2026-03-03T06:31:01.546929+00:00",
       "checks": {
         "docs_check": {
           "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
@@ -63,28 +55,21 @@
           "violation_count": 0
         },
         "kpi_check": {
-          "pass": false,
-          "missing_only": true,
-          "reasons": [
-            "kpi.loop_success_rate.missing",
-            "kpi.replan_without_evidence.missing",
-            "kpi.schema_drift_recovery_time_p95_hours.missing"
-          ],
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
           "metrics": {
-            "loop_success_rate": null,
-            "replan_without_evidence": null,
-            "schema_drift_recovery_time_p95_hours": null
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
           }
         }
       },
-      "verdict": "inconclusive",
-      "reasons": [
-        "kpi.loop_success_rate.missing",
-        "kpi.replan_without_evidence.missing",
-        "kpi.schema_drift_recovery_time_p95_hours.missing"
-      ]
+      "verdict": "pass",
+      "reasons": []
     }
   ],
   "reproducibility_match": true,
-  "final_verdict": "inconclusive"
+  "final_verdict": "pass",
+  "kpi_source_path": "planningops/fixtures/track1-kpi-baseline-ci.json"
 }

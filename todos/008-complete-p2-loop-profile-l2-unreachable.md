@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p2
 issue_id: "008"
 tags: [code-review, planningops, loop-selector, contracts]
@@ -63,6 +63,7 @@ dependencies: []
 
 ## Recommended Action
 
+완료. `ready-contract`에서 `simulation_required`/`uncertainty_level` 신호를 읽어 `L2 Simulation`으로 분기하도록 selector를 확장했다.
 
 ## Technical Details
 
@@ -77,9 +78,9 @@ Affected files:
 
 ## Acceptance Criteria
 
-- [ ] `L2`를 선택할 수 있는 명시적 조건이 코드에 존재한다.
-- [ ] selector 단위 테스트에 `L2` 선택 케이스가 추가된다.
-- [ ] 계약/문서/검증 규칙이 selector 동작과 일치한다.
+- [x] `L2`를 선택할 수 있는 명시적 조건이 코드에 존재한다.
+- [x] selector 단위 테스트에 `L2` 선택 케이스가 추가된다.
+- [x] 계약/문서/검증 규칙이 selector 동작과 일치한다.
 
 ## Work Log
 
@@ -94,6 +95,18 @@ Affected files:
 
 **Learnings:**
 - 카탈로그 확장 시 코드 분기 신호 정의를 동시에 고정해야 drift를 줄일 수 있음
+
+### 2026-03-03 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- `planningops/scripts/issue_loop_runner.py`에 `parse_selector_hints`를 추가해 issue body의 `simulation_required`, `uncertainty_level`을 파싱하도록 구현했다.
+- `determine_loop_profile`를 확장해 `ready-contract`에서도 시뮬레이션 신호가 있으면 `L2 Simulation`을 반환하게 수정했다.
+- `planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh`에 `L2` 선택 회귀 케이스를 추가했다.
+
+**Learnings:**
+- 루프 카탈로그는 “정의만 존재”하면 드리프트가 생기므로, 선택 신호 파싱 규칙까지 계약으로 고정해야 안정적이다.
 
 ## Notes
 

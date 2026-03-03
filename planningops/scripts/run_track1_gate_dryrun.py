@@ -134,6 +134,8 @@ def check_transition_log_contract(entries):
         "from_state",
         "to_state",
         "transition_reason",
+        "actor_type",
+        "actor_id",
         "loop_profile",
         "verdict",
         "decided_at_utc",
@@ -157,6 +159,10 @@ def write_transition_entries(new_entries):
             obj = json.loads(line)
             if obj.get("template") is True:
                 continue
+            if "actor_type" not in obj:
+                obj["actor_type"] = "agent"
+            if "actor_id" not in obj:
+                obj["actor_id"] = "track1-gate-dryrun-legacy"
             existing_entries.append(obj)
 
     all_entries = existing_entries + new_entries
@@ -164,6 +170,7 @@ def write_transition_entries(new_entries):
         "\n".join(json.dumps(e, ensure_ascii=True) for e in all_entries) + "\n",
         encoding="utf-8",
     )
+    return all_entries
 
 
 def main():
@@ -234,6 +241,8 @@ def main():
                 "from_state": "review-gate",
                 "to_state": "review-gate" if verdict == "inconclusive" else ("done" if verdict == "pass" else "blocked"),
                 "transition_reason": "gate.dryrun.verdict",
+                "actor_type": "agent",
+                "actor_id": "track1-gate-dryrun",
                 "loop_profile": "L3 Implementation-TDD",
                 "verdict": verdict,
                 "decided_at_utc": decided_at,
@@ -241,8 +250,8 @@ def main():
             }
         )
 
-    write_transition_entries(transition_entries)
-    transition_ok, transition_missing = check_transition_log_contract(transition_entries)
+    all_transition_entries = write_transition_entries(transition_entries)
+    transition_ok, transition_missing = check_transition_log_contract(all_transition_entries)
 
     final_verdict = run_results[-1]["verdict"]
     final_reasons = run_results[-1]["reasons"]

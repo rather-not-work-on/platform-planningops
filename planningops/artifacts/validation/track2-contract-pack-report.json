@@ -1,0 +1,139 @@
+{
+  "generated_at_utc": "2026-03-03T06:46:08.931204+00:00",
+  "checks": {
+    "artifacts": {
+      "issue_52_monday_target_ux_freeze": {
+        "path": "docs/workbench/unified-personal-agent-platform/brainstorms/monday-target-ux-scenarios.md",
+        "exists": true,
+        "frontmatter": {
+          "present": true,
+          "missing_keys": []
+        }
+      },
+      "issue_53_infra_profile_boundary_map": {
+        "path": "docs/workbench/unified-personal-agent-platform/audits/infra-profile-boundary-map.md",
+        "exists": true,
+        "frontmatter": {
+          "present": true,
+          "missing_keys": []
+        }
+      },
+      "issue_54_langfuse_boundary_map": {
+        "path": "docs/workbench/unified-personal-agent-platform/audits/langfuse-boundary-map.md",
+        "exists": true,
+        "frontmatter": {
+          "present": true,
+          "missing_keys": []
+        }
+      },
+      "issue_55_nanoclaw_fit_assessment": {
+        "path": "docs/workbench/unified-personal-agent-platform/audits/nanoclaw-fit-assessment.md",
+        "exists": true,
+        "frontmatter": {
+          "present": true,
+          "missing_keys": []
+        }
+      },
+      "issue_56_track2_readiness_packet": {
+        "path": "docs/workbench/unified-personal-agent-platform/plans/track2-implementation-readiness-packet.md",
+        "exists": true,
+        "frontmatter": {
+          "present": true,
+          "missing_keys": []
+        }
+      },
+      "issue_57_replan_policy_automation_report": {
+        "path": "docs/workbench/unified-personal-agent-platform/audits/replan-policy-automation-report.md",
+        "exists": true,
+        "frontmatter": {
+          "present": true,
+          "missing_keys": []
+        }
+      }
+    },
+    "reference_rules": [
+      {
+        "path": "docs/workbench/unified-personal-agent-platform/audits/nanoclaw-fit-assessment.md",
+        "exists": true,
+        "required_tokens": [
+          "docs/workbench/unified-personal-agent-platform/brainstorms/monday-target-ux-scenarios.md",
+          "docs/workbench/unified-personal-agent-platform/audits/infra-profile-boundary-map.md",
+          "docs/workbench/unified-personal-agent-platform/audits/langfuse-boundary-map.md"
+        ],
+        "missing_tokens": [],
+        "pass": true
+      },
+      {
+        "path": "docs/workbench/unified-personal-agent-platform/plans/track2-implementation-readiness-packet.md",
+        "exists": true,
+        "required_tokens": [
+          "docs/workbench/unified-personal-agent-platform/audits/nanoclaw-fit-assessment.md",
+          "planningops/contracts/implementation-readiness-gate-contract.md",
+          "planningops/config/runtime-profiles.json"
+        ],
+        "missing_tokens": [],
+        "pass": true
+      },
+      {
+        "path": "docs/workbench/unified-personal-agent-platform/audits/replan-policy-automation-report.md",
+        "exists": true,
+        "required_tokens": [
+          "planningops/contracts/escalation-gate-contract.md",
+          "planningops/scripts/issue_loop_runner.py",
+          "planningops/scripts/test_escalation_gate.sh"
+        ],
+        "missing_tokens": [],
+        "pass": true
+      }
+    ],
+    "commands": {
+      "uap_docs_profile_all": {
+        "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+        "rc": 0,
+        "pass": true,
+        "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+        "stderr": ""
+      },
+      "project_field_schema_validation": {
+        "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+        "rc": 0,
+        "pass": true,
+        "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+        "stderr": ""
+      },
+      "module_readme_contract": {
+        "command": "bash planningops/scripts/test_module_readme_contract.sh",
+        "rc": 0,
+        "pass": true,
+        "stdout": "module README contract ok",
+        "stderr": ""
+      },
+      "escalation_gate_contract": {
+        "command": "bash planningops/scripts/test_escalation_gate.sh",
+        "rc": 0,
+        "pass": true,
+        "stdout": "escalation gate contract smoke ok",
+        "stderr": ""
+      },
+      "ready_implementation_blueprint_normalize": {
+        "command": "python3 planningops/scripts/normalize_ready_implementation_blueprint_refs.py --fail-on-missing",
+        "rc": 0,
+        "pass": true,
+        "stdout": "{\n  \"generated_at_utc\": \"2026-03-03T06:46:08.923305+00:00\",\n  \"mode\": \"dry-run\",\n  \"owner\": \"rather-not-work-on\",\n  \"project_num\": 2,\n  \"initiative\": \"unified-personal-agent-platform\",\n  \"workflow_states\": [\n    \"ready-implementation\",\n    \"ready_implementation\"\n  ],\n  \"candidates_count\": 0,\n  \"changed_count\": 0,\n  \"applied_count\": 0,\n  \"missing_count\": 0,\n  \"rows\": [],\n  \"verdict\": \"pass\"\n}",
+        "stderr": ""
+      }
+    }
+  },
+  "summary": {
+    "missing_artifact_count": 0,
+    "frontmatter_violation_count": 0,
+    "reference_violation_count": 0,
+    "failed_command_count": 0
+  },
+  "missing_artifacts": [],
+  "bad_frontmatter": [],
+  "failed_references": [],
+  "failed_commands": [],
+  "verdict": "pass",
+  "reasons": []
+}

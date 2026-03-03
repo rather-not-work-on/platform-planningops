@@ -9,12 +9,33 @@ This directory contains Ralph Loop issue-resolution runtime artifacts.
 - `adr/`: architecture decisions
 - `scripts/`: local loop execution and validation scripts
 
+Module-level navigation:
+- `planningops/adr/README.md`
+- `planningops/artifacts/README.md`
+- `planningops/config/README.md`
+- `planningops/contracts/README.md`
+- `planningops/fixtures/README.md`
+- `planningops/quality/README.md`
+- `planningops/schemas/README.md`
+- `planningops/scripts/README.md`
+- `planningops/templates/README.md`
+
 ## Runtime Policy
 - Local-first execution is the default baseline.
 - Runtime naming is fixed:
   - External contract term: `Executor`
   - Internal implementation term: `Worker`
 - Per-task runtime/provider policy is allowed and resolved by task key.
+
+## Design-First Policy
+- Implementation starts only after blueprint refs are defined:
+  - `interface_contract_refs`
+  - `package_topology_ref`
+  - `dependency_manifest_ref`
+  - `file_plan_ref`
+- If implementation finds mismatch, return to redefine stage first, then resume.
+- Every touched module must keep its own `README.md` updated.
+- Contract reference: `planningops/contracts/implementation-readiness-gate-contract.md`
 
 ## Runtime Profiles
 - Profile catalog: `planningops/config/runtime-profiles.json`
@@ -41,8 +62,11 @@ Example task keys:
 ```bash
 python3 planningops/scripts/ralph_loop_local.py --issue-number 18 --mode dry-run
 python3 planningops/scripts/issue_loop_runner.py --mode apply
+python3 planningops/scripts/normalize_ready_implementation_blueprint_refs.py
+python3 planningops/scripts/run_track2_contract_pack_validation.py --strict
 python3 planningops/scripts/cross_repo_conformance_check.py
 python3 planningops/scripts/run_local_oracle_rehearsal.py --days 7
+bash planningops/scripts/test_module_readme_contract.sh
 python3 planningops/scripts/refactor_hygiene_loop.py --policy-file planningops/config/refactor-hygiene-policy.json
 python3 planningops/scripts/refactor_hygiene_multi_repo.py --config-file planningops/config/refactor-hygiene-multi-repo.json --workspace-root .
 ```

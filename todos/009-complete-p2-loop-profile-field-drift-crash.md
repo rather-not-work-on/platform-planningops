@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p2
 issue_id: "009"
 tags: [code-review, reliability, github-project, planningops]
@@ -63,6 +63,7 @@ dependencies: []
 
 ## Recommended Action
 
+완료. feedback 단계의 필드 드리프트/옵션 누락 예외를 `feedback_failed`로 표준화해 런너 크래시 없이 증거와 결과를 남기고 종료하도록 수정했다.
 
 ## Technical Details
 
@@ -76,9 +77,9 @@ Affected files:
 
 ## Acceptance Criteria
 
-- [ ] Project field drift가 발생해도 런너가 예외 크래시 대신 계약된 reason code를 기록한다.
-- [ ] `last-run.json`과 transition evidence가 항상 생성된다.
-- [ ] feedback 단계 실패가 retry/escalation 정책과 연동된다.
+- [x] Project field drift가 발생해도 런너가 예외 크래시 대신 계약된 reason code를 기록한다.
+- [x] `last-run.json`과 transition evidence가 항상 생성된다.
+- [x] feedback 단계 실패가 retry/escalation 정책과 연동된다.
 
 ## Work Log
 
@@ -93,6 +94,18 @@ Affected files:
 
 **Learnings:**
 - 외부 시스템(Project schema)에 의존하는 단계는 예외를 reason code로 표준화해야 운영 자동화가 안정적임
+
+### 2026-03-03 - Resolution
+
+**By:** Codex
+
+**Actions:**
+- `planningops/scripts/issue_loop_runner.py`의 feedback 적용 블록을 `try/except`로 감싸 예외를 `feedback_failed`로 강등 처리했다.
+- feedback 실패 시 `payload.reason_code=feedback_failed`, transition-log 이벤트(`feedback.failed`), watchdog 실패 이벤트, `last-run.json`을 모두 기록하도록 보강했다.
+- lock release 및 checkpoint clear를 실패 경로에서도 보장하도록 정리했다.
+
+**Learnings:**
+- 런타임 외부 의존 단계는 “예외 전파”보다 “계약된 실패 코드+증거 기록”이 운영 복구에 훨씬 유리하다.
 
 ## Notes
 

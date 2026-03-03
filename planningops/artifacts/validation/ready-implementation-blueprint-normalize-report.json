@@ -1,0 +1,17 @@
+{
+  "generated_at_utc": "2026-03-03T06:46:08.923305+00:00",
+  "mode": "dry-run",
+  "owner": "rather-not-work-on",
+  "project_num": 2,
+  "initiative": "unified-personal-agent-platform",
+  "workflow_states": [
+    "ready-implementation",
+    "ready_implementation"
+  ],
+  "candidates_count": 0,
+  "changed_count": 0,
+  "applied_count": 0,
+  "missing_count": 0,
+  "rows": [],
+  "verdict": "pass"
+}
