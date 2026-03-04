@@ -27,6 +27,15 @@ DEFAULT_ATTEMPT_BUDGET = {
     "max_duration_minutes": 30,
     "max_token_budget": 120000,
 }
+WORKFLOW_TO_STATUS = {
+    "backlog": "todo",
+    "ready_contract": "todo",
+    "ready_implementation": "todo",
+    "in_progress": "in_progress",
+    "review_gate": "in_progress",
+    "blocked": "blocked",
+    "done": "done",
+}
 
 
 def run(args):
@@ -189,6 +198,195 @@ def parse_depends_on(issue_body: str):
     return sorted(deps)
 
 
+def parse_plan_item_id(issue_body: str):
+    match = re.search(r"plan_item_id:\s*`([^`]+)`", issue_body or "")
+    if not match:
+        return None
+    value = match.group(1).strip()
+    return value or None
+
+
+def normalize_contract_key(value):
+    if value is None:
+        return ""
+    return str(value).strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def validate_pec_contract(pec_doc):
+    errors = []
+    ec = pec_doc.get("execution_contract")
+    if not isinstance(ec, dict):
+        return ["execution_contract object is required"]
+    for key in ["plan_id", "plan_revision", "source_of_truth", "items"]:
+        if key not in ec:
+            errors.append(f"execution_contract.{key} is required")
+    if errors:
+        return errors
+    if not isinstance(ec.get("items"), list) or not ec.get("items"):
+        errors.append("execution_contract.items must be non-empty list")
+        return errors
+
+    seen_item_ids = set()
+    for idx, item in enumerate(ec["items"]):
+        if not isinstance(item, dict):
+            errors.append(f"execution_contract.items[{idx}] must be object")
+            continue
+        plan_item_id = item.get("plan_item_id")
+        if not isinstance(plan_item_id, str) or not plan_item_id.strip():
+            errors.append(f"execution_contract.items[{idx}].plan_item_id is required")
+            continue
+        if plan_item_id in seen_item_ids:
+            errors.append(f"duplicate plan_item_id: {plan_item_id}")
+        seen_item_ids.add(plan_item_id)
+    return errors
+
+
+def evaluate_pec_preflight(mode, contract_file, selected, initiative):
+    result = {
+        "mode": mode,
+        "contract_file": contract_file,
+        "plan_item_id": selected.get("plan_item_id"),
+        "status": "pass",
+        "reason_code": "pec_preflight_pass",
+        "validation_errors": [],
+        "mismatches": [],
+    }
+
+    if mode == "legacy":
+        result["status"] = "skipped"
+        result["reason_code"] = "pec_legacy_mode"
+        return result
+
+    if not contract_file:
+        if mode == "strict-pec":
+            result["status"] = "fail"
+            result["reason_code"] = "pec_contract_file_required"
+        else:
+            result["status"] = "skipped"
+            result["reason_code"] = "pec_contract_file_missing_hybrid"
+        return result
+
+    plan_item_id = selected.get("plan_item_id")
+    if not plan_item_id:
+        if mode == "strict-pec":
+            result["status"] = "fail"
+            result["reason_code"] = "pec_plan_item_id_missing"
+        else:
+            result["status"] = "skipped"
+            result["reason_code"] = "pec_plan_item_id_missing_hybrid"
+        return result
+
+    try:
+        pec_doc = load_json(Path(contract_file), {})
+    except Exception as exc:  # noqa: BLE001
+        result["status"] = "fail"
+        result["reason_code"] = "pec_contract_file_unreadable"
+        result["validation_errors"] = [str(exc)]
+        return result
+
+    validation_errors = validate_pec_contract(pec_doc)
+    if validation_errors:
+        result["status"] = "fail"
+        result["reason_code"] = "pec_contract_invalid"
+        result["validation_errors"] = validation_errors
+        return result
+
+    contract_items = {
+        item.get("plan_item_id"): item
+        for item in pec_doc["execution_contract"]["items"]
+        if isinstance(item, dict) and item.get("plan_item_id")
+    }
+    contract_item = contract_items.get(plan_item_id)
+    if contract_item is None:
+        if mode == "strict-pec":
+            result["status"] = "fail"
+            result["reason_code"] = "pec_plan_item_missing_in_contract"
+        else:
+            result["status"] = "skipped"
+            result["reason_code"] = "pec_plan_item_missing_in_contract_hybrid"
+        return result
+
+    expected = {
+        "execution_order": int(contract_item.get("execution_order", 0)),
+        "target_repo": contract_item.get("target_repo"),
+        "component": normalize_contract_key(contract_item.get("component")),
+        "workflow_state": normalize_contract_key(contract_item.get("workflow_state")),
+        "loop_profile": normalize_contract_key(contract_item.get("loop_profile")),
+        "status": WORKFLOW_TO_STATUS.get(normalize_contract_key(contract_item.get("workflow_state")), ""),
+        "initiative": initiative,
+    }
+    actual = {
+        "execution_order": int(selected.get("order", 0)),
+        "target_repo": selected.get("target_repo"),
+        "component": normalize_contract_key(selected.get("component")),
+        "workflow_state": normalize_contract_key(selected.get("workflow_state")),
+        "loop_profile": normalize_contract_key(selected.get("loop_profile")),
+        "status": normalize_contract_key(selected.get("status")),
+        "initiative": selected.get("initiative"),
+    }
+
+    mismatches = []
+    for field in [
+        "execution_order",
+        "target_repo",
+        "component",
+        "workflow_state",
+        "loop_profile",
+        "status",
+        "initiative",
+    ]:
+        if expected[field] != actual[field]:
+            mismatches.append(
+                {
+                    "field": field,
+                    "expected": expected[field],
+                    "actual": actual[field],
+                }
+            )
+
+    if mismatches:
+        result["status"] = "fail"
+        result["reason_code"] = "pec_projection_mismatch"
+        result["mismatches"] = mismatches
+        return result
+
+    return result
+
+
+def evaluate_worker_task_pack_preflight(runtime_profile_file, selected, mode, loop_profile):
+    issue_num = int(selected.get("number", 0))
+    task_key = f"issue-{issue_num}"
+    report_path = Path(f"planningops/artifacts/validation/worker-task-pack-issue-{issue_num}.json")
+    cmd = [
+        "python3",
+        "planningops/scripts/validate_worker_task_pack.py",
+        "--runtime-profile-file",
+        runtime_profile_file,
+        "--task-key",
+        task_key,
+        "--issue-number",
+        str(issue_num),
+        "--mode",
+        mode,
+        "--loop-profile",
+        loop_profile,
+        "--target-repo",
+        selected.get("target_repo") or selected.get("issue_repo") or "",
+        "--output",
+        str(report_path),
+        "--strict",
+    ]
+    rc, out, err = run(cmd)
+    return {
+        "status": "pass" if rc == 0 else "fail",
+        "reason_code": "worker_task_pack_ok" if rc == 0 else "worker_task_pack_invalid",
+        "report_path": str(report_path),
+        "rc": rc,
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+    }
+
+
 def issue_is_closed(issue_num: int, repo: str):
     rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "state", "--jq", ".state"])
     if rc != 0:
@@ -312,6 +510,10 @@ def normalize_candidates(items, allowed_workflow_states):
                 "item": it,
                 "number": number,
                 "order": order,
+                "status": it.get("status"),
+                "initiative": it.get("initiative"),
+                "component": it.get("component"),
+                "loop_profile": it.get("loop_profile"),
                 "workflow_state": workflow_state,
                 "issue_repo": issue_repo,
                 "target_repo": target_repo,
@@ -328,9 +530,14 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
         selected_ref = {
             "number": selected.get("number"),
             "order": selected.get("order"),
+            "status": selected.get("status"),
             "workflow_state": selected.get("workflow_state"),
             "issue_repo": selected.get("issue_repo"),
             "target_repo": selected.get("target_repo"),
+            "component": selected.get("component"),
+            "loop_profile": selected.get("loop_profile"),
+            "initiative": selected.get("initiative"),
+            "plan_item_id": selected.get("plan_item_id"),
             "depends_on": selected.get("deps", []),
             "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
             "simulation_required": selected.get("simulation_required", False),
@@ -346,9 +553,14 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
             {
                 "number": c.get("number"),
                 "order": c.get("order"),
+                "status": c.get("status"),
                 "workflow_state": c.get("workflow_state"),
                 "issue_repo": c.get("issue_repo"),
                 "target_repo": c.get("target_repo"),
+                "component": c.get("component"),
+                "loop_profile": c.get("loop_profile"),
+                "initiative": c.get("initiative"),
+                "plan_item_id": c.get("plan_item_id"),
                 "simulation_required": c.get("simulation_required", False),
                 "uncertainty_level": c.get("uncertainty_level"),
                 "blueprint_refs": c.get("blueprint_refs", {}),
@@ -459,7 +671,19 @@ def main():
     parser.add_argument("--control-repo", default="rather-not-work-on/platform-planningops")
     parser.add_argument("--project-num", type=int, default=2)
     parser.add_argument("--project-id", default="PVT_kwDOD8NujM4BQYNE")
+    parser.add_argument("--initiative", default="unified-personal-agent-platform")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="apply")
+    parser.add_argument(
+        "--pec-preflight-mode",
+        choices=["legacy", "hybrid", "strict-pec"],
+        default="hybrid",
+        help="Preflight strictness for Plan Execution Contract checks",
+    )
+    parser.add_argument(
+        "--pec-contract-file",
+        default=None,
+        help="Optional PEC contract JSON file for runner preflight alignment checks",
+    )
     parser.add_argument(
         "--no-feedback",
         action="store_true",
@@ -545,15 +769,18 @@ def main():
             continue
         issue_body = issue_doc.get("body", "")
         deps = parse_depends_on(issue_body)
+        plan_item_id = parse_plan_item_id(issue_body)
         attempt_budget, budget_errors = parse_attempt_budget(issue_body)
         selector_hints = parse_selector_hints(issue_body)
         blueprint_meta = parse_blueprint_refs(issue_body)
+        c["plan_item_id"] = plan_item_id
         if budget_errors:
             selection_attempts.append(
                 {
                     "number": num,
                     "issue_repo": issue_repo,
                     "result": "invalid_attempt_budget",
+                    "plan_item_id": plan_item_id,
                     "attempt_budget_errors": budget_errors,
                 }
             )
@@ -564,6 +791,7 @@ def main():
                     "number": num,
                     "issue_repo": issue_repo,
                     "result": "missing_blueprint_refs",
+                    "plan_item_id": plan_item_id,
                     "missing_refs": blueprint_meta["missing"],
                     "blueprint_refs": blueprint_meta["refs"],
                     "selector_hints": selector_hints,
@@ -584,6 +812,7 @@ def main():
                     "number": num,
                     "issue_repo": issue_repo,
                     "result": "selected",
+                    "plan_item_id": plan_item_id,
                     "depends_on": deps,
                     "dep_checks": closed_checks,
                     "attempt_budget": attempt_budget,
@@ -597,6 +826,7 @@ def main():
                 "number": num,
                 "issue_repo": issue_repo,
                 "result": "dependency_blocked",
+                "plan_item_id": plan_item_id,
                 "depends_on": deps,
                 "dep_checks": closed_checks,
                 "selector_hints": selector_hints,
@@ -605,10 +835,65 @@ def main():
         )
 
     selection_trace = build_selection_trace(candidates, selected, selection_attempts, allowed_workflow_states)
+    selection_trace["pec_preflight"] = {
+        "mode": args.pec_preflight_mode,
+        "contract_file": args.pec_contract_file,
+        "status": "not_evaluated",
+        "reason_code": "selected_issue_missing",
+    }
 
     if selected is None:
         print(json.dumps({"result": "no_eligible_todo_issue", "selection_trace": selection_trace}, ensure_ascii=True))
         return 2
+
+    pec_preflight = evaluate_pec_preflight(
+        args.pec_preflight_mode,
+        args.pec_contract_file,
+        selected,
+        args.initiative,
+    )
+    selection_trace["pec_preflight"] = pec_preflight
+    if pec_preflight.get("status") == "fail":
+        print(
+            json.dumps(
+                {
+                    "result": "pec_preflight_failed",
+                    "issue_number": selected.get("number"),
+                    "issue_repo": selected.get("issue_repo"),
+                    "plan_item_id": selected.get("plan_item_id"),
+                    "pec_preflight": pec_preflight,
+                    "selection_trace": selection_trace,
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 5
+
+    selected_loop_profile = determine_loop_profile(selected, {}, args.control_repo)
+    worker_task_pack_preflight = evaluate_worker_task_pack_preflight(
+        runtime_profile_file=args.runtime_profile_file,
+        selected=selected,
+        mode=args.mode,
+        loop_profile=selected_loop_profile,
+    )
+    selection_trace["worker_task_pack_preflight"] = worker_task_pack_preflight
+    if worker_task_pack_preflight.get("status") == "fail":
+        print(
+            json.dumps(
+                {
+                    "result": "worker_task_pack_preflight_failed",
+                    "issue_number": selected.get("number"),
+                    "issue_repo": selected.get("issue_repo"),
+                    "target_repo": selected.get("target_repo"),
+                    "plan_item_id": selected.get("plan_item_id"),
+                    "loop_profile": selected_loop_profile,
+                    "worker_task_pack_preflight": worker_task_pack_preflight,
+                    "selection_trace": selection_trace,
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 6
 
     issue_num = selected["number"]
     lock_owner_id = f"issue-loop-runner-{os.getpid()}-{int(datetime.now(timezone.utc).timestamp())}"
@@ -653,7 +938,6 @@ def main():
 
     resume_checkpoint = load_checkpoint(issue_num) if args.resume_from_checkpoint else {}
     resume_stage = resume_checkpoint.get("stage") if resume_checkpoint else None
-    selected_loop_profile = determine_loop_profile(selected, {}, args.control_repo)
     adapter = resolve_execution_adapter(selected.get("target_repo") or selected.get("issue_repo"))
     adapter_context = {
         "issue_number": issue_num,
@@ -663,6 +947,8 @@ def main():
         "loop_profile": selected_loop_profile,
         "mode": args.mode,
         "runtime_profile_file": args.runtime_profile_file,
+        "pec_preflight_mode": args.pec_preflight_mode,
+        "pec_contract_file": args.pec_contract_file,
         "selection_trace": selection_trace,
         "selection_transition_id": "",
     }
@@ -680,7 +966,9 @@ def main():
             "selected_target_repo": selected.get("target_repo"),
             "selected_workflow_state": selected.get("workflow_state"),
             "selected_loop_profile": selected_loop_profile,
+            "selected_plan_item_id": selected.get("plan_item_id"),
             "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+            "pec_preflight": pec_preflight,
             "adapter_pre_hook": pre_hook_result,
         },
     )
@@ -1156,6 +1444,7 @@ def main():
             "selected_target_repo": selected.get("target_repo"),
             "selected_workflow_state": selected.get("workflow_state"),
             "selected_loop_profile": selected_loop_profile,
+            "selected_plan_item_id": selected.get("plan_item_id"),
             "final_loop_profile": final_loop_profile,
             "lock_owner_id": lock_owner_id,
             "watchdog_report": str(watchdog_path),
@@ -1163,6 +1452,7 @@ def main():
             "last_verdict": "fail",
             "feedback_error": feedback_error,
             "selection_trace": selection_trace,
+            "pec_preflight": pec_preflight,
             "adapter_id": getattr(adapter, "adapter_id", "unknown-adapter"),
             "adapter_pre_hook": pre_hook_result,
             "adapter_post_hook": post_hook_result,
@@ -1239,6 +1529,7 @@ def main():
         "selected_target_repo": selected.get("target_repo"),
         "selected_workflow_state": selected.get("workflow_state"),
         "selected_loop_profile": selected_loop_profile,
+        "selected_plan_item_id": selected.get("plan_item_id"),
         "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
         "checkpoint_resumed": bool(args.resume_from_checkpoint and resume_checkpoint),
         "checkpoint_stage_at_start": resume_stage,
@@ -1253,6 +1544,7 @@ def main():
         "candidate_count": len(candidates),
         "allowed_workflow_states": sorted(allowed_workflow_states),
         "selection_trace": selection_trace,
+        "pec_preflight": pec_preflight,
         "selection_transition_id": selection_event["transition_id"],
         "blueprint_refs": selected.get("blueprint_refs", {}),
         "blueprint_complete": selected.get("blueprint_complete", True),

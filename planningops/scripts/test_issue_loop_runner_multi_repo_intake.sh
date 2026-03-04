@@ -102,6 +102,120 @@ assert sorted(blueprint_missing["missing"]) == [
     "package_topology_ref",
 ], blueprint_missing
 
+plan_item_id = mod.parse_plan_item_id("plan_item_id: `pec-350`")
+assert plan_item_id == "pec-350", plan_item_id
+assert mod.parse_plan_item_id("no marker") is None
+
+with tempfile.TemporaryDirectory() as td:
+    pec_path = Path(td) / "pec.json"
+    pec_path.write_text(
+        json.dumps(
+            {
+                "execution_contract": {
+                    "plan_id": "pec-test",
+                    "plan_revision": 1,
+                    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+                    "items": [
+                        {
+                            "plan_item_id": "pec-350",
+                            "execution_order": 42,
+                            "title": "runner preflight",
+                            "target_repo": "rather-not-work-on/monday",
+                            "component": "planningops",
+                            "workflow_state": "ready_contract",
+                            "loop_profile": "l1_contract_clarification",
+                            "depends_on": [],
+                            "primary_output": "planningops/scripts/issue_loop_runner.py",
+                        }
+                    ],
+                }
+            },
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+
+    selected_for_preflight = {
+        "number": 42,
+        "order": 42,
+        "status": "Todo",
+        "workflow_state": "ready-contract",
+        "issue_repo": "rather-not-work-on/monday",
+        "target_repo": "rather-not-work-on/monday",
+        "component": "planningops",
+        "loop_profile": "L1 Contract-Clarification",
+        "initiative": "unified-personal-agent-platform",
+        "plan_item_id": "pec-350",
+    }
+
+    preflight_hybrid_ok = mod.evaluate_pec_preflight(
+        "hybrid",
+        str(pec_path),
+        selected_for_preflight,
+        "unified-personal-agent-platform",
+    )
+    assert preflight_hybrid_ok["status"] == "pass", preflight_hybrid_ok
+
+    selected_mismatch = dict(selected_for_preflight)
+    selected_mismatch["workflow_state"] = "in-progress"
+    selected_mismatch["status"] = "In Progress"
+    preflight_hybrid_fail = mod.evaluate_pec_preflight(
+        "hybrid",
+        str(pec_path),
+        selected_mismatch,
+        "unified-personal-agent-platform",
+    )
+    assert preflight_hybrid_fail["status"] == "fail", preflight_hybrid_fail
+    assert preflight_hybrid_fail["reason_code"] == "pec_projection_mismatch", preflight_hybrid_fail
+
+    preflight_strict_missing_contract = mod.evaluate_pec_preflight(
+        "strict-pec",
+        None,
+        selected_for_preflight,
+        "unified-personal-agent-platform",
+    )
+    assert preflight_strict_missing_contract["status"] == "fail", preflight_strict_missing_contract
+    assert preflight_strict_missing_contract["reason_code"] == "pec_contract_file_required", preflight_strict_missing_contract
+
+    preflight_legacy = mod.evaluate_pec_preflight(
+        "legacy",
+        None,
+        selected_for_preflight,
+        "unified-personal-agent-platform",
+    )
+    assert preflight_legacy["status"] == "skipped", preflight_legacy
+    assert preflight_legacy["reason_code"] == "pec_legacy_mode", preflight_legacy
+
+    captured = {}
+
+    def fake_run_worker_pack_ok(args):
+        captured["args"] = args
+        return 0, "worker-pack-ok", ""
+
+    mod.run = fake_run_worker_pack_ok
+    worker_pack_ok = mod.evaluate_worker_task_pack_preflight(
+        runtime_profile_file="planningops/config/runtime-profiles.json",
+        selected=selected_for_preflight,
+        mode="dry-run",
+        loop_profile="L1 Contract-Clarification",
+    )
+    assert worker_pack_ok["status"] == "pass", worker_pack_ok
+    assert worker_pack_ok["reason_code"] == "worker_task_pack_ok", worker_pack_ok
+    assert "--task-key" in captured["args"], captured
+
+    def fake_run_worker_pack_fail(args):
+        return 1, "", "worker-pack-fail"
+
+    mod.run = fake_run_worker_pack_fail
+    worker_pack_fail = mod.evaluate_worker_task_pack_preflight(
+        runtime_profile_file="planningops/config/runtime-profiles.json",
+        selected=selected_for_preflight,
+        mode="apply",
+        loop_profile="L3 Implementation-TDD",
+    )
+    assert worker_pack_fail["status"] == "fail", worker_pack_fail
+    assert worker_pack_fail["reason_code"] == "worker_task_pack_invalid", worker_pack_fail
+
 ready_impl_cross_repo = {
     "workflow_state": "ready-implementation",
     "target_repo": "rather-not-work-on/monday",

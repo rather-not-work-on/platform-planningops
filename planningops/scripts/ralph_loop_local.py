@@ -28,6 +28,59 @@ def run_cmd(args):
     return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
 
 
+def render_template(value: str, context: dict):
+    try:
+        return value.format(**context)
+    except KeyError as exc:
+        missing = exc.args[0]
+        raise ValueError(f"worker policy template references missing key: {missing}") from exc
+
+
+def resolve_worker_command(issue_number: int, mode: str, loop_id: str, runtime_ctx: dict):
+    worker_policy = runtime_ctx.get("worker_policy") or {"kind": "parser_diff_dry_run"}
+    if not isinstance(worker_policy, dict):
+        raise ValueError("worker policy must be object")
+    kind = str(worker_policy.get("kind") or "parser_diff_dry_run")
+    template_ctx = {
+        "issue_number": issue_number,
+        "mode": mode,
+        "loop_id": loop_id,
+        "task_key": runtime_ctx.get("task_key", ""),
+        "runtime_profile": runtime_ctx.get("selected_profile", ""),
+    }
+
+    if kind == "parser_diff_dry_run":
+        command = [
+            "python3",
+            "planningops/scripts/parser_diff_dry_run.py",
+            "--run-id",
+            loop_id,
+            "--mode",
+            mode,
+        ]
+        return {"kind": kind, "command": command}
+
+    if kind == "python_script":
+        script = worker_policy.get("script")
+        if not script:
+            raise ValueError("worker policy kind=python_script requires 'script'")
+        args = worker_policy.get("args") or []
+        if not isinstance(args, list):
+            raise ValueError("worker policy 'args' must be list")
+        rendered = [render_template(str(token), template_ctx) for token in args]
+        command = ["python3", render_template(str(script), template_ctx)] + rendered
+        return {"kind": kind, "command": command}
+
+    if kind == "shell":
+        command_template = worker_policy.get("command")
+        if not command_template:
+            raise ValueError("worker policy kind=shell requires 'command'")
+        command = ["bash", "-lc", render_template(str(command_template), template_ctx)]
+        return {"kind": kind, "command": command}
+
+    raise ValueError(f"unknown worker policy kind: {kind}")
+
+
 def load_runtime_context(profile_file: Path, task_key: str):
     if not profile_file.exists():
         raise ValueError(f"runtime profile file not found: {profile_file}")
@@ -49,6 +102,9 @@ def load_runtime_context(profile_file: Path, task_key: str):
         raise ValueError(f"runtime profile '{selected_profile}' is not defined")
 
     provider_policy = task_override.get("provider_policy") or default_override.get("provider_policy") or {}
+    worker_policy = task_override.get("worker_policy") or default_override.get("worker_policy") or profile_payload.get("worker_policy")
+    if worker_policy is None:
+        worker_policy = {"kind": "parser_diff_dry_run"}
 
     return {
         "profile_file": str(profile_file),
@@ -56,6 +112,7 @@ def load_runtime_context(profile_file: Path, task_key: str):
         "selected_profile": selected_profile,
         "profile": profile_payload,
         "provider_policy": provider_policy,
+        "worker_policy": worker_policy,
     }
 
 
@@ -204,17 +261,42 @@ def main():
         print("loop failed at context load: missing ecp")
         return 1
 
-    # Step 3: execute (parser/diff pipeline)
-    rc, out, err = run_cmd(
-        [
-            "python3",
-            "planningops/scripts/parser_diff_dry_run.py",
-            "--run-id",
-            loop_id,
-            "--mode",
-            args.mode,
-        ]
-    )
+    # Step 3: execute (worker policy command)
+    try:
+        worker_plan = resolve_worker_command(args.issue_number, args.mode, loop_id, runtime_ctx)
+    except ValueError as exc:
+        reason = "missing_input"
+        write_json(
+            verification_path,
+            {
+                "issue_number": args.issue_number,
+                "loop_id": loop_id,
+                "verdict": "fail",
+                "reason_code": reason,
+                "stage": "execute",
+                "error": str(exc),
+                "executed_at_utc": utc_now().isoformat(),
+            },
+        )
+        append_ndjson(
+            transition_log_path,
+            {
+                "transition_id": f"{loop_id}-worker-policy-fail",
+                "run_id": loop_id,
+                "card_id": args.issue_number,
+                "from_state": "In Progress",
+                "to_state": "Blocked",
+                "transition_reason": "context.invalid_worker_policy",
+                "actor_type": "agent",
+                "actor_id": "ralph-loop-local",
+                "decided_at_utc": utc_now().isoformat(),
+                "replanning_flag": True,
+            },
+        )
+        print(f"loop failed at execute worker policy: {exc}")
+        return 1
+
+    rc, out, err = run_cmd(worker_plan["command"])
 
     simulation_path.parent.mkdir(parents=True, exist_ok=True)
     simulation_path.write_text(
@@ -226,7 +308,8 @@ def main():
                 f"- issue_number: {args.issue_number}",
                 f"- task_key: {runtime_ctx['task_key']}",
                 f"- runtime_profile: {runtime_ctx['selected_profile']}",
-                "- execute command: parser_diff_dry_run",
+                f"- worker_policy_kind: {worker_plan['kind']}",
+                f"- execute command: {' '.join(worker_plan['command'])}",
                 "",
                 "## Output",
                 "```text",

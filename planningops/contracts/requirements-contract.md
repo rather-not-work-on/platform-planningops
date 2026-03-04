@@ -25,6 +25,8 @@
 22. When implementation uncovers contract/topology/dependency/file-plan mismatch, execution must transition back to redefine (`ready-contract`) before resuming implementation.
 23. Re-entry to `ready-implementation` requires updated blueprint refs and refreshed verification evidence.
 24. Touched planningops modules must have up-to-date module `README.md` files and pass module README contract checks.
+25. Before loop execution, runner must validate a deterministic worker task pack (`worker_policy_kind`, rendered `command`, retry/timeout policy, idempotency key).
+26. Worker task pack validation failure must block execution start with explicit preflight failure result.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
@@ -66,3 +68,4 @@
 - Lease lock contract: see `planningops/contracts/lease-lock-watchdog-contract.md`.
 - Escalation contract: see `planningops/contracts/escalation-gate-contract.md`.
 - Implementation readiness contract: see `planningops/contracts/implementation-readiness-gate-contract.md`.
+- Worker task pack contract: see `planningops/contracts/worker-task-pack-contract.md`.
