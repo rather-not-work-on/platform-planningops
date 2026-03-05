@@ -30,6 +30,14 @@ WORKBENCH_REQUIRED_KEYS=(
   summary
 )
 
+WORKBENCH_ALLOWED_TYPES=(
+  hub
+  brainstorm
+  plan
+  review
+  audit
+)
+
 ALLOWED_STATUS=(
   active
   reference
@@ -260,6 +268,20 @@ expected_domain() {
   esac
 }
 
+expected_workbench_type() {
+  local file="$1"
+  local rel="${file#$WORKBENCH_DIR/}"
+
+  case "$rel" in
+    README.md) echo "hub" ;;
+    brainstorms/*) echo "brainstorm" ;;
+    plans/*) echo "plan" ;;
+    reviews/*) echo "review" ;;
+    audits/*) echo "audit" ;;
+    *) echo "" ;;
+  esac
+}
+
 extract_scalar() {
   local file="$1"
   local key="$2"
@@ -444,10 +466,12 @@ check_workbench_docs() {
       fi
     done
 
-    local initiative lifecycle status
+    local initiative lifecycle status workbench_type expected_type
     initiative="$(extract_scalar "$file" "initiative" || true)"
     lifecycle="$(extract_scalar "$file" "lifecycle" || true)"
     status="$(extract_scalar "$file" "status" || true)"
+    workbench_type="$(extract_scalar "$file" "type" || true)"
+    expected_type="$(expected_workbench_type "$file")"
 
     if [[ "$initiative" != "unified-personal-agent-platform" ]]; then
       echo "[ERR] invalid initiative '$initiative': $file"
@@ -456,6 +480,19 @@ check_workbench_docs() {
 
     if [[ "$lifecycle" != "workbench" ]]; then
       echo "[ERR] workbench doc must set lifecycle: workbench -> $file"
+      errors=$((errors + 1))
+    fi
+
+    if ! contains_value "$workbench_type" "${WORKBENCH_ALLOWED_TYPES[@]}"; then
+      echo "[ERR] invalid workbench type '$workbench_type': $file (allowed: ${WORKBENCH_ALLOWED_TYPES[*]})"
+      errors=$((errors + 1))
+    fi
+
+    if [[ -z "$expected_type" ]]; then
+      echo "[ERR] unknown workbench directory mapping for type check: $file"
+      errors=$((errors + 1))
+    elif [[ "$workbench_type" != "$expected_type" ]]; then
+      echo "[ERR] workbench type mismatch: $file (expected '$expected_type', got '$workbench_type')"
       errors=$((errors + 1))
     fi
 

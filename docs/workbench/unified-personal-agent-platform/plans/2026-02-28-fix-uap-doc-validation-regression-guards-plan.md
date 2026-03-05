@@ -1,6 +1,7 @@
 ---
 title: fix: Add Regression Guards for Legacy Docs Paths and Root README Validation
-type: fix
+type: plan
+plan_kind: fix
 date: 2026-02-28
 initiative: unified-personal-agent-platform
 lifecycle: workbench

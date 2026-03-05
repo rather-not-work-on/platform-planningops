@@ -1,6 +1,7 @@
 ---
 title: refactor: Canonicalize UAP Core Documentation Topology
-type: refactor
+type: plan
+plan_kind: refactor
 date: 2026-02-28
 initiative: unified-personal-agent-platform
 lifecycle: workbench
