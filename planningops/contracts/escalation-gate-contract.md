@@ -1,7 +1,7 @@
 # Escalation Gate and Auto-Pause Contract
 
 ## Trigger Rules
-- `same_reason_x3`: same `reason_code` appears 3 consecutive times for the same issue
+- `same_reason_x3`: same non-`ok` `reason_code` appears 3 consecutive times for the same issue on non-`pass` verdict rows
 - `inconclusive_x2`: `verdict=inconclusive` appears 2 consecutive times for the same issue
 
 ## Action on Trigger

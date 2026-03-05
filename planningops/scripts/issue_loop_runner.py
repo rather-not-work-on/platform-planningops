@@ -278,10 +278,16 @@ def evaluate_escalation(issue_num: int, verdict: str, reason_code: str):
     issues[issue_key] = rows
     save_json(ESCALATION_HISTORY_PATH, {"issues": issues})
 
+    normalized_verdict = str(verdict or "").strip().lower()
+    normalized_reason = str(reason_code or "").strip().lower()
+    same_reason_eligible = bool(normalized_reason) and normalized_reason != "ok" and normalized_verdict != "pass"
+
     same_reason_consecutive = 0
-    if reason_code:
+    if same_reason_eligible:
         for row in reversed(rows):
-            if row.get("reason_code") == reason_code:
+            row_reason = str(row.get("reason_code") or "").strip().lower()
+            row_verdict = str(row.get("verdict") or "").strip().lower()
+            if row_reason == normalized_reason and row_verdict != "pass":
                 same_reason_consecutive += 1
             else:
                 break
