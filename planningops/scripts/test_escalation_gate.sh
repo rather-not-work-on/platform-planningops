@@ -36,5 +36,19 @@ with tempfile.TemporaryDirectory() as td:
     assert r2["auto_paused"] is True, r2
     assert r2["trigger_type"] == "inconclusive_x2", r2
 
+with tempfile.TemporaryDirectory() as td:
+    mod.ESCALATION_HISTORY_PATH = Path(td) / "escalation-history.json"
+    issue = 942
+
+    r1 = mod.evaluate_escalation(issue, "pass", "ok")
+    r2 = mod.evaluate_escalation(issue, "pass", "ok")
+    r3 = mod.evaluate_escalation(issue, "pass", "ok")
+    r4 = mod.evaluate_escalation(issue, "pass", "ok")
+    assert r1["auto_paused"] is False, r1
+    assert r2["auto_paused"] is False, r2
+    assert r3["auto_paused"] is False, r3
+    assert r4["auto_paused"] is False, r4
+    assert r4["same_reason_consecutive"] == 0, r4
+
 print("escalation gate contract smoke ok")
 PY
