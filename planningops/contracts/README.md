@@ -14,6 +14,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `execution-adapter-interface-contract.md`: adapter hook interface
 - `attempt-budget-contract.md`: per-task loop budget
 - `autonomous-run-policy-contract.md`: convergence/risk-based autonomous run control and stop criteria
+- `worktree-comparative-experiment-protocol.md`: A/B branch-worktree experiment trigger, artifact, and scoring protocol
 - `worker-task-pack-contract.md`: worker execution bundle and render safety contract
 - `checkpoint-resume-contract.md`: checkpoint and resume behavior
 - `lease-lock-watchdog-contract.md`: concurrency and stale-lock recovery
