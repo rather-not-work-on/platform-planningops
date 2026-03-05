@@ -7,6 +7,26 @@ from pathlib import Path
 import subprocess
 import sys
 
+ALL_LOOP_PROFILES = {
+    "L1 Contract-Clarification",
+    "L2 Simulation",
+    "L3 Implementation-TDD",
+    "L4 Integration-Reconcile",
+    "L5 Recovery-Replan",
+}
+
+WORKFLOW_LOOP_PROFILE_MATRIX = {
+    "backlog": {"L1 Contract-Clarification", "L2 Simulation"},
+    "ready-contract": {"L1 Contract-Clarification", "L2 Simulation"},
+    "ready-implementation": {"L3 Implementation-TDD", "L4 Integration-Reconcile"},
+    # Active execution can be in contract/implementation/recovery loops.
+    "in-progress": set(ALL_LOOP_PROFILES),
+    # Review gate mainly validates implementation/recovery outcomes.
+    "review-gate": {"L3 Implementation-TDD", "L4 Integration-Reconcile", "L5 Recovery-Replan"},
+    "blocked": {"L5 Recovery-Replan"},
+    "done": set(ALL_LOOP_PROFILES),
+}
+
 
 def now_utc():
     return datetime.now(timezone.utc).isoformat()
@@ -28,6 +48,10 @@ def index_fields_by_id(fields):
 def find_item_field_value(item, field_name):
     # gh project item-list json can expose custom fields on the root item.
     return item.get(field_name)
+
+
+def expected_loop_profiles_for_workflow_state(workflow_state):
+    return WORKFLOW_LOOP_PROFILE_MATRIX.get(workflow_state)
 
 
 def main():
@@ -249,13 +273,18 @@ def main():
                 )
 
         if workflow_state and loop_profile:
-            expected_profiles = None
-            if workflow_state == "ready-contract":
-                expected_profiles = {"L1 Contract-Clarification", "L2 Simulation"}
-            elif workflow_state == "ready-implementation":
-                expected_profiles = {"L3 Implementation-TDD", "L4 Integration-Reconcile"}
-            elif workflow_state == "blocked":
-                expected_profiles = {"L5 Recovery-Replan"}
+            expected_profiles = expected_loop_profiles_for_workflow_state(workflow_state)
+            if expected_profiles is None:
+                infos.append(
+                    {
+                        "type": "WORKFLOW_STATE_UNCOVERED",
+                        "field": "loop_profile",
+                        "item_id": item_id,
+                        "issue_number": issue_number,
+                        "workflow_state": workflow_state,
+                        "message": "no loop_profile matrix rule for workflow_state",
+                    }
+                )
 
             if expected_profiles and loop_profile not in expected_profiles:
                 violations.append(

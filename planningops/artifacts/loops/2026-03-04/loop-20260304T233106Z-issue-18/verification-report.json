@@ -1,0 +1,38 @@
+{
+  "issue_number": 18,
+  "loop_id": "loop-20260304T233106Z-issue-18",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "runtime_context": {
+    "profile_file": "planningops/config/runtime-profiles.json",
+    "task_key": "issue-18",
+    "selected_profile": "local",
+    "profile": {
+      "execution_mode": "local",
+      "litellm_base_url": "http://127.0.0.1:4000",
+      "langfuse_host": "http://127.0.0.1:3001",
+      "nanoclaw_endpoint": "http://127.0.0.1:8787",
+      "notes": "Default local stack for planningops loop development."
+    },
+    "provider_policy": {
+      "model": "gateway-smoke",
+      "fallback_models": [
+        "gateway-fallback-a",
+        "gateway-fallback-b"
+      ],
+      "max_retries": 3,
+      "timeout_ms": 45000
+    },
+    "worker_policy": {
+      "kind": "parser_diff_dry_run"
+    }
+  },
+  "artifacts": {
+    "intake_check": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/intake-check.json",
+    "simulation_report": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/simulation-report.md",
+    "verification_report": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/verification-report.json",
+    "transition_log": "planningops/artifacts/transition-log/2026-03-04.ndjson",
+    "sync_summary": "planningops/artifacts/sync-summary/loop-20260304T233106Z-issue-18.json"
+  },
+  "executed_at_utc": "2026-03-04T23:31:06.271150+00:00"
+}

@@ -24,6 +24,9 @@ Mapping to loop failure taxonomy:
 - `runtime` -> `runtime_error`
 - `feedback_failed` -> `feedback_failed`
 
+Feedback failure handling rule:
+- feedback 단계에서 project field/schema drift 또는 update 예외가 발생하면 프로세스 크래시 대신 `reason_code=feedback_failed`로 수렴하고, `last-run.json` 및 transition evidence를 반드시 남긴다.
+
 ## Retry Policy
 - `missing_input`: no retry (requires human/doc update)
 - `dependency_blocked`: no retry until dependency changes

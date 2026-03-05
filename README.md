@@ -54,6 +54,7 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh sync --profile all
 python3 planningops/scripts/refactor_hygiene_loop.py --policy-file planningops/config/refactor-hygiene-policy.json
 python3 planningops/scripts/refactor_hygiene_multi_repo.py --config-file planningops/config/refactor-hygiene-multi-repo.json --workspace-root .
+bash planningops/scripts/test_module_readme_contract.sh
 ```
 
 ## Working Rules
@@ -63,6 +64,7 @@ python3 planningops/scripts/refactor_hygiene_multi_repo.py --config-file plannin
 - 레거시 경로(`docs/brainstorms`, `docs/plans`)는 재생성 금지이며, 검증 시 실패 처리됩니다.
 - 문서 참조는 상대경로를 사용합니다.
 - 경로/구조 변경 시 `README`와 `90-navigation`을 함께 갱신합니다.
+- planningops 모듈 변경 시 해당 모듈 `README.md`를 함께 갱신합니다.
 - 변경 후 `uap-docs.sh sync`를 실행해 카탈로그와 링크 무결성을 확인합니다.
 - PR에서는 `.github/workflows/uap-docs-check.yml`로 문서 검증이 자동 실행됩니다.
   - trigger: `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`

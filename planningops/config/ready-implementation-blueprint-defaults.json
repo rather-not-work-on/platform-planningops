@@ -1,0 +1,40 @@
+{
+  "global_defaults": {
+    "interface_contract_refs": "docs/initiatives/unified-personal-agent-platform/20-architecture/2026-02-27-uap-contract-boundaries.architecture.md",
+    "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/90-navigation/uap-document-map.navigation.md",
+    "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+    "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md"
+  },
+  "target_repo_defaults": {
+    "rather-not-work-on/platform-planningops": {
+      "interface_contract_refs": "planningops/contracts/requirements-contract.md",
+      "package_topology_ref": "planningops/README.md",
+      "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+      "file_plan_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md"
+    },
+    "rather-not-work-on/platform-contracts": {
+      "interface_contract_refs": "planningops/contracts/cross-repo-contract-version-pin-policy.md",
+      "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/README.md",
+      "dependency_manifest_ref": "planningops/config/contract-ref-map.json",
+      "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md"
+    },
+    "rather-not-work-on/platform-provider-gateway": {
+      "interface_contract_refs": "planningops/contracts/execution-adapter-interface-contract.md",
+      "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-provider-gateway/README.md",
+      "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+      "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md"
+    },
+    "rather-not-work-on/platform-observability-gateway": {
+      "interface_contract_refs": "planningops/contracts/execution-adapter-interface-contract.md",
+      "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-observability-gateway/README.md",
+      "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+      "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/30-execution-plan/2026-02-28-uap-topology-priority-expansion.execution-plan.md"
+    },
+    "rather-not-work-on/monday": {
+      "interface_contract_refs": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md",
+      "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/README.md",
+      "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+      "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md"
+    }
+  }
+}

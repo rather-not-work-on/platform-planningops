@@ -27,6 +27,15 @@ DEFAULT_ATTEMPT_BUDGET = {
     "max_duration_minutes": 30,
     "max_token_budget": 120000,
 }
+WORKFLOW_TO_STATUS = {
+    "backlog": "todo",
+    "ready_contract": "todo",
+    "ready_implementation": "todo",
+    "in_progress": "in_progress",
+    "review_gate": "in_progress",
+    "blocked": "blocked",
+    "done": "done",
+}
 
 
 def run(args):
@@ -189,6 +198,195 @@ def parse_depends_on(issue_body: str):
     return sorted(deps)
 
 
+def parse_plan_item_id(issue_body: str):
+    match = re.search(r"plan_item_id:\s*`([^`]+)`", issue_body or "")
+    if not match:
+        return None
+    value = match.group(1).strip()
+    return value or None
+
+
+def normalize_contract_key(value):
+    if value is None:
+        return ""
+    return str(value).strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def validate_pec_contract(pec_doc):
+    errors = []
+    ec = pec_doc.get("execution_contract")
+    if not isinstance(ec, dict):
+        return ["execution_contract object is required"]
+    for key in ["plan_id", "plan_revision", "source_of_truth", "items"]:
+        if key not in ec:
+            errors.append(f"execution_contract.{key} is required")
+    if errors:
+        return errors
+    if not isinstance(ec.get("items"), list) or not ec.get("items"):
+        errors.append("execution_contract.items must be non-empty list")
+        return errors
+
+    seen_item_ids = set()
+    for idx, item in enumerate(ec["items"]):
+        if not isinstance(item, dict):
+            errors.append(f"execution_contract.items[{idx}] must be object")
+            continue
+        plan_item_id = item.get("plan_item_id")
+        if not isinstance(plan_item_id, str) or not plan_item_id.strip():
+            errors.append(f"execution_contract.items[{idx}].plan_item_id is required")
+            continue
+        if plan_item_id in seen_item_ids:
+            errors.append(f"duplicate plan_item_id: {plan_item_id}")
+        seen_item_ids.add(plan_item_id)
+    return errors
+
+
+def evaluate_pec_preflight(mode, contract_file, selected, initiative):
+    result = {
+        "mode": mode,
+        "contract_file": contract_file,
+        "plan_item_id": selected.get("plan_item_id"),
+        "status": "pass",
+        "reason_code": "pec_preflight_pass",
+        "validation_errors": [],
+        "mismatches": [],
+    }
+
+    if mode == "legacy":
+        result["status"] = "skipped"
+        result["reason_code"] = "pec_legacy_mode"
+        return result
+
+    if not contract_file:
+        if mode == "strict-pec":
+            result["status"] = "fail"
+            result["reason_code"] = "pec_contract_file_required"
+        else:
+            result["status"] = "skipped"
+            result["reason_code"] = "pec_contract_file_missing_hybrid"
+        return result
+
+    plan_item_id = selected.get("plan_item_id")
+    if not plan_item_id:
+        if mode == "strict-pec":
+            result["status"] = "fail"
+            result["reason_code"] = "pec_plan_item_id_missing"
+        else:
+            result["status"] = "skipped"
+            result["reason_code"] = "pec_plan_item_id_missing_hybrid"
+        return result
+
+    try:
+        pec_doc = load_json(Path(contract_file), {})
+    except Exception as exc:  # noqa: BLE001
+        result["status"] = "fail"
+        result["reason_code"] = "pec_contract_file_unreadable"
+        result["validation_errors"] = [str(exc)]
+        return result
+
+    validation_errors = validate_pec_contract(pec_doc)
+    if validation_errors:
+        result["status"] = "fail"
+        result["reason_code"] = "pec_contract_invalid"
+        result["validation_errors"] = validation_errors
+        return result
+
+    contract_items = {
+        item.get("plan_item_id"): item
+        for item in pec_doc["execution_contract"]["items"]
+        if isinstance(item, dict) and item.get("plan_item_id")
+    }
+    contract_item = contract_items.get(plan_item_id)
+    if contract_item is None:
+        if mode == "strict-pec":
+            result["status"] = "fail"
+            result["reason_code"] = "pec_plan_item_missing_in_contract"
+        else:
+            result["status"] = "skipped"
+            result["reason_code"] = "pec_plan_item_missing_in_contract_hybrid"
+        return result
+
+    expected = {
+        "execution_order": int(contract_item.get("execution_order", 0)),
+        "target_repo": contract_item.get("target_repo"),
+        "component": normalize_contract_key(contract_item.get("component")),
+        "workflow_state": normalize_contract_key(contract_item.get("workflow_state")),
+        "loop_profile": normalize_contract_key(contract_item.get("loop_profile")),
+        "status": WORKFLOW_TO_STATUS.get(normalize_contract_key(contract_item.get("workflow_state")), ""),
+        "initiative": initiative,
+    }
+    actual = {
+        "execution_order": int(selected.get("order", 0)),
+        "target_repo": selected.get("target_repo"),
+        "component": normalize_contract_key(selected.get("component")),
+        "workflow_state": normalize_contract_key(selected.get("workflow_state")),
+        "loop_profile": normalize_contract_key(selected.get("loop_profile")),
+        "status": normalize_contract_key(selected.get("status")),
+        "initiative": selected.get("initiative"),
+    }
+
+    mismatches = []
+    for field in [
+        "execution_order",
+        "target_repo",
+        "component",
+        "workflow_state",
+        "loop_profile",
+        "status",
+        "initiative",
+    ]:
+        if expected[field] != actual[field]:
+            mismatches.append(
+                {
+                    "field": field,
+                    "expected": expected[field],
+                    "actual": actual[field],
+                }
+            )
+
+    if mismatches:
+        result["status"] = "fail"
+        result["reason_code"] = "pec_projection_mismatch"
+        result["mismatches"] = mismatches
+        return result
+
+    return result
+
+
+def evaluate_worker_task_pack_preflight(runtime_profile_file, selected, mode, loop_profile):
+    issue_num = int(selected.get("number", 0))
+    task_key = f"issue-{issue_num}"
+    report_path = Path(f"planningops/artifacts/validation/worker-task-pack-issue-{issue_num}.json")
+    cmd = [
+        "python3",
+        "planningops/scripts/validate_worker_task_pack.py",
+        "--runtime-profile-file",
+        runtime_profile_file,
+        "--task-key",
+        task_key,
+        "--issue-number",
+        str(issue_num),
+        "--mode",
+        mode,
+        "--loop-profile",
+        loop_profile,
+        "--target-repo",
+        selected.get("target_repo") or selected.get("issue_repo") or "",
+        "--output",
+        str(report_path),
+        "--strict",
+    ]
+    rc, out, err = run(cmd)
+    return {
+        "status": "pass" if rc == 0 else "fail",
+        "reason_code": "worker_task_pack_ok" if rc == 0 else "worker_task_pack_invalid",
+        "report_path": str(report_path),
+        "rc": rc,
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+    }
+
+
 def issue_is_closed(issue_num: int, repo: str):
     rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "state", "--jq", ".state"])
     if rc != 0:
@@ -229,6 +427,64 @@ def parse_attempt_budget(issue_body: str):
     return budget, sorted(set(errors))
 
 
+def parse_bool_token(raw: str):
+    v = raw.strip().lower()
+    if v in {"1", "true", "yes", "y", "on"}:
+        return True
+    if v in {"0", "false", "no", "n", "off"}:
+        return False
+    return None
+
+
+def parse_selector_hints(issue_body: str):
+    simulation_required = False
+    uncertainty_level = None
+    for line in issue_body.splitlines():
+        m_sim = re.match(r"\s*simulation_required\s*:\s*(\S+)\s*$", line, re.IGNORECASE)
+        if m_sim:
+            parsed = parse_bool_token(m_sim.group(1))
+            if parsed is not None:
+                simulation_required = parsed
+            continue
+
+        m_unc = re.match(r"\s*uncertainty_level\s*:\s*(\S+)\s*$", line, re.IGNORECASE)
+        if m_unc:
+            raw = m_unc.group(1).strip().lower()
+            if raw in {"low", "medium", "high", "critical"}:
+                uncertainty_level = raw
+    return {
+        "simulation_required": simulation_required,
+        "uncertainty_level": uncertainty_level,
+    }
+
+
+def parse_blueprint_refs(issue_body: str):
+    required_keys = [
+        "interface_contract_refs",
+        "package_topology_ref",
+        "dependency_manifest_ref",
+        "file_plan_ref",
+    ]
+    refs = {}
+    for key in required_keys:
+        refs[key] = None
+        for line in issue_body.splitlines():
+            m = re.match(rf"\s*{key}\s*:\s*(.+)\s*$", line, re.IGNORECASE)
+            if not m:
+                continue
+            value = m.group(1).strip()
+            if value:
+                refs[key] = value
+            break
+
+    missing = [k for k in required_keys if not refs.get(k)]
+    return {
+        "refs": refs,
+        "missing": missing,
+        "complete": len(missing) == 0,
+    }
+
+
 def normalize_candidates(items, allowed_workflow_states):
     candidates = []
     for it in items:
@@ -254,6 +510,10 @@ def normalize_candidates(items, allowed_workflow_states):
                 "item": it,
                 "number": number,
                 "order": order,
+                "status": it.get("status"),
+                "initiative": it.get("initiative"),
+                "component": it.get("component"),
+                "loop_profile": it.get("loop_profile"),
                 "workflow_state": workflow_state,
                 "issue_repo": issue_repo,
                 "target_repo": target_repo,
@@ -270,11 +530,20 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
         selected_ref = {
             "number": selected.get("number"),
             "order": selected.get("order"),
+            "status": selected.get("status"),
             "workflow_state": selected.get("workflow_state"),
             "issue_repo": selected.get("issue_repo"),
             "target_repo": selected.get("target_repo"),
+            "component": selected.get("component"),
+            "loop_profile": selected.get("loop_profile"),
+            "initiative": selected.get("initiative"),
+            "plan_item_id": selected.get("plan_item_id"),
             "depends_on": selected.get("deps", []),
             "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+            "simulation_required": selected.get("simulation_required", False),
+            "uncertainty_level": selected.get("uncertainty_level"),
+            "blueprint_refs": selected.get("blueprint_refs", {}),
+            "blueprint_complete": selected.get("blueprint_complete", True),
         }
 
     return {
@@ -284,9 +553,18 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
             {
                 "number": c.get("number"),
                 "order": c.get("order"),
+                "status": c.get("status"),
                 "workflow_state": c.get("workflow_state"),
                 "issue_repo": c.get("issue_repo"),
                 "target_repo": c.get("target_repo"),
+                "component": c.get("component"),
+                "loop_profile": c.get("loop_profile"),
+                "initiative": c.get("initiative"),
+                "plan_item_id": c.get("plan_item_id"),
+                "simulation_required": c.get("simulation_required", False),
+                "uncertainty_level": c.get("uncertainty_level"),
+                "blueprint_refs": c.get("blueprint_refs", {}),
+                "blueprint_complete": c.get("blueprint_complete", True),
             }
             for c in candidates
         ],
@@ -373,6 +651,10 @@ def determine_loop_profile(selected: dict, payload: dict, control_repo: str):
     workflow_state = selected.get("workflow_state")
     target_repo = selected.get("target_repo") or selected.get("issue_repo")
     if workflow_state == "ready-contract":
+        simulation_required = bool(selected.get("simulation_required")) or bool(payload.get("simulation_required"))
+        uncertainty_level = str(selected.get("uncertainty_level") or payload.get("uncertainty_level") or "").lower()
+        if simulation_required or uncertainty_level in {"medium", "high", "critical"}:
+            return "L2 Simulation"
         return "L1 Contract-Clarification"
     if workflow_state == "ready-implementation":
         if target_repo and target_repo != control_repo:
@@ -389,7 +671,19 @@ def main():
     parser.add_argument("--control-repo", default="rather-not-work-on/platform-planningops")
     parser.add_argument("--project-num", type=int, default=2)
     parser.add_argument("--project-id", default="PVT_kwDOD8NujM4BQYNE")
+    parser.add_argument("--initiative", default="unified-personal-agent-platform")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="apply")
+    parser.add_argument(
+        "--pec-preflight-mode",
+        choices=["legacy", "hybrid", "strict-pec"],
+        default="hybrid",
+        help="Preflight strictness for Plan Execution Contract checks",
+    )
+    parser.add_argument(
+        "--pec-contract-file",
+        default=None,
+        help="Optional PEC contract JSON file for runner preflight alignment checks",
+    )
     parser.add_argument(
         "--no-feedback",
         action="store_true",
@@ -475,14 +769,32 @@ def main():
             continue
         issue_body = issue_doc.get("body", "")
         deps = parse_depends_on(issue_body)
+        plan_item_id = parse_plan_item_id(issue_body)
         attempt_budget, budget_errors = parse_attempt_budget(issue_body)
+        selector_hints = parse_selector_hints(issue_body)
+        blueprint_meta = parse_blueprint_refs(issue_body)
+        c["plan_item_id"] = plan_item_id
         if budget_errors:
             selection_attempts.append(
                 {
                     "number": num,
                     "issue_repo": issue_repo,
                     "result": "invalid_attempt_budget",
+                    "plan_item_id": plan_item_id,
                     "attempt_budget_errors": budget_errors,
+                }
+            )
+            continue
+        if c.get("workflow_state") == "ready-implementation" and not blueprint_meta["complete"]:
+            selection_attempts.append(
+                {
+                    "number": num,
+                    "issue_repo": issue_repo,
+                    "result": "missing_blueprint_refs",
+                    "plan_item_id": plan_item_id,
+                    "missing_refs": blueprint_meta["missing"],
+                    "blueprint_refs": blueprint_meta["refs"],
+                    "selector_hints": selector_hints,
                 }
             )
             continue
@@ -490,15 +802,22 @@ def main():
         if all(x["closed"] for x in closed_checks):
             c["deps"] = deps
             c["attempt_budget"] = attempt_budget
+            c["simulation_required"] = selector_hints["simulation_required"]
+            c["uncertainty_level"] = selector_hints["uncertainty_level"]
+            c["blueprint_refs"] = blueprint_meta["refs"]
+            c["blueprint_complete"] = blueprint_meta["complete"]
             selected = c
             selection_attempts.append(
                 {
                     "number": num,
                     "issue_repo": issue_repo,
                     "result": "selected",
+                    "plan_item_id": plan_item_id,
                     "depends_on": deps,
                     "dep_checks": closed_checks,
                     "attempt_budget": attempt_budget,
+                    "selector_hints": selector_hints,
+                    "blueprint_refs": blueprint_meta["refs"],
                 }
             )
             break
@@ -507,16 +826,74 @@ def main():
                 "number": num,
                 "issue_repo": issue_repo,
                 "result": "dependency_blocked",
+                "plan_item_id": plan_item_id,
                 "depends_on": deps,
                 "dep_checks": closed_checks,
+                "selector_hints": selector_hints,
+                "blueprint_refs": blueprint_meta["refs"],
             }
         )
 
     selection_trace = build_selection_trace(candidates, selected, selection_attempts, allowed_workflow_states)
+    selection_trace["pec_preflight"] = {
+        "mode": args.pec_preflight_mode,
+        "contract_file": args.pec_contract_file,
+        "status": "not_evaluated",
+        "reason_code": "selected_issue_missing",
+    }
 
     if selected is None:
         print(json.dumps({"result": "no_eligible_todo_issue", "selection_trace": selection_trace}, ensure_ascii=True))
         return 2
+
+    pec_preflight = evaluate_pec_preflight(
+        args.pec_preflight_mode,
+        args.pec_contract_file,
+        selected,
+        args.initiative,
+    )
+    selection_trace["pec_preflight"] = pec_preflight
+    if pec_preflight.get("status") == "fail":
+        print(
+            json.dumps(
+                {
+                    "result": "pec_preflight_failed",
+                    "issue_number": selected.get("number"),
+                    "issue_repo": selected.get("issue_repo"),
+                    "plan_item_id": selected.get("plan_item_id"),
+                    "pec_preflight": pec_preflight,
+                    "selection_trace": selection_trace,
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 5
+
+    selected_loop_profile = determine_loop_profile(selected, {}, args.control_repo)
+    worker_task_pack_preflight = evaluate_worker_task_pack_preflight(
+        runtime_profile_file=args.runtime_profile_file,
+        selected=selected,
+        mode=args.mode,
+        loop_profile=selected_loop_profile,
+    )
+    selection_trace["worker_task_pack_preflight"] = worker_task_pack_preflight
+    if worker_task_pack_preflight.get("status") == "fail":
+        print(
+            json.dumps(
+                {
+                    "result": "worker_task_pack_preflight_failed",
+                    "issue_number": selected.get("number"),
+                    "issue_repo": selected.get("issue_repo"),
+                    "target_repo": selected.get("target_repo"),
+                    "plan_item_id": selected.get("plan_item_id"),
+                    "loop_profile": selected_loop_profile,
+                    "worker_task_pack_preflight": worker_task_pack_preflight,
+                    "selection_trace": selection_trace,
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 6
 
     issue_num = selected["number"]
     lock_owner_id = f"issue-loop-runner-{os.getpid()}-{int(datetime.now(timezone.utc).timestamp())}"
@@ -561,7 +938,6 @@ def main():
 
     resume_checkpoint = load_checkpoint(issue_num) if args.resume_from_checkpoint else {}
     resume_stage = resume_checkpoint.get("stage") if resume_checkpoint else None
-    selected_loop_profile = determine_loop_profile(selected, {}, args.control_repo)
     adapter = resolve_execution_adapter(selected.get("target_repo") or selected.get("issue_repo"))
     adapter_context = {
         "issue_number": issue_num,
@@ -571,6 +947,8 @@ def main():
         "loop_profile": selected_loop_profile,
         "mode": args.mode,
         "runtime_profile_file": args.runtime_profile_file,
+        "pec_preflight_mode": args.pec_preflight_mode,
+        "pec_contract_file": args.pec_contract_file,
         "selection_trace": selection_trace,
         "selection_transition_id": "",
     }
@@ -588,7 +966,9 @@ def main():
             "selected_target_repo": selected.get("target_repo"),
             "selected_workflow_state": selected.get("workflow_state"),
             "selected_loop_profile": selected_loop_profile,
+            "selected_plan_item_id": selected.get("plan_item_id"),
             "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+            "pec_preflight": pec_preflight,
             "adapter_pre_hook": pre_hook_result,
         },
     )
@@ -883,81 +1263,33 @@ def main():
         ]
     )
 
+    feedback_error = None
     if not already_processed and not args.no_feedback:
-        # comment on issue
-        run(["gh", "issue", "comment", str(issue_num), "--repo", selected.get("issue_repo"), "--body", comment_body])
+        try:
+            # comment on issue
+            run(["gh", "issue", "comment", str(issue_num), "--repo", selected.get("issue_repo"), "--body", comment_body])
 
-        # project status + verdict fields
-        rc_fields, out_fields, err_fields = run(
-            ["gh", "project", "field-list", str(args.project_num), "--owner", args.owner, "--format", "json"]
-        )
-        if rc_fields == 0:
-            fields_doc = json.loads(out_fields)
-            status_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "Status"), None)
-            workflow_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "workflow_state"), None)
-            status_target_name = str(payload.get("status_update", "Blocked"))
-            status_target_opt = next(
-                (o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == status_target_name),
-                None,
+            # project status + verdict fields
+            rc_fields, out_fields, err_fields = run(
+                ["gh", "project", "field-list", str(args.project_num), "--owner", args.owner, "--format", "json"]
             )
-            workflow_target_name = "done" if payload.get("last_verdict") == "pass" else "blocked"
-            workflow_target_opt = next(
-                (o.get("id") for o in (workflow_field or {}).get("options", []) if o.get("name") == workflow_target_name),
-                None,
-            )
-
-            item_id = selected["item"].get("id")
-            if item_id and status_field and status_target_opt:
-                run(
-                    [
-                        "gh",
-                        "project",
-                        "item-edit",
-                        "--id",
-                        item_id,
-                        "--project-id",
-                        args.project_id,
-                        "--field-id",
-                        status_field.get("id"),
-                        "--single-select-option-id",
-                        status_target_opt,
-                    ]
+            if rc_fields == 0:
+                fields_doc = json.loads(out_fields)
+                status_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "Status"), None)
+                workflow_field = next((f for f in fields_doc.get("fields", []) if f.get("name") == "workflow_state"), None)
+                status_target_name = str(payload.get("status_update", "Blocked"))
+                status_target_opt = next(
+                    (o.get("id") for o in (status_field or {}).get("options", []) if o.get("name") == status_target_name),
+                    None,
                 )
-            if item_id and workflow_field and workflow_target_opt:
-                run(
-                    [
-                        "gh",
-                        "project",
-                        "item-edit",
-                        "--id",
-                        item_id,
-                        "--project-id",
-                        args.project_id,
-                        "--field-id",
-                        workflow_field.get("id"),
-                        "--single-select-option-id",
-                        workflow_target_opt,
-                    ]
+                workflow_target_name = "done" if payload.get("last_verdict") == "pass" else "blocked"
+                workflow_target_opt = next(
+                    (o.get("id") for o in (workflow_field or {}).get("options", []) if o.get("name") == workflow_target_name),
+                    None,
                 )
 
-            loop_profile_field_id, loop_profile_options = ensure_single_select_field(
-                args.owner,
-                args.project_num,
-                "loop_profile",
-                [
-                    "L1 Contract-Clarification",
-                    "L2 Simulation",
-                    "L3 Implementation-TDD",
-                    "L4 Integration-Reconcile",
-                    "L5 Recovery-Replan",
-                ],
-            )
-
-            # ensure verdict text fields exist
-            verdict_field_id = ensure_text_field(args.owner, args.project_num, "last_verdict")
-            reason_field_id = ensure_text_field(args.owner, args.project_num, "last_reason")
-            if item_id:
-                if loop_profile_field_id and final_loop_profile in loop_profile_options:
+                item_id = selected["item"].get("id")
+                if item_id and status_field and status_target_opt:
                     run(
                         [
                             "gh",
@@ -968,44 +1300,172 @@ def main():
                             "--project-id",
                             args.project_id,
                             "--field-id",
-                            loop_profile_field_id,
+                            status_field.get("id"),
                             "--single-select-option-id",
-                            loop_profile_options.get(final_loop_profile),
+                            status_target_opt,
                         ]
                     )
-                run(
+                if item_id and workflow_field and workflow_target_opt:
+                    run(
+                        [
+                            "gh",
+                            "project",
+                            "item-edit",
+                            "--id",
+                            item_id,
+                            "--project-id",
+                            args.project_id,
+                            "--field-id",
+                            workflow_field.get("id"),
+                            "--single-select-option-id",
+                            workflow_target_opt,
+                        ]
+                    )
+
+                loop_profile_field_id, loop_profile_options = ensure_single_select_field(
+                    args.owner,
+                    args.project_num,
+                    "loop_profile",
                     [
-                        "gh",
-                        "project",
-                        "item-edit",
-                        "--id",
-                        item_id,
-                        "--project-id",
-                        args.project_id,
-                        "--field-id",
-                        verdict_field_id,
-                        "--text",
-                        str(payload.get("last_verdict", "unknown")),
-                    ]
-                )
-                run(
-                    [
-                        "gh",
-                        "project",
-                        "item-edit",
-                        "--id",
-                        item_id,
-                        "--project-id",
-                        args.project_id,
-                        "--field-id",
-                        reason_field_id,
-                        "--text",
-                        str(payload.get("reason_code", "unknown")),
-                    ]
+                        "L1 Contract-Clarification",
+                        "L2 Simulation",
+                        "L3 Implementation-TDD",
+                        "L4 Integration-Reconcile",
+                        "L5 Recovery-Replan",
+                    ],
                 )
 
-        seen.add(idem_key)
-        save_json(IDEMPOTENCY_PATH, {"processed_keys": sorted(seen)})
+                # ensure verdict text fields exist
+                verdict_field_id = ensure_text_field(args.owner, args.project_num, "last_verdict")
+                reason_field_id = ensure_text_field(args.owner, args.project_num, "last_reason")
+                if item_id:
+                    if loop_profile_field_id and final_loop_profile in loop_profile_options:
+                        run(
+                            [
+                                "gh",
+                                "project",
+                                "item-edit",
+                                "--id",
+                                item_id,
+                                "--project-id",
+                                args.project_id,
+                                "--field-id",
+                                loop_profile_field_id,
+                                "--single-select-option-id",
+                                loop_profile_options.get(final_loop_profile),
+                            ]
+                        )
+                    run(
+                        [
+                            "gh",
+                            "project",
+                            "item-edit",
+                            "--id",
+                            item_id,
+                            "--project-id",
+                            args.project_id,
+                            "--field-id",
+                            verdict_field_id,
+                            "--text",
+                            str(payload.get("last_verdict", "unknown")),
+                        ]
+                    )
+                    run(
+                        [
+                            "gh",
+                            "project",
+                            "item-edit",
+                            "--id",
+                            item_id,
+                            "--project-id",
+                            args.project_id,
+                            "--field-id",
+                            reason_field_id,
+                            "--text",
+                            str(payload.get("reason_code", "unknown")),
+                        ]
+                    )
+
+            seen.add(idem_key)
+            save_json(IDEMPOTENCY_PATH, {"processed_keys": sorted(seen)})
+        except Exception as exc:  # noqa: BLE001
+            feedback_error = str(exc)
+
+    if feedback_error:
+        payload["last_verdict"] = "fail"
+        payload["reason_code"] = "feedback_failed"
+        payload["status_update"] = "Blocked"
+        payload["replanning_triggered"] = True
+        payload["feedback_error"] = feedback_error
+        save_json(payload_path, payload)
+        append_ndjson(
+            transition_log,
+            {
+                "transition_id": f"{loop_id}-feedback-failed",
+                "run_id": loop_id,
+                "card_id": issue_num,
+                "from_state": selected.get("workflow_state", "ready-contract"),
+                "to_state": "blocked",
+                "transition_reason": "feedback.failed",
+                "actor_type": "agent",
+                "actor_id": "issue-loop-runner",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "replanning_flag": True,
+                "loop_profile": final_loop_profile,
+                "reason_code": "feedback_failed",
+                "error": feedback_error,
+            },
+        )
+        release_ok = release_issue_lock(issue_num, lock_owner_id)
+        watchdog_events.append(
+            {
+                "event": "feedback_failed",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "release_ok": release_ok,
+                "error": feedback_error,
+            }
+        )
+        save_json(
+            watchdog_path,
+            {
+                "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "issue_number": issue_num,
+                "verdict": "fail",
+                "stage": "feedback_applied",
+                "reason_code": "feedback_failed",
+                "release_ok": release_ok,
+                "events": watchdog_events,
+            },
+        )
+        clear_checkpoint(issue_num)
+        failure_result = {
+            "selected_issue": issue_num,
+            "selected_issue_repo": selected.get("issue_repo"),
+            "selected_target_repo": selected.get("target_repo"),
+            "selected_workflow_state": selected.get("workflow_state"),
+            "selected_loop_profile": selected_loop_profile,
+            "selected_plan_item_id": selected.get("plan_item_id"),
+            "final_loop_profile": final_loop_profile,
+            "lock_owner_id": lock_owner_id,
+            "watchdog_report": str(watchdog_path),
+            "reason_code": "feedback_failed",
+            "last_verdict": "fail",
+            "feedback_error": feedback_error,
+            "selection_trace": selection_trace,
+            "pec_preflight": pec_preflight,
+            "adapter_id": getattr(adapter, "adapter_id", "unknown-adapter"),
+            "adapter_pre_hook": pre_hook_result,
+            "adapter_post_hook": post_hook_result,
+            "adapter_pre_artifact": str(pre_hook_path),
+            "adapter_post_artifact": str(post_hook_path),
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+            "runtime_profile_file": args.runtime_profile_file,
+            "no_feedback": args.no_feedback,
+        }
+        out_path = Path("planningops/artifacts/loop-runner/last-run.json")
+        save_json(out_path, failure_result)
+        print(json.dumps(failure_result, ensure_ascii=True, indent=2))
+        return 1
 
     checkpoint_payload = {
         "loop_dir": str(loop_dir),
@@ -1069,6 +1529,7 @@ def main():
         "selected_target_repo": selected.get("target_repo"),
         "selected_workflow_state": selected.get("workflow_state"),
         "selected_loop_profile": selected_loop_profile,
+        "selected_plan_item_id": selected.get("plan_item_id"),
         "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
         "checkpoint_resumed": bool(args.resume_from_checkpoint and resume_checkpoint),
         "checkpoint_stage_at_start": resume_stage,
@@ -1083,7 +1544,10 @@ def main():
         "candidate_count": len(candidates),
         "allowed_workflow_states": sorted(allowed_workflow_states),
         "selection_trace": selection_trace,
+        "pec_preflight": pec_preflight,
         "selection_transition_id": selection_event["transition_id"],
+        "blueprint_refs": selected.get("blueprint_refs", {}),
+        "blueprint_complete": selected.get("blueprint_complete", True),
         "adapter_id": getattr(adapter, "adapter_id", "unknown-adapter"),
         "adapter_pre_hook": pre_hook_result,
         "adapter_post_hook": post_hook_result,

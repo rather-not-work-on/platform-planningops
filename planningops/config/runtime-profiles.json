@@ -26,6 +26,9 @@
         ],
         "max_retries": 2,
         "timeout_ms": 60000
+      },
+      "worker_policy": {
+        "kind": "parser_diff_dry_run"
       }
     },
     "issue-18": {

@@ -1,0 +1,28 @@
+{
+  "worker_task_pack": {
+    "version": "v1",
+    "task_key": "issue-42",
+    "issue_number": 42,
+    "mode": "dry-run",
+    "loop_profile": "L3 Implementation-TDD",
+    "runtime_profile": "local",
+    "worker_policy_kind": "python_script",
+    "command": [
+      "python3",
+      "planningops/scripts/parser_diff_dry_run.py",
+      "--run-id",
+      "loop-sample-issue-42",
+      "--mode",
+      "dry-run"
+    ],
+    "retry_policy": {
+      "max_retries": 2
+    },
+    "timeout_ms": 60000,
+    "idempotency_key": "sample-worker-pack-issue-42",
+    "target_repo": "rather-not-work-on/platform-planningops",
+    "metadata": {
+      "source": "fixture"
+    }
+  }
+}

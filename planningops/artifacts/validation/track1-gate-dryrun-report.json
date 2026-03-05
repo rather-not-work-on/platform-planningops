@@ -1,0 +1,75 @@
+{
+  "generated_at_utc": "2026-03-03T06:31:01.548742+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-03T06:30:55.374291+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-03T06:31:01.546929+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "pass",
+  "kpi_source_path": "planningops/fixtures/track1-kpi-baseline-ci.json"
+}
