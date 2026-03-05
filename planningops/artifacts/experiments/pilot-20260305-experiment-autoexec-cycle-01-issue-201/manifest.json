@@ -1,0 +1,39 @@
+{
+  "generated_at_utc": "2026-03-05T12:05:56.972516+00:00",
+  "experiment_id": "pilot-20260305-experiment-autoexec-cycle-01-issue-201",
+  "topic": "supervisor-cycle-01-issue-201",
+  "trigger": "supervisor_experiment_auto_executor",
+  "repo_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops",
+  "base_ref": "HEAD",
+  "validation_pack_file": "planningops/config/supervisor-experiment-validation-pack.json",
+  "validation_pack_id": "supervisor-experiment-validation-pack-v1",
+  "options": [
+    "option-a",
+    "option-b"
+  ],
+  "validation_commands": [
+    {
+      "id": "py_compile_supervisor",
+      "command": [
+        "python3",
+        "-m",
+        "py_compile",
+        "planningops/scripts/autonomous_supervisor_loop.py"
+      ]
+    },
+    {
+      "id": "test_supervisor_contract",
+      "command": [
+        "bash",
+        "planningops/scripts/test_autonomous_supervisor_loop_contract.sh"
+      ]
+    },
+    {
+      "id": "test_backlog_replenishment_contract",
+      "command": [
+        "bash",
+        "planningops/scripts/test_backlog_stock_replenishment_contract.sh"
+      ]
+    }
+  ]
+}

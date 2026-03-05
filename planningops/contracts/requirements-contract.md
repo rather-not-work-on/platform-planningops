@@ -40,6 +40,9 @@
 37. Supervisor must evaluate experiment triggers from uncertainty/simulation signals and emit explicit experiment trigger artifacts.
 38. Supervisor decisions must treat replan and replenishment outputs as first-class cycle outputs.
 39. Supervisor summary must publish final stop reason and contract references for each run.
+40. Supervisor experiment trigger must be able to invoke an automatic comparative executor that creates deterministic option worktrees.
+41. Automatic comparative executor must emit per-option reports and weighted decision record artifacts.
+42. Automatic comparative executor failure must map to supervisor stop reason `experiment_auto_executor_failed`.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
@@ -85,5 +88,6 @@
 - Worktree comparative experiment protocol: see `planningops/contracts/worktree-comparative-experiment-protocol.md`.
 - Backlog stock/replenishment contract: see `planningops/contracts/backlog-stock-replenishment-contract.md`.
 - Autonomous supervisor loop contract: see `planningops/contracts/autonomous-supervisor-loop-contract.md`.
+- Supervisor experiment auto-executor contract: see `planningops/contracts/supervisor-experiment-auto-executor-contract.md`.
 - Implementation readiness contract: see `planningops/contracts/implementation-readiness-gate-contract.md`.
 - Worker task pack contract: see `planningops/contracts/worker-task-pack-contract.md`.

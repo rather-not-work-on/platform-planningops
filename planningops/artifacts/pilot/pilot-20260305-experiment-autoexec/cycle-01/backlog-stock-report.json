@@ -1,0 +1,114 @@
+{
+  "generated_at_utc": "2026-03-05T12:05:58.099651+00:00",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "policy_file": "planningops/config/backlog-stock-policy.json",
+  "initiative": "unified-personal-agent-platform",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_num": 2
+  },
+  "selection_policy": {
+    "name": "high_value_ready_first",
+    "source_queue_class": "ready_now",
+    "selected": {
+      "issue_number": 101,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "execution_order": 10,
+      "workflow_state": "ready-contract",
+      "reason": "high_value_ready_first"
+    }
+  },
+  "stock": {
+    "evaluated_items": 5,
+    "rows": [
+      {
+        "name": "ready_now",
+        "min_stock": 1,
+        "actual_stock": 1,
+        "met": true,
+        "issue_refs": [
+          {
+            "issue_number": 101,
+            "issue_repo": "rather-not-work-on/platform-planningops",
+            "execution_order": 10,
+            "open_dependency_count": 0
+          }
+        ]
+      },
+      {
+        "name": "next_up",
+        "min_stock": 2,
+        "actual_stock": 2,
+        "met": true,
+        "issue_refs": [
+          {
+            "issue_number": 102,
+            "issue_repo": "rather-not-work-on/monday",
+            "execution_order": 20,
+            "open_dependency_count": 1
+          },
+          {
+            "issue_number": 103,
+            "issue_repo": "rather-not-work-on/platform-planningops",
+            "execution_order": 30,
+            "open_dependency_count": 2
+          }
+        ]
+      },
+      {
+        "name": "quality_hardening",
+        "min_stock": 2,
+        "actual_stock": 3,
+        "met": true,
+        "issue_refs": [
+          {
+            "issue_number": 101,
+            "issue_repo": "rather-not-work-on/platform-planningops",
+            "execution_order": 10,
+            "open_dependency_count": 0
+          },
+          {
+            "issue_number": 103,
+            "issue_repo": "rather-not-work-on/platform-planningops",
+            "execution_order": 30,
+            "open_dependency_count": 2
+          },
+          {
+            "issue_number": 104,
+            "issue_repo": "rather-not-work-on/platform-planningops",
+            "execution_order": 40,
+            "open_dependency_count": 0
+          }
+        ]
+      }
+    ],
+    "breach_count": 0,
+    "breaches": []
+  },
+  "candidate_validation": {
+    "candidate_count": 1,
+    "violation_count": 0,
+    "violations": [],
+    "normalized_candidates": [
+      {
+        "candidate_id": "candidate-001",
+        "title": "Harden dependency unblock path for ready-implementation lane",
+        "target_repo": "rather-not-work-on/monday",
+        "depends_on": [
+          101
+        ],
+        "acceptance_criteria": [
+          "Dependency mapping is documented and reproducible.",
+          "Validation gate confirms no dependency regression."
+        ],
+        "evidence_refs": [
+          "planningops/artifacts/verification/issue-101-verification.json",
+          "planningops/artifacts/loop-runner/last-run.json"
+        ],
+        "body_baseline": "## Context\n- evidence-backed follow-up candidate\n\n## Evidence\n- `planningops/artifacts/verification/issue-101-verification.json`\n- `planningops/artifacts/loop-runner/last-run.json`\n\n## Execution Order\n- execution_order: <TBD>\n- depends_on: #101\n\n## Scope\n- Clarify/patch root cause with deterministic artifacts\n\n## Acceptance Criteria\n- [ ] Dependency mapping is documented and reproducible.\n- [ ] Validation gate confirms no dependency regression."
+      }
+    ]
+  },
+  "dependency_diagnostics": []
+}
