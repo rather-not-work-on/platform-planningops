@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import threading
 from datetime import datetime, timezone, timedelta
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -142,6 +143,122 @@ def release_issue_lock(issue_num: int, owner_id: str):
         return False
     path.unlink()
     return True
+
+
+def read_issue_lock(issue_num: int):
+    path = lock_path(issue_num)
+    if not path.exists():
+        return {
+            "exists": False,
+            "path": str(path),
+            "doc": {},
+        }
+    doc = load_json(path, {})
+    return {
+        "exists": True,
+        "path": str(path),
+        "doc": doc if isinstance(doc, dict) else {},
+    }
+
+
+def run_with_runtime_heartbeat(command, issue_num: int, owner_id: str, ttl_seconds: int):
+    if ttl_seconds <= 0:
+        raise ValueError("ttl_seconds must be positive")
+
+    heartbeat_interval_seconds = max(1, ttl_seconds // 3)
+    heartbeat_interval_seconds = min(heartbeat_interval_seconds, 30)
+    started_at = datetime.now(timezone.utc).isoformat()
+
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    stop_event = threading.Event()
+    state = {
+        "drift_detected": False,
+        "drift_reason": "",
+    }
+    heartbeat_events = [
+        {
+            "event": "runtime_heartbeat_started",
+            "decided_at_utc": started_at,
+            "issue_number": issue_num,
+            "lock_owner_id": owner_id,
+            "pid": process.pid,
+            "heartbeat_interval_seconds": heartbeat_interval_seconds,
+        }
+    ]
+    event_lock = threading.Lock()
+
+    def monitor_loop():
+        while not stop_event.wait(heartbeat_interval_seconds):
+            heartbeat_refreshed = heartbeat_issue_lock(issue_num, owner_id, ttl_seconds)
+            lock_snapshot = read_issue_lock(issue_num)
+            lock_owner = lock_snapshot["doc"].get("owner_id") if lock_snapshot["exists"] else None
+            lock_owner_matches = bool(lock_snapshot["exists"]) and lock_owner == owner_id
+            drift_reason = ""
+            if not lock_owner_matches:
+                drift_reason = "lock_owner_drift"
+            elif not heartbeat_refreshed:
+                drift_reason = "heartbeat_refresh_failed"
+
+            event = {
+                "event": "runtime_heartbeat_tick",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "issue_number": issue_num,
+                "heartbeat_refreshed": heartbeat_refreshed,
+                "lock_exists": lock_snapshot["exists"],
+                "lock_owner": lock_owner,
+                "lock_owner_matches": lock_owner_matches,
+                "drift_detected": bool(drift_reason),
+                "drift_reason": drift_reason or None,
+            }
+            with event_lock:
+                heartbeat_events.append(event)
+
+            if drift_reason:
+                state["drift_detected"] = True
+                state["drift_reason"] = drift_reason
+                with event_lock:
+                    heartbeat_events.append(
+                        {
+                            "event": "runtime_heartbeat_drift_detected",
+                            "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                            "issue_number": issue_num,
+                            "drift_reason": drift_reason,
+                        }
+                    )
+                try:
+                    process.terminate()
+                except Exception:  # noqa: BLE001
+                    pass
+                return
+
+    monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
+    monitor_thread.start()
+    out, err = process.communicate()
+    stop_event.set()
+    monitor_thread.join(timeout=1.0)
+    ended_at = datetime.now(timezone.utc).isoformat()
+
+    with event_lock:
+        heartbeat_events.append(
+            {
+                "event": "runtime_heartbeat_stopped",
+                "decided_at_utc": ended_at,
+                "issue_number": issue_num,
+                "return_code": process.returncode,
+                "drift_detected": state["drift_detected"],
+                "drift_reason": state["drift_reason"] or None,
+            }
+        )
+
+    return {
+        "return_code": int(process.returncode),
+        "stdout": out.strip(),
+        "stderr": err.strip(),
+        "drift_detected": state["drift_detected"],
+        "drift_reason": state["drift_reason"] or None,
+        "heartbeat_events": heartbeat_events,
+        "heartbeat_interval_seconds": heartbeat_interval_seconds,
+    }
 
 
 def evaluate_escalation(issue_num: int, verdict: str, reason_code: str):
@@ -1051,9 +1168,9 @@ def main():
             resume_stage = None
 
     if not reused_loop_artifacts:
-        # run loop
-        rc_loop, out_loop, err_loop = run(
-            [
+        # run loop with runtime-window heartbeat pump and lock drift detection
+        loop_run = run_with_runtime_heartbeat(
+            command=[
                 "python3",
                 "planningops/scripts/ralph_loop_local.py",
                 "--issue-number",
@@ -1068,8 +1185,50 @@ def main():
                 str(max_attempts),
                 "--worker-task-pack-report",
                 str(worker_task_pack_preflight.get("report_path")),
-            ]
+            ],
+            issue_num=issue_num,
+            owner_id=lock_owner_id,
+            ttl_seconds=args.lease_ttl_seconds,
         )
+        rc_loop = loop_run["return_code"]
+        out_loop = loop_run["stdout"]
+        err_loop = loop_run["stderr"]
+        watchdog_events.extend(loop_run["heartbeat_events"])
+
+        if loop_run["drift_detected"]:
+            release_ok = release_issue_lock(issue_num, lock_owner_id)
+            watchdog_events.append(
+                {
+                    "event": "lock_released_after_runtime_drift",
+                    "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "release_ok": release_ok,
+                }
+            )
+            save_json(
+                watchdog_path,
+                {
+                    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "issue_number": issue_num,
+                    "verdict": "fail",
+                    "stage": "loop_executed",
+                    "reason_code": loop_run["drift_reason"],
+                    "release_ok": release_ok,
+                    "events": watchdog_events,
+                },
+            )
+            clear_checkpoint(issue_num)
+            print(
+                json.dumps(
+                    {
+                        "result": "runtime_lock_drift_detected",
+                        "issue_number": issue_num,
+                        "reason_code": loop_run["drift_reason"],
+                        "watchdog_report": str(watchdog_path),
+                    },
+                    ensure_ascii=True,
+                )
+            )
+            return 8
 
         # find latest loop dir for this issue
         loop_root = Path("planningops/artifacts/loops")

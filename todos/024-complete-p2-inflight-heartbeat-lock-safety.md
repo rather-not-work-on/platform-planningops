@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p2
 issue_id: "024"
 tags: [planningops, lock, watchdog, reliability, concurrency]
@@ -65,10 +65,10 @@ Implement Option 1 and emit explicit watchdog events for runtime-window heartbea
 - `planningops/scripts/test_lease_lock_watchdog.sh` (or equivalent regression script)
 
 ## Acceptance Criteria
-- [ ] Heartbeat refresh runs during worker execution window.
-- [ ] Lock ownership drift during execution is detected and classified.
-- [ ] Watchdog artifact includes runtime-window heartbeat events.
-- [ ] Regression test covers long-running execution with lock safety assertions.
+- [x] Heartbeat refresh runs during worker execution window.
+- [x] Lock ownership drift during execution is detected and classified.
+- [x] Watchdog artifact includes runtime-window heartbeat events.
+- [x] Regression test covers long-running execution with lock safety assertions.
 
 ## Work Log
 
@@ -83,3 +83,20 @@ Implement Option 1 and emit explicit watchdog events for runtime-window heartbea
 **Learnings:**
 - Stage-only heartbeat is insufficient once worker runtime becomes policy-driven and potentially long-lived.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added runtime-window heartbeat pump and lock drift detection in `planningops/scripts/issue_loop_runner.py`:
+  - new helper `run_with_runtime_heartbeat(...)`,
+  - runtime event taxonomy (`runtime_heartbeat_started|runtime_heartbeat_tick|runtime_heartbeat_drift_detected|runtime_heartbeat_stopped`),
+  - explicit drift classification (`lock_owner_drift` / `heartbeat_refresh_failed`) and fail-fast path.
+- Integrated heartbeat-runner into loop execution path and wired runtime heartbeat events into watchdog report timeline.
+- Updated lock contract wording in `planningops/contracts/lease-lock-watchdog-contract.md` to require runtime heartbeat and drift classification.
+- Expanded regression coverage in `planningops/scripts/test_lease_lock_watchdog.sh`:
+  - long-running runtime heartbeat success path,
+  - lock owner drift injection path with classification assertion.
+
+**Learnings:**
+- Runtime heartbeat must verify ownership as a first-class condition; refresh result alone is not enough to classify lock safety reliably.

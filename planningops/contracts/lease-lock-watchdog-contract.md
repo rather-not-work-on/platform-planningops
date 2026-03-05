@@ -17,7 +17,9 @@ Prevent duplicate issue execution and detect stale/zombie lock state.
 - Only one active lock per issue is allowed.
 - If active lock is not expired, new run must fail with lock conflict.
 - Expired lock may be reclaimed as stale recovery.
-- Owner must refresh heartbeat at stage boundaries.
+- Owner must refresh heartbeat at stage boundaries and during runtime execution window.
+- Runtime heartbeat must stop when worker exits or controlled interruption occurs.
+- Runtime lock ownership drift (`owner_id` mismatch or heartbeat refresh failure) must be detected and classified as runtime failure.
 - Owner must release lock on completion or controlled interruption.
 
 ## Watchdog Report
@@ -27,3 +29,4 @@ Prevent duplicate issue execution and detect stale/zombie lock state.
   - `events` timeline
   - `release_ok`
   - stale lock recovery signal when applicable
+  - runtime heartbeat events (`runtime_heartbeat_started|runtime_heartbeat_tick|runtime_heartbeat_drift_detected|runtime_heartbeat_stopped`) when worker execution window is entered
