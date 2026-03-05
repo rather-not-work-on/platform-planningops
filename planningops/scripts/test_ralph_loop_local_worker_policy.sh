@@ -103,5 +103,39 @@ with tempfile.TemporaryDirectory() as td:
     assert task_ctx["worker_policy"]["command"] == "echo from-task", task_ctx
     assert default_ctx["worker_policy"]["command"] == "echo from-default", default_ctx
 
+    task_ctx["provider_policy"] = {"max_retries": 2, "timeout_ms": 25000}
+    policy_from_runtime = mod.resolve_worker_execution_policy(
+        runtime_ctx=task_ctx,
+        max_attempts=3,
+        worker_task_pack_report=None,
+    )
+    assert policy_from_runtime["source"] == "runtime_context.provider_policy", policy_from_runtime
+    assert policy_from_runtime["policy"].max_retries == 2, policy_from_runtime
+    assert policy_from_runtime["policy"].timeout_ms == 25000, policy_from_runtime
+    assert policy_from_runtime["policy"].max_attempts == 3, policy_from_runtime
+
+    report_path = Path(td) / "worker-task-pack-report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "worker_task_pack": {
+                    "retry_policy": {"max_retries": 1},
+                    "timeout_ms": 45000,
+                }
+            },
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+    policy_from_pack = mod.resolve_worker_execution_policy(
+        runtime_ctx=task_ctx,
+        max_attempts=2,
+        worker_task_pack_report=str(report_path),
+    )
+    assert policy_from_pack["source"] == "worker_task_pack.report", policy_from_pack
+    assert policy_from_pack["policy"].max_retries == 1, policy_from_pack
+    assert policy_from_pack["policy"].timeout_ms == 45000, policy_from_pack
+    assert policy_from_pack["policy"].max_attempts == 2, policy_from_pack
+
 print("ralph_loop_local worker policy contract smoke ok")
 PY

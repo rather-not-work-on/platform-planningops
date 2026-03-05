@@ -3,9 +3,14 @@
 import argparse
 import json
 from pathlib import Path
-import subprocess
 import sys
 from datetime import datetime, timezone
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from worker_executor import WorkerExecutionPolicy, execute_worker_command
 
 
 def utc_now():
@@ -21,11 +26,6 @@ def append_ndjson(path: Path, data: dict):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(data, ensure_ascii=True) + "\n")
-
-
-def run_cmd(args):
-    completed = subprocess.run(args, capture_output=True, text=True)
-    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
 
 
 def render_template(value: str, context: dict):
@@ -116,6 +116,60 @@ def load_runtime_context(profile_file: Path, task_key: str):
     }
 
 
+def parse_int(value, field_name: str, minimum: int):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be integer") from exc
+    if parsed < minimum:
+        if minimum == 0:
+            raise ValueError(f"{field_name} must be >= 0")
+        raise ValueError(f"{field_name} must be positive integer")
+    return parsed
+
+
+def load_worker_task_pack_report(report_path: str | None):
+    if not report_path:
+        return {}
+    doc_path = Path(report_path)
+    if not doc_path.exists():
+        raise ValueError(f"worker task-pack report not found: {doc_path}")
+    doc = json.loads(doc_path.read_text(encoding="utf-8"))
+    if not isinstance(doc, dict):
+        raise ValueError("worker task-pack report must be object")
+    return doc
+
+
+def resolve_worker_execution_policy(runtime_ctx: dict, max_attempts: int, worker_task_pack_report: str | None):
+    provider_policy = runtime_ctx.get("provider_policy") or {}
+    max_retries = parse_int(provider_policy.get("max_retries", 0), "provider_policy.max_retries", 0)
+    timeout_ms = parse_int(provider_policy.get("timeout_ms", 60000), "provider_policy.timeout_ms", 1)
+    source = "runtime_context.provider_policy"
+
+    report_doc = load_worker_task_pack_report(worker_task_pack_report)
+    if report_doc:
+        worker_pack = report_doc.get("worker_task_pack")
+        if not isinstance(worker_pack, dict):
+            raise ValueError("worker task-pack report missing worker_task_pack object")
+        retry_policy = worker_pack.get("retry_policy")
+        if not isinstance(retry_policy, dict):
+            raise ValueError("worker task-pack missing retry_policy object")
+        max_retries = parse_int(retry_policy.get("max_retries"), "worker_task_pack.retry_policy.max_retries", 0)
+        timeout_ms = parse_int(worker_pack.get("timeout_ms"), "worker_task_pack.timeout_ms", 1)
+        source = "worker_task_pack.report"
+
+    policy = WorkerExecutionPolicy(
+        max_retries=max_retries,
+        timeout_ms=timeout_ms,
+        max_attempts=parse_int(max_attempts, "max_attempts", 0),
+    )
+    policy.validate()
+    return {
+        "policy": policy,
+        "source": source,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="Local Ralph Loop harness")
     parser.add_argument("--issue-number", type=int, required=True)
@@ -134,6 +188,17 @@ def main():
         "--task-key",
         default=None,
         help="Task key for per-task runtime override (default: issue-<issue-number>)",
+    )
+    parser.add_argument(
+        "--max-attempts",
+        type=int,
+        default=3,
+        help="Attempt-budget cap for this worker execution.",
+    )
+    parser.add_argument(
+        "--worker-task-pack-report",
+        default=None,
+        help="Optional validated worker task-pack report path (takes priority over runtime provider policy).",
     )
     args = parser.parse_args()
 
@@ -215,6 +280,45 @@ def main():
         print(f"loop failed at runtime context: {exc}")
         return 1
 
+    try:
+        execution_policy_doc = resolve_worker_execution_policy(
+            runtime_ctx=runtime_ctx,
+            max_attempts=args.max_attempts,
+            worker_task_pack_report=args.worker_task_pack_report,
+        )
+    except ValueError as exc:
+        reason = "missing_input"
+        write_json(
+            verification_path,
+            {
+                "issue_number": args.issue_number,
+                "loop_id": loop_id,
+                "verdict": "fail",
+                "reason_code": reason,
+                "stage": "execution_policy",
+                "error": str(exc),
+                "executed_at_utc": now.isoformat(),
+            },
+        )
+        append_ndjson(
+            transition_log_path,
+            {
+                "transition_id": f"{loop_id}-execution-policy-fail",
+                "run_id": loop_id,
+                "card_id": args.issue_number,
+                "from_state": "Todo",
+                "to_state": "Blocked",
+                "transition_reason": "context.invalid_execution_policy",
+                "actor_type": "agent",
+                "actor_id": "ralph-loop-local",
+                "decided_at_utc": now.isoformat(),
+                "replanning_flag": True,
+            },
+        )
+        print(f"loop failed at execution policy: {exc}")
+        return 1
+
+    policy = execution_policy_doc["policy"]
     write_json(
         intake_path,
         {
@@ -223,6 +327,12 @@ def main():
             "mode": args.mode,
             "ecp_ref": args.ecp_ref,
             "runtime_context": runtime_ctx,
+            "worker_execution_policy": {
+                "source": execution_policy_doc["source"],
+                "max_retries": policy.max_retries,
+                "timeout_ms": policy.timeout_ms,
+                "max_attempts": policy.max_attempts,
+            },
             "checked_at_utc": now.isoformat(),
             "result": "ok",
         },
@@ -296,7 +406,22 @@ def main():
         print(f"loop failed at execute worker policy: {exc}")
         return 1
 
-    rc, out, err = run_cmd(worker_plan["command"])
+    execution_result = execute_worker_command(worker_plan["command"], policy)
+    attempt_sections = []
+    for row in execution_result["attempts"]:
+        attempt_sections.extend(
+            [
+                f"### Attempt {row['attempt_index']}",
+                f"- return_code: {row['return_code']}",
+                f"- timed_out: {row['timed_out']}",
+                f"- duration_ms: {row['duration_ms']}",
+                "```text",
+                row["stdout_tail"],
+                row["stderr_tail"],
+                "```",
+                "",
+            ]
+        )
 
     simulation_path.parent.mkdir(parents=True, exist_ok=True)
     simulation_path.write_text(
@@ -310,19 +435,28 @@ def main():
                 f"- runtime_profile: {runtime_ctx['selected_profile']}",
                 f"- worker_policy_kind: {worker_plan['kind']}",
                 f"- execute command: {' '.join(worker_plan['command'])}",
+                f"- execution_policy_source: {execution_policy_doc['source']}",
+                f"- max_retries: {policy.max_retries}",
+                f"- timeout_ms: {policy.timeout_ms}",
+                f"- max_attempts: {policy.max_attempts}",
+                f"- attempts_allowed: {execution_result['attempts_allowed']}",
+                f"- attempts_executed: {execution_result['attempts_executed']}",
+                f"- execution_reason: {execution_result['reason_code']}",
                 "",
-                "## Output",
-                "```text",
-                out,
-                err,
-                "```",
+                "## Attempt Logs",
+                *attempt_sections,
             ]
         ),
         encoding="utf-8",
     )
 
-    if rc != 0:
-        reason = "runtime_error"
+    if execution_result["status"] != "pass":
+        reason = execution_result["reason_code"]
+        transition_reason = {
+            "attempt_budget_exhausted": "runtime.attempt_budget_exhausted",
+            "runtime_timeout_retries_exhausted": "runtime.execute_timeout",
+            "runtime_error_retries_exhausted": "runtime.execute_error",
+        }.get(reason, "runtime.execute_error")
         write_json(
             verification_path,
             {
@@ -331,6 +465,7 @@ def main():
                 "verdict": "fail",
                 "reason_code": reason,
                 "stage": "execute",
+                "worker_execution": execution_result,
                 "executed_at_utc": utc_now().isoformat(),
             },
         )
@@ -342,14 +477,14 @@ def main():
                 "card_id": args.issue_number,
                 "from_state": "In Progress",
                 "to_state": "Blocked",
-                "transition_reason": "runtime.execute_error",
+                "transition_reason": transition_reason,
                 "actor_type": "agent",
                 "actor_id": "ralph-loop-local",
                 "decided_at_utc": utc_now().isoformat(),
                 "replanning_flag": True,
             },
         )
-        print("loop failed at execute")
+        print(f"loop failed at execute: {reason}")
         return 1
 
     # Step 4: verify
@@ -365,6 +500,13 @@ def main():
             "verdict": verdict,
             "reason_code": reason,
             "runtime_context": runtime_ctx,
+            "worker_execution": execution_result,
+            "worker_execution_policy": {
+                "source": execution_policy_doc["source"],
+                "max_retries": policy.max_retries,
+                "timeout_ms": policy.timeout_ms,
+                "max_attempts": policy.max_attempts,
+            },
             "artifacts": {
                 "intake_check": str(intake_path),
                 "simulation_report": str(simulation_path),
