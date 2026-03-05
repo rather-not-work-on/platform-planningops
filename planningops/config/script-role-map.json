@@ -1,0 +1,13 @@
+{
+  "core_dirs": [
+    "planningops/scripts",
+    "planningops/scripts/federation"
+  ],
+  "oneoff_dir": "planningops/scripts/oneoff",
+  "oneoff_entrypoints": [
+    "bootstrap_two_track_backlog.py"
+  ],
+  "root_wrappers": {
+    "bootstrap_two_track_backlog.py": "oneoff/bootstrap_two_track_backlog.py"
+  }
+}

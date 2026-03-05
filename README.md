@@ -65,6 +65,10 @@ bash planningops/scripts/test_module_readme_contract.sh
 - 문서 참조는 상대경로를 사용합니다.
 - 경로/구조 변경 시 `README`와 `90-navigation`을 함께 갱신합니다.
 - planningops 모듈 변경 시 해당 모듈 `README.md`를 함께 갱신합니다.
+- backlog 이슈는 `.github/ISSUE_TEMPLATE/planningops-task.yml` 구조를 따릅니다(문맥/증거/DoD 필수).
+- 스크립트는 역할별 경계를 유지합니다.
+  - 반복 실행용: `planningops/scripts/`, `planningops/scripts/federation/`
+  - 일회성: `planningops/scripts/oneoff/`
 - 변경 후 `uap-docs.sh sync`를 실행해 카탈로그와 링크 무결성을 확인합니다.
 - PR에서는 `.github/workflows/uap-docs-check.yml`로 문서 검증이 자동 실행됩니다.
   - trigger: `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`

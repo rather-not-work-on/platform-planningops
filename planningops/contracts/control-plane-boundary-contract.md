@@ -13,11 +13,15 @@ Keep `platform-planningops` as a thin control plane with explicit repository bou
 ## Boundary Rules
 1. `platform-planningops` must not contain production runtime implementation for provider/o11y/scheduler domains.
 2. Cross-repo execution entrypoints in this repo must live under `planningops/scripts/federation/`.
-3. Root-level `planningops/scripts/*.py|*.sh` files for federation concerns must be wrapper-only dispatchers.
-4. Any boundary change must update:
+3. Non-recurring bootstrap/migration scripts must live under `planningops/scripts/oneoff/`.
+4. Root-level `planningops/scripts/*.py|*.sh` files for federation/oneoff concerns must be wrapper-only dispatchers.
+5. Any boundary change must update:
    - `planningops/config/repository-boundary-map.json`
+   - `planningops/config/script-role-map.json`
    - `planningops/scripts/validate_repo_boundaries.py`
+   - `planningops/scripts/validate_script_roles.py`
    - `planningops/scripts/test_validate_repo_boundaries_contract.sh`
+   - `planningops/scripts/test_validate_script_roles_contract.sh`
 
 ## Verification
 - Contract test: `bash planningops/scripts/test_validate_repo_boundaries_contract.sh`

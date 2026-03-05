@@ -2,38 +2,166 @@
 
 import argparse
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
 
 
 CONTROL_REPO = "rather-not-work-on/platform-planningops"
+PLAN_DOC = (
+    "docs/workbench/unified-personal-agent-platform/plans/"
+    "2026-03-02-plan-two-track-hard-gates-execution-plan.md"
+)
 
-COMPONENT_ENUM = {
-    "planningops",
-    "contracts",
-    "provider_gateway",
-    "observability_gateway",
-    "runtime",
-    "orchestrator",
-}
-WORKFLOW_ENUM = {
-    "backlog",
-    "ready_contract",
-    "ready_implementation",
-    "in_progress",
-    "review_gate",
-    "blocked",
-    "done",
-}
-LOOP_ENUM = {
-    "l1_contract_clarification",
-    "l2_simulation",
-    "l3_implementation_tdd",
-    "l4_integration_reconcile",
-    "l5_recovery_replan",
-}
+
+BACKLOG_ITEMS = [
+    {
+        "plan_item_id": "tt-hg-100",
+        "execution_order": 100,
+        "title": "Gate contract and terminology lock",
+        "track": "T1",
+        "component": "planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "depends_on": [],
+        "primary_output": "track1-contract-terminology-lock.md",
+    },
+    {
+        "plan_item_id": "tt-hg-110",
+        "execution_order": 110,
+        "title": "Validation chain runner and evidence manifest",
+        "track": "T1",
+        "component": "planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "depends_on": [100],
+        "primary_output": "track1-validation-chain-report.json",
+    },
+    {
+        "plan_item_id": "tt-hg-120",
+        "execution_order": 120,
+        "title": "loop_profile drift and state-coverage hardening",
+        "track": "T1",
+        "component": "planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l2_simulation",
+        "depends_on": [110],
+        "primary_output": "track1-drift-reconcile-policy.md",
+    },
+    {
+        "plan_item_id": "tt-hg-130",
+        "execution_order": 130,
+        "title": "Transition log schema and trigger evaluator alignment",
+        "track": "T1",
+        "component": "orchestrator",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l2_simulation",
+        "depends_on": [120],
+        "primary_output": "transition-log-contract-report.md",
+    },
+    {
+        "plan_item_id": "tt-hg-140",
+        "execution_order": 140,
+        "title": "KPI baseline capture run",
+        "track": "T1",
+        "component": "planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "depends_on": [130],
+        "primary_output": "track1-kpi-baseline.json",
+    },
+    {
+        "plan_item_id": "tt-hg-150",
+        "execution_order": 150,
+        "title": "Track 1 Exit Gate dry-run verdict x2",
+        "track": "T1",
+        "component": "planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l3_implementation_tdd",
+        "depends_on": [140],
+        "primary_output": "track1-gate-dryrun-report.json",
+    },
+    {
+        "plan_item_id": "tt-hg-160",
+        "execution_order": 160,
+        "title": "Monday target UX freeze",
+        "track": "T2",
+        "component": "runtime",
+        "target_repo": "rather-not-work-on/monday",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l2_simulation",
+        "depends_on": [120],
+        "primary_output": "monday-target-ux-scenarios.md",
+    },
+    {
+        "plan_item_id": "tt-hg-170",
+        "execution_order": 170,
+        "title": "Infra local and OCI profile boundary map",
+        "track": "T2",
+        "component": "provider_gateway",
+        "target_repo": "rather-not-work-on/platform-provider-gateway",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l2_simulation",
+        "depends_on": [120],
+        "primary_output": "infra-profile-boundary-map.md",
+    },
+    {
+        "plan_item_id": "tt-hg-180",
+        "execution_order": 180,
+        "title": "LangFuse integration boundary map",
+        "track": "T2",
+        "component": "observability_gateway",
+        "target_repo": "rather-not-work-on/platform-observability-gateway",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l2_simulation",
+        "depends_on": [120],
+        "primary_output": "langfuse-boundary-map.md",
+    },
+    {
+        "plan_item_id": "tt-hg-190",
+        "execution_order": 190,
+        "title": "NanoClaw fit assessment and adapter strategy",
+        "track": "T2",
+        "component": "orchestrator",
+        "target_repo": "rather-not-work-on/monday",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l2_simulation",
+        "depends_on": [160, 170, 180],
+        "primary_output": "nanoclaw-fit-assessment.md",
+    },
+    {
+        "plan_item_id": "tt-hg-200",
+        "execution_order": 200,
+        "title": "Track 2 implementation readiness packet",
+        "track": "T2",
+        "component": "runtime",
+        "target_repo": "rather-not-work-on/monday",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "depends_on": [150, 190],
+        "primary_output": "track2-implementation-readiness-packet.md",
+    },
+    {
+        "plan_item_id": "tt-hg-210",
+        "execution_order": 210,
+        "title": "Recovery and replan policy automation",
+        "track": "cross",
+        "component": "planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "workflow_state": "blocked",
+        "loop_profile": "l5_recovery_replan",
+        "depends_on": [150],
+        "primary_output": "replan-policy-automation-report.md",
+    },
+]
+
+
 WORKFLOW_TO_STATUS = {
     "backlog": "todo",
     "ready_contract": "todo",
@@ -43,21 +171,10 @@ WORKFLOW_TO_STATUS = {
     "blocked": "blocked",
     "done": "done",
 }
-REQUIRED_ITEM_KEYS = [
-    "plan_item_id",
-    "execution_order",
-    "title",
-    "target_repo",
-    "component",
-    "workflow_state",
-    "loop_profile",
-    "depends_on",
-    "primary_output",
-]
 
 
-def run(cmd, input_text=None):
-    cp = subprocess.run(cmd, input=input_text, capture_output=True, text=True)
+def run(cmd):
+    cp = subprocess.run(cmd, capture_output=True, text=True)
     return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
 
 
@@ -67,103 +184,27 @@ def read_json(path: Path):
 
 def load_project_config(path: Path):
     doc = read_json(path)
-    return {
+    project = {
         "owner": doc["owner"],
         "project_number": doc["project_number"],
         "project_id": doc["project_id"],
         "initiative": doc["initiative"],
         "fields": doc["fields"],
     }
+    return project
 
 
-def validate_contract(contract_doc):
-    errors = []
-    ec = contract_doc.get("execution_contract")
-    if not isinstance(ec, dict):
-        return ["execution_contract object is required"]
-
-    for key in ["plan_id", "plan_revision", "source_of_truth", "items"]:
-        if key not in ec:
-            errors.append(f"execution_contract.{key} is required")
-    if errors:
-        return errors
-
-    if not isinstance(ec["plan_revision"], int) or ec["plan_revision"] <= 0:
-        errors.append("execution_contract.plan_revision must be integer >= 1")
-    if not isinstance(ec["items"], list) or not ec["items"]:
-        errors.append("execution_contract.items must be non-empty list")
-        return errors
-
-    seen_item_ids = set()
-    seen_orders = set()
-    all_orders = set()
-    for idx, item in enumerate(ec["items"]):
-        path = f"execution_contract.items[{idx}]"
-        if not isinstance(item, dict):
-            errors.append(f"{path} must be object")
-            continue
-
-        for key in REQUIRED_ITEM_KEYS:
-            if key not in item:
-                errors.append(f"{path}.{key} is required")
-
-        if "plan_item_id" in item:
-            pid = item["plan_item_id"]
-            if not isinstance(pid, str) or not pid.strip():
-                errors.append(f"{path}.plan_item_id must be non-empty string")
-            elif pid in seen_item_ids:
-                errors.append(f"duplicate plan_item_id: {pid}")
-            else:
-                seen_item_ids.add(pid)
-
-        if "execution_order" in item:
-            eo = item["execution_order"]
-            if not isinstance(eo, int) or eo <= 0:
-                errors.append(f"{path}.execution_order must be integer >= 1")
-            elif eo in seen_orders:
-                errors.append(f"duplicate execution_order: {eo}")
-            else:
-                seen_orders.add(eo)
-                all_orders.add(eo)
-
-        if "component" in item and item["component"] not in COMPONENT_ENUM:
-            errors.append(f"{path}.component invalid: {item['component']}")
-        if "workflow_state" in item and item["workflow_state"] not in WORKFLOW_ENUM:
-            errors.append(f"{path}.workflow_state invalid: {item['workflow_state']}")
-        if "loop_profile" in item and item["loop_profile"] not in LOOP_ENUM:
-            errors.append(f"{path}.loop_profile invalid: {item['loop_profile']}")
-
-        if "depends_on" in item:
-            deps = item["depends_on"]
-            if not isinstance(deps, list):
-                errors.append(f"{path}.depends_on must be list")
-            else:
-                for dep in deps:
-                    if not isinstance(dep, int) or dep <= 0:
-                        errors.append(f"{path}.depends_on contains invalid value: {dep}")
-
-    # Cross-reference dependency orders after all orders are known.
-    for idx, item in enumerate(ec["items"]):
-        path = f"execution_contract.items[{idx}]"
-        for dep in item.get("depends_on", []):
-            if dep not in all_orders:
-                errors.append(f"{path}.depends_on references unknown execution_order: {dep}")
-
-    return errors
-
-
-def issue_body(source_of_truth, plan_id, plan_revision, item):
+def issue_body(item):
     depends = ",".join(str(x) for x in item["depends_on"]) if item["depends_on"] else "-"
-    evidence_refs = [source_of_truth, item["primary_output"]]
+    evidence_refs = [PLAN_DOC, item["primary_output"]]
     evidence_lines = "\n".join(f"- `{ref}`" for ref in evidence_refs)
     return "\n".join(
         [
             "## Planning Context",
-            f"- plan_doc: `{source_of_truth}`",
-            f"- plan_id: `{plan_id}`",
-            f"- plan_revision: `{plan_revision}`",
+            f"- plan_doc: `{PLAN_DOC}`",
             f"- plan_item_id: `{item['plan_item_id']}`",
             f"- execution_order: `{item['execution_order']}`",
+            f"- track: `{item['track']}`",
             f"- target_repo: `{item['target_repo']}`",
             f"- component: `{item['component']}`",
             f"- workflow_state: `{item['workflow_state']}`",
@@ -172,7 +213,7 @@ def issue_body(source_of_truth, plan_id, plan_revision, item):
             f"- primary_output: `{item['primary_output']}`",
             "",
             "## Problem Statement",
-            "- Resolve this plan item with deterministic artifacts and contract-aligned updates.",
+            "- Bootstrap two-track backlog items with deterministic ordering and dependencies.",
             "",
             "## Interfaces & Dependencies",
             f"- target_repo: `{item['target_repo']}`",
@@ -182,8 +223,8 @@ def issue_body(source_of_truth, plan_id, plan_revision, item):
             evidence_lines,
             "",
             "## Acceptance Criteria",
-            "- [ ] Required artifact created and linked under Evidence.",
-            "- [ ] Contract/path references are updated and validated.",
+            "- [ ] Planned card is created/reused with exact identity metadata.",
+            "- [ ] Project card fields are synced to workflow/component contracts.",
             "",
             "## Definition of Done",
             "- [ ] Required artifact created",
@@ -193,31 +234,29 @@ def issue_body(source_of_truth, plan_id, plan_revision, item):
     )
 
 
-def parse_issue_metadata(body: str):
-    metadata = {}
-    if not body:
-        return metadata
-    for key, value in re.findall(r"(plan_id|plan_item_id|target_repo): `([^`]*)`", body):
-        metadata[key] = value
-    return metadata
-
-
 def list_existing_issues(repo: str, state: str):
     page = 1
     issues = []
     while True:
-        rc, out, err = run(["gh", "api", f"repos/{repo}/issues?state={state}&per_page=100&page={page}"])
+        rc, out, err = run(
+            [
+                "gh",
+                "api",
+                f"repos/{repo}/issues?state={state}&per_page=100&page={page}",
+            ]
+        )
         if rc != 0:
             raise RuntimeError(f"failed to list issues (state={state}, page={page}): {err}")
         batch = json.loads(out)
         if not batch:
             break
         for issue in batch:
+            # REST /issues includes pull requests; skip to keep dedup strictly issue-based.
             if issue.get("pull_request"):
                 continue
             issues.append(
                 {
-                    "number": issue["number"],
+                    "number": issue.get("number"),
                     "title": issue.get("title", ""),
                     "body": issue.get("body") or "",
                     "url": issue.get("html_url"),
@@ -230,68 +269,88 @@ def list_existing_issues(repo: str, state: str):
     return issues
 
 
-def find_issue_for_item(issues, plan_id: str, plan_item_id: str, target_repo: str):
-    exact_matches = []
-    legacy_matches = []
+def find_issue_for_item(issues, plan_item_id: str):
+    marker = f"plan_item_id: `{plan_item_id}`"
     for issue in issues:
-        metadata = parse_issue_metadata(issue.get("body") or "")
-        if metadata.get("plan_item_id") != plan_item_id:
-            continue
-        if metadata.get("target_repo") != target_repo:
-            continue
-        if metadata.get("plan_id") == plan_id:
-            exact_matches.append(issue)
-        elif "plan_id" not in metadata:
-            legacy_matches.append(issue)
-
-    if len(exact_matches) > 1:
-        raise RuntimeError(
-            f"multiple open issues matched identity (plan_id={plan_id}, plan_item_id={plan_item_id}, target_repo={target_repo})"
-        )
-    if exact_matches:
-        return exact_matches[0], "identity_exact"
-
-    if len(legacy_matches) > 1:
-        raise RuntimeError(
-            f"multiple legacy issues matched identity (plan_item_id={plan_item_id}, target_repo={target_repo})"
-        )
-    if legacy_matches:
-        return legacy_matches[0], "identity_legacy_no_plan_id"
-
-    return None, None
+        if marker in (issue.get("body") or ""):
+            return issue
+    return None
 
 
 def create_issue(repo: str, title: str, body: str):
-    rc, out, err = run(["gh", "issue", "create", "--repo", repo, "--title", title, "--body", body])
+    rc, out, err = run(
+        [
+            "gh",
+            "issue",
+            "create",
+            "--repo",
+            repo,
+            "--title",
+            title,
+            "--body",
+            body,
+        ]
+    )
     if rc != 0:
         raise RuntimeError(f"failed to create issue: {err}")
     return out.strip()
 
 
-def edit_issue(repo: str, issue_number: int, title: str, body: str):
-    rc, _, err = run(["gh", "issue", "edit", str(issue_number), "--repo", repo, "--title", title, "--body", body])
-    if rc != 0:
-        raise RuntimeError(f"failed to edit issue #{issue_number}: {err}")
-
-
 def reopen_issue(repo: str, issue_number: int):
-    rc, _, err = run(["gh", "issue", "reopen", str(issue_number), "--repo", repo])
+    rc, _, err = run(
+        [
+            "gh",
+            "issue",
+            "reopen",
+            str(issue_number),
+            "--repo",
+            repo,
+        ]
+    )
     if rc != 0:
         raise RuntimeError(f"failed to reopen issue #{issue_number}: {err}")
+
+
+def normalize_workflow_key(key: str):
+    return key.replace("-", "_")
 
 
 def load_project_items_page(owner: str, project_number: int, cursor=None):
     query = (
         "query($owner: String!, $number: Int!, $cursor: String) { "
         "repositoryOwner(login: $owner) { "
+        "__typename "
         "... on ProjectV2Owner { "
         "projectV2(number: $number) { "
         "items(first: 100, after: $cursor) { "
-        "nodes { id content { __typename ... on Issue { number repository { nameWithOwner } } } } "
+        "nodes { "
+        "id "
+        "content { "
+        "__typename "
+        "... on Issue { "
+        "number "
+        "repository { nameWithOwner } "
+        "} "
+        "} "
+        "} "
         "pageInfo { hasNextPage endCursor } "
-        "} } } } }"
+        "} "
+        "} "
+        "} "
+        "} "
+        "}"
     )
-    cmd = ["gh", "api", "graphql", "-f", f"query={query}", "-F", f"owner={owner}", "-F", f"number={project_number}"]
+    cmd = [
+        "gh",
+        "api",
+        "graphql",
+        "-f",
+        f"query={query}",
+        "-F",
+        f"owner={owner}",
+        "-F",
+        f"number={project_number}",
+    ]
     if cursor is not None:
         cmd.extend(["-F", f"cursor={cursor}"])
     rc, out, err = run(cmd)
@@ -300,7 +359,8 @@ def load_project_items_page(owner: str, project_number: int, cursor=None):
     doc = json.loads(out)
     if doc.get("errors"):
         raise RuntimeError(f"project items graphql errors: {doc['errors']}")
-    project = ((doc.get("data") or {}).get("repositoryOwner") or {}).get("projectV2") or {}
+    root = (doc.get("data") or {}).get("repositoryOwner") or {}
+    project = root.get("projectV2") or {}
     if not project:
         raise RuntimeError("projectV2 not found while listing project items")
     items = (project.get("items") or {}).get("nodes") or []
@@ -318,7 +378,8 @@ def build_project_item_issue_index(owner: str, project_number: int):
             if content.get("__typename") != "Issue":
                 continue
             number = content.get("number")
-            repo_name = (content.get("repository") or {}).get("nameWithOwner")
+            repo_doc = content.get("repository") or {}
+            repo_name = repo_doc.get("nameWithOwner")
             if number is None or not repo_name:
                 continue
             issue_index[(number, repo_name)] = item.get("id")
@@ -330,7 +391,13 @@ def build_project_item_issue_index(owner: str, project_number: int):
     return issue_index
 
 
-def find_project_item_id(owner, project_number, issue_number, issue_repo, project_item_issue_index):
+def find_project_item_id(
+    owner: str,
+    project_number: int,
+    issue_number: int,
+    issue_repo: str,
+    project_item_issue_index: dict,
+):
     key = (issue_number, issue_repo)
     item_id = project_item_issue_index.get(key)
     if item_id:
@@ -361,8 +428,9 @@ def ensure_project_item(owner: str, project_number: int, issue_url: str):
     if out:
         try:
             doc = json.loads(out)
-            if doc.get("id"):
-                return doc["id"]
+            item_id = doc.get("id")
+            if item_id:
+                return item_id
         except json.JSONDecodeError:
             pass
     return None
@@ -436,16 +504,22 @@ def field_option_id(fields, field_key: str, option_key: str):
     return field["id"], option_id
 
 
-def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_mode, open_issues, closed_issues, allow_reopen_closed, project_item_issue_index):
-    desired_title = f"plan: [{item['execution_order']}] {item['title']}"
-    desired_body = issue_body(source_of_truth, plan_id, plan_revision, item)
-    issue, dedup_strategy = find_issue_for_item(open_issues, plan_id, item["plan_item_id"], item["target_repo"])
+def execute_item(
+    project,
+    item,
+    apply_mode: bool,
+    open_issues,
+    closed_issues,
+    allow_reopen_closed: bool,
+    project_item_issue_index: dict,
+):
+    issue = find_issue_for_item(open_issues, item["plan_item_id"])
     reused_closed_issue = False
     reopened_closed_issue = False
     dedup_match_state = "open" if issue else None
 
     if issue is None and allow_reopen_closed:
-        closed_issue, dedup_strategy = find_issue_for_item(closed_issues, plan_id, item["plan_item_id"], item["target_repo"])
+        closed_issue = find_issue_for_item(closed_issues, item["plan_item_id"])
         if closed_issue:
             issue = dict(closed_issue)
             reused_closed_issue = True
@@ -457,12 +531,15 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
             open_issues.append(issue)
 
     created = False
+
     if issue:
         issue_number = issue["number"]
         issue_url = issue["url"]
     else:
+        title = f"plan: [{item['execution_order']}] {item['title']}"
+        body = issue_body(item)
         if apply_mode:
-            issue_url = create_issue(CONTROL_REPO, desired_title, desired_body)
+            issue_url = create_issue(CONTROL_REPO, title, body)
         else:
             issue_url = f"https://github.com/{CONTROL_REPO}/issues/DRY-RUN-{item['execution_order']}"
         issue_number = None
@@ -471,25 +548,16 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
     if apply_mode and issue_number is None:
         issue_number = int(issue_url.rstrip("/").split("/")[-1])
         open_issues.append(
-            {"number": issue_number, "url": issue_url, "title": desired_title, "body": desired_body, "state": "open"}
+            {
+                "number": issue_number,
+                "url": issue_url,
+                "body": issue_body(item),
+                "state": "open",
+            }
         )
 
-    metadata_sync_required = False
-    metadata_sync_action = "none"
-    if issue:
-        current_title = issue.get("title") or ""
-        current_body = issue.get("body") or ""
-        metadata_sync_required = current_title != desired_title or current_body != desired_body
-        if metadata_sync_required:
-            if apply_mode:
-                edit_issue(CONTROL_REPO, issue_number, desired_title, desired_body)
-                metadata_sync_action = "applied"
-                issue["title"] = desired_title
-                issue["body"] = desired_body
-            else:
-                metadata_sync_action = "planned"
-
     status_key = WORKFLOW_TO_STATUS[item["workflow_state"]]
+
     result = {
         "plan_item_id": item["plan_item_id"],
         "execution_order": item["execution_order"],
@@ -497,11 +565,8 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
         "issue_url": issue_url,
         "created_issue": created,
         "dedup_match_state": dedup_match_state,
-        "dedup_strategy": dedup_strategy,
         "reused_closed_issue": reused_closed_issue,
         "reopened_closed_issue": reopened_closed_issue,
-        "metadata_sync_required": metadata_sync_required,
-        "metadata_sync_action": metadata_sync_action,
         "field_updates": [],
     }
 
@@ -519,80 +584,94 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
 
     item_id = ensure_project_item(project["owner"], project["project_number"], issue_url)
     if not item_id:
-        item_id = find_project_item_id(project["owner"], project["project_number"], issue_number, CONTROL_REPO, project_item_issue_index)
+        item_id = find_project_item_id(
+            project["owner"],
+            project["project_number"],
+            issue_number,
+            CONTROL_REPO,
+            project_item_issue_index,
+        )
     if not item_id:
         raise RuntimeError(f"could not resolve project item id for issue #{issue_number}")
 
     fields = project["fields"]
     set_text_field(project["project_id"], item_id, fields["initiative"]["id"], project["initiative"])
+    result["field_updates"].append("initiative")
     set_text_field(project["project_id"], item_id, fields["target_repo"]["id"], item["target_repo"])
+    result["field_updates"].append("target_repo")
     set_number_field(project["project_id"], item_id, fields["execution_order"]["id"], item["execution_order"])
-    result["field_updates"].extend(["initiative", "target_repo", "execution_order"])
+    result["field_updates"].append("execution_order")
 
     status_field_id, status_option_id = field_option_id(fields, "status", status_key)
     set_select_field(project["project_id"], item_id, status_field_id, status_option_id)
+    result["field_updates"].append("status")
+
     comp_field_id, comp_option_id = field_option_id(fields, "component", item["component"])
     set_select_field(project["project_id"], item_id, comp_field_id, comp_option_id)
+    result["field_updates"].append("component")
+
     wf_field_id, wf_option_id = field_option_id(fields, "workflow_state", item["workflow_state"])
     set_select_field(project["project_id"], item_id, wf_field_id, wf_option_id)
+    result["field_updates"].append("workflow_state")
+
     loop_field_id, loop_option_id = field_option_id(fields, "loop_profile", item["loop_profile"])
     set_select_field(project["project_id"], item_id, loop_field_id, loop_option_id)
-    result["field_updates"].extend(["status", "component", "workflow_state", "loop_profile"])
+    result["field_updates"].append("loop_profile")
+
+    if "plan_lane" in fields and (fields["plan_lane"].get("options") or {}).get("m3_guardrails"):
+        lane_field_id, lane_option_id = field_option_id(fields, "plan_lane", "m3_guardrails")
+        set_select_field(project["project_id"], item_id, lane_field_id, lane_option_id)
+        result["field_updates"].append("plan_lane")
 
     return result
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compile Plan Execution Contract (PEC v1) into backlog issues and project fields")
-    parser.add_argument("--contract-file", required=True, help="PEC v1 JSON file path")
-    parser.add_argument("--config", default="planningops/config/project-field-ids.json", help="Project field config JSON path")
-    parser.add_argument("--apply", action="store_true", help="Apply GitHub mutations (default dry-run)")
-    parser.add_argument("--allow-reopen-closed", action="store_true", help="Allow closed dedup matches and reopen in apply mode")
-    parser.add_argument("--output", default="planningops/artifacts/validation/plan-compile-report.json", help="Output report path")
+    parser = argparse.ArgumentParser(description="Bootstrap Two-Track hard-gate backlog issues and project fields")
+    parser.add_argument(
+        "--config",
+        default="planningops/config/project-field-ids.json",
+        help="Project field config JSON path",
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Apply changes to GitHub (default is dry-run)",
+    )
+    parser.add_argument(
+        "--output",
+        default="planningops/artifacts/validation/two-track-backlog-bootstrap-report.json",
+        help="Output report path",
+    )
+    parser.add_argument(
+        "--allow-reopen-closed",
+        action="store_true",
+        help="Allow closed dedup matches and reopen them in apply mode",
+    )
     args = parser.parse_args()
 
-    contract_doc = read_json(Path(args.contract_file))
-    validation_errors = validate_contract(contract_doc)
-    report = {
-        "mode": "apply" if args.apply else "dry-run",
-        "contract_file": args.contract_file,
-        "validation_errors": validation_errors,
-        "results": [],
-    }
-    if validation_errors:
-        report["verdict"] = "fail"
-        out = Path(args.output)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
-        print(json.dumps(report, ensure_ascii=True, indent=2))
-        return 1
-
-    ec = contract_doc["execution_contract"]
-    items = sorted(ec["items"], key=lambda x: x["execution_order"])
     project = load_project_config(Path(args.config))
     open_issues = list_existing_issues(CONTROL_REPO, "open")
     closed_issues = list_existing_issues(CONTROL_REPO, "closed") if args.allow_reopen_closed else []
     project_item_issue_index = {}
 
-    report.update(
-        {
-            "plan_id": ec["plan_id"],
-            "plan_revision": ec["plan_revision"],
-            "source_of_truth": ec["source_of_truth"],
-            "items_total": len(items),
-            "open_issues_scanned": len(open_issues),
-            "closed_issues_scanned": len(closed_issues),
-        }
-    )
+    report = {
+        "mode": "apply" if args.apply else "dry-run",
+        "control_repo": CONTROL_REPO,
+        "project_owner": project["owner"],
+        "project_number": project["project_number"],
+        "allow_reopen_closed": args.allow_reopen_closed,
+        "open_issues_scanned": len(open_issues),
+        "closed_issues_scanned": len(closed_issues),
+        "items_total": len(BACKLOG_ITEMS),
+        "results": [],
+    }
 
     try:
-        for item in items:
+        for item in BACKLOG_ITEMS:
             report["results"].append(
-                compile_item(
+                execute_item(
                     project,
-                    ec["source_of_truth"],
-                    ec["plan_id"],
-                    ec["plan_revision"],
                     item,
                     args.apply,
                     open_issues,
@@ -602,18 +681,16 @@ def main():
                 )
             )
     except Exception as exc:
-        report["verdict"] = "fail"
         report["error"] = str(exc)
-        out = Path(args.output)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
         print(json.dumps(report, ensure_ascii=True, indent=2))
         return 1
 
-    report["verdict"] = "pass"
-    out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=True, indent=2))
     return 0
 

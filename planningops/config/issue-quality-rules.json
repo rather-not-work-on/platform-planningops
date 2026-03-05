@@ -1,0 +1,26 @@
+{
+  "repo": "rather-not-work-on/platform-planningops",
+  "require_plan_item_id_marker": true,
+  "required_sections": [
+    "Planning Context",
+    "Problem Statement",
+    "Interfaces & Dependencies",
+    "Evidence",
+    "Acceptance Criteria",
+    "Definition of Done"
+  ],
+  "required_metadata_keys": [
+    "plan_item_id",
+    "target_repo",
+    "component",
+    "workflow_state",
+    "loop_profile",
+    "execution_order",
+    "depends_on"
+  ],
+  "minimum_acceptance_checklist_items": 2,
+  "forbidden_evidence_markers": [
+    "- (none)",
+    "<TBD>"
+  ]
+}

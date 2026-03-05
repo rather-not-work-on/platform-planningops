@@ -136,6 +136,9 @@ jobs:
           bash planningops/scripts/test_validate_project_field_schema_matrix.sh
           bash planningops/scripts/test_module_readme_contract.sh
           bash planningops/scripts/test_validate_repo_boundaries_contract.sh
+          bash planningops/scripts/test_validate_script_roles_contract.sh
+          bash planningops/scripts/test_validate_issue_quality_contract.sh
+          python3 planningops/scripts/validate_issue_quality.py --strict
           bash planningops/scripts/test_normalize_ready_implementation_blueprint_refs.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_ralph_loop_local_worker_policy.sh

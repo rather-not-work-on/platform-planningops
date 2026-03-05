@@ -7,7 +7,7 @@ import json
 from urllib.parse import parse_qs, urlsplit
 from pathlib import Path
 
-module_path = Path("planningops/scripts/bootstrap_two_track_backlog.py")
+module_path = Path("planningops/scripts/oneoff/bootstrap_two_track_backlog.py")
 spec = importlib.util.spec_from_file_location("bootstrap_two_track_backlog", module_path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)

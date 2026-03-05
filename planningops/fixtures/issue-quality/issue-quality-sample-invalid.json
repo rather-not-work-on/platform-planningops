@@ -1,0 +1,8 @@
+[
+  {
+    "number": 1002,
+    "title": "Invalid quality issue",
+    "url": "https://example.local/1002",
+    "body": "## Planning Context\n- plan_item_id: `sample-1002`\n\n## Acceptance Criteria\n- [ ] only one checklist\n\n## Evidence\n- (none)\n"
+  }
+]

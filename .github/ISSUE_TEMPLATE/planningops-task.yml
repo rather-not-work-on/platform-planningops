@@ -1,0 +1,67 @@
+name: PlanningOps Task
+description: Create a contract-first task with explicit execution context.
+title: "[task] "
+labels:
+  - task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for backlog issues managed by PlanningOps.
+        Keep sections concrete and evidence-first.
+  - type: textarea
+    id: planning_context
+    attributes:
+      label: Planning Context
+      description: Include plan_item_id/target_repo/component/workflow_state/loop_profile/execution_order/depends_on.
+      placeholder: |
+        - plan_item_id: `...`
+        - target_repo: `owner/repo`
+        - component: `...`
+        - workflow_state: `...`
+        - loop_profile: `...`
+        - execution_order: `...`
+        - depends_on: `...`
+    validations:
+      required: true
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Problem Statement
+      description: What uncertainty or gap does this issue resolve?
+    validations:
+      required: true
+  - type: textarea
+    id: interfaces_dependencies
+    attributes:
+      label: Interfaces & Dependencies
+      description: Contract refs, dependent issues/repos, affected interfaces.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Existing evidence refs and expected new artifacts.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Minimum 2 checklist items.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Definition of Done
+      description: Final closure conditions and validation commands.
+      placeholder: |
+        - [ ] Validation report attached
+        - [ ] Project fields synced with evidence
+    validations:
+      required: true

@@ -99,26 +99,35 @@ def render_issue_body_baseline(candidate):
     depends_text = ", ".join(f"#{d}" for d in depends) if depends else "-"
     criteria_lines = "\n".join(f"- [ ] {row}" for row in candidate.get("acceptance_criteria", []))
     evidence_lines = "\n".join(f"- `{row}`" for row in candidate.get("evidence_refs", []))
-    if not evidence_lines:
-        evidence_lines = "- (none)"
+    target_repo = str(candidate.get("target_repo") or "").strip() or "rather-not-work-on/platform-planningops"
 
     return "\n".join(
         [
-            "## Context",
-            "- evidence-backed follow-up candidate",
+            "## Planning Context",
+            f"- plan_item_id: `{candidate.get('candidate_id', '')}`",
+            f"- target_repo: `{target_repo}`",
+            "- component: `planningops`",
+            "- workflow_state: `ready_contract`",
+            "- loop_profile: `l1_contract_clarification`",
+            "- execution_order: `0`",
+            f"- depends_on: `{depends_text}`",
+            "",
+            "## Problem Statement",
+            "- Replenish backlog stock with evidence-backed candidates to avoid queue starvation.",
+            "",
+            "## Interfaces & Dependencies",
+            f"- depends_on: `{depends_text}`",
+            "- project fields: status/workflow_state/component/initiative/target_repo",
             "",
             "## Evidence",
             evidence_lines,
             "",
-            "## Execution Order",
-            "- execution_order: <TBD>",
-            f"- depends_on: {depends_text}",
-            "",
-            "## Scope",
-            "- Clarify/patch root cause with deterministic artifacts",
-            "",
             "## Acceptance Criteria",
-            criteria_lines,
+            criteria_lines or "- [ ] candidate metadata is complete",
+            "",
+            "## Definition of Done",
+            "- [ ] Validation report attached",
+            "- [ ] Project fields synced with evidence",
         ]
     )
 
