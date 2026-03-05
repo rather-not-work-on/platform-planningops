@@ -162,51 +162,51 @@ jobs:
           set -euo pipefail
           mkdir -p planningops/artifacts/ci
           python3 - <<'PY'
-import json
-from datetime import datetime, timezone
-from pathlib import Path
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
 
-needs = {
-  "contract-conformance": "${{ needs.contract-conformance.result }}",
-  "runtime-handoff": "${{ needs.runtime-handoff.result }}",
-  "o11y-replay": "${{ needs.o11y-replay.result }}",
-  "provider-profile": "${{ needs.provider-profile.result }}",
-  "loop-guardrails": "${{ needs.loop-guardrails.result }}",
-}
+          needs = {
+            "contract-conformance": "${{ needs.contract-conformance.result }}",
+            "runtime-handoff": "${{ needs.runtime-handoff.result }}",
+            "o11y-replay": "${{ needs.o11y-replay.result }}",
+            "provider-profile": "${{ needs.provider-profile.result }}",
+            "loop-guardrails": "${{ needs.loop-guardrails.result }}",
+          }
 
-domain_map = {
-  "contract-conformance": "contract",
-  "runtime-handoff": "runtime",
-  "o11y-replay": "infra",
-  "provider-profile": "infra",
-  "loop-guardrails": "policy",
-}
+          domain_map = {
+            "contract-conformance": "contract",
+            "runtime-handoff": "runtime",
+            "o11y-replay": "infra",
+            "provider-profile": "infra",
+            "loop-guardrails": "policy",
+          }
 
-checks = []
-for name, result in needs.items():
-  verdict = "pass" if result == "success" else "fail"
-  checks.append({"name": name, "result": result, "verdict": verdict, "domain": domain_map[name]})
+          checks = []
+          for name, result in needs.items():
+            verdict = "pass" if result == "success" else "fail"
+            checks.append({"name": name, "result": result, "verdict": verdict, "domain": domain_map[name]})
 
-failures = [c for c in checks if c["verdict"] == "fail"]
-doc = {
-  "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-  "run_id": "ci-${{ github.run_id }}",
-  "required_checks": list(needs.keys()),
-  "checks": checks,
-  "failure_classification": {
-    "count": len(failures),
-    "domains": sorted({f["domain"] for f in failures}),
-    "deterministic_rule": "contract-conformance->contract, provider-profile/o11y-replay->infra, runtime-handoff->runtime, loop-guardrails->policy",
-  },
-  "verdict": "pass" if not failures else "fail",
-}
+          failures = [c for c in checks if c["verdict"] == "fail"]
+          doc = {
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+            "run_id": "ci-${{ github.run_id }}",
+            "required_checks": list(needs.keys()),
+            "checks": checks,
+            "failure_classification": {
+              "count": len(failures),
+              "domains": sorted({f["domain"] for f in failures}),
+              "deterministic_rule": "contract-conformance->contract, provider-profile/o11y-replay->infra, runtime-handoff->runtime, loop-guardrails->policy",
+            },
+            "verdict": "pass" if not failures else "fail",
+          }
 
-Path("planningops/artifacts/ci/federated-ci-summary.json").write_text(
-  json.dumps(doc, ensure_ascii=True, indent=2), encoding="utf-8"
-)
-print("summary written: planningops/artifacts/ci/federated-ci-summary.json")
-print(f"verdict={doc['verdict']} failures={len(failures)}")
-PY
+          Path("planningops/artifacts/ci/federated-ci-summary.json").write_text(
+            json.dumps(doc, ensure_ascii=True, indent=2), encoding="utf-8"
+          )
+          print("summary written: planningops/artifacts/ci/federated-ci-summary.json")
+          print(f"verdict={doc['verdict']} failures={len(failures)}")
+          PY
 
       - name: Upload federated summary artifact
         uses: actions/upload-artifact@v4
