@@ -182,6 +182,7 @@ def parse_args():
     )
     parser.add_argument("--artifacts-root", default="planningops/artifacts/supervisor")
     parser.add_argument("--output", default="planningops/artifacts/supervisor/last-run.json")
+    parser.add_argument("--run-id", default=None, help="Optional deterministic run id")
     return parser.parse_args()
 
 
@@ -201,7 +202,7 @@ def main():
         else:
             sequence_rows = []
 
-    run_id = f"supervisor-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    run_id = args.run_id or f"supervisor-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     run_dir = Path(args.artifacts_root) / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
