@@ -94,6 +94,7 @@ jobs:
     permissions:
       contents: read
       repository-projects: read
+      issues: read
     steps:
       - name: Checkout planningops
         uses: actions/checkout@v4
