@@ -1,0 +1,29 @@
+{
+  "generated_at_utc": "2026-03-04T00:49:03.323162+00:00",
+  "contract_file": "planningops/fixtures/plan-execution-contract-sample.json",
+  "snapshot_file": "planningops/fixtures/plan-projection-snapshot-sample.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 200
+  },
+  "validation_errors": [],
+  "plan_id": "sample-pec-plan",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 0,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [],
+  "unexpected": [],
+  "verdict": "pass",
+  "reasons": []
+}

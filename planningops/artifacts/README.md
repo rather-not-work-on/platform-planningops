@@ -5,6 +5,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 
 ## Contents
 - `validation/`: gate and schema validation outputs
+- `meta-plan/`: meta graph build outputs and orchestration reports
 - `loop-runner/`: last run snapshot and idempotency ledger
 - `loops/`: per-loop run artifacts (`intake`, `simulation`, `verification`, `patch-summary`)
 - `sync-summary/`: GitHub/project sync outputs
@@ -17,4 +18,3 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - Artifacts are evidence outputs; do not treat them as source configuration.
 - New artifact roots require README update and deterministic naming policy.
 - Generated paths should be stable and include run ids where replay matters.
-

@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "id": "PVTI_sample_projection",
+      "initiative": "unified-personal-agent-platform",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "component": "planningops",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L1 Contract-Clarification",
+      "status": "Todo",
+      "execution_order": 1,
+      "content": {
+        "type": "Issue",
+        "number": 9999,
+        "url": "https://github.com/rather-not-work-on/platform-planningops/issues/9999",
+        "repository": "rather-not-work-on/platform-planningops",
+        "body": "## Planning Context\n- plan_item_id: `sample-001`\n"
+      }
+    }
+  ]
+}
