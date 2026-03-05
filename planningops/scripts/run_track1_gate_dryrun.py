@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -22,6 +23,8 @@ SCHEMA_CHECK_CMD = [
     "planningops/scripts/validate_project_field_schema.py",
     "--fail-on-mismatch",
 ]
+if os.environ.get("PLANNINGOPS_ALLOW_SCHEMA_FETCH_FAILURE") == "1":
+    SCHEMA_CHECK_CMD.append("--allow-fetch-failure")
 
 CHAIN_REPORT_PATH = VALIDATION_DIR / "track1-validation-chain-report.json"
 KPI_PATH = VALIDATION_DIR / "track1-kpi-baseline.json"

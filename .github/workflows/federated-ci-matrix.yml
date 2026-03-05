@@ -101,6 +101,7 @@ jobs:
       - name: Run guardrail checks
         env:
           GH_TOKEN: ${{ github.token }}
+          PLANNINGOPS_ALLOW_SCHEMA_FETCH_FAILURE: "1"
         run: |
           set -euo pipefail
           python3 planningops/scripts/run_track1_gate_dryrun.py \

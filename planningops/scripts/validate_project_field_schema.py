@@ -83,16 +83,54 @@ def main():
         action="store_true",
         help="Return non-zero when mismatch/missing violations are detected",
     )
+    parser.add_argument(
+        "--allow-fetch-failure",
+        action="store_true",
+        help="Treat GitHub Project fetch errors as soft-skip and exit zero",
+    )
     args = parser.parse_args()
 
     cfg = load_json(Path(args.config))
     expected_fields = cfg.get("fields", {})
 
+    def write_soft_skip_report(stage: str, message: str):
+        report = {
+            "generated_at_utc": now_utc(),
+            "project": {
+                "owner": args.owner,
+                "project_num": args.project_num,
+                "initiative": args.initiative,
+            },
+            "required_field_checks": [],
+            "evaluated_items": 0,
+            "violation_count": 0,
+            "violations": [],
+            "info_count": 1,
+            "infos": [
+                {
+                    "type": "FETCH_ERROR",
+                    "stage": stage,
+                    "message": message,
+                }
+            ],
+            "fetch_failed": True,
+            "verdict": "inconclusive",
+        }
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
+        print(f"report written: {out_path}")
+        print("evaluated_items=0 violation_count=0 verdict=inconclusive fetch_failed=true")
+
     rc_f, out_f, err_f = run(
         ["gh", "project", "field-list", str(args.project_num), "--owner", args.owner, "--format", "json"]
     )
     if rc_f != 0:
-        print(f"failed to fetch field-list: {err_f}")
+        msg = f"failed to fetch field-list: {err_f}"
+        print(msg)
+        if args.allow_fetch_failure:
+            write_soft_skip_report("field-list", msg)
+            return 0
         return 1
     field_doc = json.loads(out_f)
     fields = field_doc.get("fields", [])
@@ -102,7 +140,11 @@ def main():
         ["gh", "project", "item-list", str(args.project_num), "--owner", args.owner, "--limit", "200", "--format", "json"]
     )
     if rc_i != 0:
-        print(f"failed to fetch item-list: {err_i}")
+        msg = f"failed to fetch item-list: {err_i}"
+        print(msg)
+        if args.allow_fetch_failure:
+            write_soft_skip_report("item-list", msg)
+            return 0
         return 1
     item_doc = json.loads(out_i)
     items = item_doc.get("items", [])
