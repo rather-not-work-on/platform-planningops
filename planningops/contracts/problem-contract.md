@@ -26,6 +26,7 @@ Resolve `platform-planningops` issues autonomously in repeatable loops with expl
 - `project_field_payload.json` (must include `last_verdict`, `last_reason`, `loop_profile`)
 - `adapter-pre.json` (repo pre-hook result payload)
 - `adapter-post.json` (repo post-hook result payload)
+- `backlog-replenishment-candidates.json` (evidence-backed follow-up candidates; empty allowed)
 
 ## Success Condition
 A loop is successful only when:

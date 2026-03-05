@@ -48,6 +48,11 @@ assert [c["number"] for c in candidates] == [42, 77], candidates
 assert candidates[0]["issue_repo"] == "rather-not-work-on/monday", candidates[0]
 assert candidates[1]["issue_repo"] == "rather-not-work-on/platform-planningops", candidates[1]
 
+# High-value ready-first rule must prioritize ready-* over backlog even when backlog has lower execution_order.
+allowed_with_backlog = {"backlog", "ready-contract", "ready-implementation"}
+candidates_with_backlog = mod.normalize_candidates(items, allowed_with_backlog)
+assert [c["number"] for c in candidates_with_backlog] == [42, 77, 101], candidates_with_backlog
+
 selected = dict(candidates[1])
 selected["deps"] = [41]
 attempts = [
@@ -247,6 +252,32 @@ assert l4_profile == "L4 Integration-Reconcile", l4_profile
 
 l5_profile = mod.determine_loop_profile(selected, {"replanning_triggered": True}, "rather-not-work-on/platform-planningops")
 assert l5_profile == "L5 Recovery-Replan", l5_profile
+
+replenishment_candidates = mod.build_replenishment_candidates(
+    issue_num=77,
+    payload={"last_verdict": "fail", "reason_code": "runtime_error_retries_exhausted", "replanning_triggered": True},
+    selected={"target_repo": "rather-not-work-on/platform-planningops", "issue_repo": "rather-not-work-on/platform-planningops"},
+    verification_path=Path("planningops/artifacts/verification/issue-77-verification.json"),
+    payload_path=Path("planningops/artifacts/verification/issue-77-project-payload.json"),
+    watchdog_path=Path("planningops/artifacts/loop-runner/watchdog/issue-77.json"),
+    replan_decision_path=Path("planningops/artifacts/replan/issue-77.md"),
+)
+assert len(replenishment_candidates) == 1, replenishment_candidates
+candidate = replenishment_candidates[0]
+assert candidate["depends_on"] == [77], candidate
+assert candidate["evidence_refs"], candidate
+assert candidate["acceptance_criteria"], candidate
+
+no_replenishment = mod.build_replenishment_candidates(
+    issue_num=77,
+    payload={"last_verdict": "pass", "reason_code": "ok", "replanning_triggered": False, "auto_paused": False},
+    selected={"target_repo": "rather-not-work-on/platform-planningops", "issue_repo": "rather-not-work-on/platform-planningops"},
+    verification_path=Path("planningops/artifacts/verification/issue-77-verification.json"),
+    payload_path=Path("planningops/artifacts/verification/issue-77-project-payload.json"),
+    watchdog_path=Path("planningops/artifacts/loop-runner/watchdog/issue-77.json"),
+    replan_decision_path=None,
+)
+assert no_replenishment == [], no_replenishment
 
 budget_default, budget_errors_default = mod.parse_attempt_budget("no budget fields")
 assert budget_default["max_attempts"] == 3, budget_default

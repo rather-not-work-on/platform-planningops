@@ -1,0 +1,52 @@
+[
+  {
+    "issue_number": 101,
+    "issue_repo": "rather-not-work-on/platform-planningops",
+    "status": "Todo",
+    "workflow_state": "ready-contract",
+    "execution_order": 10,
+    "component": "planningops",
+    "initiative": "unified-personal-agent-platform",
+    "open_dependency_count": 0
+  },
+  {
+    "issue_number": 102,
+    "issue_repo": "rather-not-work-on/monday",
+    "status": "Todo",
+    "workflow_state": "ready-implementation",
+    "execution_order": 20,
+    "component": "runtime",
+    "initiative": "unified-personal-agent-platform",
+    "open_dependency_count": 1
+  },
+  {
+    "issue_number": 103,
+    "issue_repo": "rather-not-work-on/platform-planningops",
+    "status": "Todo",
+    "workflow_state": "ready-contract",
+    "execution_order": 30,
+    "component": "planningops",
+    "initiative": "unified-personal-agent-platform",
+    "open_dependency_count": 2
+  },
+  {
+    "issue_number": 104,
+    "issue_repo": "rather-not-work-on/platform-planningops",
+    "status": "Todo",
+    "workflow_state": "backlog",
+    "execution_order": 40,
+    "component": "planningops",
+    "initiative": "unified-personal-agent-platform",
+    "open_dependency_count": 0
+  },
+  {
+    "issue_number": 105,
+    "issue_repo": "rather-not-work-on/platform-planningops",
+    "status": "Blocked",
+    "workflow_state": "blocked",
+    "execution_order": 50,
+    "component": "planningops",
+    "initiative": "unified-personal-agent-platform",
+    "open_dependency_count": 0
+  }
+]

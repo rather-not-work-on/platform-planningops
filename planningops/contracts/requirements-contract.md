@@ -32,6 +32,10 @@
 29. Autonomous run control must be convergence/risk bounded; wall-clock duration is metadata and cannot override safety or quality stop conditions.
 30. Autonomous stop conditions must explicitly include quality failure, escalation trigger, and runtime safety conflict with deterministic evidence output.
 31. High-uncertainty or architecture-tradeoff changes must use branch/worktree comparative experiment protocol with artifact-backed selection record.
+32. Backlog operation must define queue classes (`ready_now`, `next_up`, `quality_hardening`) with explicit minimum stock targets.
+33. Intake selection must enforce `high_value_ready_first` so non-ready cards cannot preempt a ready-now candidate.
+34. Replenishment candidates must be evidence-backed and rejected when artifact references are missing.
+35. Replenishment candidate normalization must preserve dependency baseline (`depends_on`) and checklist acceptance criteria.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
@@ -75,5 +79,6 @@
 - Escalation contract: see `planningops/contracts/escalation-gate-contract.md`.
 - Autonomous run policy contract: see `planningops/contracts/autonomous-run-policy-contract.md`.
 - Worktree comparative experiment protocol: see `planningops/contracts/worktree-comparative-experiment-protocol.md`.
+- Backlog stock/replenishment contract: see `planningops/contracts/backlog-stock-replenishment-contract.md`.
 - Implementation readiness contract: see `planningops/contracts/implementation-readiness-gate-contract.md`.
 - Worker task pack contract: see `planningops/contracts/worker-task-pack-contract.md`.

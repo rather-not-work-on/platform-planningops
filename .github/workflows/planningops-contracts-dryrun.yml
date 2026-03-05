@@ -29,6 +29,7 @@ jobs:
           bash planningops/scripts/test_lease_lock_watchdog.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_loop_checkpoint_resume.sh
+          bash planningops/scripts/test_backlog_stock_replenishment_contract.sh
           python3 planningops/scripts/validate_worker_task_pack.py \
             --runtime-profile-file planningops/config/runtime-profiles.json \
             --task-key issue-18 \
@@ -52,6 +53,7 @@ jobs:
                   "test_lease_lock_watchdog",
                   "test_issue_loop_runner_multi_repo_intake",
                   "test_loop_checkpoint_resume",
+                  "test_backlog_stock_replenishment_contract",
                   "validate_worker_task_pack_ci_report",
               ],
               "artifacts": {

@@ -1,0 +1,41 @@
+{
+  "policy_id": "backlog-stock-replenishment-v1",
+  "queue_classes": [
+    {
+      "name": "ready_now",
+      "description": "Immediate pull candidates with no open dependency blockers.",
+      "min_stock": 1,
+      "rule": {
+        "statuses": ["Todo"],
+        "workflow_states": ["ready-contract", "ready-implementation"],
+        "dependency_mode": "all_closed"
+      }
+    },
+    {
+      "name": "next_up",
+      "description": "Todo items that become executable after dependency completion.",
+      "min_stock": 2,
+      "rule": {
+        "statuses": ["Todo"],
+        "workflow_states": ["ready-contract", "ready-implementation"],
+        "dependency_mode": "has_open"
+      }
+    },
+    {
+      "name": "quality_hardening",
+      "description": "Contract/test/governance hardening queue that keeps quality floor stable.",
+      "min_stock": 2,
+      "rule": {
+        "statuses": ["Todo"],
+        "workflow_states": ["backlog", "ready-contract"],
+        "components": ["planningops"],
+        "dependency_mode": "any"
+      }
+    }
+  ],
+  "candidate_requirements": {
+    "require_evidence_refs": true,
+    "require_depends_on_field": true,
+    "require_acceptance_criteria": true
+  }
+}

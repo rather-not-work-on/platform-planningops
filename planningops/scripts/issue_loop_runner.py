@@ -37,6 +37,7 @@ WORKFLOW_TO_STATUS = {
     "blocked": "blocked",
     "done": "done",
 }
+HIGH_VALUE_READY_STATES = {"ready-contract", "ready-implementation"}
 
 
 def run(args):
@@ -646,7 +647,13 @@ def normalize_candidates(items, allowed_workflow_states):
             }
         )
 
-    candidates.sort(key=lambda x: (x["order"], x["number"]))
+    candidates.sort(
+        key=lambda x: (
+            0 if x.get("workflow_state") in HIGH_VALUE_READY_STATES else 1,
+            x["order"],
+            x["number"],
+        )
+    )
     return candidates
 
 
@@ -673,6 +680,11 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
         }
 
     return {
+        "selection_policy": {
+            "name": "high_value_ready_first",
+            "ready_workflow_states": sorted(HIGH_VALUE_READY_STATES),
+            "tie_breaker": ["execution_order_asc", "issue_number_asc"],
+        },
         "allowed_workflow_states": sorted(allowed_workflow_states),
         "candidate_count": len(candidates),
         "candidates": [
@@ -697,6 +709,47 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
         "attempts": attempts,
         "selected": selected_ref,
     }
+
+
+def build_replenishment_candidates(
+    issue_num: int,
+    payload: dict,
+    selected: dict,
+    verification_path: Path,
+    payload_path: Path,
+    watchdog_path: Path,
+    replan_decision_path: Path | None,
+):
+    verdict = str(payload.get("last_verdict", "")).lower()
+    reason_code = str(payload.get("reason_code", "")).strip() or "unknown_reason"
+    trigger = bool(payload.get("replanning_triggered")) or bool(payload.get("auto_paused"))
+    if verdict not in {"fail", "inconclusive"} and not trigger:
+        return []
+
+    evidence_refs = [str(verification_path), str(payload_path), str(watchdog_path)]
+    if replan_decision_path:
+        evidence_refs.append(str(replan_decision_path))
+
+    target_repo = selected.get("target_repo") or selected.get("issue_repo") or ""
+    candidate = {
+        "candidate_id": f"issue-{issue_num}-follow-up",
+        "title": f"Recovery follow-up for issue #{issue_num} ({reason_code})",
+        "target_repo": target_repo,
+        "depends_on": [issue_num],
+        "acceptance_criteria": [
+            f"Root cause for `{reason_code}` is documented with evidence.",
+            "Contract/plan references are updated before resuming implementation.",
+            "A rerun exits escalation state without repeating the previous trigger.",
+        ],
+        "evidence_refs": evidence_refs,
+        "generated_from": {
+            "issue_number": issue_num,
+            "verdict": verdict,
+            "reason_code": reason_code,
+        },
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    return [candidate]
 
 
 def ensure_text_field(owner: str, project_num: int, field_name: str):
@@ -1437,6 +1490,50 @@ def main():
                 "replanning_flag": True,
             },
         )
+
+    replenishment_candidates = build_replenishment_candidates(
+        issue_num=issue_num,
+        payload=payload,
+        selected=selected,
+        verification_path=verification_path,
+        payload_path=payload_path,
+        watchdog_path=watchdog_path,
+        replan_decision_path=replan_decision_path,
+    )
+    replenishment_path = Path(f"planningops/artifacts/backlog/issue-{issue_num}-replenishment-candidates.json")
+    save_json(
+        replenishment_path,
+        {
+            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+            "issue_number": issue_num,
+            "issue_repo": selected.get("issue_repo"),
+            "target_repo": selected.get("target_repo"),
+            "last_verdict": payload.get("last_verdict"),
+            "reason_code": payload.get("reason_code"),
+            "candidate_count": len(replenishment_candidates),
+            "candidates": replenishment_candidates,
+        },
+    )
+    payload["replenishment_candidates_path"] = str(replenishment_path)
+    payload["replenishment_candidates_count"] = len(replenishment_candidates)
+    if replenishment_candidates:
+        append_ndjson(
+            transition_log,
+            {
+                "transition_id": f"{loop_id}-backlog-replenishment",
+                "run_id": loop_id,
+                "card_id": issue_num,
+                "from_state": selected.get("workflow_state", "ready-contract"),
+                "to_state": selected.get("workflow_state", "ready-contract"),
+                "transition_reason": "backlog.replenishment.generated",
+                "actor_type": "agent",
+                "actor_id": "issue-loop-runner",
+                "decided_at_utc": datetime.now(timezone.utc).isoformat(),
+                "replanning_flag": bool(payload.get("replanning_triggered")),
+                "candidate_count": len(replenishment_candidates),
+                "candidate_ids": [c.get("candidate_id") for c in replenishment_candidates],
+            },
+        )
     save_json(payload_path, payload)
 
     verification_loop_ref = verification.get("loop_dir", "")
@@ -1464,6 +1561,7 @@ def main():
             f"- adapter_pre_artifact: {pre_hook_path}",
             f"- adapter_post_artifact: {post_hook_path}",
             f"- replan_decision: {replan_decision_path}" if replan_decision_path else "- replan_decision: none",
+            f"- replenishment_candidates: {replenishment_path} ({len(replenishment_candidates)})",
         ]
     )
 
@@ -1664,6 +1762,8 @@ def main():
             "adapter_post_hook": post_hook_result,
             "adapter_pre_artifact": str(pre_hook_path),
             "adapter_post_artifact": str(post_hook_path),
+            "replenishment_candidates_path": str(replenishment_path),
+            "replenishment_candidates_count": len(replenishment_candidates),
             "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "runtime_profile_file": args.runtime_profile_file,
             "no_feedback": args.no_feedback,
@@ -1760,6 +1860,8 @@ def main():
         "adapter_post_hook": post_hook_result,
         "adapter_pre_artifact": str(pre_hook_path),
         "adapter_post_artifact": str(post_hook_path),
+        "replenishment_candidates_path": str(replenishment_path),
+        "replenishment_candidates_count": len(replenishment_candidates),
         "loop_rc": rc_loop,
         "verify_rc": rc_verify,
         "already_processed": already_processed,
