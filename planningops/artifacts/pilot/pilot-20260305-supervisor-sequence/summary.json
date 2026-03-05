@@ -1,0 +1,120 @@
+{
+  "generated_at_utc": "2026-03-05T11:43:13.238261+00:00",
+  "run_id": "pilot-20260305-supervisor-sequence",
+  "mode": "dry-run",
+  "max_cycles": 3,
+  "executed_cycles": 2,
+  "convergence_pass_streak": 2,
+  "stop_on_experiment_trigger": false,
+  "report_only_gates": false,
+  "supervisor_verdict": "pass",
+  "stop_reason": "converged",
+  "stop_details": {
+    "cycle": 2,
+    "pass_streak": 2
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "started_at_utc": "2026-03-05T11:43:13.190631+00:00",
+      "loop_result_rc": 0,
+      "loop_result": {
+        "selected_issue": 201,
+        "selected_issue_repo": "rather-not-work-on/platform-planningops",
+        "selected_target_repo": "rather-not-work-on/platform-planningops",
+        "selected_workflow_state": "ready-contract",
+        "last_verdict": "pass",
+        "reason_code": "ok",
+        "auto_paused": false,
+        "selection_trace": {
+          "selected": {
+            "uncertainty_level": "high",
+            "simulation_required": true
+          }
+        },
+        "final_loop_profile": "L2 Simulation",
+        "replan_decision_path": null,
+        "replenishment_candidates_path": "planningops/fixtures/backlog-replenishment-candidates-sample.json",
+        "replenishment_candidates_count": 1
+      },
+      "last_verdict": "pass",
+      "reason_code": "ok",
+      "auto_paused": false,
+      "replan_required": false,
+      "replan_decision_path": null,
+      "replenishment_candidates_path": "planningops/fixtures/backlog-replenishment-candidates-sample.json",
+      "replenishment_candidates_count": 1,
+      "experiment_trigger": {
+        "triggered": true,
+        "reasons": [
+          "uncertainty_level=high",
+          "simulation_required=true",
+          "loop_profile=L2 Simulation"
+        ],
+        "uncertainty_level": "high",
+        "simulation_required": true,
+        "loop_profile": "L2 Simulation"
+      },
+      "experiment_trigger_artifact": "planningops/artifacts/pilot/pilot-20260305-supervisor-sequence/cycle-01/experiment-trigger.json",
+      "backlog_gate": {
+        "rc": 0,
+        "report_path": "planningops/artifacts/pilot/pilot-20260305-supervisor-sequence/cycle-01/backlog-stock-report.json",
+        "verdict": "pass",
+        "breach_count": 0,
+        "candidate_violation_count": 0
+      },
+      "ended_at_utc": "2026-03-05T11:43:13.190659+00:00"
+    },
+    {
+      "cycle": 2,
+      "started_at_utc": "2026-03-05T11:43:13.235881+00:00",
+      "loop_result_rc": 0,
+      "loop_result": {
+        "selected_issue": 202,
+        "selected_issue_repo": "rather-not-work-on/platform-planningops",
+        "selected_target_repo": "rather-not-work-on/platform-planningops",
+        "selected_workflow_state": "ready-implementation",
+        "last_verdict": "pass",
+        "reason_code": "ok",
+        "auto_paused": false,
+        "selection_trace": {
+          "selected": {
+            "uncertainty_level": "low",
+            "simulation_required": false
+          }
+        },
+        "final_loop_profile": "L3 Implementation-TDD",
+        "replan_decision_path": null,
+        "replenishment_candidates_count": 0
+      },
+      "last_verdict": "pass",
+      "reason_code": "ok",
+      "auto_paused": false,
+      "replan_required": false,
+      "replan_decision_path": null,
+      "replenishment_candidates_path": null,
+      "replenishment_candidates_count": 0,
+      "experiment_trigger": {
+        "triggered": false,
+        "reasons": [],
+        "uncertainty_level": "low",
+        "simulation_required": false,
+        "loop_profile": "L3 Implementation-TDD"
+      },
+      "experiment_trigger_artifact": null,
+      "backlog_gate": {
+        "rc": 0,
+        "report_path": "planningops/artifacts/pilot/pilot-20260305-supervisor-sequence/cycle-02/backlog-stock-report.json",
+        "verdict": "pass",
+        "breach_count": 0,
+        "candidate_violation_count": 0
+      },
+      "ended_at_utc": "2026-03-05T11:43:13.235902+00:00"
+    }
+  ],
+  "contracts": {
+    "autonomous_run_policy": "planningops/contracts/autonomous-run-policy-contract.md",
+    "worktree_experiment_protocol": "planningops/contracts/worktree-comparative-experiment-protocol.md",
+    "backlog_replenishment": "planningops/contracts/backlog-stock-replenishment-contract.md"
+  }
+}

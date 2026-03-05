@@ -1,0 +1,46 @@
+{
+  "cycle": 2,
+  "started_at_utc": "2026-03-05T11:43:13.235881+00:00",
+  "loop_result_rc": 0,
+  "loop_result": {
+    "selected_issue": 202,
+    "selected_issue_repo": "rather-not-work-on/platform-planningops",
+    "selected_target_repo": "rather-not-work-on/platform-planningops",
+    "selected_workflow_state": "ready-implementation",
+    "last_verdict": "pass",
+    "reason_code": "ok",
+    "auto_paused": false,
+    "selection_trace": {
+      "selected": {
+        "uncertainty_level": "low",
+        "simulation_required": false
+      }
+    },
+    "final_loop_profile": "L3 Implementation-TDD",
+    "replan_decision_path": null,
+    "replenishment_candidates_count": 0
+  },
+  "last_verdict": "pass",
+  "reason_code": "ok",
+  "auto_paused": false,
+  "replan_required": false,
+  "replan_decision_path": null,
+  "replenishment_candidates_path": null,
+  "replenishment_candidates_count": 0,
+  "experiment_trigger": {
+    "triggered": false,
+    "reasons": [],
+    "uncertainty_level": "low",
+    "simulation_required": false,
+    "loop_profile": "L3 Implementation-TDD"
+  },
+  "experiment_trigger_artifact": null,
+  "backlog_gate": {
+    "rc": 0,
+    "report_path": "planningops/artifacts/pilot/pilot-20260305-supervisor-sequence/cycle-02/backlog-stock-report.json",
+    "verdict": "pass",
+    "breach_count": 0,
+    "candidate_violation_count": 0
+  },
+  "ended_at_utc": "2026-03-05T11:43:13.235902+00:00"
+}
