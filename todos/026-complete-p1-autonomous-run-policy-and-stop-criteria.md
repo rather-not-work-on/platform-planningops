@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p1
 issue_id: "026"
 tags: [planningops, autonomy, governance, reliability]
@@ -60,9 +60,9 @@ Implement Option 1 and make convergence/risk the only hard control axis for auto
 - `planningops/contracts/requirements-contract.md` (if control semantics need explicit lock)
 
 ## Acceptance Criteria
-- [ ] Autonomous mode definition is explicitly difficulty/convergence bounded, not time bounded.
-- [ ] Stop conditions include quality gate fail + escalation triggers + safety conflicts.
-- [ ] Replan trigger linkage is explicit and testable.
+- [x] Autonomous mode definition is explicitly difficulty/convergence bounded, not time bounded.
+- [x] Stop conditions include quality gate fail + escalation triggers + safety conflicts.
+- [x] Replan trigger linkage is explicit and testable.
 
 ## Work Log
 
@@ -76,3 +76,18 @@ Implement Option 1 and make convergence/risk the only hard control axis for auto
 **Learnings:**
 - Time budget is operational metadata, not primary control logic.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added `planningops/contracts/autonomous-run-policy-contract.md` to formalize convergence/risk-based autonomous run control and deterministic stop criteria.
+- Linked stop/replan logic to existing testable implementation anchors:
+  - `planningops/scripts/issue_loop_runner.py` (`evaluate_escalation`, `run_with_runtime_heartbeat`)
+  - `planningops/scripts/verify_loop_run.py`
+  - tests: `test_escalation_gate.sh`, `test_lease_lock_watchdog.sh`, `test_verify_loop_run_hard_gate_contract.sh`
+- Updated `planningops/contracts/requirements-contract.md` with explicit autonomous control/stop requirements and mapping reference.
+- Updated `planningops/contracts/README.md` contract index.
+
+**Learnings:**
+- Making autonomy control explicit in contracts prevents drift back to time-window interpretations and keeps stop behavior reviewable.

@@ -13,6 +13,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `implementation-readiness-gate-contract.md`: design-first gate and redefine loop
 - `execution-adapter-interface-contract.md`: adapter hook interface
 - `attempt-budget-contract.md`: per-task loop budget
+- `autonomous-run-policy-contract.md`: convergence/risk-based autonomous run control and stop criteria
 - `worker-task-pack-contract.md`: worker execution bundle and render safety contract
 - `checkpoint-resume-contract.md`: checkpoint and resume behavior
 - `lease-lock-watchdog-contract.md`: concurrency and stale-lock recovery
