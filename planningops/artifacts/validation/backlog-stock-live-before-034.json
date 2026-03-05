@@ -1,0 +1,491 @@
+{
+  "generated_at_utc": "2026-03-05T12:28:04.675376+00:00",
+  "verdict": "fail",
+  "reason_code": "stock_or_candidate_gate_failed",
+  "policy_file": "planningops/config/backlog-stock-policy.json",
+  "initiative": "unified-personal-agent-platform",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_num": 2
+  },
+  "selection_policy": {
+    "name": "high_value_ready_first",
+    "source_queue_class": "ready_now",
+    "selected": null
+  },
+  "stock": {
+    "evaluated_items": 70,
+    "rows": [
+      {
+        "name": "ready_now",
+        "min_stock": 1,
+        "actual_stock": 0,
+        "met": false,
+        "issue_refs": []
+      },
+      {
+        "name": "next_up",
+        "min_stock": 2,
+        "actual_stock": 0,
+        "met": false,
+        "issue_refs": []
+      },
+      {
+        "name": "quality_hardening",
+        "min_stock": 2,
+        "actual_stock": 0,
+        "met": false,
+        "issue_refs": []
+      }
+    ],
+    "breach_count": 3,
+    "breaches": [
+      {
+        "queue_class": "ready_now",
+        "min_stock": 1,
+        "actual_stock": 0,
+        "shortage": 1
+      },
+      {
+        "queue_class": "next_up",
+        "min_stock": 2,
+        "actual_stock": 0,
+        "shortage": 2
+      },
+      {
+        "queue_class": "quality_hardening",
+        "min_stock": 2,
+        "actual_stock": 0,
+        "shortage": 2
+      }
+    ]
+  },
+  "candidate_validation": {
+    "candidate_count": 0,
+    "violation_count": 0,
+    "violations": [],
+    "normalized_candidates": []
+  },
+  "dependency_diagnostics": [
+    {
+      "issue_number": 1,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 1,
+      "issue_repo": "rather-not-work-on/monday",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 2,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 3,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 4,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 5,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 6,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 7,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 8,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 9,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 10,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 11,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 12,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 13,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 14,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 15,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 16,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 17,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 18,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 19,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 20,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 21,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 22,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 23,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 24,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 25,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 26,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 27,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 28,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 29,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 30,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 31,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 32,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 33,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 34,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 35,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 36,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 37,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 38,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 39,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 40,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 41,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 43,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 46,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 47,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 48,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 49,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 50,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 51,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 52,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 53,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 54,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 55,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 56,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 57,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 59,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 60,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 61,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 62,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 63,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 64,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 65,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 66,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 67,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 68,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 69,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 70,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 71,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 72,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    },
+    {
+      "issue_number": 73,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "event": "hydrate_issue_body",
+      "status": "ok"
+    }
+  ]
+}
