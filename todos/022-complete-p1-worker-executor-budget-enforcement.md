@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p1
 issue_id: "022"
 tags: [planningops, worker, reliability, runtime]
@@ -67,10 +67,10 @@ Implement Option 1. Keep policy resolution unchanged, but move execution control
 - `planningops/contracts/attempt-budget-contract.md` (if wording update needed)
 
 ## Acceptance Criteria
-- [ ] Worker command execution enforces timeout/retry bounds from validated runtime/task-pack policy.
-- [ ] Attempt budget (`max_attempts`) is enforced and violation path is explicit.
-- [ ] Exhausted retries emit deterministic reason classification.
-- [ ] Contract tests cover success/retry/timeout/budget-exhausted paths.
+- [x] Worker command execution enforces timeout/retry bounds from validated runtime/task-pack policy.
+- [x] Attempt budget (`max_attempts`) is enforced and violation path is explicit.
+- [x] Exhausted retries emit deterministic reason classification.
+- [x] Contract tests cover success/retry/timeout/budget-exhausted paths.
 
 ## Work Log
 
@@ -85,3 +85,18 @@ Implement Option 1. Keep policy resolution unchanged, but move execution control
 **Learnings:**
 - Runtime reliability gaps are mostly enforcement gaps, not schema-definition gaps.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added `planningops/scripts/worker_executor.py` and enforced retry/timeout/budget policy execution.
+- Wired `planningops/scripts/ralph_loop_local.py` to load validated worker task-pack policy, apply `max_attempts`, and emit deterministic execution reason codes.
+- Updated `planningops/scripts/issue_loop_runner.py` to pass budget/task-pack enforcement context into loop execution and expose attempt-budget guard evidence in selection/output payloads.
+- Expanded regression coverage:
+  - `planningops/scripts/test_worker_executor_contract.sh` (new)
+  - `planningops/scripts/test_ralph_loop_local_worker_policy.sh`
+  - `planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh`
+
+**Learnings:**
+- Splitting worker execution into a dedicated module keeps policy semantics stable and testable while minimizing drift in loop orchestration code.

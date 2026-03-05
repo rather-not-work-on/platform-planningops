@@ -8,6 +8,9 @@
 - `feedback_failed`: issue/project update failed
 - `idempotency_conflict`: duplicate key or replay mismatch
 - `runtime_error`: unexpected local execution error
+- `attempt_budget_exhausted`: worker attempt cap reached
+- `runtime_timeout_retries_exhausted`: timed out across allowed retries
+- `runtime_error_retries_exhausted`: non-timeout runtime failures exhausted retries
 
 ## Adapter Reason Mapping Standard
 Adapter hook reason families are constrained to:
@@ -35,6 +38,9 @@ Feedback failure handling rule:
 - `feedback_failed`: up to 3 retries with exponential backoff (5s, 15s, 45s)
 - `idempotency_conflict`: retry once in read-only mode, then stop
 - `runtime_error`: up to 2 retries, then mark `inconclusive`
+- `attempt_budget_exhausted`: no retry until budget is raised or issue is split/replanned
+- `runtime_timeout_retries_exhausted`: same as `runtime_error` with timeout root-cause annotation
+- `runtime_error_retries_exhausted`: same as `runtime_error` with retry-exhausted annotation
 
 ## Escalation Rules
 - same `reason_code` repeated 3 times for same issue => create follow-up issue

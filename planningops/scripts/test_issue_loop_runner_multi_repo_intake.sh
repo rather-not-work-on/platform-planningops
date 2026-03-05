@@ -190,6 +190,22 @@ with tempfile.TemporaryDirectory() as td:
 
     def fake_run_worker_pack_ok(args):
         captured["args"] = args
+        output_index = args.index("--output") + 1
+        output_path = Path(args[output_index])
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(
+                {
+                    "worker_task_pack": {
+                        "retry_policy": {"max_retries": 2},
+                        "timeout_ms": 32000,
+                    },
+                    "validation_errors": [],
+                },
+                ensure_ascii=True,
+            ),
+            encoding="utf-8",
+        )
         return 0, "worker-pack-ok", ""
 
     mod.run = fake_run_worker_pack_ok
@@ -202,6 +218,8 @@ with tempfile.TemporaryDirectory() as td:
     assert worker_pack_ok["status"] == "pass", worker_pack_ok
     assert worker_pack_ok["reason_code"] == "worker_task_pack_ok", worker_pack_ok
     assert "--task-key" in captured["args"], captured
+    assert worker_pack_ok["worker_task_pack"]["retry_policy"]["max_retries"] == 2, worker_pack_ok
+    assert worker_pack_ok["worker_task_pack"]["timeout_ms"] == 32000, worker_pack_ok
 
     def fake_run_worker_pack_fail(args):
         return 1, "", "worker-pack-fail"
@@ -215,6 +233,9 @@ with tempfile.TemporaryDirectory() as td:
     )
     assert worker_pack_fail["status"] == "fail", worker_pack_fail
     assert worker_pack_fail["reason_code"] == "worker_task_pack_invalid", worker_pack_fail
+    generated_report = Path(captured["args"][captured["args"].index("--output") + 1])
+    if generated_report.exists():
+        generated_report.unlink()
 
 ready_impl_cross_repo = {
     "workflow_state": "ready-implementation",

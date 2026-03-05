@@ -7,6 +7,7 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Runtime runners:
   - `issue_loop_runner.py` (`--pec-preflight-mode legacy|hybrid|strict-pec`)
   - `ralph_loop_local.py`
+  - `worker_executor.py`
   - `meta_plan_orchestrator.py`
   - `github_sync_adapter.py`
   - `repo_execution_adapters.py`
@@ -36,6 +37,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_meta_plan_graph_schema_contract.sh`
   - `test_verify_plan_projection_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
+  - `test_worker_executor_contract.sh`
   - `test_*.sh`
 
 ## Change Rules

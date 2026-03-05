@@ -26,3 +26,4 @@ If omitted, defaults are used:
 
 ## Reference
 - parser/validator implementation: `planningops/scripts/issue_loop_runner.py` (`parse_attempt_budget`)
+- runtime enforcement: `planningops/scripts/ralph_loop_local.py` + `planningops/scripts/worker_executor.py`

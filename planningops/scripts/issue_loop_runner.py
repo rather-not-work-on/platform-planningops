@@ -377,6 +377,13 @@ def evaluate_worker_task_pack_preflight(runtime_profile_file, selected, mode, lo
         "--strict",
     ]
     rc, out, err = run(cmd)
+    report_doc = {}
+    if report_path.exists():
+        try:
+            report_doc = load_json(report_path, {})
+        except Exception:  # noqa: BLE001
+            report_doc = {}
+    worker_task_pack = report_doc.get("worker_task_pack") if isinstance(report_doc, dict) else None
     return {
         "status": "pass" if rc == 0 else "fail",
         "reason_code": "worker_task_pack_ok" if rc == 0 else "worker_task_pack_invalid",
@@ -384,6 +391,8 @@ def evaluate_worker_task_pack_preflight(runtime_profile_file, selected, mode, lo
         "rc": rc,
         "stdout": out[-2000:],
         "stderr": err[-2000:],
+        "worker_task_pack": worker_task_pack,
+        "validation_errors": report_doc.get("validation_errors", []) if isinstance(report_doc, dict) else [],
     }
 
 
@@ -895,6 +904,37 @@ def main():
         )
         return 6
 
+    selected_attempt_budget = selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET))
+    max_attempts = int(selected_attempt_budget.get("max_attempts", DEFAULT_ATTEMPT_BUDGET["max_attempts"]))
+    if max_attempts <= 0:
+        print(
+            json.dumps(
+                {
+                    "result": "attempt_budget_invalid",
+                    "issue_number": selected.get("number"),
+                    "issue_repo": selected.get("issue_repo"),
+                    "plan_item_id": selected.get("plan_item_id"),
+                    "attempt_budget": selected_attempt_budget,
+                    "selection_trace": selection_trace,
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 7
+
+    worker_pack = worker_task_pack_preflight.get("worker_task_pack") or {}
+    retry_policy = worker_pack.get("retry_policy") if isinstance(worker_pack, dict) else {}
+    max_retries = int((retry_policy or {}).get("max_retries", 0))
+    retry_cap_attempts = max_retries + 1
+    enforced_attempts = min(max_attempts, retry_cap_attempts)
+    selection_trace["attempt_budget_guard"] = {
+        "attempt_budget": selected_attempt_budget,
+        "max_attempts": max_attempts,
+        "max_retries": max_retries,
+        "retry_cap_attempts": retry_cap_attempts,
+        "enforced_worker_attempts": enforced_attempts,
+    }
+
     issue_num = selected["number"]
     lock_owner_id = f"issue-loop-runner-{os.getpid()}-{int(datetime.now(timezone.utc).timestamp())}"
     lock_acquired, lock_doc, stale_lock_recovered = acquire_issue_lock(issue_num, lock_owner_id, args.lease_ttl_seconds)
@@ -967,7 +1007,8 @@ def main():
             "selected_workflow_state": selected.get("workflow_state"),
             "selected_loop_profile": selected_loop_profile,
             "selected_plan_item_id": selected.get("plan_item_id"),
-            "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+            "attempt_budget": selected_attempt_budget,
+            "attempt_budget_guard": selection_trace.get("attempt_budget_guard", {}),
             "pec_preflight": pec_preflight,
             "adapter_pre_hook": pre_hook_result,
         },
@@ -1023,6 +1064,10 @@ def main():
                 args.runtime_profile_file,
                 "--task-key",
                 f"issue-{issue_num}",
+                "--max-attempts",
+                str(max_attempts),
+                "--worker-task-pack-report",
+                str(worker_task_pack_preflight.get("report_path")),
             ]
         )
 
@@ -1445,6 +1490,8 @@ def main():
             "selected_workflow_state": selected.get("workflow_state"),
             "selected_loop_profile": selected_loop_profile,
             "selected_plan_item_id": selected.get("plan_item_id"),
+            "attempt_budget": selected_attempt_budget,
+            "attempt_budget_guard": selection_trace.get("attempt_budget_guard", {}),
             "final_loop_profile": final_loop_profile,
             "lock_owner_id": lock_owner_id,
             "watchdog_report": str(watchdog_path),
@@ -1530,7 +1577,8 @@ def main():
         "selected_workflow_state": selected.get("workflow_state"),
         "selected_loop_profile": selected_loop_profile,
         "selected_plan_item_id": selected.get("plan_item_id"),
-        "attempt_budget": selected.get("attempt_budget", dict(DEFAULT_ATTEMPT_BUDGET)),
+        "attempt_budget": selected_attempt_budget,
+        "attempt_budget_guard": selection_trace.get("attempt_budget_guard", {}),
         "checkpoint_resumed": bool(args.resume_from_checkpoint and resume_checkpoint),
         "checkpoint_stage_at_start": resume_stage,
         "lock_owner_id": lock_owner_id,
