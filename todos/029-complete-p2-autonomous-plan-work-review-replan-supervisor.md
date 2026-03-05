@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p2
 issue_id: "029"
 tags: [planningops, autonomy, supervisor, workflow, quality]
@@ -66,10 +66,10 @@ Implement Option 1 as policy-first orchestration, then validate with pilot scena
 - validation/report artifacts for supervisor decisions
 
 ## Acceptance Criteria
-- [ ] Supervisor loop can run multiple cycles autonomously with quality gates.
-- [ ] Comparative experiment trigger path is integrated.
-- [ ] Replan and backlog replenishment are first-class outputs, not side notes.
-- [ ] Pilot run demonstrates convergence on at least one difficult multi-step task.
+- [x] Supervisor loop can run multiple cycles autonomously with quality gates.
+- [x] Comparative experiment trigger path is integrated.
+- [x] Replan and backlog replenishment are first-class outputs, not side notes.
+- [x] Pilot run demonstrates convergence on at least one difficult multi-step task.
 
 ## Work Log
 
@@ -83,3 +83,27 @@ Implement Option 1 as policy-first orchestration, then validate with pilot scena
 **Learnings:**
 - True long-horizon autonomy is orchestration quality, not just command execution.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added supervisor loop runner (`planningops/scripts/autonomous_supervisor_loop.py`) implementing multi-cycle `plan -> work -> review -> replan`.
+- Added supervisor contract (`planningops/contracts/autonomous-supervisor-loop-contract.md`) and requirements mapping updates.
+- Integrated experiment trigger artifacts (`experiment-trigger.json`) and stop policy (`continue-on-experiment` toggle).
+- Wired backlog stock/replenishment gate into each supervisor cycle via `backlog_stock_replenishment_guard.py`.
+- Promoted replan/replenishment fields to first-class cycle outputs in supervisor reports.
+- Added deterministic simulation fixture and contract test (`planningops/fixtures/supervisor-loop-sequence-sample.json`, `planningops/scripts/test_autonomous_supervisor_loop_contract.sh`).
+- Added CI guardrail coverage for supervisor contract test.
+
+**Validation:**
+- `python3 -m py_compile planningops/scripts/autonomous_supervisor_loop.py planningops/scripts/issue_loop_runner.py`
+- `bash planningops/scripts/test_autonomous_supervisor_loop_contract.sh`
+- `bash planningops/scripts/test_backlog_stock_replenishment_contract.sh`
+- `bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh`
+- `bash planningops/scripts/test_worker_executor_contract.sh`
+- `bash planningops/scripts/test_verify_loop_run_hard_gate_contract.sh`
+- `bash planningops/scripts/test_lease_lock_watchdog.sh`
+- `bash planningops/scripts/test_loop_checkpoint_resume.sh`
+- `bash planningops/scripts/test_validate_worker_task_pack_contract.sh`
+- `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all`

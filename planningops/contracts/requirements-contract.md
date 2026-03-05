@@ -36,6 +36,10 @@
 33. Intake selection must enforce `high_value_ready_first` so non-ready cards cannot preempt a ready-now candidate.
 34. Replenishment candidates must be evidence-backed and rejected when artifact references are missing.
 35. Replenishment candidate normalization must preserve dependency baseline (`depends_on`) and checklist acceptance criteria.
+36. Supervisor loop must orchestrate multi-cycle `plan -> work -> review -> replan` with deterministic per-cycle records.
+37. Supervisor must evaluate experiment triggers from uncertainty/simulation signals and emit explicit experiment trigger artifacts.
+38. Supervisor decisions must treat replan and replenishment outputs as first-class cycle outputs.
+39. Supervisor summary must publish final stop reason and contract references for each run.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
@@ -80,5 +84,6 @@
 - Autonomous run policy contract: see `planningops/contracts/autonomous-run-policy-contract.md`.
 - Worktree comparative experiment protocol: see `planningops/contracts/worktree-comparative-experiment-protocol.md`.
 - Backlog stock/replenishment contract: see `planningops/contracts/backlog-stock-replenishment-contract.md`.
+- Autonomous supervisor loop contract: see `planningops/contracts/autonomous-supervisor-loop-contract.md`.
 - Implementation readiness contract: see `planningops/contracts/implementation-readiness-gate-contract.md`.
 - Worker task pack contract: see `planningops/contracts/worker-task-pack-contract.md`.

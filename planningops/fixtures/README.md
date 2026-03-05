@@ -13,6 +13,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `track1-kpi-baseline-ci.json`: strict gate KPI baseline input
 - `backlog-stock-items-sample.json`: normalized project-item sample for stock gate checks
 - `backlog-replenishment-candidates-sample.json`: evidence-backed replenishment candidate sample
+- `supervisor-loop-sequence-sample.json`: deterministic loop-result sequence for supervisor contract tests
 
 ## Change Rules
 - Fixtures must be static and deterministic.
