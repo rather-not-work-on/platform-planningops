@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p2
 issue_id: "025"
 tags: [planningops, ci, regression, reliability, contracts]
@@ -61,10 +61,10 @@ Implement Option 1 after completion of issues `023` and `024`.
 - `.github/workflows/*` reliability check workflow
 
 ## Acceptance Criteria
-- [ ] CI runs reliability pack on changes to loop runtime scripts/contracts/schemas.
-- [ ] Test matrix includes timeout, retry convergence, budget exhausted, and heartbeat lock safety.
-- [ ] Failing reliability checks block merge.
-- [ ] CI output links to deterministic artifact/report paths.
+- [x] CI runs reliability pack on changes to loop runtime scripts/contracts/schemas.
+- [x] Test matrix includes timeout, retry convergence, budget exhausted, and heartbeat lock safety.
+- [x] Failing reliability checks block merge.
+- [x] CI output links to deterministic artifact/report paths.
 
 ## Work Log
 
@@ -79,3 +79,22 @@ Implement Option 1 after completion of issues `023` and `024`.
 **Learnings:**
 - Reliability guarantees decay quickly without permanent CI enforcement.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Upgraded `.github/workflows/planningops-contracts-dryrun.yml` with a dedicated reliability regression pack step.
+- Wired the following regression set into CI:
+  - `planningops/scripts/test_worker_executor_contract.sh`
+  - `planningops/scripts/test_verify_loop_run_hard_gate_contract.sh`
+  - `planningops/scripts/test_lease_lock_watchdog.sh`
+  - `planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh`
+  - `planningops/scripts/test_loop_checkpoint_resume.sh`
+- Added deterministic CI report generation:
+  - `planningops/artifacts/validation/worker-task-pack-ci-report.json`
+  - `planningops/artifacts/ci/reliability-regression-summary.json`
+- Kept execution inside existing required workflow/job (`PlanningOps Contracts Dry-Run` / `validate-and-dry-run`) so reliability failures block merge.
+
+**Learnings:**
+- Reusing an already-required gate is the lowest-risk way to enforce new reliability invariants without branch-protection drift.
