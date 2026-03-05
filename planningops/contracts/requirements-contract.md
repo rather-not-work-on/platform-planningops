@@ -29,6 +29,8 @@
 26. Worker task pack validation failure must block execution start with explicit preflight failure result.
 27. Verification hard gate must require schema-valid `execution-attempts` evidence (`execution-attempts.json`) and reject `pass` when evidence is missing/invalid.
 28. Verification output (`verdict`, `reason_code`) must be consistency-checked against loop report evidence and written identically into project payload.
+29. Autonomous run control must be convergence/risk bounded; wall-clock duration is metadata and cannot override safety or quality stop conditions.
+30. Autonomous stop conditions must explicitly include quality failure, escalation trigger, and runtime safety conflict with deterministic evidence output.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
@@ -38,6 +40,7 @@
 5. Portability: local-first runtime must be migratable to Oracle Cloud by profile switch without contract shape change.
 6. Kanban operation model: execution cadence is non-periodic pull-based; readiness and evidence gates, not sprint windows, determine progression.
 7. Schema mismatch policy: dry-run may emit report-only verdicts for migration visibility; apply mode must fail fast on required field mismatch.
+8. Autonomous operation policy: prioritize quality and convergence over throughput or fixed runtime windows.
 
 ## Naming Contract
 - External contract term is fixed to `Executor`.
@@ -69,5 +72,6 @@
 - Checkpoint resume contract: see `planningops/contracts/checkpoint-resume-contract.md`.
 - Lease lock contract: see `planningops/contracts/lease-lock-watchdog-contract.md`.
 - Escalation contract: see `planningops/contracts/escalation-gate-contract.md`.
+- Autonomous run policy contract: see `planningops/contracts/autonomous-run-policy-contract.md`.
 - Implementation readiness contract: see `planningops/contracts/implementation-readiness-gate-contract.md`.
 - Worker task pack contract: see `planningops/contracts/worker-task-pack-contract.md`.
