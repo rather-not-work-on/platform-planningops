@@ -17,6 +17,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `worktree-comparative-experiment-protocol.md`: A/B branch-worktree experiment trigger, artifact, and scoring protocol
 - `backlog-stock-replenishment-contract.md`: queue stock floor + evidence-backed replenishment gate
 - `autonomous-supervisor-loop-contract.md`: multi-cycle plan-work-review-replan orchestration contract
+- `supervisor-experiment-auto-executor-contract.md`: trigger-to-worktree comparative execution and decision contract
 - `worker-task-pack-contract.md`: worker execution bundle and render safety contract
 - `checkpoint-resume-contract.md`: checkpoint and resume behavior
 - `lease-lock-watchdog-contract.md`: concurrency and stale-lock recovery

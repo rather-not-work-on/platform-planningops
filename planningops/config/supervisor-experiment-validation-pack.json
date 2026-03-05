@@ -1,0 +1,17 @@
+{
+  "pack_id": "supervisor-experiment-validation-pack-v1",
+  "commands": [
+    {
+      "id": "py_compile_supervisor",
+      "command": ["python3", "-m", "py_compile", "planningops/scripts/autonomous_supervisor_loop.py"]
+    },
+    {
+      "id": "test_supervisor_contract",
+      "command": ["bash", "planningops/scripts/test_autonomous_supervisor_loop_contract.sh"]
+    },
+    {
+      "id": "test_backlog_replenishment_contract",
+      "command": ["bash", "planningops/scripts/test_backlog_stock_replenishment_contract.sh"]
+    }
+  ]
+}

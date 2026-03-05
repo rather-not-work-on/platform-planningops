@@ -161,6 +161,46 @@ def run_backlog_gate(args, cycle_dir: Path, candidate_file: str | None):
     }
 
 
+def run_experiment_auto_executor(args, run_id: str, cycle_index: int, loop_result: dict):
+    selected_issue = loop_result.get("selected_issue") or "unknown"
+    experiment_id = f"{run_id}-cycle-{cycle_index:02d}-issue-{selected_issue}"
+    output_path = Path(args.experiment_artifacts_root) / experiment_id / "supervisor-auto-executor-report.json"
+    cmd = [
+        "python3",
+        "planningops/scripts/supervisor_experiment_auto_executor.py",
+        "--repo-root",
+        ".",
+        "--experiment-id",
+        experiment_id,
+        "--topic",
+        f"supervisor-cycle-{cycle_index:02d}-issue-{selected_issue}",
+        "--options",
+        args.experiment_options,
+        "--validation-pack-file",
+        args.experiment_validation_pack_file,
+        "--artifacts-root",
+        args.experiment_artifacts_root,
+        "--worktree-root",
+        args.experiment_worktree_root,
+        "--output",
+        str(output_path),
+    ]
+    if args.keep_experiment_worktrees:
+        cmd.append("--keep-worktrees")
+
+    rc, out, err = run(cmd)
+    report = load_json(output_path, {})
+    return {
+        "enabled": True,
+        "rc": rc,
+        "command": cmd,
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+        "output_path": str(output_path),
+        "report": report if isinstance(report, dict) else {},
+    }
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Autonomous plan-work-review-replan supervisor loop")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="dry-run")
@@ -183,6 +223,15 @@ def parse_args():
     parser.add_argument("--artifacts-root", default="planningops/artifacts/supervisor")
     parser.add_argument("--output", default="planningops/artifacts/supervisor/last-run.json")
     parser.add_argument("--run-id", default=None, help="Optional deterministic run id")
+    parser.add_argument("--experiment-auto-execute", action="store_true")
+    parser.add_argument("--experiment-options", default="option-a,option-b")
+    parser.add_argument(
+        "--experiment-validation-pack-file",
+        default="planningops/config/supervisor-experiment-validation-pack.json",
+    )
+    parser.add_argument("--experiment-artifacts-root", default="planningops/artifacts/experiments")
+    parser.add_argument("--experiment-worktree-root", default="/tmp/planningops-supervisor-experiments")
+    parser.add_argument("--keep-experiment-worktrees", action="store_true")
     return parser.parse_args()
 
 
@@ -230,6 +279,7 @@ def main():
 
         experiment = detect_experiment_trigger(loop_result)
         experiment_trigger_artifact = None
+        experiment_executor = {"enabled": False}
         if experiment["triggered"]:
             experiment_trigger_artifact = cycle_dir / "experiment-trigger.json"
             save_json(
@@ -243,6 +293,8 @@ def main():
                     "selected_issue": loop_result.get("selected_issue"),
                 },
             )
+            if args.experiment_auto_execute:
+                experiment_executor = run_experiment_auto_executor(args, run_id, cycle_index, loop_result)
 
         candidate_file = str(loop_result.get("replenishment_candidates_path") or "") or None
         backlog_gate = run_backlog_gate(args, cycle_dir, candidate_file)
@@ -263,6 +315,13 @@ def main():
             "replenishment_candidates_count": int(loop_result.get("replenishment_candidates_count") or 0),
             "experiment_trigger": experiment,
             "experiment_trigger_artifact": str(experiment_trigger_artifact) if experiment_trigger_artifact else None,
+            "experiment_auto_executor": {
+                "enabled": bool(experiment_executor.get("enabled")),
+                "rc": experiment_executor.get("rc"),
+                "output_path": experiment_executor.get("output_path"),
+                "verdict": (experiment_executor.get("report") or {}).get("verdict"),
+                "selected_option": (experiment_executor.get("report") or {}).get("selected_option"),
+            },
             "backlog_gate": {
                 "rc": backlog_gate.get("rc"),
                 "report_path": backlog_gate.get("report_path"),
@@ -294,6 +353,13 @@ def main():
             stop_reason = "backlog_gate_fail"
             stop_details = {"cycle": cycle_index}
             break
+        if experiment_executor.get("enabled") and int(experiment_executor.get("rc", 1)) != 0:
+            stop_reason = "experiment_auto_executor_failed"
+            stop_details = {
+                "cycle": cycle_index,
+                "output_path": experiment_executor.get("output_path"),
+            }
+            break
         if experiment["triggered"] and stop_on_experiment_trigger:
             stop_reason = "experiment_triggered"
             stop_details = {"cycle": cycle_index, "reasons": experiment["reasons"]}
@@ -308,7 +374,7 @@ def main():
         stop_details = {"cycle_count": len(cycles)}
 
     supervisor_verdict = "pass"
-    if stop_reason in {"quality_gate_fail", "escalation_auto_pause", "backlog_gate_fail"}:
+    if stop_reason in {"quality_gate_fail", "escalation_auto_pause", "backlog_gate_fail", "experiment_auto_executor_failed"}:
         supervisor_verdict = "fail"
     elif stop_reason in {"experiment_triggered", "sequence_exhausted"}:
         supervisor_verdict = "inconclusive"

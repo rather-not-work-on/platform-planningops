@@ -30,6 +30,17 @@ Supervisor must trigger comparative experiment path when any is true:
 When triggered, supervisor must emit:
 - `experiment-trigger.json`
 - protocol reference to `planningops/contracts/worktree-comparative-experiment-protocol.md`
+- optional auto-executor report link when `--experiment-auto-execute` is enabled
+
+## Auto Executor Linkage
+- Supervisor can invoke `planningops/scripts/supervisor_experiment_auto_executor.py` on experiment trigger.
+- Auto executor output fields must be attached to cycle report:
+  - `experiment_auto_executor.enabled`
+  - `experiment_auto_executor.rc`
+  - `experiment_auto_executor.output_path`
+  - `experiment_auto_executor.verdict`
+  - `experiment_auto_executor.selected_option`
+- Auto executor failure is terminal with stop reason `experiment_auto_executor_failed`.
 
 ## Stop Rules
 Stop immediately when:
