@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p1
 issue_id: "027"
 tags: [planningops, experimentation, worktree, architecture, tradeoff]
@@ -60,10 +60,10 @@ Implement Option 1 with a minimal experiment template and scoring rubric.
 - optional script helper for experiment manifest generation
 
 ## Acceptance Criteria
-- [ ] Protocol defines when to trigger comparative experiment mode.
-- [ ] Protocol defines required artifacts per option (result, complexity notes, rollback cost).
-- [ ] Protocol defines deterministic decision rubric and selection record format.
-- [ ] At least one real pilot comparison run is captured.
+- [x] Protocol defines when to trigger comparative experiment mode.
+- [x] Protocol defines required artifacts per option (result, complexity notes, rollback cost).
+- [x] Protocol defines deterministic decision rubric and selection record format.
+- [x] At least one real pilot comparison run is captured.
 
 ## Work Log
 
@@ -77,3 +77,30 @@ Implement Option 1 with a minimal experiment template and scoring rubric.
 **Learnings:**
 - High-quality autonomy needs explicit experimentation discipline, not just execution loops.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added `planningops/contracts/worktree-comparative-experiment-protocol.md` with:
+  - trigger conditions,
+  - execution rules,
+  - required artifact contract,
+  - deterministic weighted decision rubric,
+  - selection record format.
+- Synced contract index and requirements mapping:
+  - `planningops/contracts/README.md`
+  - `planningops/contracts/requirements-contract.md`
+- Captured a real A/B pilot comparison run:
+  - root: `planningops/artifacts/experiments/2026-03-05-lock-drift-classification/`
+  - files:
+    - `manifest.json`
+    - `option-a-report.json`
+    - `option-b-report.json`
+    - `decision-record.md`
+    - `option-a-test.log`
+    - `option-b-test.log`
+  - validation command: `bash planningops/scripts/test_lease_lock_watchdog.sh`
+
+**Learnings:**
+- Using real worktree mutations in pilot mode makes reliability trade-offs concrete and avoids intuition-only decisions.

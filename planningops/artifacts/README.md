@@ -10,6 +10,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - `loops/`: per-loop run artifacts (`intake`, `simulation`, `verification`, `patch-summary`)
 - `sync-summary/`: GitHub/project sync outputs
 - `ci/`: federated CI local/summary outputs
+- `experiments/`: comparative worktree/branch experiment manifests, option reports, and decision records
 - `conformance/`: cross-repo contract conformance reports
 - `refactor-hygiene/`: periodic refactor hygiene run reports
 - `adapter-hooks/`, `verification/`, `drift/`, `transition-log/`, `pilot/`, `idempotency/`: supporting evidence

@@ -1,0 +1,19 @@
+{
+  "generated_at_utc": "2026-03-05T11:23:59.708404+00:00",
+  "experiment_id": "exp-20260305-lock-drift-classification",
+  "topic": "runtime lock drift classification strategy",
+  "trigger": "reliability semantic uncertainty for lock drift reason precedence",
+  "options": [
+    "A",
+    "B"
+  ],
+  "validation_pack": [
+    "bash planningops/scripts/test_lease_lock_watchdog.sh"
+  ],
+  "rubric_weights": {
+    "correctness_safety": 0.4,
+    "implementation_complexity": 0.2,
+    "maintainability_drift_risk": 0.2,
+    "rollback_cost": 0.2
+  }
+}

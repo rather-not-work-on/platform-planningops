@@ -31,6 +31,7 @@
 28. Verification output (`verdict`, `reason_code`) must be consistency-checked against loop report evidence and written identically into project payload.
 29. Autonomous run control must be convergence/risk bounded; wall-clock duration is metadata and cannot override safety or quality stop conditions.
 30. Autonomous stop conditions must explicitly include quality failure, escalation trigger, and runtime safety conflict with deterministic evidence output.
+31. High-uncertainty or architecture-tradeoff changes must use branch/worktree comparative experiment protocol with artifact-backed selection record.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
@@ -73,5 +74,6 @@
 - Lease lock contract: see `planningops/contracts/lease-lock-watchdog-contract.md`.
 - Escalation contract: see `planningops/contracts/escalation-gate-contract.md`.
 - Autonomous run policy contract: see `planningops/contracts/autonomous-run-policy-contract.md`.
+- Worktree comparative experiment protocol: see `planningops/contracts/worktree-comparative-experiment-protocol.md`.
 - Implementation readiness contract: see `planningops/contracts/implementation-readiness-gate-contract.md`.
 - Worker task pack contract: see `planningops/contracts/worker-task-pack-contract.md`.
