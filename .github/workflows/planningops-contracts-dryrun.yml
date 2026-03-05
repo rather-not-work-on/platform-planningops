@@ -22,6 +22,50 @@ jobs:
       - name: Dry-run parser diff pipeline
         run: python3 planningops/scripts/parser_diff_dry_run.py --run-id ci-dry-run --mode dry-run
 
+      - name: Reliability regression pack
+        run: |
+          bash planningops/scripts/test_worker_executor_contract.sh
+          bash planningops/scripts/test_verify_loop_run_hard_gate_contract.sh
+          bash planningops/scripts/test_lease_lock_watchdog.sh
+          bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
+          bash planningops/scripts/test_loop_checkpoint_resume.sh
+          python3 planningops/scripts/validate_worker_task_pack.py \
+            --runtime-profile-file planningops/config/runtime-profiles.json \
+            --task-key issue-18 \
+            --issue-number 18 \
+            --mode dry-run \
+            --loop-profile "L3 Implementation-TDD" \
+            --target-repo rather-not-work-on/platform-planningops \
+            --output planningops/artifacts/validation/worker-task-pack-ci-report.json \
+            --strict
+          python3 - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          summary = {
+              "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+              "check_pack": "planningops-reliability-regression-v1",
+              "checks": [
+                  "test_worker_executor_contract",
+                  "test_verify_loop_run_hard_gate_contract",
+                  "test_lease_lock_watchdog",
+                  "test_issue_loop_runner_multi_repo_intake",
+                  "test_loop_checkpoint_resume",
+                  "validate_worker_task_pack_ci_report",
+              ],
+              "artifacts": {
+                  "parser_diff_summary": "planningops/artifacts/sync-summary/ci-dry-run.json",
+                  "idempotency_ledger": "planningops/artifacts/idempotency/ledger.json",
+                  "worker_task_pack_ci_report": "planningops/artifacts/validation/worker-task-pack-ci-report.json",
+              },
+          }
+          output = Path("planningops/artifacts/ci/reliability-regression-summary.json")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(json.dumps(summary, ensure_ascii=True, indent=2), encoding="utf-8")
+          print(f"summary written: {output}")
+          PY
+
       - name: Upload dry-run artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -29,3 +73,5 @@ jobs:
           path: |
             planningops/artifacts/sync-summary/ci-dry-run.json
             planningops/artifacts/idempotency/ledger.json
+            planningops/artifacts/validation/worker-task-pack-ci-report.json
+            planningops/artifacts/ci/reliability-regression-summary.json
