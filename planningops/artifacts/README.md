@@ -13,6 +13,8 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - `experiments/`: comparative worktree/branch experiment manifests, option reports, and decision records
 - `conformance/`: cross-repo contract conformance reports
 - `refactor-hygiene/`: periodic refactor hygiene run reports
+- `supervisor/`: autonomous supervisor loop cycle reports and run summaries
+- `backlog/`: evidence-backed replenishment candidate artifacts per issue
 - `adapter-hooks/`, `verification/`, `drift/`, `transition-log/`, `pilot/`, `idempotency/`: supporting evidence
 
 ## Change Rules

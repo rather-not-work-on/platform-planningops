@@ -1862,6 +1862,8 @@ def main():
         "adapter_post_artifact": str(post_hook_path),
         "replenishment_candidates_path": str(replenishment_path),
         "replenishment_candidates_count": len(replenishment_candidates),
+        "last_verdict": payload.get("last_verdict", "unknown"),
+        "reason_code": payload.get("reason_code", "unknown"),
         "loop_rc": rc_loop,
         "verify_rc": rc_verify,
         "already_processed": already_processed,
