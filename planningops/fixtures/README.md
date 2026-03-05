@@ -11,6 +11,8 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `meta-plan-graph-sample.json`: minimal valid MPG v1 graph sample
 - `worker-task-pack-sample.json`: minimal valid worker task pack sample
 - `track1-kpi-baseline-ci.json`: strict gate KPI baseline input
+- `backlog-stock-items-sample.json`: normalized project-item sample for stock gate checks
+- `backlog-replenishment-candidates-sample.json`: evidence-backed replenishment candidate sample
 
 ## Change Rules
 - Fixtures must be static and deterministic.

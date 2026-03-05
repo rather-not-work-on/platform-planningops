@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p1
 issue_id: "028"
 tags: [planningops, backlog, kanban, queue, autonomy]
@@ -61,10 +61,10 @@ Implement Option 1 and make backlog quality filters part of the autonomous gate.
 - `todos/` governance notes if needed
 
 ## Acceptance Criteria
-- [ ] Queue classes and minimum stock targets are defined.
-- [ ] Replenishment requires evidence-backed candidate generation.
-- [ ] New backlog entries include dependency and acceptance criteria baseline.
-- [ ] “Immediate high-value ready item first” rule is explicitly enforced.
+- [x] Queue classes and minimum stock targets are defined.
+- [x] Replenishment requires evidence-backed candidate generation.
+- [x] New backlog entries include dependency and acceptance criteria baseline.
+- [x] “Immediate high-value ready item first” rule is explicitly enforced.
 
 ## Work Log
 
@@ -78,3 +78,24 @@ Implement Option 1 and make backlog quality filters part of the autonomous gate.
 **Learnings:**
 - Sustainable autonomy requires queue health controls, not only runner controls.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added backlog stock/replenishment contract and policy (`planningops/contracts/backlog-stock-replenishment-contract.md`, `planningops/config/backlog-stock-policy.json`).
+- Added stock/replenishment guard script and regression test (`planningops/scripts/backlog_stock_replenishment_guard.py`, `planningops/scripts/test_backlog_stock_replenishment_contract.sh`).
+- Enforced explicit `high_value_ready_first` ordering in intake selection (`planningops/scripts/issue_loop_runner.py`).
+- Added evidence-backed replenishment candidate artifact generation in runner output (`planningops/artifacts/backlog/issue-<n>-replenishment-candidates.json`).
+- Wired new contract test into CI guardrails.
+
+**Validation:**
+- `python3 -m py_compile planningops/scripts/issue_loop_runner.py planningops/scripts/backlog_stock_replenishment_guard.py`
+- `bash planningops/scripts/test_worker_executor_contract.sh`
+- `bash planningops/scripts/test_verify_loop_run_hard_gate_contract.sh`
+- `bash planningops/scripts/test_lease_lock_watchdog.sh`
+- `bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh`
+- `bash planningops/scripts/test_loop_checkpoint_resume.sh`
+- `bash planningops/scripts/test_validate_worker_task_pack_contract.sh`
+- `bash planningops/scripts/test_backlog_stock_replenishment_contract.sh`
+- `bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all`

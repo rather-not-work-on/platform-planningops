@@ -1,0 +1,18 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "candidate-001",
+      "title": "Harden dependency unblock path for ready-implementation lane",
+      "target_repo": "rather-not-work-on/monday",
+      "depends_on": [101],
+      "acceptance_criteria": [
+        "Dependency mapping is documented and reproducible.",
+        "Validation gate confirms no dependency regression."
+      ],
+      "evidence_refs": [
+        "planningops/artifacts/verification/issue-101-verification.json",
+        "planningops/artifacts/loop-runner/last-run.json"
+      ]
+    }
+  ]
+}

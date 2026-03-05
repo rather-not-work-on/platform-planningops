@@ -12,6 +12,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `github_sync_adapter.py`
   - `repo_execution_adapters.py`
 - Validation and reporting:
+  - `backlog_stock_replenishment_guard.py`
   - `validate_contracts.py`
   - `validate_worker_task_pack.py`
   - `validate_project_field_schema.py`
@@ -37,6 +38,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_meta_plan_graph_schema_contract.sh`
   - `test_verify_plan_projection_contract.sh`
   - `test_verify_loop_run_hard_gate_contract.sh`
+  - `test_backlog_stock_replenishment_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
   - `test_*.sh`

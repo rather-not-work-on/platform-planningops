@@ -72,6 +72,7 @@ python3 planningops/scripts/build_meta_plan_graph.py --contract-file planningops
 python3 planningops/scripts/meta_plan_orchestrator.py --meta-graph-contract planningops/fixtures/meta-plan-graph-sample.json --mode dry-run --strict
 python3 planningops/scripts/validate_worker_task_pack.py --task-key issue-18 --issue-number 18 --mode dry-run --loop-profile "L3 Implementation-TDD" --strict
 python3 planningops/scripts/verify_plan_projection.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --snapshot-file planningops/fixtures/plan-projection-snapshot-sample.json --strict
+python3 planningops/scripts/backlog_stock_replenishment_guard.py --items-file planningops/fixtures/backlog-stock-items-sample.json --candidate-file planningops/fixtures/backlog-replenishment-candidates-sample.json
 bash planningops/scripts/test_compile_plan_to_backlog_contract.sh
 bash planningops/scripts/test_build_meta_plan_graph_contract.sh
 bash planningops/scripts/test_verify_plan_projection_contract.sh
@@ -79,6 +80,7 @@ bash planningops/scripts/test_meta_plan_graph_schema_contract.sh
 bash planningops/scripts/test_meta_plan_orchestrator_contract.sh
 bash planningops/scripts/test_ralph_loop_local_worker_policy.sh
 bash planningops/scripts/test_validate_worker_task_pack_contract.sh
+bash planningops/scripts/test_backlog_stock_replenishment_contract.sh
 python3 planningops/scripts/normalize_ready_implementation_blueprint_refs.py
 python3 planningops/scripts/run_track2_contract_pack_validation.py --strict
 python3 planningops/scripts/cross_repo_conformance_check.py
