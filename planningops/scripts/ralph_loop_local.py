@@ -209,6 +209,7 @@ def main():
     base = Path(f"planningops/artifacts/loops/{date_str}/{loop_id}")
     intake_path = base / "intake-check.json"
     simulation_path = base / "simulation-report.md"
+    execution_attempts_path = base / "execution-attempts.json"
     verification_path = base / "verification-report.json"
     patch_summary_path = base / "patch-summary.md"
     transition_log_path = Path(f"planningops/artifacts/transition-log/{date_str}.ndjson")
@@ -407,6 +408,7 @@ def main():
         return 1
 
     execution_result = execute_worker_command(worker_plan["command"], policy)
+    write_json(execution_attempts_path, execution_result)
     attempt_sections = []
     for row in execution_result["attempts"]:
         attempt_sections.extend(
@@ -466,6 +468,13 @@ def main():
                 "reason_code": reason,
                 "stage": "execute",
                 "worker_execution": execution_result,
+                "artifacts": {
+                    "intake_check": str(intake_path),
+                    "simulation_report": str(simulation_path),
+                    "execution_attempts": str(execution_attempts_path),
+                    "verification_report": str(verification_path),
+                    "transition_log": str(transition_log_path),
+                },
                 "executed_at_utc": utc_now().isoformat(),
             },
         )
@@ -510,6 +519,7 @@ def main():
             "artifacts": {
                 "intake_check": str(intake_path),
                 "simulation_report": str(simulation_path),
+                "execution_attempts": str(execution_attempts_path),
                 "verification_report": str(verification_path),
                 "transition_log": str(transition_log_path),
                 "sync_summary": str(summary_path),

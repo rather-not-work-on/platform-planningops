@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "execution-attempts-v1",
+  "title": "Execution Attempts Evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "reason_code",
+    "attempts_executed",
+    "attempts_allowed",
+    "retry_cap_attempts",
+    "attempt_budget_limited",
+    "max_attempts",
+    "max_retries",
+    "timeout_ms",
+    "timed_out",
+    "attempts"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempts_executed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "attempts_allowed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retry_cap_attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "attempt_budget_limited": {
+      "type": "boolean"
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_retries": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "timed_out": {
+      "type": "boolean"
+    },
+    "final_return_code": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "stdout_tail": {
+      "type": "string"
+    },
+    "stderr_tail": {
+      "type": "string"
+    },
+    "attempts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/attempt"
+      }
+    }
+  },
+  "$defs": {
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempt_index",
+        "timed_out",
+        "return_code",
+        "duration_ms",
+        "stdout_tail",
+        "stderr_tail"
+      ],
+      "properties": {
+        "attempt_index": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "timed_out": {
+          "type": "boolean"
+        },
+        "return_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stdout_tail": {
+          "type": "string"
+        },
+        "stderr_tail": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

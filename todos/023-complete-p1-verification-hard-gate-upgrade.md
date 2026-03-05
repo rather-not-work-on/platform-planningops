@@ -1,5 +1,5 @@
 ---
-status: ready
+status: complete
 priority: p1
 issue_id: "023"
 tags: [planningops, verifier, contracts, reliability]
@@ -64,10 +64,10 @@ Implement Option 1 and bind verifier to a schema-backed execution evidence contr
 - `planningops/contracts/requirements-contract.md`
 
 ## Acceptance Criteria
-- [ ] Verification fails when execution-attempt evidence is missing or schema-invalid.
-- [ ] Final verdict consistency is enforced across loop report and project payload.
-- [ ] Pass verdict requires execution-attempt evidence and required artifact set.
-- [ ] Regression tests cover missing/malformed attempt artifacts.
+- [x] Verification fails when execution-attempt evidence is missing or schema-invalid.
+- [x] Final verdict consistency is enforced across loop report and project payload.
+- [x] Pass verdict requires execution-attempt evidence and required artifact set.
+- [x] Regression tests cover missing/malformed attempt artifacts.
 
 ## Work Log
 
@@ -82,3 +82,24 @@ Implement Option 1 and bind verifier to a schema-backed execution evidence contr
 **Learnings:**
 - Verifier strictness must follow executor artifact model; otherwise pass/fail semantics diverge.
 
+### 2026-03-05 - Implementation Complete
+
+**By:** Codex
+
+**Actions:**
+- Added `planningops/schemas/execution-attempts.schema.json` and wired it into `verify_loop_run.py` via `--execution-attempts-schema`.
+- Upgraded `planningops/scripts/verify_loop_run.py` hard gate:
+  - requires `execution-attempts.json` in loop artifact set,
+  - validates execution-attempt evidence schema and semantics,
+  - enforces pass-path consistency (`reason_code=ok`, `execution status=pass`, existing `sync_summary`),
+  - enforces consistency between verification report and execution-attempt artifact.
+- Updated `planningops/scripts/ralph_loop_local.py` to persist `execution-attempts.json` and reference it in verification artifacts.
+- Synced requirement contract and module indexes:
+  - `planningops/contracts/requirements-contract.md`
+  - `planningops/schemas/README.md`
+  - `planningops/scripts/README.md`
+- Added regression pack for hard-gate behavior:
+  - `planningops/scripts/test_verify_loop_run_hard_gate_contract.sh`
+
+**Learnings:**
+- Pass signaling needs explicit evidence parity checks, not only artifact existence checks, to prevent false-positive completion.

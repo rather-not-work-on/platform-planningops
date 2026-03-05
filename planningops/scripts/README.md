@@ -15,7 +15,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_contracts.py`
   - `validate_worker_task_pack.py`
   - `validate_project_field_schema.py`
-  - `verify_loop_run.py`
+  - `verify_loop_run.py` (`--execution-attempts-schema`)
   - `verify_plan_projection.py`
   - `cross_repo_conformance_check.py`
   - `multi_repo_projection_report.py`
@@ -36,6 +36,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_meta_plan_orchestrator_contract.sh`
   - `test_meta_plan_graph_schema_contract.sh`
   - `test_verify_plan_projection_contract.sh`
+  - `test_verify_loop_run_hard_gate_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
   - `test_*.sh`

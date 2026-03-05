@@ -27,6 +27,8 @@
 24. Touched planningops modules must have up-to-date module `README.md` files and pass module README contract checks.
 25. Before loop execution, runner must validate a deterministic worker task pack (`worker_policy_kind`, rendered `command`, retry/timeout policy, idempotency key).
 26. Worker task pack validation failure must block execution start with explicit preflight failure result.
+27. Verification hard gate must require schema-valid `execution-attempts` evidence (`execution-attempts.json`) and reject `pass` when evidence is missing/invalid.
+28. Verification output (`verdict`, `reason_code`) must be consistency-checked against loop report evidence and written identically into project payload.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.

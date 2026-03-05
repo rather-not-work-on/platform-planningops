@@ -12,6 +12,7 @@ Keep local schema copies used for contract validation fixtures and compatibility
 - `plan-execution-contract.schema.json`
 - `meta-plan-graph.schema.json`
 - `worker-task-pack.schema.json`
+- `execution-attempts.schema.json`
 
 ## Change Rules
 - Schema shape changes must be synchronized with `platform-contracts` source schemas.
