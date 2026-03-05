@@ -1,0 +1,289 @@
+{
+  "cycle": 2,
+  "started_at_utc": "2026-03-05T11:59:36.963672+00:00",
+  "loop_result_rc": 0,
+  "loop_result": {
+    "selected_issue": 84,
+    "selected_issue_repo": "rather-not-work-on/platform-planningops",
+    "selected_target_repo": "rather-not-work-on/platform-planningops",
+    "selected_workflow_state": "ready-contract",
+    "selected_loop_profile": "L2 Simulation",
+    "selected_plan_item_id": "pilot-031-live-runner",
+    "attempt_budget": {
+      "max_attempts": 1,
+      "max_duration_minutes": 10,
+      "max_token_budget": 20000
+    },
+    "attempt_budget_guard": {
+      "attempt_budget": {
+        "max_attempts": 1,
+        "max_duration_minutes": 10,
+        "max_token_budget": 20000
+      },
+      "max_attempts": 1,
+      "max_retries": 2,
+      "retry_cap_attempts": 3,
+      "enforced_worker_attempts": 1
+    },
+    "checkpoint_resumed": false,
+    "checkpoint_stage_at_start": null,
+    "lock_owner_id": "issue-loop-runner-73124-1772711920",
+    "stale_lock_recovered": false,
+    "watchdog_report": "planningops/artifacts/loop-runner/watchdog/issue-84.json",
+    "final_loop_profile": "L2 Simulation",
+    "auto_paused": true,
+    "escalation": {
+      "auto_paused": true,
+      "trigger_type": "same_reason_x3",
+      "same_reason_consecutive": 3,
+      "inconclusive_consecutive": 0,
+      "history_count": 3
+    },
+    "replan_decision_path": "planningops/artifacts/replan/issue-84-20260305T115840Z.md",
+    "deps": [],
+    "candidate_count": 1,
+    "allowed_workflow_states": [
+      "ready-contract",
+      "ready-implementation"
+    ],
+    "selection_trace": {
+      "selection_policy": {
+        "name": "high_value_ready_first",
+        "ready_workflow_states": [
+          "ready-contract",
+          "ready-implementation"
+        ],
+        "tie_breaker": [
+          "execution_order_asc",
+          "issue_number_asc"
+        ]
+      },
+      "allowed_workflow_states": [
+        "ready-contract",
+        "ready-implementation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "number": 84,
+          "order": 9501,
+          "status": "Todo",
+          "workflow_state": "ready-contract",
+          "issue_repo": "rather-not-work-on/platform-planningops",
+          "target_repo": "rather-not-work-on/platform-planningops",
+          "component": "planningops",
+          "loop_profile": "L2 Simulation",
+          "initiative": "unified-personal-agent-platform",
+          "plan_item_id": "pilot-031-live-runner",
+          "simulation_required": true,
+          "uncertainty_level": "high",
+          "blueprint_refs": {
+            "interface_contract_refs": null,
+            "package_topology_ref": null,
+            "dependency_manifest_ref": null,
+            "file_plan_ref": null
+          },
+          "blueprint_complete": false
+        }
+      ],
+      "attempts": [
+        {
+          "number": 84,
+          "issue_repo": "rather-not-work-on/platform-planningops",
+          "result": "selected",
+          "plan_item_id": "pilot-031-live-runner",
+          "depends_on": [],
+          "dep_checks": [],
+          "attempt_budget": {
+            "max_attempts": 1,
+            "max_duration_minutes": 10,
+            "max_token_budget": 20000
+          },
+          "selector_hints": {
+            "simulation_required": true,
+            "uncertainty_level": "high"
+          },
+          "blueprint_refs": {
+            "interface_contract_refs": null,
+            "package_topology_ref": null,
+            "dependency_manifest_ref": null,
+            "file_plan_ref": null
+          }
+        }
+      ],
+      "selected": {
+        "number": 84,
+        "order": 9501,
+        "status": "Todo",
+        "workflow_state": "ready-contract",
+        "issue_repo": "rather-not-work-on/platform-planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "loop_profile": "L2 Simulation",
+        "initiative": "unified-personal-agent-platform",
+        "plan_item_id": "pilot-031-live-runner",
+        "depends_on": [],
+        "attempt_budget": {
+          "max_attempts": 1,
+          "max_duration_minutes": 10,
+          "max_token_budget": 20000
+        },
+        "simulation_required": true,
+        "uncertainty_level": "high",
+        "blueprint_refs": {
+          "interface_contract_refs": null,
+          "package_topology_ref": null,
+          "dependency_manifest_ref": null,
+          "file_plan_ref": null
+        },
+        "blueprint_complete": false
+      },
+      "pec_preflight": {
+        "mode": "hybrid",
+        "contract_file": null,
+        "plan_item_id": "pilot-031-live-runner",
+        "status": "skipped",
+        "reason_code": "pec_contract_file_missing_hybrid",
+        "validation_errors": [],
+        "mismatches": []
+      },
+      "worker_task_pack_preflight": {
+        "status": "pass",
+        "reason_code": "worker_task_pack_ok",
+        "report_path": "planningops/artifacts/validation/worker-task-pack-issue-84.json",
+        "rc": 0,
+        "stdout": "{\n  \"generated_at_utc\": \"2026-03-05T11:58:40.583253+00:00\",\n  \"runtime_profile_file\": \"planningops/config/runtime-profiles.json\",\n  \"schema_file\": \"planningops/schemas/worker-task-pack.schema.json\",\n  \"task_key\": \"issue-84\",\n  \"issue_number\": 84,\n  \"mode\": \"dry-run\",\n  \"loop_profile\": \"L2 Simulation\",\n  \"target_repo\": \"rather-not-work-on/platform-planningops\",\n  \"validation_errors\": [],\n  \"worker_task_pack\": {\n    \"version\": \"v1\",\n    \"task_key\": \"issue-84\",\n    \"issue_number\": 84,\n    \"mode\": \"dry-run\",\n    \"loop_profile\": \"L2 Simulation\",\n    \"runtime_profile\": \"local\",\n    \"worker_policy_kind\": \"parser_diff_dry_run\",\n    \"command\": [\n      \"python3\",\n      \"planningops/scripts/parser_diff_dry_run.py\",\n      \"--run-id\",\n      \"worker-pack-issue-84\",\n      \"--mode\",\n      \"dry-run\"\n    ],\n    \"retry_policy\": {\n      \"max_retries\": 2\n    },\n    \"timeout_ms\": 60000,\n    \"idempotency_key\": \"cb42d763dd6bc9fa0edf1a4499fb641079ee1b4e27dc8de376e6eb2873eaf1a1\",\n    \"target_repo\": \"rather-not-work-on/platform-planningops\",\n    \"metadata\": {\n      \"profile_file\": \"planningops/config/runtime-profiles.json\",\n      \"task_key\": \"issue-84\"\n    }\n  },\n  \"verdict\": \"pass\",\n  \"reason\": \"ok\"\n}",
+        "stderr": "",
+        "worker_task_pack": {
+          "version": "v1",
+          "task_key": "issue-84",
+          "issue_number": 84,
+          "mode": "dry-run",
+          "loop_profile": "L2 Simulation",
+          "runtime_profile": "local",
+          "worker_policy_kind": "parser_diff_dry_run",
+          "command": [
+            "python3",
+            "planningops/scripts/parser_diff_dry_run.py",
+            "--run-id",
+            "worker-pack-issue-84",
+            "--mode",
+            "dry-run"
+          ],
+          "retry_policy": {
+            "max_retries": 2
+          },
+          "timeout_ms": 60000,
+          "idempotency_key": "cb42d763dd6bc9fa0edf1a4499fb641079ee1b4e27dc8de376e6eb2873eaf1a1",
+          "target_repo": "rather-not-work-on/platform-planningops",
+          "metadata": {
+            "profile_file": "planningops/config/runtime-profiles.json",
+            "task_key": "issue-84"
+          }
+        },
+        "validation_errors": []
+      },
+      "attempt_budget_guard": {
+        "attempt_budget": {
+          "max_attempts": 1,
+          "max_duration_minutes": 10,
+          "max_token_budget": 20000
+        },
+        "max_attempts": 1,
+        "max_retries": 2,
+        "retry_cap_attempts": 3,
+        "enforced_worker_attempts": 1
+      }
+    },
+    "pec_preflight": {
+      "mode": "hybrid",
+      "contract_file": null,
+      "plan_item_id": "pilot-031-live-runner",
+      "status": "skipped",
+      "reason_code": "pec_contract_file_missing_hybrid",
+      "validation_errors": [],
+      "mismatches": []
+    },
+    "selection_transition_id": "loop-20260305T115840Z-issue-84-intake-selection",
+    "blueprint_refs": {
+      "interface_contract_refs": null,
+      "package_topology_ref": null,
+      "dependency_manifest_ref": null,
+      "file_plan_ref": null
+    },
+    "blueprint_complete": false,
+    "adapter_id": "planningops-adapter",
+    "adapter_pre_hook": {
+      "status": "ok",
+      "phase": "before_loop",
+      "adapter": "planningops-adapter",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "reason_code": "runtime",
+      "message": "planningops-adapter pre-hook baseline executed",
+      "emitted_artifacts": [],
+      "details": {
+        "component": "planningops",
+        "issue_number": 84,
+        "workflow_state": "ready-contract"
+      }
+    },
+    "adapter_post_hook": {
+      "status": "ok",
+      "phase": "after_loop",
+      "adapter": "planningops-adapter",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "reason_code": "runtime",
+      "message": "planningops-adapter post-hook baseline executed",
+      "emitted_artifacts": [],
+      "details": {
+        "component": "planningops",
+        "issue_number": 84,
+        "last_verdict": "pass"
+      }
+    },
+    "adapter_pre_artifact": "planningops/artifacts/adapter-hooks/2026-03-05/loop-20260305T115840Z-issue-84-adapter-pre.json",
+    "adapter_post_artifact": "planningops/artifacts/adapter-hooks/2026-03-05/loop-20260305T115840Z-issue-84-adapter-post.json",
+    "replenishment_candidates_path": "planningops/artifacts/backlog/issue-84-replenishment-candidates.json",
+    "replenishment_candidates_count": 1,
+    "last_verdict": "pass",
+    "reason_code": "ok",
+    "loop_rc": 0,
+    "verify_rc": 0,
+    "already_processed": false,
+    "idempotency_key": "1f2e2b9fc540fb411612d04fbdb61878904c0746e46d140bbf3819f1974e688f",
+    "loop_stdout": "loop completed: verdict=pass reason=ok loop_id=loop-20260305T115840Z-issue-84\nartifacts root: planningops/artifacts/loops/2026-03-05/loop-20260305T115840Z-issue-84",
+    "verify_stdout": "verification result: planningops/artifacts/verification/issue-84-verification.json\nproject payload: planningops/artifacts/verification/issue-84-project-payload.json\nverdict=pass reason=ok replanning_triggered=False",
+    "loop_stderr": "",
+    "verify_stderr": "",
+    "generated_at_utc": "2026-03-05T11:58:40.760634+00:00",
+    "runtime_profile_file": "planningops/config/runtime-profiles.json",
+    "no_feedback": true
+  },
+  "last_verdict": "pass",
+  "reason_code": "ok",
+  "auto_paused": true,
+  "replan_required": true,
+  "replan_decision_path": "planningops/artifacts/replan/issue-84-20260305T115840Z.md",
+  "replenishment_candidates_path": "planningops/artifacts/backlog/issue-84-replenishment-candidates.json",
+  "replenishment_candidates_count": 1,
+  "experiment_trigger": {
+    "triggered": true,
+    "reasons": [
+      "uncertainty_level=high",
+      "simulation_required=true",
+      "loop_profile=L2 Simulation"
+    ],
+    "uncertainty_level": "high",
+    "simulation_required": true,
+    "loop_profile": "L2 Simulation"
+  },
+  "experiment_trigger_artifact": "planningops/artifacts/pilot/pilot-20260305-live-runner/cycle-02/experiment-trigger.json",
+  "backlog_gate": {
+    "rc": 0,
+    "report_path": "planningops/artifacts/pilot/pilot-20260305-live-runner/cycle-02/backlog-stock-report.json",
+    "verdict": "fail",
+    "breach_count": 2,
+    "candidate_violation_count": 0
+  },
+  "ended_at_utc": "2026-03-05T11:59:36.963726+00:00"
+}

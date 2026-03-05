@@ -1,0 +1,12 @@
+{
+  "generated_at_utc": "2026-03-05T11:58:40.766816+00:00",
+  "cycle": 2,
+  "triggered": true,
+  "reasons": [
+    "uncertainty_level=high",
+    "simulation_required=true",
+    "loop_profile=L2 Simulation"
+  ],
+  "protocol_ref": "planningops/contracts/worktree-comparative-experiment-protocol.md",
+  "selected_issue": 84
+}
