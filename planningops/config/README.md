@@ -8,6 +8,7 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - `project-view-conventions.md`: view/filter/sort contract for project operations
 - `runtime-profiles.json`: local/oracle runtime and provider policies
 - `contract-ref-map.json`: C1~C8 schema pointer map
+- `repository-boundary-map.json`: control-plane vs execution-repo ownership and script layout rules
 - `ready-implementation-blueprint-defaults.json`: blueprint ref normalization defaults by `target_repo`
 - `backlog-stock-policy.json`: queue class stock floors and replenishment candidate requirements
 - `supervisor-experiment-validation-pack.json`: command pack for automatic worktree comparative execution

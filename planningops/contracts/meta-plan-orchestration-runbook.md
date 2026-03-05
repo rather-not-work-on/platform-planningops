@@ -91,7 +91,8 @@ Required actions:
 ## CI Integration
 Graph validity gates are wired in:
 - `.github/workflows/federated-ci-matrix.yml`
-- `planningops/scripts/federated_ci_matrix_local.sh`
+- `planningops/scripts/federation/federated_ci_matrix_local.sh` (canonical)
+- `planningops/scripts/federated_ci_matrix_local.sh` (compatibility wrapper)
 
 Required CI checks include:
 - meta graph schema/builder/orchestrator contract tests

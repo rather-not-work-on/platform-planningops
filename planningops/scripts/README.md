@@ -4,6 +4,13 @@
 Host executable runners, validators, and contract tests for planningops loops.
 
 ## Contents
+- Federation entrypoints (canonical location):
+  - `federation/cross_repo_conformance_check.py`
+  - `federation/github_sync_adapter.py`
+  - `federation/multi_repo_projection_report.py`
+  - `federation/run_local_oracle_rehearsal.py`
+  - `federation/federated_ci_matrix_local.sh`
+  - compatibility wrappers are preserved at the root with identical filenames
 - Runtime runners:
   - `autonomous_supervisor_loop.py`
   - `supervisor_experiment_auto_executor.py`
@@ -18,6 +25,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_contracts.py`
   - `validate_worker_task_pack.py`
   - `validate_project_field_schema.py`
+  - `validate_repo_boundaries.py`
   - `verify_loop_run.py` (`--execution-attempts-schema`)
   - `verify_plan_projection.py`
   - `cross_repo_conformance_check.py`
@@ -45,6 +53,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_supervisor_experiment_auto_executor_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
+  - `test_validate_repo_boundaries_contract.sh`
   - `test_*.sh`
 
 ## Change Rules

@@ -1,0 +1,68 @@
+{
+  "control_repo": "rather-not-work-on/platform-planningops",
+  "topology": {
+    "control_plane": {
+      "repo": "rather-not-work-on/platform-planningops",
+      "responsibility": [
+        "contracts and planning documents",
+        "loop orchestration policy",
+        "cross-repo coordination gates"
+      ]
+    },
+    "execution_repos": [
+      {
+        "repo": "rather-not-work-on/platform-contracts",
+        "responsibility": [
+          "interface schemas",
+          "shared contracts"
+        ]
+      },
+      {
+        "repo": "rather-not-work-on/platform-provider-gateway",
+        "responsibility": [
+          "LiteLLM/provider runtime",
+          "provider policy and failover"
+        ]
+      },
+      {
+        "repo": "rather-not-work-on/platform-observability-gateway",
+        "responsibility": [
+          "Langfuse ingestion/replay",
+          "o11y runtime operations"
+        ]
+      },
+      {
+        "repo": "rather-not-work-on/monday",
+        "responsibility": [
+          "agent runtime",
+          "scheduler and execution handoff"
+        ]
+      }
+    ]
+  },
+  "script_layout": {
+    "scripts_root": "planningops/scripts",
+    "federation_dir": "planningops/scripts/federation",
+    "federation_entrypoints": [
+      "cross_repo_conformance_check.py",
+      "github_sync_adapter.py",
+      "multi_repo_projection_report.py",
+      "run_local_oracle_rehearsal.py",
+      "federated_ci_matrix_local.sh"
+    ],
+    "root_wrappers": [
+      "cross_repo_conformance_check.py",
+      "github_sync_adapter.py",
+      "multi_repo_projection_report.py",
+      "run_local_oracle_rehearsal.py",
+      "federated_ci_matrix_local.sh"
+    ],
+    "must_live_in_federation_patterns": [
+      "cross_repo",
+      "github_sync_adapter",
+      "multi_repo_projection",
+      "oracle_rehearsal",
+      "federated_ci_matrix"
+    ]
+  }
+}

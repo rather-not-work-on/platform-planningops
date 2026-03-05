@@ -23,6 +23,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `lease-lock-watchdog-contract.md`: concurrency and stale-lock recovery
 - `escalation-gate-contract.md`: automatic replan escalation conditions
 - `module-refactor-hygiene-loop-contract.md`: periodic refactor hygiene policy
+- `control-plane-boundary-contract.md`: thin-core ownership boundary and federation script placement rules
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary
 
