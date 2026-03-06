@@ -7,6 +7,15 @@ from pathlib import Path
 import sys
 from datetime import datetime, timezone
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from artifact_sink import ArtifactSink
+
+
+ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
+
 REQUIRED_TRANSITION_KEYS = [
     "transition_id",
     "run_id",
@@ -32,12 +41,18 @@ ALLOWED_VERDICTS = {"pass", "fail", "inconclusive"}
 
 
 def load_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    read_path = ARTIFACT_SINK.resolve_read_path(path)
+    return json.loads(read_path.read_text(encoding="utf-8"))
+
+
+def save_json(path: Path, data):
+    ARTIFACT_SINK.write_json(path, data)
 
 
 def load_ndjson(path: Path):
+    read_path = ARTIFACT_SINK.resolve_read_path(path)
     rows = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in read_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
             continue
@@ -369,11 +384,8 @@ def main():
         "replanning_triggered": replanning_triggered,
     }
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(result, ensure_ascii=True, indent=2), encoding="utf-8")
-
-    payload_path.parent.mkdir(parents=True, exist_ok=True)
-    payload_path.write_text(json.dumps(project_payload, ensure_ascii=True, indent=2), encoding="utf-8")
+    save_json(out_path, result)
+    save_json(payload_path, project_payload)
 
     print(f"verification result: {out_path}")
     print(f"project payload: {payload_path}")

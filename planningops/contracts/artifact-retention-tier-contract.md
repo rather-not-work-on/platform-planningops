@@ -46,3 +46,5 @@ Backend selection is controlled by:
 - Policy config: `planningops/config/artifact-storage-policy.json`
 - Validator: `planningops/scripts/validate_artifact_storage_policy.py`
 - Test: `bash planningops/scripts/test_validate_artifact_storage_policy_contract.sh`
+- Commit guard: `planningops/scripts/validate_external_only_commit_guard.py`
+- Migration/rehydrate: `planningops/scripts/migrate_external_only_artifacts.py`, `planningops/scripts/rehydrate_artifact_pointer.py`

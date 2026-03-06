@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout planningops
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Checkout platform-contracts
         uses: actions/checkout@v4
@@ -144,6 +146,16 @@ jobs:
           python3 planningops/scripts/validate_issue_quality.py --strict
           bash planningops/scripts/test_validate_artifact_storage_policy_contract.sh
           python3 planningops/scripts/validate_artifact_storage_policy.py --strict
+          bash planningops/scripts/test_validate_external_only_commit_guard.sh
+          bash planningops/scripts/test_artifact_sink_e2e.sh
+          BASE_REF="${{ github.event.pull_request.base.sha }}"
+          if [[ -z "$BASE_REF" || "$BASE_REF" == "null" ]]; then
+            BASE_REF="origin/main"
+          fi
+          python3 planningops/scripts/validate_external_only_commit_guard.py \
+            --base-ref "$BASE_REF" \
+            --head-ref "${{ github.sha }}" \
+            --strict
           bash planningops/scripts/test_normalize_ready_implementation_blueprint_refs.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_ralph_loop_local_worker_policy.sh

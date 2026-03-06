@@ -8,6 +8,17 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from artifact_sink import ArtifactSink
+
+
+ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
 
 
 def now_utc():
@@ -20,14 +31,14 @@ def run(args, cwd=None):
 
 
 def load_json(path: Path, default):
-    if not path.exists():
+    read_path = ARTIFACT_SINK.resolve_read_path(path)
+    if not read_path.exists():
         return default
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(read_path.read_text(encoding="utf-8"))
 
 
 def save_json(path: Path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=True, indent=2), encoding="utf-8")
+    ARTIFACT_SINK.write_json(path, data)
 
 
 def sanitize_fragment(value: str):
@@ -161,8 +172,7 @@ def write_decision_record(path: Path, selected, option_reports):
         "## Follow-Up Tasks",
         "- If selected option is `none`, create recovery backlog item with failing command evidence.",
     ]
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(content), encoding="utf-8")
+    ARTIFACT_SINK.write_text(path, "\n".join(content), append=False)
 
 
 def parse_args():

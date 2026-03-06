@@ -28,6 +28,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `issue-quality-contract.md`: backlog issue body quality baseline and verification rules
 - `issue-label-taxonomy-contract.md`: required label taxonomy (`task`/priority/area/type) and gates
 - `artifact-retention-tier-contract.md`: Git vs external artifact storage tier policy
+- `artifact-sink-contract.md`: backend selector abstraction + pointer/rehydrate behavior
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary
 
