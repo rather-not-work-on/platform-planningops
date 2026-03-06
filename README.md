@@ -11,6 +11,18 @@ Org-level 단일 계획 저장소입니다.
 - 포함: 계획 검증/카탈로그 자동화 스크립트
 - 제외: 제품 런타임 코드, 서비스 배포 코드
 
+## Federated Topology (Control Tower vs Execution Repos)
+
+- `platform-planningops`: 조직 레벨 계획 SoT, 계약/게이트/동기화 정책, cross-repo 오케스트레이션
+- `monday`: 실행 에이전트 런타임(스케줄러/워커/실행 루프)
+- `platform-contracts`: 공용 인터페이스/스키마 버전 단일 소스
+- `platform-provider-gateway`: 모델/provider 호출 런타임
+- `platform-observability-gateway`: trace/log 수집·전달 런타임
+
+경계 기준 문서:
+- `planningops/contracts/control-plane-boundary-contract.md`
+- `docs/initiatives/unified-personal-agent-platform/20-repos/README.md`
+
 ## Current Initiative
 
 - `docs/initiatives/unified-personal-agent-platform`
@@ -42,7 +54,6 @@ platform-planningops/
       unified-personal-agent-platform/
         brainstorms/
         plans/
-        reviews/
         audits/
 ```
 
@@ -72,6 +83,7 @@ bash planningops/scripts/test_module_readme_contract.sh
 - 변경 후 `uap-docs.sh sync`를 실행해 카탈로그와 링크 무결성을 확인합니다.
 - PR에서는 `.github/workflows/uap-docs-check.yml`로 문서 검증이 자동 실행됩니다.
   - trigger: `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`
+  - 참고: `docs/brainstorms/**`, `docs/plans/**`는 레거시 경로 재유입 회귀 감지를 위한 watch path입니다.
 - org/repo/agent 식별자 변경은 identity 문서를 먼저 갱신합니다.
 - 기본 운영은 `PR-first`입니다. 직접 `main`에 푸시하지 않습니다.
 - PR 본문은 `.github/pull_request_template.md` 형식을 따릅니다.

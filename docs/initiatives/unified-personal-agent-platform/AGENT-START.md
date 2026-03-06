@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-03-01
+updated: 2026-03-05
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -40,9 +40,14 @@ related_docs:
 - 문서 본문 링크는 문서 파일 기준 상대경로(`./`, `../`)만 사용한다.
 - 셸/CI 명령에서 파일 지정은 repo 루트 기준 상대경로(`docs/initiatives/unified-personal-agent-platform/...`)를 사용한다.
 
+## Field Token Rule (Mandatory)
+- 계약/이슈 본문 메타는 `snake_case`를 기준으로 기록한다. 예: `ready_contract`, `l1_contract_clarification`
+- Project UI 표시는 `kebab-case` 또는 Title 형태일 수 있다. 예: `ready-contract`, `L1 Contract-Clarification`
+- 의미 기준은 계약(`snake_case`)이며, 투영/검증 스크립트가 표시값을 매핑한다.
+
 ## Canonical Core 7
 ### Entry Core (next reads)
-`AGENT-START`(현재 문서)는 Entry Core anchor다. 아래 5개 문서를 이어서 읽는다.
+`AGENT-START`(현재 문서)는 Entry Core anchor다. 아래 6개 문서를 이어서 읽는다.
 
 1. [AGENT Principles](./AGENT.md)
 2. [Project Identity](./00-governance/uap-monday-identity.meta.md)
@@ -56,7 +61,7 @@ related_docs:
 2. [Trade-off Decision Framework](./40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 
 ## Mandatory Read Order (Minimal)
-1. Entry Core anchor(현재 문서) + Entry Core next reads 5
+1. Entry Core anchor(현재 문서) + Entry Core next reads 6
 2. Policy Core 2
 3. [README](./README.md) for broad context
 4. [Foundation Execution Plan](./20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md)
@@ -86,7 +91,7 @@ bash planningops/scripts/test_module_readme_contract.sh
 이 저장소의 계획대로 이슈를 처리하면, 사용자는 아래 UX를 경험한다.
 
 1. 사용자가 카드/문서를 갱신한다.
-- 핵심 필드: `Status`, `workflow_state`, `execution_order`, `depends_on`, `initiative`, `component`, `target_repo`
+- 핵심 필드: `Status`, `workflow_state`, `loop_profile`, `execution_order`, `plan_lane`, `depends_on`, `initiative`, `component`, `target_repo`
 2. 에이전트는 비정기 Kanban pull로 카드 하나를 선택한다.
 - pull 조건: `Status=Todo` AND `workflow_state in {ready-contract, ready-implementation}`
 - `depends_on` 미충족이면 즉시 `blocked`로 처리

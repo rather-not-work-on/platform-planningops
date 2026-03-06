@@ -5,7 +5,7 @@ date: 2026-02-28
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
-summary: Initiative-scoped workbench for ephemeral planning artifacts, reviews, and audits before canonical promotion.
+summary: Initiative-scoped workbench for ephemeral brainstorm/plan/audit artifacts before canonical promotion.
 ---
 
 # UAP Workbench Hub
@@ -15,7 +15,6 @@ summary: Initiative-scoped workbench for ephemeral planning artifacts, reviews, 
 ## Layout
 - `brainstorms/`: 아이디어 탐색 및 접근 옵션
 - `plans/`: 실행 계획 초안/수정 계획
-- `reviews/`: 리뷰 로그 및 이슈 추적 기록
 - `audits/`: 마이그레이션 맵, 검증 로그, 롤아웃 노트
 
 ## Contract
@@ -31,9 +30,8 @@ bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-
 ```
 
 ## Active Plans
-- [Meta Plan Orchestration and Governance](./plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md)
-- [Auto-Executable Plans Contract and Runner Pipeline](./plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md)
-- [Simple Core Validation and Core Instruction Hardening](./plans/2026-03-03-plan-simple-core-validation-and-core-instruction-hardening.md)
-- [Resolve Gate and Bootstrap Review Findings](./plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md)
-- [Two-Track Hard-Gate Execution for Post-Wave-B](./plans/2026-03-02-plan-two-track-hard-gates-execution-plan.md)
-- [Ralph Loop Issue Resolution Loop Plan](./plans/2026-02-28-plan-ralph-loop-issue-resolution-loop-plan.md)
+- [Control Tower Ontology, Memory, and Federation Migration](./plans/2026-03-05-plan-control-tower-ontology-memory-and-federation-migration-plan.md)
+- [Meta Backlog Atomic Decomposition and Federated Delivery](./plans/2026-03-05-plan-meta-backlog-atomic-decomposition-and-federated-delivery-plan.md)
+- [Worker Reliability Hardening](./plans/2026-03-05-refactor-worker-reliability-hardening-plan.md)
+- [Ralph Loop Full Automation Delivery](./plans/2026-03-04-plan-ralph-loop-full-automation-delivery-plan.md)
+- [Track2 Implementation Readiness Packet](./plans/track2-implementation-readiness-packet.md)
