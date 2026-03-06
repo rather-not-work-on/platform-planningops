@@ -1,0 +1,14 @@
+{
+  "status": "ok",
+  "phase": "before_loop",
+  "adapter": "planningops-adapter",
+  "target_repo": "rather-not-work-on/platform-planningops",
+  "reason_code": "runtime",
+  "message": "planningops-adapter pre-hook baseline executed",
+  "emitted_artifacts": [],
+  "details": {
+    "component": "planningops",
+    "issue_number": 95,
+    "workflow_state": "ready-contract"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "generated_at_utc": "2026-03-05T14:23:46.594862+00:00",
+  "issue_number": 95,
+  "verdict": "pass",
+  "stage": "feedback_applied",
+  "release_ok": true,
+  "stale_lock_recovered": false,
+  "events": [
+    {
+      "event": "lock_attempt",
+      "decided_at_utc": "2026-03-05T14:23:46.425458+00:00",
+      "issue_number": 95,
+      "lock_owner_id": "issue-loop-runner-37001-1772720626",
+      "lock_acquired": true,
+      "stale_lock_recovered": false
+    },
+    {
+      "event": "pre_hook_checkpoint_saved",
+      "decided_at_utc": "2026-03-05T14:23:46.428950+00:00",
+      "heartbeat_refreshed": true
+    },
+    {
+      "event": "runtime_heartbeat_started",
+      "decided_at_utc": "2026-03-05T14:23:46.430318+00:00",
+      "issue_number": 95,
+      "lock_owner_id": "issue-loop-runner-37001-1772720626",
+      "pid": 37014,
+      "heartbeat_interval_seconds": 30
+    },
+    {
+      "event": "runtime_heartbeat_stopped",
+      "decided_at_utc": "2026-03-05T14:23:46.529544+00:00",
+      "issue_number": 95,
+      "return_code": 0,
+      "drift_detected": false,
+      "drift_reason": null
+    },
+    {
+      "event": "loop_executed_checkpoint_saved",
+      "decided_at_utc": "2026-03-05T14:23:46.532768+00:00",
+      "heartbeat_refreshed": true
+    },
+    {
+      "event": "verified_checkpoint_saved",
+      "decided_at_utc": "2026-03-05T14:23:46.578128+00:00",
+      "heartbeat_refreshed": true
+    },
+    {
+      "event": "feedback_applied_checkpoint_saved",
+      "decided_at_utc": "2026-03-05T14:23:46.593429+00:00",
+      "heartbeat_refreshed": true
+    },
+    {
+      "event": "lock_released",
+      "decided_at_utc": "2026-03-05T14:23:46.594860+00:00",
+      "release_ok": true
+    }
+  ]
+}

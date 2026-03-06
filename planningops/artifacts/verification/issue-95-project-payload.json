@@ -1,0 +1,17 @@
+{
+  "status_update": "Done",
+  "last_verdict": "pass",
+  "reason_code": "ok",
+  "replanning_triggered": false,
+  "loop_profile": "L1 Contract-Clarification",
+  "escalation": {
+    "auto_paused": false,
+    "trigger_type": null,
+    "same_reason_consecutive": 0,
+    "inconclusive_consecutive": 0,
+    "history_count": 1
+  },
+  "auto_paused": false,
+  "replenishment_candidates_path": "planningops/artifacts/backlog/issue-95-replenishment-candidates.json",
+  "replenishment_candidates_count": 0
+}

@@ -5,7 +5,7 @@ doc_type: hub
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-03-05
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -28,4 +28,12 @@ related_docs:
 - [contract-evolution](./contract-evolution/README.md)
 - [observability](./observability/README.md)
 
-현재 각 도메인 버킷은 `draft` 상태이며, 각 버킷 README의 Activation Criteria 충족 시 `active`로 전환한다.
+## Domain-to-Repo Projection
+- `planningops`: 실행 순서/게이트/프로젝트 필드/운영 정책을 정의하고 control-plane 규칙으로 투영
+- `contract-evolution`: C1~C* 버전/호환성 정책을 정리하고 `platform-contracts` 구현 기준으로 투영
+- `observability`: trace/log/timeline 품질 규칙을 정리하고 `platform-observability-gateway` 및 monday 검증 기준으로 투영
+
+## Usage Rule
+- 레포 특화 구현 절차는 각 repo bucket 문서에서 관리한다.
+- 여러 레포에 공통으로 적용되는 규칙만 domain bucket에 유지한다.
+- 같은 내용을 repo bucket과 domain bucket에 중복 작성하지 않고 링크로 연결한다.

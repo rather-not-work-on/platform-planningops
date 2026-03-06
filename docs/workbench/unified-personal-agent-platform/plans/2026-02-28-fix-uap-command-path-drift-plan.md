@@ -1,6 +1,7 @@
 ---
 title: fix: Eliminate UAP Command Path Drift in Generated and Legacy Docs
-type: fix
+type: plan
+plan_kind: fix
 date: 2026-02-28
 initiative: unified-personal-agent-platform
 lifecycle: workbench

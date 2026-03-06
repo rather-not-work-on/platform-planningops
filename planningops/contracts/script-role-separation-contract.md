@@ -1,0 +1,19 @@
+# Script Role Separation Contract
+
+## Purpose
+Prevent uncontrolled script sprawl by separating recurring core scripts from one-off bootstrap/migration scripts.
+
+## Rules
+1. Recurring runtime/CI entrypoints live in:
+   - `planningops/scripts/`
+   - `planningops/scripts/federation/`
+2. Non-recurring scripts live in:
+   - `planningops/scripts/oneoff/`
+3. If backward compatibility is required, keep a thin wrapper at root path.
+4. Any role-map change must update:
+   - `planningops/config/script-role-map.json`
+   - `planningops/scripts/validate_script_roles.py`
+   - `planningops/scripts/test_validate_script_roles_contract.sh`
+
+## Verification
+- `bash planningops/scripts/test_validate_script_roles_contract.sh`

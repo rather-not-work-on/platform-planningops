@@ -4,6 +4,16 @@
 Host executable runners, validators, and contract tests for planningops loops.
 
 ## Contents
+- Federation entrypoints (canonical location):
+  - `federation/cross_repo_conformance_check.py`
+  - `federation/github_sync_adapter.py`
+  - `federation/multi_repo_projection_report.py`
+  - `federation/run_local_oracle_rehearsal.py`
+  - `federation/federated_ci_matrix_local.sh`
+  - compatibility wrappers are preserved at the root with identical filenames
+- One-off entrypoints (canonical location):
+  - `oneoff/bootstrap_two_track_backlog.py`
+  - compatibility wrapper: `bootstrap_two_track_backlog.py`
 - Runtime runners:
   - `autonomous_supervisor_loop.py`
   - `supervisor_experiment_auto_executor.py`
@@ -18,6 +28,9 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_contracts.py`
   - `validate_worker_task_pack.py`
   - `validate_project_field_schema.py`
+  - `validate_repo_boundaries.py`
+  - `validate_script_roles.py`
+  - `validate_issue_quality.py`
   - `verify_loop_run.py` (`--execution-attempts-schema`)
   - `verify_plan_projection.py`
   - `cross_repo_conformance_check.py`
@@ -25,8 +38,12 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Backlog/bootstrap helpers:
   - `bootstrap_two_track_backlog.py`
   - `compile_plan_to_backlog.py`
+  - `build_program_manifest.py`
+  - `sync_project_fields_after_issue_create.py`
   - `build_meta_plan_graph.py`
+  - `test_build_program_manifest_contract.sh`
   - `test_compile_plan_to_backlog_contract.sh`
+  - `test_sync_project_fields_after_issue_create_contract.sh`
   - `test_build_meta_plan_graph_contract.sh`
   - `run_track1_gate_dryrun.py`
   - `run_track2_contract_pack_validation.py`
@@ -45,9 +62,14 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_supervisor_experiment_auto_executor_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
+  - `test_validate_repo_boundaries_contract.sh`
+  - `test_validate_script_roles_contract.sh`
+  - `test_validate_issue_quality_contract.sh`
   - `test_*.sh`
 
 ## Change Rules
 - Each new runner must produce deterministic artifacts under `planningops/artifacts`.
 - Contract-impacting behavior changes must include/adjust a `test_*.sh` regression test.
 - Commands must run from repo root with repo-relative paths.
+- New non-recurring scripts must be placed under `planningops/scripts/oneoff` with a root wrapper only if needed.
+- Backlog issue creation/update flows must satisfy `planningops/contracts/issue-quality-contract.md`.

@@ -34,6 +34,12 @@ LOOP_ENUM = {
     "l4_integration_reconcile",
     "l5_recovery_replan",
 }
+PLAN_LANE_ENUM = {
+    "m0_bootstrap",
+    "m1_contract_freeze",
+    "m2_sync_core",
+    "m3_guardrails",
+}
 WORKFLOW_TO_STATUS = {
     "backlog": "todo",
     "ready_contract": "todo",
@@ -132,6 +138,8 @@ def validate_contract(contract_doc):
             errors.append(f"{path}.workflow_state invalid: {item['workflow_state']}")
         if "loop_profile" in item and item["loop_profile"] not in LOOP_ENUM:
             errors.append(f"{path}.loop_profile invalid: {item['loop_profile']}")
+        if "plan_lane" in item and item["plan_lane"] not in PLAN_LANE_ENUM:
+            errors.append(f"{path}.plan_lane invalid: {item['plan_lane']}")
 
         if "depends_on" in item:
             deps = item["depends_on"]
@@ -154,20 +162,42 @@ def validate_contract(contract_doc):
 
 def issue_body(source_of_truth, plan_id, plan_revision, item):
     depends = ",".join(str(x) for x in item["depends_on"]) if item["depends_on"] else "-"
+    evidence_refs = [source_of_truth, item["primary_output"]]
+    evidence_lines = "\n".join(f"- `{ref}`" for ref in evidence_refs)
+    planning_context_lines = [
+        "## Planning Context",
+        f"- plan_doc: `{source_of_truth}`",
+        f"- plan_id: `{plan_id}`",
+        f"- plan_revision: `{plan_revision}`",
+        f"- plan_item_id: `{item['plan_item_id']}`",
+        f"- execution_order: `{item['execution_order']}`",
+        f"- target_repo: `{item['target_repo']}`",
+        f"- component: `{item['component']}`",
+        f"- workflow_state: `{item['workflow_state']}`",
+        f"- loop_profile: `{item['loop_profile']}`",
+        f"- depends_on: `{depends}`",
+        f"- primary_output: `{item['primary_output']}`",
+    ]
+    if item.get("plan_lane"):
+        planning_context_lines.insert(-2, f"- plan_lane: `{item['plan_lane']}`")
+
     return "\n".join(
         [
-            "## Planning Context",
-            f"- plan_doc: `{source_of_truth}`",
-            f"- plan_id: `{plan_id}`",
-            f"- plan_revision: `{plan_revision}`",
-            f"- plan_item_id: `{item['plan_item_id']}`",
-            f"- execution_order: `{item['execution_order']}`",
+            *planning_context_lines,
+            "",
+            "## Problem Statement",
+            "- Resolve this plan item with deterministic artifacts and contract-aligned updates.",
+            "",
+            "## Interfaces & Dependencies",
             f"- target_repo: `{item['target_repo']}`",
-            f"- component: `{item['component']}`",
-            f"- workflow_state: `{item['workflow_state']}`",
-            f"- loop_profile: `{item['loop_profile']}`",
             f"- depends_on: `{depends}`",
-            f"- primary_output: `{item['primary_output']}`",
+            "",
+            "## Evidence",
+            evidence_lines,
+            "",
+            "## Acceptance Criteria",
+            "- [ ] Required artifact created and linked under Evidence.",
+            "- [ ] Contract/path references are updated and validated.",
             "",
             "## Definition of Done",
             "- [ ] Required artifact created",
@@ -499,6 +529,8 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
             f"workflow_state({item['workflow_state']})",
             f"loop_profile({item['loop_profile']})",
         ]
+        if item.get("plan_lane"):
+            result["field_updates"].append(f"plan_lane({item['plan_lane']})")
         return result
 
     item_id = ensure_project_item(project["owner"], project["project_number"], issue_url)
@@ -522,6 +554,11 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
     loop_field_id, loop_option_id = field_option_id(fields, "loop_profile", item["loop_profile"])
     set_select_field(project["project_id"], item_id, loop_field_id, loop_option_id)
     result["field_updates"].extend(["status", "component", "workflow_state", "loop_profile"])
+
+    if item.get("plan_lane") and "plan_lane" in fields:
+        lane_field_id, lane_option_id = field_option_id(fields, "plan_lane", item["plan_lane"])
+        set_select_field(project["project_id"], item_id, lane_field_id, lane_option_id)
+        result["field_updates"].append("plan_lane")
 
     return result
 

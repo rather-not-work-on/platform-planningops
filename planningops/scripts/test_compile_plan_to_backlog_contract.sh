@@ -17,6 +17,8 @@ spec.loader.exec_module(mod)
 
 fixture_doc = json.loads(Path("planningops/fixtures/plan-execution-contract-sample.json").read_text(encoding="utf-8"))
 item = fixture_doc["execution_contract"]["items"][0]
+item_with_lane = json.loads(json.dumps(item))
+item_with_lane["plan_lane"] = "m1_contract_freeze"
 
 # 1) Base fixture contract must validate.
 assert mod.validate_contract(fixture_doc) == []
@@ -182,6 +184,20 @@ assert dry_result["issue_number"] is None, dry_result
 assert dry_result["issue_url"].endswith("/DRY-RUN-1"), dry_result
 assert "status(todo)" in dry_result["field_updates"], dry_result
 
+dry_with_lane = mod.compile_item(
+    project={},
+    source_of_truth=fixture_doc["execution_contract"]["source_of_truth"],
+    plan_id=fixture_doc["execution_contract"]["plan_id"],
+    plan_revision=fixture_doc["execution_contract"]["plan_revision"],
+    item=item_with_lane,
+    apply_mode=False,
+    open_issues=[],
+    closed_issues=[],
+    allow_reopen_closed=False,
+    project_item_issue_index={},
+)
+assert "plan_lane(m1_contract_freeze)" in dry_with_lane["field_updates"], dry_with_lane
+
 # 6) Closed-match default must not reuse; allow flag must reuse.
 closed_issue = {
     "number": 901,
@@ -260,6 +276,7 @@ project = {
         "component": {"id": "F_COMPONENT", "options": {"planningops": "O_COMPONENT_PLAN"}},
         "workflow_state": {"id": "F_WF", "options": {"ready_contract": "O_WF_READY_CONTRACT"}},
         "loop_profile": {"id": "F_LOOP", "options": {"l1_contract_clarification": "O_LOOP_L1"}},
+        "plan_lane": {"id": "F_LANE", "options": {"m1_contract_freeze": "O_LANE_M1"}},
     },
 }
 
@@ -268,7 +285,7 @@ apply_result = mod.compile_item(
     source_of_truth=fixture_doc["execution_contract"]["source_of_truth"],
     plan_id=fixture_doc["execution_contract"]["plan_id"],
     plan_revision=fixture_doc["execution_contract"]["plan_revision"],
-    item=item,
+    item=item_with_lane,
     apply_mode=True,
     open_issues=[],
     closed_issues=[closed_issue],
@@ -286,6 +303,7 @@ assert len(edit_calls) == 1, edit_calls
 assert set(["initiative", "target_repo", "execution_order", "status", "component", "workflow_state", "loop_profile"]).issubset(
     set(apply_result["field_updates"])
 ), apply_result
+assert "plan_lane" in apply_result["field_updates"], apply_result
 
 # 8) Existing open issue drift should request/perform metadata sync.
 stale_open_issue = {
@@ -324,7 +342,7 @@ apply_sync = mod.compile_item(
     source_of_truth=fixture_doc["execution_contract"]["source_of_truth"],
     plan_id=fixture_doc["execution_contract"]["plan_id"],
     plan_revision=fixture_doc["execution_contract"]["plan_revision"],
-    item=item,
+    item=item_with_lane,
     apply_mode=True,
     open_issues=[dict(stale_open_issue)],
     closed_issues=[],

@@ -5,7 +5,7 @@ doc_type: meta
 domain: governance
 status: active
 date: 2026-02-27
-updated: 2026-02-28
+updated: 2026-03-05
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-doc-governance
 tags:
@@ -113,14 +113,24 @@ Core 7 canonical filename 예외(무날짜 고정):
 - workbench CLI 인수는 repo 루트 기준 상대경로(`docs/workbench/unified-personal-agent-platform/...`)를 사용한다.
 
 ## GitHub Project Field Contract
+- canonical field catalog:
+  - `planningops/config/project-field-ids.json`
+  - `planningops/config/project-view-conventions.md`
 - 필수 필드:
-  - `initiative`: `unified-personal-agent-platform`
-  - `repo`: `platform-planningops`
-  - `component`: `docs-topology` | `docs-governance` | `docs-tooling`
-- 권장 필드:
-  - `lifecycle`: `canonical` | `workbench`
-  - `state`: `Backlog` | `Ready` | `Doing` | `Review` | `Done`
-- 목적: planningops 카드 분류를 고정해 에이전트 실행 시 판단 분기를 줄인다.
+  - `initiative`(TEXT): `unified-personal-agent-platform`
+  - `target_repo`(TEXT): `owner/repo` 형식 (`rather-not-work-on/<repo>`)
+  - `component`(SINGLE_SELECT): `planningops | contracts | provider_gateway | observability_gateway | runtime | orchestrator`
+  - `workflow_state`(SINGLE_SELECT): `backlog | ready_contract | in_progress | review_gate | ready_implementation | blocked | done`
+  - `loop_profile`(SINGLE_SELECT): `l1_contract_clarification | l2_simulation | l3_implementation_tdd | l4_integration_reconcile | l5_recovery_replan`
+  - `execution_order`(NUMBER/TEXT)
+  - `Status`(built-in): `Todo | In Progress | Blocked | Done`
+- 운영 권장 필드:
+  - `plan_lane`(SINGLE_SELECT): `m0_bootstrap | m1_contract_freeze | m2_sync_core | m3_guardrails`
+- 값 표기 규칙:
+  - 계획/이슈 본문(PEC)은 `snake_case` 키를 사용한다. 예: `ready_contract`
+  - Project UI 표시는 `kebab-case` 또는 Title 형태일 수 있다. 예: `ready-contract`, `L1 Contract-Clarification`
+  - 동기화/검증 스크립트가 두 표현을 매핑하며, 계약 원문 기준은 `snake_case`로 유지한다.
+- 목적: plan -> issue -> project 투영에서 필드 드리프트를 줄이고 cross-repo 실행 판정을 결정적으로 고정한다.
 
 ## Automation
 - 스크립트: `docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh`
@@ -133,6 +143,7 @@ Core 7 canonical filename 예외(무날짜 고정):
   - root `README.md`의 workbench 경로/검증 명령 계약 드리프트 시 fail
 - CI `uap-docs-check` trigger:
   - `README.md`, `docs/brainstorms/**`, `docs/plans/**`, `docs/initiatives/unified-personal-agent-platform/**`, `docs/workbench/unified-personal-agent-platform/**`
+  - `docs/brainstorms/**`, `docs/plans/**`는 레거시 경로 재유입 회귀 감시용 watch path로 유지한다.
 - `catalog`: frontmatter 기반 카탈로그 문서 생성
 - `sync`: `catalog -> check --profile canonical` 순서로 동기화
 

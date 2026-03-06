@@ -19,4 +19,5 @@ Pin file locations:
 - Incompatible example (`contract_violation` scenario) must fail fast and be recorded as evidence.
 
 ## Validation Entry Point
-- `python3 planningops/scripts/cross_repo_conformance_check.py`
+- `python3 planningops/scripts/federation/cross_repo_conformance_check.py` (canonical)
+- `python3 planningops/scripts/cross_repo_conformance_check.py` (compatibility wrapper)

@@ -8,6 +8,8 @@ This directory contains Ralph Loop issue-resolution runtime artifacts.
 - `quality/`: verification checklist and verdict formats
 - `adr/`: architecture decisions
 - `scripts/`: local loop execution and validation scripts
+  - `scripts/federation/`: cross-repo execution entrypoints (canonical)
+  - `scripts/oneoff/`: non-recurring bootstrap/migration entrypoints
 
 Module-level navigation:
 - `planningops/adr/README.md`
@@ -90,6 +92,10 @@ python3 planningops/scripts/run_track2_contract_pack_validation.py --strict
 python3 planningops/scripts/cross_repo_conformance_check.py
 python3 planningops/scripts/run_local_oracle_rehearsal.py --days 7
 bash planningops/scripts/test_module_readme_contract.sh
+bash planningops/scripts/test_validate_repo_boundaries_contract.sh
+bash planningops/scripts/test_validate_script_roles_contract.sh
+bash planningops/scripts/test_validate_issue_quality_contract.sh
+python3 planningops/scripts/validate_issue_quality.py --strict
 python3 planningops/scripts/refactor_hygiene_loop.py --policy-file planningops/config/refactor-hygiene-policy.json
 python3 planningops/scripts/refactor_hygiene_multi_repo.py --config-file planningops/config/refactor-hygiene-multi-repo.json --workspace-root .
 ```

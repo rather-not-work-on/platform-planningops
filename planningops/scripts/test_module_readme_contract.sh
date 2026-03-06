@@ -12,6 +12,8 @@ REQUIRED_DIRS=(
   "planningops/quality"
   "planningops/schemas"
   "planningops/scripts"
+  "planningops/scripts/federation"
+  "planningops/scripts/oneoff"
   "planningops/templates"
 )
 

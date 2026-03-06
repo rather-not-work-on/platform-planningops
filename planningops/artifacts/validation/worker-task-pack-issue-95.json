@@ -1,0 +1,40 @@
+{
+  "generated_at_utc": "2026-03-05T14:23:46.411877+00:00",
+  "runtime_profile_file": "planningops/config/runtime-profiles.json",
+  "schema_file": "planningops/schemas/worker-task-pack.schema.json",
+  "task_key": "issue-95",
+  "issue_number": 95,
+  "mode": "dry-run",
+  "loop_profile": "L1 Contract-Clarification",
+  "target_repo": "rather-not-work-on/platform-planningops",
+  "validation_errors": [],
+  "worker_task_pack": {
+    "version": "v1",
+    "task_key": "issue-95",
+    "issue_number": 95,
+    "mode": "dry-run",
+    "loop_profile": "L1 Contract-Clarification",
+    "runtime_profile": "local",
+    "worker_policy_kind": "parser_diff_dry_run",
+    "command": [
+      "python3",
+      "planningops/scripts/parser_diff_dry_run.py",
+      "--run-id",
+      "worker-pack-issue-95",
+      "--mode",
+      "dry-run"
+    ],
+    "retry_policy": {
+      "max_retries": 2
+    },
+    "timeout_ms": 60000,
+    "idempotency_key": "224de5ecc5c734b72586d2f02cd187d95df8cba67dc3a8a23626e1b3d8db90a8",
+    "target_repo": "rather-not-work-on/platform-planningops",
+    "metadata": {
+      "profile_file": "planningops/config/runtime-profiles.json",
+      "task_key": "issue-95"
+    }
+  },
+  "verdict": "pass",
+  "reason": "ok"
+}
