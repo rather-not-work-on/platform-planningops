@@ -25,6 +25,8 @@ jobs:
         run: |
           set -euo pipefail
           cd platform-contracts
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements-dev.txt
           python3 scripts/validate_contracts.py --root .
           python3 scripts/classify_schema_change.py --enforce-expected
 
