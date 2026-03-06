@@ -1,0 +1,54 @@
+{
+  "policy_version": 1,
+  "default_external_backend": "local",
+  "pointer_manifest_root": "planningops/artifacts/pointers",
+  "tiers": {
+    "git_canonical": [
+      "planningops/artifacts/validation/**",
+      "planningops/artifacts/program/**",
+      "planningops/artifacts/meta-plan/**",
+      "planningops/artifacts/verification/latest-*.json",
+      "planningops/artifacts/ci/federated-ci-summary.json"
+    ],
+    "git_optional": [
+      "planningops/artifacts/conformance/**",
+      "planningops/artifacts/pilot/**",
+      "planningops/artifacts/refactor-hygiene/latest.json"
+    ],
+    "external_only": [
+      "planningops/artifacts/loops/**",
+      "planningops/artifacts/sync-summary/**",
+      "planningops/artifacts/transition-log/**",
+      "planningops/artifacts/adapter-hooks/**",
+      "planningops/artifacts/supervisor/**",
+      "planningops/artifacts/experiments/**"
+    ]
+  },
+  "backends": {
+    "local": {
+      "kind": "local",
+      "base_path": "planningops/runtime-artifacts/local"
+    },
+    "s3": {
+      "kind": "s3_mock",
+      "bucket": "planningops-artifacts-dev",
+      "prefix": "planningops",
+      "mock_base_path": "planningops/runtime-artifacts/s3-mock"
+    },
+    "oci": {
+      "kind": "oci_mock",
+      "namespace": "planningops-local",
+      "bucket": "planningops-artifacts-dev",
+      "prefix": "planningops",
+      "mock_base_path": "planningops/runtime-artifacts/oci-mock"
+    }
+  },
+  "retention": {
+    "git_canonical_days": 3650,
+    "git_optional_days": 180,
+    "external_only_days": 30
+  },
+  "commit_guard": {
+    "forbidden_external_only_in_git": true
+  }
+}

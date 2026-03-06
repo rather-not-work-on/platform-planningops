@@ -27,6 +27,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `script-role-separation-contract.md`: recurring core scripts vs one-off script separation rules
 - `issue-quality-contract.md`: backlog issue body quality baseline and verification rules
 - `issue-label-taxonomy-contract.md`: required label taxonomy (`task`/priority/area/type) and gates
+- `artifact-retention-tier-contract.md`: Git vs external artifact storage tier policy
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary
 
