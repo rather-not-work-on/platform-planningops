@@ -145,9 +145,15 @@ jobs:
           bash planningops/scripts/test_validate_repo_boundaries_contract.sh
           bash planningops/scripts/test_validate_script_roles_contract.sh
           bash planningops/scripts/test_validate_issue_quality_contract.sh
+          bash planningops/scripts/test_validate_federated_issue_quality_contract.sh
           python3 planningops/scripts/validate_issue_quality.py --strict
           bash planningops/scripts/test_validate_artifact_storage_policy_contract.sh
           python3 planningops/scripts/validate_artifact_storage_policy.py --strict
+          bash planningops/scripts/test_audit_branch_protection_contract.sh
+          python3 planningops/scripts/audit_branch_protection.py \
+            --policy planningops/config/repository-governance-policy.json \
+            --output planningops/artifacts/validation/branch-protection-audit-report.json \
+            --allow-fetch-failure
           bash planningops/scripts/test_validate_external_only_commit_guard.sh
           bash planningops/scripts/test_artifact_sink_e2e.sh
           BASE_REF="${{ github.event.pull_request.base.sha }}"

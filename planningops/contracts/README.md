@@ -29,6 +29,8 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `issue-label-taxonomy-contract.md`: required label taxonomy (`task`/priority/area/type) and gates
 - `artifact-retention-tier-contract.md`: Git vs external artifact storage tier policy
 - `artifact-sink-contract.md`: backend selector abstraction + pointer/rehydrate behavior
+- `repository-governance-contract.md`: default-branch protection baseline and required-check governance
+- `federated-label-taxonomy-contract.md`: federated required labels and in-scope issue label quality rules
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary
 

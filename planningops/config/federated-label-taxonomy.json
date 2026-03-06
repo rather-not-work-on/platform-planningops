@@ -1,0 +1,91 @@
+{
+  "default_priority_label": "p2",
+  "required": {
+    "required_labels_all": [
+      "task"
+    ],
+    "required_priority_labels_any": [
+      "p1",
+      "p2",
+      "p3"
+    ],
+    "required_label_prefixes": [
+      "area/",
+      "type/"
+    ]
+  },
+  "labels": [
+    {
+      "name": "task",
+      "color": "0E8A16",
+      "description": "PlanningOps executable task"
+    },
+    {
+      "name": "p1",
+      "color": "B60205",
+      "description": "Priority 1"
+    },
+    {
+      "name": "p2",
+      "color": "D93F0B",
+      "description": "Priority 2"
+    },
+    {
+      "name": "p3",
+      "color": "FBCA04",
+      "description": "Priority 3"
+    },
+    {
+      "name": "area/contracts",
+      "color": "5319E7",
+      "description": "Contracts and schema"
+    },
+    {
+      "name": "area/provider",
+      "color": "0052CC",
+      "description": "Provider gateway"
+    },
+    {
+      "name": "area/observability",
+      "color": "006B75",
+      "description": "Observability gateway"
+    },
+    {
+      "name": "area/runtime",
+      "color": "1D76DB",
+      "description": "Runtime and scheduler"
+    },
+    {
+      "name": "type/governance",
+      "color": "BFD4F2",
+      "description": "Governance and policy"
+    },
+    {
+      "name": "type/hardening",
+      "color": "C5DEF5",
+      "description": "Reliability hardening"
+    }
+  ],
+  "repos": [
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "default_area_label": "area/contracts",
+      "default_type_label": "type/governance"
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "default_area_label": "area/provider",
+      "default_type_label": "type/governance"
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "default_area_label": "area/observability",
+      "default_type_label": "type/governance"
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "default_area_label": "area/runtime",
+      "default_type_label": "type/governance"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "owner": "rather-not-work-on",
+  "default_branch": "main",
+  "defaults": {
+    "require_approving_reviews": true,
+    "min_approving_review_count": 1,
+    "require_conversation_resolution": true,
+    "require_status_checks": true,
+    "require_strict_status_checks": true,
+    "allow_force_pushes": false,
+    "allow_deletions": false,
+    "enforce_admins": false
+  },
+  "repos": [
+    {
+      "name": "platform-planningops",
+      "required_status_checks_any": [
+        "Federated CI Matrix",
+        "loop-guardrails"
+      ]
+    },
+    {
+      "name": "platform-contracts",
+      "required_status_checks_any": [
+        "Contracts Check",
+        "Contracts Compatibility Check"
+      ]
+    },
+    {
+      "name": "monday",
+      "required_status_checks_any": [
+        "Monday Local CI"
+      ]
+    },
+    {
+      "name": "platform-provider-gateway",
+      "required_status_checks_any": [
+        "Provider Gateway Local CI"
+      ]
+    },
+    {
+      "name": "platform-observability-gateway",
+      "required_status_checks_any": [
+        "Observability Gateway Local CI"
+      ]
+    }
+  ]
+}
