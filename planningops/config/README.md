@@ -17,6 +17,8 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - `refactor-hygiene-policy.json`: single-repo refactor hygiene policy
 - `refactor-hygiene-multi-repo.json`: multi-repo hygiene matrix config
 - `artifact-storage-policy.json`: artifact tier map, backend selector, and retention policy
+- `repository-governance-policy.json`: default-branch protection baseline and required checks policy
+- `federated-label-taxonomy.json`: execution-repo label catalog and default backfill mapping
 
 ## Change Rules
 - Field id updates must be synchronized with validator scripts and CI tests.

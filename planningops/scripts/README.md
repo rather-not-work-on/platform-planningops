@@ -32,7 +32,10 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_script_roles.py`
   - `validate_issue_quality.py`
   - `backfill_issue_labels.py`
+  - `ensure_label_taxonomy.py`
+  - `validate_federated_issue_quality.py`
   - `validate_artifact_storage_policy.py`
+  - `audit_branch_protection.py`
   - `validate_external_only_commit_guard.py`
   - `migrate_external_only_artifacts.py`
   - `rehydrate_artifact_pointer.py`
@@ -70,7 +73,9 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_repo_boundaries_contract.sh`
   - `test_validate_script_roles_contract.sh`
   - `test_validate_issue_quality_contract.sh`
+  - `test_validate_federated_issue_quality_contract.sh`
   - `test_validate_artifact_storage_policy_contract.sh`
+  - `test_audit_branch_protection_contract.sh`
   - `test_validate_external_only_commit_guard.sh`
   - `test_artifact_sink_e2e.sh`
   - `test_*.sh`
