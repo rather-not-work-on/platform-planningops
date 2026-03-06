@@ -22,6 +22,7 @@ Keep `platform-planningops` as a thin control plane with explicit repository bou
    - `planningops/scripts/validate_script_roles.py`
    - `planningops/scripts/test_validate_repo_boundaries_contract.sh`
    - `planningops/scripts/test_validate_script_roles_contract.sh`
+6. Boundary and role validators must ignore filesystem metadata files (for example `._*`, `.DS_Store`) to avoid false-positive drift in mixed storage environments.
 
 ## Verification
 - Contract test: `bash planningops/scripts/test_validate_repo_boundaries_contract.sh`

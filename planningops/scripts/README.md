@@ -73,3 +73,4 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Commands must run from repo root with repo-relative paths.
 - New non-recurring scripts must be placed under `planningops/scripts/oneoff` with a root wrapper only if needed.
 - Backlog issue creation/update flows must satisfy `planningops/contracts/issue-quality-contract.md`.
+- Validators must ignore filesystem metadata files (`._*`, `.DS_Store`, `Thumbs.db`) to prevent false CI failures.

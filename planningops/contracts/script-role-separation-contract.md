@@ -14,6 +14,7 @@ Prevent uncontrolled script sprawl by separating recurring core scripts from one
    - `planningops/config/script-role-map.json`
    - `planningops/scripts/validate_script_roles.py`
    - `planningops/scripts/test_validate_script_roles_contract.sh`
+5. Validation must ignore filesystem metadata files (for example `._*`, `.DS_Store`) so external-drive artifacts do not create false failures.
 
 ## Verification
 - `bash planningops/scripts/test_validate_script_roles_contract.sh`

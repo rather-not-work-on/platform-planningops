@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
+from path_filters import is_metadata_file
+
 
 DEFAULT_CONFIG = Path("planningops/config/script-role-map.json")
 DEFAULT_OUTPUT = Path("planningops/artifacts/validation/script-role-report.json")
@@ -33,6 +35,7 @@ def main():
 
     violations = []
     infos = []
+    metadata_ignored_count = 0
 
     if not oneoff_dir.is_dir():
         violations.append({"type": "MISSING_ONEOFF_DIR", "path": str(oneoff_dir)})
@@ -67,6 +70,9 @@ def main():
 
     # Guard against misplaced one-off files in scripts root.
     for p in scripts_root.glob("*.py"):
+        if is_metadata_file(p):
+            metadata_ignored_count += 1
+            continue
         if p.name.startswith("test_"):
             continue
         if p.name in wrappers:
@@ -85,6 +91,7 @@ def main():
             "type": "CHECK_SUMMARY",
             "oneoff_entrypoint_count": len(oneoff_entrypoints),
             "wrapper_count": len(wrappers),
+            "metadata_ignored_count": metadata_ignored_count,
         }
     )
 
