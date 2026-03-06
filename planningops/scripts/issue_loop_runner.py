@@ -15,8 +15,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+from artifact_sink import ArtifactSink
 from repo_execution_adapters import invoke_adapter_hook, resolve_execution_adapter
 
+ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
 
 IDEMPOTENCY_PATH = Path("planningops/artifacts/loop-runner/idempotency.json")
 CHECKPOINT_DIR = Path("planningops/artifacts/loop-runner/checkpoints")
@@ -46,20 +48,42 @@ def run(args):
 
 
 def load_json(path: Path, default):
-    if not path.exists():
+    read_path = ARTIFACT_SINK.resolve_read_path(path)
+    if not read_path.exists():
         return default
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(read_path.read_text(encoding="utf-8"))
 
 
 def save_json(path: Path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=True, indent=2), encoding="utf-8")
+    ARTIFACT_SINK.write_json(path, data)
 
 
 def append_ndjson(path: Path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(data, ensure_ascii=True) + "\n")
+    ARTIFACT_SINK.append_ndjson_row(path, data)
+
+
+def save_text(path: Path, text: str):
+    ARTIFACT_SINK.write_text(path, text, append=False)
+
+
+def externalize_and_prune_external_cache(loop_dir: Path, adapter_artifact_dir: Path, transition_log: Path):
+    paths = []
+    for root in [loop_dir, adapter_artifact_dir]:
+        if root.exists():
+            paths.extend([p for p in root.rglob("*") if p.is_file()])
+    if transition_log.exists():
+        paths.append(transition_log)
+
+    externalized = 0
+    for file_path in sorted(set(paths)):
+        result = ARTIFACT_SINK.externalize_existing_file(file_path, delete_local=True)
+        if result.get("externalized"):
+            externalized += 1
+
+    ARTIFACT_SINK.prune_local_external_tree(loop_dir)
+    ARTIFACT_SINK.prune_local_external_tree(adapter_artifact_dir)
+    ARTIFACT_SINK.prune_local_external_file(transition_log)
+    return externalized
 
 
 def checkpoint_path(issue_num: int):
@@ -1353,8 +1377,8 @@ def main():
             return 3
 
     transition_log = Path(f"planningops/artifacts/transition-log/{date_part}.ndjson")
+    transition_log_runtime = ARTIFACT_SINK.runtime_path(transition_log)
     adapter_artifact_dir = Path(f"planningops/artifacts/adapter-hooks/{date_part}")
-    adapter_artifact_dir.mkdir(parents=True, exist_ok=True)
     pre_hook_path = adapter_artifact_dir / f"{loop_id}-adapter-pre.json"
     save_json(pre_hook_path, pre_hook_result)
     selection_event = {
@@ -1396,7 +1420,7 @@ def main():
                 "--loop-dir",
                 str(loop_dir),
                 "--transition-log",
-                str(transition_log),
+                str(transition_log_runtime),
                 "--output",
                 str(verification_path),
                 "--project-payload",
@@ -1464,8 +1488,8 @@ def main():
         replan_decision_path = Path(
             f"planningops/artifacts/replan/issue-{issue_num}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.md"
         )
-        replan_decision_path.parent.mkdir(parents=True, exist_ok=True)
-        replan_decision_path.write_text(
+        save_text(
+            replan_decision_path,
             "\n".join(
                 [
                     f"# Replan Decision for issue #{issue_num}",
@@ -1478,7 +1502,6 @@ def main():
                     "Action: auto-pause current execution path and require recovery/replan loop (L5).",
                 ]
             ),
-            encoding="utf-8",
         )
         payload["replan_decision_path"] = str(replan_decision_path)
         append_ndjson(
@@ -1774,6 +1797,11 @@ def main():
             "runtime_profile_file": args.runtime_profile_file,
             "no_feedback": args.no_feedback,
         }
+        failure_result["externalized_artifact_files"] = externalize_and_prune_external_cache(
+            loop_dir=loop_dir,
+            adapter_artifact_dir=adapter_artifact_dir,
+            transition_log=transition_log,
+        )
         out_path = Path("planningops/artifacts/loop-runner/last-run.json")
         save_json(out_path, failure_result)
         print(json.dumps(failure_result, ensure_ascii=True, indent=2))
@@ -1882,6 +1910,11 @@ def main():
         "runtime_profile_file": args.runtime_profile_file,
         "no_feedback": args.no_feedback,
     }
+    result["externalized_artifact_files"] = externalize_and_prune_external_cache(
+        loop_dir=loop_dir,
+        adapter_artifact_dir=adapter_artifact_dir,
+        transition_log=transition_log,
+    )
     out_path = Path("planningops/artifacts/loop-runner/last-run.json")
     save_json(out_path, result)
     print(json.dumps(result, ensure_ascii=True, indent=2))

@@ -35,6 +35,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 
 Policy references:
 - contract: `planningops/contracts/artifact-retention-tier-contract.md`
+- sink contract: `planningops/contracts/artifact-sink-contract.md`
 - config: `planningops/config/artifact-storage-policy.json`
 - ADR: `planningops/adr/adr-0005-artifact-retention-and-external-storage-policy.md`
 - rollout checklist: `planningops/quality/artifact-storage-rollout-checklist.md`
