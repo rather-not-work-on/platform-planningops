@@ -30,7 +30,11 @@ def changed_files(base_ref: str | None, head_ref: str):
     if base_ref:
         rc, out, err = run(["git", "diff", "--name-only", "--diff-filter=ACMRT", f"{base_ref}...{head_ref}"])
         if rc != 0:
-            raise RuntimeError(f"git diff failed: {err or out}")
+            hint = ""
+            text = (err or out).lower()
+            if "symmetric difference" in text or "unknown revision" in text:
+                hint = " (hint: ensure full git history is available, e.g. actions/checkout fetch-depth: 0)"
+            raise RuntimeError(f"git diff failed: {err or out}{hint}")
         return [line.strip() for line in out.splitlines() if line.strip()]
 
     rc, out, err = run(["git", "status", "--porcelain"])
