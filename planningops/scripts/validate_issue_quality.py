@@ -41,9 +41,24 @@ def count_acceptance_checklist(body: str) -> int:
     return len(re.findall(r"(?m)^-\s+\[\s?[xX]?\s?\]\s+.+$", body))
 
 
+def extract_label_names(issue: dict):
+    labels = issue.get("labels") or []
+    names = []
+    for label in labels:
+        if isinstance(label, dict):
+            name = label.get("name")
+        else:
+            name = str(label)
+        if name:
+            names.append(name)
+    return names
+
+
 def validate_issue(issue: dict, rules: dict):
     body = issue.get("body") or ""
     violations = []
+    labels = extract_label_names(issue)
+    label_set = set(labels)
 
     for section in rules.get("required_sections", []):
         if not has_section(body, section):
@@ -62,10 +77,27 @@ def validate_issue(issue: dict, rules: dict):
         if marker and marker in body:
             violations.append(f"forbidden evidence marker present: {marker}")
 
+    for label in rules.get("required_labels_all", []):
+        if label not in label_set:
+            violations.append(f"missing required label: {label}")
+
+    priority_labels = rules.get("required_priority_labels_any", [])
+    if priority_labels:
+        present = [label for label in priority_labels if label in label_set]
+        if len(present) == 0:
+            violations.append(f"missing priority label; require one of {priority_labels}")
+        if len(present) > 1:
+            violations.append(f"multiple priority labels present: {present}")
+
+    for prefix in rules.get("required_label_prefixes", []):
+        if not any(name.startswith(prefix) for name in labels):
+            violations.append(f"missing required label prefix: {prefix}*")
+
     return {
         "number": issue.get("number"),
         "title": issue.get("title"),
         "url": issue.get("url"),
+        "labels": labels,
         "violation_count": len(violations),
         "violations": violations,
     }
@@ -83,10 +115,28 @@ def fetch_open_issues(repo: str):
         "--limit",
         "200",
         "--json",
-        "number,title,body,url",
+        "number,title,body,url,labels",
     ])
     if rc != 0:
         raise RuntimeError(f"failed to fetch issues: {err}")
+    return json.loads(out)
+
+
+def fetch_issue(repo: str, issue_number: int):
+    rc, out, err = run(
+        [
+            "gh",
+            "issue",
+            "view",
+            str(issue_number),
+            "--repo",
+            repo,
+            "--json",
+            "number,title,body,url,labels",
+        ]
+    )
+    if rc != 0:
+        raise RuntimeError(f"failed to fetch issue #{issue_number}: {err}")
     return json.loads(out)
 
 
@@ -96,6 +146,7 @@ def main():
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     parser.add_argument("--repo", default=None)
     parser.add_argument("--issues-file", default=None, help="Optional local issue JSON array")
+    parser.add_argument("--issue-number", type=int, default=None, help="Validate only one issue by number")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero when violations exist")
     args = parser.parse_args()
 
@@ -104,6 +155,8 @@ def main():
 
     if args.issues_file:
         issues = load_json(Path(args.issues_file))
+    elif args.issue_number is not None:
+        issues = [fetch_issue(repo, args.issue_number)]
     else:
         issues = fetch_open_issues(repo)
 
