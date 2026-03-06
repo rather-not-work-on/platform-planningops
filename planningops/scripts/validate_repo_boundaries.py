@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 import sys
 
+from path_filters import is_metadata_file
+
 
 DEFAULT_CONFIG = Path("planningops/config/repository-boundary-map.json")
 DEFAULT_OUTPUT = Path("planningops/artifacts/validation/repo-boundary-report.json")
@@ -37,6 +39,7 @@ def main():
 
     violations = []
     infos = []
+    metadata_ignored_count = 0
 
     if not scripts_root.is_dir():
         violations.append({"type": "MISSING_DIR", "path": str(scripts_root)})
@@ -74,7 +77,14 @@ def main():
                 }
             )
 
-    root_files = [p for p in scripts_root.glob("*") if p.is_file() and not p.name.startswith("._")]
+    root_files = []
+    for p in scripts_root.glob("*"):
+        if not p.is_file():
+            continue
+        if is_metadata_file(p):
+            metadata_ignored_count += 1
+            continue
+        root_files.append(p)
     for f in root_files:
         if f.name in root_wrappers:
             continue
@@ -96,6 +106,7 @@ def main():
             "scripts_root_file_count": len(root_files),
             "federation_entrypoint_count": len(federation_entrypoints),
             "root_wrapper_count": len(root_wrappers),
+            "metadata_ignored_count": metadata_ignored_count,
         }
     )
 
