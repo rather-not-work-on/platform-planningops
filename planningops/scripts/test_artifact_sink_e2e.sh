@@ -28,7 +28,7 @@ import json
 import sys
 from pathlib import Path
 
-repo_root = Path("/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops")
+repo_root = Path.cwd()
 sys.path.insert(0, str(repo_root / "planningops/scripts"))
 from artifact_sink import ArtifactSink  # noqa: E402
 
