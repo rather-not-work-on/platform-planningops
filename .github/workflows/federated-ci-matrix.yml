@@ -142,6 +142,8 @@ jobs:
           bash planningops/scripts/test_validate_script_roles_contract.sh
           bash planningops/scripts/test_validate_issue_quality_contract.sh
           python3 planningops/scripts/validate_issue_quality.py --strict
+          bash planningops/scripts/test_validate_artifact_storage_policy_contract.sh
+          python3 planningops/scripts/validate_artifact_storage_policy.py --strict
           bash planningops/scripts/test_normalize_ready_implementation_blueprint_refs.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_ralph_loop_local_worker_policy.sh

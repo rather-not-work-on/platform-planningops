@@ -21,3 +21,20 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - Artifacts are evidence outputs; do not treat them as source configuration.
 - New artifact roots require README update and deterministic naming policy.
 - Generated paths should be stable and include run ids where replay matters.
+
+## Retention Tiers
+- `git-canonical`
+  - Keep in Git as normative evidence.
+  - Examples: `validation/`, `program/`, `meta-plan/`.
+- `git-optional`
+  - Keep only for milestones/audits.
+  - Examples: selected `conformance/`, `pilot/`, `refactor-hygiene/latest.json`.
+- `external-only`
+  - Store outside Git via artifact sink backend.
+  - Examples: `loops/`, `sync-summary/`, `transition-log/`, `adapter-hooks/`, `supervisor/`, `experiments/`.
+
+Policy references:
+- contract: `planningops/contracts/artifact-retention-tier-contract.md`
+- config: `planningops/config/artifact-storage-policy.json`
+- ADR: `planningops/adr/adr-0005-artifact-retention-and-external-storage-policy.md`
+- rollout checklist: `planningops/quality/artifact-storage-rollout-checklist.md`

@@ -16,6 +16,7 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - `supervisor-experiment-validation-pack.json`: command pack for automatic worktree comparative execution
 - `refactor-hygiene-policy.json`: single-repo refactor hygiene policy
 - `refactor-hygiene-multi-repo.json`: multi-repo hygiene matrix config
+- `artifact-storage-policy.json`: artifact tier map, backend selector, and retention policy
 
 ## Change Rules
 - Field id updates must be synchronized with validator scripts and CI tests.
