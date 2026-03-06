@@ -27,10 +27,16 @@ Prevent low-quality backlog issues by enforcing deterministic structure, metadat
 ## Quality Rules
 - Acceptance checklist must contain at least 2 items.
 - Placeholder evidence markers (`- (none)`, `<TBD>`) are forbidden.
+- Labels must satisfy taxonomy contract:
+  - include `task`
+  - include exactly one of `p1|p2|p3`
+  - include at least one `area/` label
+  - include at least one `type/` label
 - Generated issues from planning scripts must pass this contract before create/update.
 
 ## Verification
 - Contract rules: `planningops/config/issue-quality-rules.json`
+- Label taxonomy: `planningops/contracts/issue-label-taxonomy-contract.md`
 - Validator: `planningops/scripts/validate_issue_quality.py`
 - Test: `bash planningops/scripts/test_validate_issue_quality_contract.sh`
 - Live check: `python3 planningops/scripts/validate_issue_quality.py --strict`

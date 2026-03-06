@@ -19,6 +19,18 @@
     "depends_on"
   ],
   "minimum_acceptance_checklist_items": 2,
+  "required_labels_all": [
+    "task"
+  ],
+  "required_priority_labels_any": [
+    "p1",
+    "p2",
+    "p3"
+  ],
+  "required_label_prefixes": [
+    "area/",
+    "type/"
+  ],
   "forbidden_evidence_markers": [
     "- (none)",
     "<TBD>"

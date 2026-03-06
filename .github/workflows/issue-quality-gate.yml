@@ -1,0 +1,44 @@
+name: Issue Quality Gate
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+  issue-quality-gate:
+    if: contains(github.event.issue.body, 'plan_item_id:')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate issue quality and labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p planningops/artifacts/validation
+          python3 planningops/scripts/validate_issue_quality.py \
+            --repo ${{ github.repository }} \
+            --issue-number ${{ github.event.issue.number }} \
+            --output planningops/artifacts/validation/issue-quality-event-report.json \
+            --strict
+
+      - name: Upload issue quality report
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-quality-event-report
+          path: planningops/artifacts/validation/issue-quality-event-report.json

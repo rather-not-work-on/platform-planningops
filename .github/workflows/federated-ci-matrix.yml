@@ -5,6 +5,7 @@ on:
     paths:
       - "planningops/**"
       - ".github/workflows/federated-ci-matrix.yml"
+      - ".github/workflows/issue-quality-gate.yml"
   workflow_dispatch:
 
 jobs:

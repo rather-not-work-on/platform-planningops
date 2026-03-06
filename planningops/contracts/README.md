@@ -26,6 +26,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `control-plane-boundary-contract.md`: thin-core ownership boundary and federation script placement rules
 - `script-role-separation-contract.md`: recurring core scripts vs one-off script separation rules
 - `issue-quality-contract.md`: backlog issue body quality baseline and verification rules
+- `issue-label-taxonomy-contract.md`: required label taxonomy (`task`/priority/area/type) and gates
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary
 

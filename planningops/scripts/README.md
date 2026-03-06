@@ -31,6 +31,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_repo_boundaries.py`
   - `validate_script_roles.py`
   - `validate_issue_quality.py`
+  - `backfill_issue_labels.py`
   - `verify_loop_run.py` (`--execution-attempts-schema`)
   - `verify_plan_projection.py`
   - `cross_repo_conformance_check.py`

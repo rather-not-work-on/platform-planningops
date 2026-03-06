@@ -3,6 +3,12 @@
     "number": 1001,
     "title": "Sample quality issue",
     "url": "https://example.local/1001",
+    "labels": [
+      {"name": "task"},
+      {"name": "p2"},
+      {"name": "area/planningops"},
+      {"name": "type/governance"}
+    ],
     "body": "## Planning Context\n- plan_item_id: `sample-1001`\n- target_repo: `rather-not-work-on/monday`\n- component: `runtime`\n- workflow_state: `ready_implementation`\n- loop_profile: `l3_implementation_tdd`\n- execution_order: `101`\n- depends_on: `-`\n\n## Problem Statement\n- Runtime handoff validation path is underspecified.\n\n## Interfaces & Dependencies\n- execution-adapter: `planningops/contracts/execution-adapter-interface-contract.md`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/audits/sample.md`\n\n## Acceptance Criteria\n- [ ] Handoff contract fields are explicit and validated.\n- [ ] Drift report includes repo-specific mismatch reasons.\n\n## Definition of Done\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence\n"
   }
 ]
