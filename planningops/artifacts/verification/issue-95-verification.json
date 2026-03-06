@@ -1,0 +1,20 @@
+{
+  "executed_at_utc": "2026-03-05T14:23:46.566359+00:00",
+  "loop_dir": "planningops/artifacts/loops/2026-03-05/loop-20260305T142346Z-issue-95",
+  "transition_log": "planningops/artifacts/transition-log/2026-03-05.ndjson",
+  "execution_attempts_schema": "planningops/schemas/execution-attempts.schema.json",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "loop_report": {
+    "verdict": "pass",
+    "reason_code": "ok"
+  },
+  "errors": [],
+  "trigger_detection": {
+    "scoped_row_count": 2,
+    "repeated_reason_trigger": false,
+    "replanning_flag_trigger": false,
+    "inconclusive_trigger": false,
+    "replanning_triggered": false
+  }
+}

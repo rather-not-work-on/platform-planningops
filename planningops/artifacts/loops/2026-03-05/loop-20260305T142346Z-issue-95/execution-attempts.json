@@ -1,0 +1,25 @@
+{
+  "status": "pass",
+  "reason_code": "ok",
+  "attempts_executed": 1,
+  "attempts_allowed": 3,
+  "retry_cap_attempts": 3,
+  "attempt_budget_limited": false,
+  "max_attempts": 3,
+  "max_retries": 2,
+  "timeout_ms": 60000,
+  "timed_out": false,
+  "final_return_code": 0,
+  "stdout_tail": "summary written: planningops/artifacts/sync-summary/loop-20260305T142346Z-issue-95.json\ncounts create=20 update=0 noop=0\n",
+  "stderr_tail": "",
+  "attempts": [
+    {
+      "attempt_index": 1,
+      "timed_out": false,
+      "return_code": 0,
+      "duration_ms": 34,
+      "stdout_tail": "summary written: planningops/artifacts/sync-summary/loop-20260305T142346Z-issue-95.json\ncounts create=20 update=0 noop=0\n",
+      "stderr_tail": ""
+    }
+  ]
+}

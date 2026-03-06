@@ -1,0 +1,11 @@
+{
+  "issues": {
+    "95": [
+      {
+        "recorded_at_utc": "2026-03-05T14:23:46.581606+00:00",
+        "verdict": "pass",
+        "reason_code": "ok"
+      }
+    ]
+  }
+}

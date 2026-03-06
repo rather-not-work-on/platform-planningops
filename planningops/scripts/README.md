@@ -38,8 +38,12 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Backlog/bootstrap helpers:
   - `bootstrap_two_track_backlog.py`
   - `compile_plan_to_backlog.py`
+  - `build_program_manifest.py`
+  - `sync_project_fields_after_issue_create.py`
   - `build_meta_plan_graph.py`
+  - `test_build_program_manifest_contract.sh`
   - `test_compile_plan_to_backlog_contract.sh`
+  - `test_sync_project_fields_after_issue_create_contract.sh`
   - `test_build_meta_plan_graph_contract.sh`
   - `run_track1_gate_dryrun.py`
   - `run_track2_contract_pack_validation.py`
