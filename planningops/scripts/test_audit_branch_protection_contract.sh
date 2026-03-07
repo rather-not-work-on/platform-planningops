@@ -21,11 +21,11 @@ cat > "$tmp_dir/policy.json" <<'JSON'
   "repos": [
     {
       "name": "platform-planningops",
-      "required_status_checks_any": ["Federated CI Matrix", "loop-guardrails"]
+      "required_status_checks_all": ["template-and-link-check", "validate-and-dry-run", "federated-summary"]
     },
     {
       "name": "monday",
-      "required_status_checks_any": ["Monday Local CI"]
+      "required_status_checks_all": ["monday-local-ci"]
     }
   ]
 }
@@ -43,7 +43,11 @@ cat > "$tmp_dir/snapshot-valid.json" <<'JSON'
           "requiresApprovingReviews": true,
           "requiredApprovingReviewCount": 1,
           "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": ["loop-guardrails"],
+          "requiredStatusCheckContexts": [
+            "template-and-link-check",
+            "validate-and-dry-run",
+            "federated-summary"
+          ],
           "requiresStrictStatusChecks": true,
           "requiresConversationResolution": true,
           "allowsForcePushes": false,
@@ -61,7 +65,7 @@ cat > "$tmp_dir/snapshot-valid.json" <<'JSON'
           "requiresApprovingReviews": true,
           "requiredApprovingReviewCount": 1,
           "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": ["Monday Local CI"],
+          "requiredStatusCheckContexts": ["monday-local-ci"],
           "requiresStrictStatusChecks": true,
           "requiresConversationResolution": true,
           "allowsForcePushes": false,
@@ -92,7 +96,10 @@ cat > "$tmp_dir/snapshot-invalid.json" <<'JSON'
           "requiresApprovingReviews": true,
           "requiredApprovingReviewCount": 1,
           "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": ["loop-guardrails"],
+          "requiredStatusCheckContexts": [
+            "template-and-link-check",
+            "validate-and-dry-run"
+          ],
           "requiresStrictStatusChecks": true,
           "requiresConversationResolution": true,
           "allowsForcePushes": false,

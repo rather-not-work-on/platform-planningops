@@ -2,10 +2,9 @@ name: Federated CI Matrix
 
 on:
   pull_request:
-    paths:
-      - "planningops/**"
-      - ".github/workflows/federated-ci-matrix.yml"
-      - ".github/workflows/issue-quality-gate.yml"
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -206,6 +205,7 @@ jobs:
           bash planningops/scripts/test_validate_artifact_storage_policy_contract.sh
           python3 planningops/scripts/validate_artifact_storage_policy.py --strict
           bash planningops/scripts/test_audit_branch_protection_contract.sh
+          bash planningops/scripts/test_apply_branch_protection_contract.sh
           python3 planningops/scripts/audit_branch_protection.py \
             --policy planningops/config/repository-governance-policy.json \
             --output planningops/artifacts/validation/branch-protection-audit-report.json \
@@ -296,6 +296,8 @@ jobs:
           )
           print("summary written: planningops/artifacts/ci/federated-ci-summary.json")
           print(f"verdict={doc['verdict']} failures={len(failures)}")
+          if failures:
+              raise SystemExit(1)
           PY
 
       - name: Upload federated summary artifact
