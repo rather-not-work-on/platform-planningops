@@ -94,6 +94,62 @@ jobs:
             --idempotency artifacts/integration/ci-runtime-${{ github.run_id }}-idempotency.json \
             --transition-log artifacts/integration/ci-runtime-${{ github.run_id }}-scheduler.ndjson
 
+  federated-conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout planningops
+        uses: actions/checkout@v4
+
+      - name: Checkout platform-contracts
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/platform-contracts
+          path: platform-contracts
+
+      - name: Checkout provider gateway
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/platform-provider-gateway
+          path: platform-provider-gateway
+
+      - name: Checkout observability gateway
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/platform-observability-gateway
+          path: platform-observability-gateway
+
+      - name: Checkout monday runtime
+        uses: actions/checkout@v4
+        with:
+          repository: rather-not-work-on/monday
+          path: monday
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install federated evidence dependencies
+        run: |
+          set -euo pipefail
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r platform-contracts/requirements-dev.txt
+          python3 -m pip install -r platform-provider-gateway/requirements-dev.txt
+          python3 -m pip install -r platform-observability-gateway/requirements-dev.txt
+          python3 -m pip install -r monday/requirements-dev.txt
+
+      - name: Run federated conformance
+        run: |
+          set -euo pipefail
+          python3 planningops/scripts/rollout_external_artifact_policy.py \
+            --workspace-root . \
+            --strict \
+            --output planningops/artifacts/validation/federated-artifact-policy-rollout-report.json
+          python3 planningops/scripts/federation/cross_repo_conformance_check.py \
+            --workspace-root . \
+            --run-id ci-federated-${{ github.run_id }} \
+            --output planningops/artifacts/conformance/ci-federated-${{ github.run_id }}.json
+
   loop-guardrails:
     runs-on: ubuntu-latest
     permissions:
@@ -182,6 +238,7 @@ jobs:
       - provider-profile
       - o11y-replay
       - runtime-handoff
+      - federated-conformance
       - loop-guardrails
     if: always()
     steps:
@@ -202,6 +259,7 @@ jobs:
             "runtime-handoff": "${{ needs.runtime-handoff.result }}",
             "o11y-replay": "${{ needs.o11y-replay.result }}",
             "provider-profile": "${{ needs.provider-profile.result }}",
+            "federated-conformance": "${{ needs.federated-conformance.result }}",
             "loop-guardrails": "${{ needs.loop-guardrails.result }}",
           }
 
@@ -210,6 +268,7 @@ jobs:
             "runtime-handoff": "runtime",
             "o11y-replay": "infra",
             "provider-profile": "infra",
+            "federated-conformance": "federation",
             "loop-guardrails": "policy",
           }
 
@@ -227,7 +286,7 @@ jobs:
             "failure_classification": {
               "count": len(failures),
               "domains": sorted({f["domain"] for f in failures}),
-              "deterministic_rule": "contract-conformance->contract, provider-profile/o11y-replay->infra, runtime-handoff->runtime, loop-guardrails->policy",
+              "deterministic_rule": "contract-conformance->contract, provider-profile/o11y-replay->infra, runtime-handoff->runtime, federated-conformance->federation, loop-guardrails->policy",
             },
             "verdict": "pass" if not failures else "fail",
           }
