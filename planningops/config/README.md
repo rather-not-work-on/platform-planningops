@@ -8,6 +8,7 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - `project-view-conventions.md`: view/filter/sort contract for project operations
 - `runtime-profiles.json`: local/oracle runtime and provider policies
 - `contract-ref-map.json`: C1~C8 schema pointer map
+- `ontology-entity-map.json`: machine-readable ontology entity/relation/repo-role map
 - `repository-boundary-map.json`: control-plane vs execution-repo ownership and script layout rules
 - `script-role-map.json`: recurring core/federation scripts vs one-off script placement rules
 - `issue-quality-rules.json`: backlog issue body quality contract rules
