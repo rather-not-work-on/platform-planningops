@@ -26,3 +26,4 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - Contract map paths must stay repo-root-relative and portable across local/CI.
 - Script role map changes must keep root wrapper compatibility for moved entrypoints.
 - Issue quality rule changes must align with `planningops/contracts/issue-quality-contract.md`.
+- Governance policy required checks must use real GitHub check context names, not workflow display names.

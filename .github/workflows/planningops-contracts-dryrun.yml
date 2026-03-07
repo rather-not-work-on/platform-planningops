@@ -2,10 +2,9 @@ name: PlanningOps Contracts Dry-Run
 
 on:
   pull_request:
-    paths:
-      - "planningops/**"
-      - "docs/workbench/unified-personal-agent-platform/**"
-      - ".github/workflows/planningops-contracts-dryrun.yml"
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:

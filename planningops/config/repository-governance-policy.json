@@ -14,34 +14,34 @@
   "repos": [
     {
       "name": "platform-planningops",
-      "required_status_checks_any": [
-        "Federated CI Matrix",
-        "loop-guardrails"
+      "required_status_checks_all": [
+        "template-and-link-check",
+        "validate-and-dry-run",
+        "federated-summary"
       ]
     },
     {
       "name": "platform-contracts",
-      "required_status_checks_any": [
-        "Contracts Check",
-        "Contracts Compatibility Check"
+      "required_status_checks_all": [
+        "contracts"
       ]
     },
     {
       "name": "monday",
-      "required_status_checks_any": [
-        "Monday Local CI"
+      "required_status_checks_all": [
+        "monday-local-ci"
       ]
     },
     {
       "name": "platform-provider-gateway",
-      "required_status_checks_any": [
-        "Provider Gateway Local CI"
+      "required_status_checks_all": [
+        "provider-local-ci"
       ]
     },
     {
       "name": "platform-observability-gateway",
-      "required_status_checks_any": [
-        "Observability Gateway Local CI"
+      "required_status_checks_all": [
+        "observability-local-ci"
       ]
     }
   ]

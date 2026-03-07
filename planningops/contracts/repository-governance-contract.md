@@ -22,6 +22,7 @@ Per governed repo default branch:
 6. Conversation resolution must be required.
 7. Force pushes and deletions must be disabled.
 8. Required status checks must satisfy repo-specific policy (`all` and/or `any` sets).
+9. Branch-protection-required checks must be emitted on every pull request for that repo. Path-filtered checks cannot be marked as required unless the workflow still produces the context for all PRs.
 
 ## Source of Truth
 - Policy config: `planningops/config/repository-governance-policy.json`
@@ -34,3 +35,4 @@ Per governed repo default branch:
 ## Operational Notes
 - `--strict` mode fails when baseline violations are found.
 - `--allow-fetch-failure` turns fetch errors into `inconclusive` (soft-fail only when strict mode is also enabled).
+- Live apply uses `planningops/scripts/apply_branch_protection.py` and expects concrete `required_status_checks_all` values in policy.
