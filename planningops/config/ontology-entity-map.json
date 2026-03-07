@@ -1,0 +1,171 @@
+{
+  "initiative": "unified-personal-agent-platform",
+  "version": 1,
+  "path_policy": {
+    "machine_ref_format": "repo+path",
+    "path_root": "repo-root-relative",
+    "human_docs_may_use_initiative_relative_links": true
+  },
+  "entities": [
+    {
+      "entity_type": "Initiative",
+      "id_key": "initiative",
+      "id_pattern": "^[a-z0-9][a-z0-9-]+$",
+      "required_fields": ["initiative", "title", "status"],
+      "source_of_truth": {
+        "repo": "rather-not-work-on/platform-planningops",
+        "path": "docs/initiatives/unified-personal-agent-platform/README.md"
+      },
+      "sample_refs": [
+        {
+          "repo": "rather-not-work-on/platform-planningops",
+          "path": "docs/initiatives/unified-personal-agent-platform/README.md"
+        }
+      ]
+    },
+    {
+      "entity_type": "PlanItem",
+      "id_key": "plan_item_id",
+      "id_pattern": "^[A-Z][0-9]{2}$",
+      "required_fields": [
+        "plan_item_id",
+        "target_repo",
+        "component",
+        "workflow_state",
+        "loop_profile",
+        "execution_order",
+        "depends_on"
+      ],
+      "source_of_truth": {
+        "repo": "rather-not-work-on/platform-planningops",
+        "path": ".github/ISSUE_TEMPLATE/planningops-task.yml"
+      },
+      "sample_refs": [
+        {
+          "repo": "rather-not-work-on/platform-planningops",
+          "path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-05-plan-meta-backlog-atomic-decomposition-and-federated-delivery-plan.md"
+        }
+      ]
+    },
+    {
+      "entity_type": "Contract",
+      "id_key": "path",
+      "id_pattern": "^[A-Za-z0-9._/-]+$",
+      "required_fields": ["path", "owner_repo", "purpose", "verification_cmd"],
+      "source_of_truth": {
+        "repo": "rather-not-work-on/platform-planningops",
+        "path": "planningops/contracts/control-tower-ontology-contract.md"
+      },
+      "sample_refs": [
+        {
+          "repo": "rather-not-work-on/platform-planningops",
+          "path": "planningops/contracts/control-tower-ontology-contract.md"
+        },
+        {
+          "repo": "rather-not-work-on/platform-contracts",
+          "path": "schemas/c1-run-lifecycle.schema.json"
+        }
+      ]
+    },
+    {
+      "entity_type": "RepositoryRole",
+      "id_key": "repo",
+      "id_pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "required_fields": ["repo", "plane", "component", "responsibilities"],
+      "source_of_truth": {
+        "repo": "rather-not-work-on/platform-planningops",
+        "path": "docs/initiatives/unified-personal-agent-platform/20-repos/README.md"
+      },
+      "sample_refs": [
+        {
+          "repo": "rather-not-work-on/platform-planningops",
+          "path": "planningops/contracts/control-plane-boundary-contract.md"
+        }
+      ]
+    },
+    {
+      "entity_type": "RuntimeArtifact",
+      "id_key": "logical_path",
+      "id_pattern": "^[A-Za-z0-9._/-]+$",
+      "required_fields": ["run_id", "repo", "logical_path", "reason_code", "contract_refs"],
+      "source_of_truth": {
+        "repo": "rather-not-work-on/platform-planningops",
+        "path": "planningops/contracts/artifact-retention-tier-contract.md"
+      },
+      "sample_refs": [
+        {
+          "repo": "rather-not-work-on/platform-provider-gateway",
+          "path": "runtime-artifacts/smoke/<run_id>-primary_success.json"
+        },
+        {
+          "repo": "rather-not-work-on/monday",
+          "path": "runtime-artifacts/integration/<run_id>/planningops-handoff-report.json"
+        }
+      ]
+    },
+    {
+      "entity_type": "MemoryRecord",
+      "id_key": "memory_id",
+      "id_pattern": "^[A-Za-z0-9._:-]+$",
+      "required_fields": ["memory_tier", "source_refs", "summary", "status"],
+      "source_of_truth": {
+        "repo": "rather-not-work-on/platform-planningops",
+        "path": "planningops/contracts/control-tower-ontology-contract.md"
+      },
+      "sample_refs": [
+        {
+          "repo": "rather-not-work-on/platform-planningops",
+          "path": "docs/workbench/unified-personal-agent-platform/"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {"name": "contains", "from": "Initiative", "to": "PlanItem", "cardinality": "1..n"},
+    {"name": "references", "from": "PlanItem", "to": "Contract", "cardinality": "1..n"},
+    {"name": "targets", "from": "PlanItem", "to": "RepositoryRole", "cardinality": "1"},
+    {"name": "owns", "from": "RepositoryRole", "to": "Contract", "cardinality": "1..n"},
+    {"name": "emits", "from": "RepositoryRole", "to": "RuntimeArtifact", "cardinality": "0..n"},
+    {"name": "evidences", "from": "RuntimeArtifact", "to": "PlanItem", "cardinality": "1..n"},
+    {"name": "validates", "from": "RuntimeArtifact", "to": "Contract", "cardinality": "1..n"},
+    {"name": "compacts", "from": "MemoryRecord", "to": "PlanItem|RuntimeArtifact", "cardinality": "1..n"}
+  ],
+  "repository_roles": [
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "plane": "control-plane",
+      "component": "planningops",
+      "responsibilities": ["ontology", "policy", "gates", "project orchestration"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "plane": "control-plane",
+      "component": "orchestrator",
+      "responsibilities": ["issue loop coordination", "federated validation", "handoff preparation"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "plane": "execution-plane",
+      "component": "contracts",
+      "responsibilities": ["schema ownership", "bundle publication", "consumer pin evidence"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "plane": "execution-plane",
+      "component": "provider-gateway",
+      "responsibilities": ["provider invocation", "routing policy", "smoke evidence"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "plane": "execution-plane",
+      "component": "observability-gateway",
+      "responsibilities": ["ingest pipeline", "replay/backfill", "observability evidence"]
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "plane": "execution-plane",
+      "component": "runtime",
+      "responsibilities": ["scheduler", "executor-worker handoff", "runtime evidence"]
+    }
+  ]
+}
