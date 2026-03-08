@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.539912+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-a-test.log",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-a-test.log",
+  "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-a-test.log",
+  "bytes": 38,
+  "sha256": "3b8b93fcab9c95540d9b09633475cfa4f112a77702528a21c443fa219d56d19b",
+  "local_cache_external": false
+}

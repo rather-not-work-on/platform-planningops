@@ -1,0 +1,725 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.875606+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "backend": "local",
+  "mode": "apply",
+  "scope": "tracked",
+  "candidate_count": 102,
+  "migrated_count": 102,
+  "rows": [
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-post.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-post.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-post.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-pre.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-pre.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-pre.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/integration-smoke/latest.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/integration-smoke/latest.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/latest.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/integration-smoke/smoke-20260301T054226Z.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/integration-smoke/smoke-20260301T054226Z.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/smoke-20260301T054226Z.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/integration-smoke/smoke-20260301T055149Z.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/integration-smoke/smoke-20260301T055149Z.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/smoke-20260301T055149Z.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/integration-smoke/smoke-20260301T055223Z.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/integration-smoke/smoke-20260301T055223Z.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/smoke-20260301T055223Z.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/adapter-hooks/integration-smoke/smoke-20260301T055519Z.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/adapter-hooks/integration-smoke/smoke-20260301T055519Z.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/smoke-20260301T055519Z.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/decision-record.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/decision-record.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/decision-record.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/manifest.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/manifest.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/manifest.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-a-rc.txt",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/option-a-rc.txt.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-a-rc.txt",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-a-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/option-a-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-a-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-a-test.log",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/option-a-test.log.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-a-test.log",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-b-rc.txt",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/option-b-rc.txt.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-b-rc.txt",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-b-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/option-b-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-b-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/2026-03-05-lock-drift-classification/option-b-test.log",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/2026-03-05-lock-drift-classification/option-b-test.log.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/2026-03-05-lock-drift-classification/option-b-test.log",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/decision-record.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/decision-record.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/decision-record.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/manifest.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/manifest.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/manifest.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/option-option-a-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/option-option-a-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/option-option-a-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/option-option-b-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/option-option-b-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/option-option-b-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/supervisor-auto-executor-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/supervisor-auto-executor-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/supervisor-auto-executor-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T050940Z-issue-9/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T050940Z-issue-9/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T050940Z-issue-9/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T050940Z-issue-9/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T050940Z-issue-9/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T050940Z-issue-9/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T050940Z-issue-9/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T050940Z-issue-9/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T050940Z-issue-9/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T050940Z-issue-9/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T050940Z-issue-9/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T050940Z-issue-9/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T051458Z-issue-11/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T051458Z-issue-11/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T051458Z-issue-11/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T051458Z-issue-11/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T051458Z-issue-11/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T051458Z-issue-11/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T062005Z-issue-23/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T062005Z-issue-23/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T062005Z-issue-23/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T062005Z-issue-23/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T062005Z-issue-23/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T062005Z-issue-23/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T062005Z-issue-23/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T062005Z-issue-23/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T062005Z-issue-23/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T062005Z-issue-23/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-02-28/loop-20260228T062005Z-issue-23/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T062005Z-issue-23/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3101/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3101/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3101/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3101/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3101/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3101/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3101/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3101/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3101/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3101/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3101/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3101/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3102/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3102/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3102/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3102/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3102/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3102/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3102/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3102/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3102/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3102/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3102/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3102/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3103/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3103/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3103/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3103/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3103/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3103/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3103/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3103/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3103/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060431Z-issue-3103/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060431Z-issue-3103/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060431Z-issue-3103/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3104/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3104/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3104/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3104/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3104/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3104/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3104/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3104/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3104/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3105/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3105/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3105/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3105/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3105/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3105/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3105/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3105/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3105/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3105/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3105/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3105/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3106/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3106/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3106/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3106/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3106/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3106/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3106/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3106/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3106/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3106/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3106/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3106/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3107/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3107/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3107/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3107/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3107/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3107/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3107/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3107/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3107/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3107/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-01/loop-20260301T060432Z-issue-3107/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3107/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232031Z-issue-18/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232031Z-issue-18/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232031Z-issue-18/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232031Z-issue-18/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232031Z-issue-18/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232031Z-issue-18/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232031Z-issue-18/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232031Z-issue-18/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232031Z-issue-18/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232031Z-issue-18/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232031Z-issue-18/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232031Z-issue-18/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232123Z-issue-18/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232123Z-issue-18/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232123Z-issue-18/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232123Z-issue-18/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232123Z-issue-18/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232123Z-issue-18/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232123Z-issue-18/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232123Z-issue-18/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232123Z-issue-18/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T232123Z-issue-18/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T232123Z-issue-18/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T232123Z-issue-18/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T233106Z-issue-18/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T233106Z-issue-18/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T233106Z-issue-18/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T233106Z-issue-18/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T233106Z-issue-18/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T233106Z-issue-18/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-04/loop-20260304T233106Z-issue-18/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-04/loop-20260304T233106Z-issue-18/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-04/loop-20260304T233106Z-issue-18/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-05/loop-20260305T142346Z-issue-95/execution-attempts.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-05/loop-20260305T142346Z-issue-95/execution-attempts.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-05/loop-20260305T142346Z-issue-95/execution-attempts.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-05/loop-20260305T142346Z-issue-95/intake-check.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-05/loop-20260305T142346Z-issue-95/intake-check.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-05/loop-20260305T142346Z-issue-95/intake-check.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-05/loop-20260305T142346Z-issue-95/patch-summary.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-05/loop-20260305T142346Z-issue-95/patch-summary.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-05/loop-20260305T142346Z-issue-95/patch-summary.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-05/loop-20260305T142346Z-issue-95/simulation-report.md",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-05/loop-20260305T142346Z-issue-95/simulation-report.md.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-05/loop-20260305T142346Z-issue-95/simulation-report.md",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/loops/2026-03-05/loop-20260305T142346Z-issue-95/verification-report.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/2026-03-05/loop-20260305T142346Z-issue-95/verification-report.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-05/loop-20260305T142346Z-issue-95/verification-report.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/deterministic-a.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/deterministic-a.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/deterministic-a.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/deterministic-b.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/deterministic-b.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/deterministic-b.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/local-ci-dry-run.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/local-ci-dry-run.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/local-ci-dry-run.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260228T050940Z-issue-9.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260228T050940Z-issue-9.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260228T050940Z-issue-9.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260228T051458Z-issue-11.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260228T051458Z-issue-11.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260228T051458Z-issue-11.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260228T062005Z-issue-23.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260228T062005Z-issue-23.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260228T062005Z-issue-23.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060431Z-issue-3101.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060431Z-issue-3101.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060431Z-issue-3101.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060431Z-issue-3102.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060431Z-issue-3102.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060431Z-issue-3102.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060431Z-issue-3103.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060431Z-issue-3103.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060431Z-issue-3103.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060432Z-issue-3104.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060432Z-issue-3104.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060432Z-issue-3104.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060432Z-issue-3105.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060432Z-issue-3105.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060432Z-issue-3105.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060432Z-issue-3106.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060432Z-issue-3106.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060432Z-issue-3106.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260301T060432Z-issue-3107.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260301T060432Z-issue-3107.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260301T060432Z-issue-3107.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260304T232031Z-issue-18.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260304T232031Z-issue-18.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260304T232031Z-issue-18.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260304T232123Z-issue-18.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260304T232123Z-issue-18.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260304T232123Z-issue-18.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260304T233106Z-issue-18.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260304T233106Z-issue-18.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260304T233106Z-issue-18.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/loop-20260305T142346Z-issue-95.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/loop-20260305T142346Z-issue-95.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/loop-20260305T142346Z-issue-95.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/multi-repo-a.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/multi-repo-a.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/multi-repo-a.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/multi-repo-b.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/multi-repo-b.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/multi-repo-b.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/reconcile-issue23.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/reconcile-issue23.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/reconcile-issue23.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/sync-summary/test-pass.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/sync-summary/test-pass.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/test-pass.json",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/transition-log/2026-02-28.ndjson",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/transition-log/2026-02-28.ndjson.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/transition-log/2026-02-28.ndjson",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/transition-log/2026-03-01.ndjson",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/transition-log/2026-03-01.ndjson.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/transition-log/2026-03-01.ndjson",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/transition-log/2026-03-04.ndjson",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/transition-log/2026-03-04.ndjson.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/transition-log/2026-03-04.ndjson",
+      "reason": null
+    },
+    {
+      "logical_path": "planningops/artifacts/transition-log/2026-03-05.ndjson",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/transition-log/2026-03-05.ndjson.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/transition-log/2026-03-05.ndjson",
+      "reason": null
+    }
+  ]
+}

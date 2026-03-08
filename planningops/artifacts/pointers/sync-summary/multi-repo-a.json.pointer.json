@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.843335+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/sync-summary/multi-repo-a.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/sync-summary/multi-repo-a.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/multi-repo-a.json",
+  "bytes": 2140,
+  "sha256": "113c8d04066a4aecfa2c3b8199d8425c5b61a5bbb5a10b4b0c4bf6e017e029dd",
+  "local_cache_external": false
+}

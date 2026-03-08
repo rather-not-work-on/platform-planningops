@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.606208+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-02-28/loop-20260228T051458Z-issue-11/verification-report.json",
+  "bytes": 722,
+  "sha256": "e148281f6ae1d7c64f9542a65fc1b625914d8babaf2b077453eabc1b9a67a0f9",
+  "local_cache_external": false
+}

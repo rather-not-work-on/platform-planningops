@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.559514+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/manifest.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/manifest.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/manifest.json",
+  "bytes": 1120,
+  "sha256": "fc6f9fd5393ebf809159932261ba02dd6450f431798b22a7363ea3030707f82d",
+  "local_cache_external": false
+}

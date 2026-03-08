@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.797564+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/sync-summary/local-ci-dry-run.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/sync-summary/local-ci-dry-run.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/local-ci-dry-run.json",
+  "bytes": 6708,
+  "sha256": "d518af93926814d508c2475217f24231b5fdb9853491d4eadd45e91eff491157",
+  "local_cache_external": false
+}

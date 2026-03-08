@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.792562+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/sync-summary/deterministic-a.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/sync-summary/deterministic-a.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/deterministic-a.json",
+  "bytes": 6707,
+  "sha256": "94224741ebafdd5e5a2d967daf0185601aa7209c5e17856c8d1ca59efaf8697a",
+  "local_cache_external": false
+}

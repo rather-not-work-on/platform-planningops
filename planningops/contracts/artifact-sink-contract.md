@@ -30,4 +30,5 @@ Provide a deterministic write/read/rehydrate abstraction for artifact storage ba
 ## Verification
 - E2E sink test: `bash planningops/scripts/test_artifact_sink_e2e.sh`
 - Commit guard test: `bash planningops/scripts/test_validate_external_only_commit_guard.sh`
+- Migration test: `bash planningops/scripts/test_migrate_external_only_artifacts_contract.sh`
 - Policy validation: `python3 planningops/scripts/validate_artifact_storage_policy.py --strict`

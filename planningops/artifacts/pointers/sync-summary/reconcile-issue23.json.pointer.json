@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.854725+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/sync-summary/reconcile-issue23.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/sync-summary/reconcile-issue23.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/sync-summary/reconcile-issue23.json",
+  "bytes": 6709,
+  "sha256": "c411c22682cbcb7ad06e5a10c60a35eafd09161e616d03bf4b93b23f7efecbd9",
+  "local_cache_external": false
+}

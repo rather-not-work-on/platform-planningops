@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.495423+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-pre.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-pre.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/2026-03-05/loop-20260305T142346Z-issue-95-adapter-pre.json",
+  "bytes": 375,
+  "sha256": "9d0d313383f18e6ef48f356d76f58430c9570d680c0d5f977b382ce3678ee676",
+  "local_cache_external": false
+}

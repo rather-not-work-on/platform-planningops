@@ -47,6 +47,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `ensure_label_taxonomy.py`
   - `validate_federated_issue_quality.py`
   - `validate_artifact_storage_policy.py`
+  - `validate_external_only_commit_guard.py`
   - `audit_branch_protection.py`
   - `apply_branch_protection.py`
   - `validate_wrapper_deprecation.py`
@@ -56,7 +57,6 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
   - `test_memory_rehydrate_contract.sh`
-  - `validate_external_only_commit_guard.py`
   - `migrate_external_only_artifacts.py`
   - `rehydrate_artifact_pointer.py`
   - `verify_loop_run.py` (`--execution-attempts-schema`)
@@ -95,6 +95,8 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_issue_quality_contract.sh`
   - `test_validate_federated_issue_quality_contract.sh`
   - `test_validate_artifact_storage_policy_contract.sh`
+  - `test_validate_external_only_commit_guard.sh`
+  - `test_migrate_external_only_artifacts_contract.sh`
   - `test_audit_branch_protection_contract.sh`
   - `test_apply_branch_protection_contract.sh`
   - `test_cross_repo_conformance_bootstrap_contract.sh`
@@ -105,7 +107,6 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
   - `test_memory_rehydrate_contract.sh`
-  - `test_validate_external_only_commit_guard.sh`
   - `test_artifact_sink_e2e.sh`
   - `test_*.sh`
 
@@ -132,3 +133,11 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-mode auto`
 - To inspect the deterministic bootstrap plan without creating a venv:
   - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-plan-only --bootstrap-plan-output /tmp/federated-bootstrap-plan.json`
+
+## Artifact Residency
+- Diff guard:
+  - `python3 planningops/scripts/validate_external_only_commit_guard.py --base-ref origin/main --head-ref HEAD --strict`
+- Baseline audit:
+  - `python3 planningops/scripts/validate_external_only_commit_guard.py --mode tracked --strict`
+- Tracked-only migration:
+  - `python3 planningops/scripts/migrate_external_only_artifacts.py --scope tracked --apply`
