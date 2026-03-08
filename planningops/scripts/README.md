@@ -9,6 +9,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `core/loop/checkpoint_lock.py`
   - `core/loop/selection.py`
 - Federation entrypoints (canonical location):
+  - `federation/federated_python_env.py`
   - `federation/adapter_registry.py`
   - `federation/cross_repo_conformance_check.py`
   - `federation/github_sync_adapter.py`
@@ -96,6 +97,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_artifact_storage_policy_contract.sh`
   - `test_audit_branch_protection_contract.sh`
   - `test_apply_branch_protection_contract.sh`
+  - `test_cross_repo_conformance_bootstrap_contract.sh`
   - `test_validate_wrapper_deprecation_contract.sh`
   - `test_control_tower_ontology_contract.sh`
   - `test_ontology_entity_map_contract.sh`
@@ -123,3 +125,10 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Run `python3 planningops/scripts/validate_wrapper_deprecation.py --mode warn` while migration is active.
 - Keep `--mode fail` in CI so new or expired wrapper references are rejected automatically after `fail_after`.
 - Remove the root wrapper only after its allowlist is empty and the fail-mode report stays clean.
+
+## Federated Bootstrap
+- Local federated conformance can self-bootstrap sibling repo Python dev dependencies into `planningops/runtime-artifacts/tooling/federated-conformance/`.
+- Canonical command:
+  - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-mode auto`
+- To inspect the deterministic bootstrap plan without creating a venv:
+  - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-plan-only --bootstrap-plan-output /tmp/federated-bootstrap-plan.json`

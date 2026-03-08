@@ -199,6 +199,7 @@ jobs:
           bash planningops/scripts/test_module_readme_contract.sh
           bash planningops/scripts/test_validate_repo_boundaries_contract.sh
           bash planningops/scripts/test_validate_script_roles_contract.sh
+          bash planningops/scripts/test_cross_repo_conformance_bootstrap_contract.sh
           bash planningops/scripts/test_validate_wrapper_deprecation_contract.sh
           bash planningops/scripts/test_validate_issue_quality_contract.sh
           bash planningops/scripts/test_validate_federated_issue_quality_contract.sh
