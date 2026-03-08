@@ -7,6 +7,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+SCRIPTS_ROOT = Path(__file__).resolve().parent
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from planning_context import parse_execution_order, parse_metadata
+
 
 DEFAULT_CONFIG = Path("planningops/config/project-field-ids.json")
 DEFAULT_OUTPUT = Path("planningops/artifacts/validation/project-field-sync-after-create-report.json")
@@ -57,25 +63,6 @@ def normalize_option_key(value: str):
     normalized = re.sub(r"\s+", "_", normalized)
     normalized = normalized.lower()
     return normalized
-
-
-def parse_metadata(issue_body: str):
-    keys = [
-        "plan_item_id",
-        "target_repo",
-        "component",
-        "workflow_state",
-        "loop_profile",
-        "execution_order",
-        "plan_lane",
-    ]
-    metadata = {}
-    for key in keys:
-        match = re.search(rf"(?m)^-\s*{re.escape(key)}:\s*`?([^`\n]+)`?\s*$", issue_body or "")
-        if match:
-            metadata[key] = match.group(1).strip()
-    return metadata
-
 
 def parse_issue_ref(raw: str):
     value = str(raw).strip()
@@ -273,16 +260,6 @@ def field_option_id(fields: dict, field_key: str, option_key: str):
     if not option_id:
         raise KeyError(f"missing option id: {field_key}.{option_key}")
     return field["id"], option_id
-
-
-def parse_execution_order(raw_value: str):
-    value = str(raw_value or "").strip()
-    if not value:
-        return None
-    if value.isdigit():
-        return int(value)
-    return None
-
 
 def collect_candidates(args):
     plan_item_re = re.compile(args.plan_item_regex)

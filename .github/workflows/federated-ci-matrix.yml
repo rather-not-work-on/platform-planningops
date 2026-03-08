@@ -245,6 +245,7 @@ jobs:
             --mode tracked \
             --strict
           bash planningops/scripts/test_normalize_ready_implementation_blueprint_refs.sh
+          bash planningops/scripts/test_planning_context_contract.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_issue_loop_runner_wrapper_compat.sh
           bash planningops/scripts/test_repo_execution_adapters_wrapper_compat.sh
