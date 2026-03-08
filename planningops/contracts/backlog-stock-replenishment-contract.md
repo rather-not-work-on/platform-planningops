@@ -9,6 +9,8 @@ Three queue classes are mandatory:
 2. `next_up`: near-ready (`Todo` + `ready-*` + dependency blocker exists)
 3. `quality_hardening`: contract/test/governance hardening queue
 
+Closed issues are never counted as stock, even if stale project fields still show `Todo` or `ready-*`.
+
 Stock floor source:
 - `planningops/config/backlog-stock-policy.json`
 

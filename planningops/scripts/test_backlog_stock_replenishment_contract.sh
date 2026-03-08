@@ -17,9 +17,13 @@ policy = mod.load_json(Path("planningops/config/backlog-stock-policy.json"), {})
 items = mod.load_json(Path("planningops/fixtures/backlog-stock-items-sample.json"), [])
 rows = [mod.normalize_item(x) for x in items]
 rows = [x for x in rows if x]
+issue_state_diagnostics = mod.hydrate_issue_states(rows, offline=True)
+assert issue_state_diagnostics == [], issue_state_diagnostics
 mod.hydrate_dependency_counts(rows, offline=True)
 stock = mod.evaluate_stock(rows, policy)
 assert stock["breach_count"] == 0, stock
+ready_numbers = [row["issue_number"] for row in stock["class_rows"]["ready_now"]]
+assert 106 not in ready_numbers, ready_numbers
 
 high_value = mod.select_high_value_ready(stock["class_rows"])
 assert high_value is not None, high_value
