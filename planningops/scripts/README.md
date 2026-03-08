@@ -24,6 +24,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `github_sync_adapter.py`
   - `repo_execution_adapters.py`
   - `memory_archive.py`
+  - `memory_rehydrate.py`
 - Validation and reporting:
   - `backlog_stock_replenishment_guard.py`
   - `memory_compactor.py`
@@ -47,6 +48,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_tier_contract.sh`
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
+  - `test_memory_rehydrate_contract.sh`
   - `validate_external_only_commit_guard.py`
   - `migrate_external_only_artifacts.py`
   - `rehydrate_artifact_pointer.py`
@@ -93,6 +95,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_tier_contract.sh`
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
+  - `test_memory_rehydrate_contract.sh`
   - `test_validate_external_only_commit_guard.sh`
   - `test_artifact_sink_e2e.sh`
   - `test_*.sh`

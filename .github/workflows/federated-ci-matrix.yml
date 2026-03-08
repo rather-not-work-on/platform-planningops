@@ -209,6 +209,7 @@ jobs:
           bash planningops/scripts/test_memory_tier_contract.sh
           bash planningops/scripts/test_memory_compactor_contract.sh
           bash planningops/scripts/test_memory_archive_contract.sh
+          bash planningops/scripts/test_memory_rehydrate_contract.sh
           bash planningops/scripts/test_audit_branch_protection_contract.sh
           bash planningops/scripts/test_apply_branch_protection_contract.sh
           python3 planningops/scripts/audit_branch_protection.py \

@@ -20,25 +20,27 @@ def now_utc():
 
 def parse_frontmatter(text: str):
     if not text.startswith("---\n"):
-        return {}, text
+        return {}, [], text
     lines = text.splitlines()
     meta = {}
+    order = []
     idx = 1
     for idx in range(1, len(lines)):
         line = lines[idx]
         if line.strip() == "---":
             body = "\n".join(lines[idx + 1 :]).lstrip("\n")
-            return meta, body
+            return meta, order, body
         if ":" not in line:
             continue
         key, value = line.split(":", 1)
         meta[key.strip()] = value.strip()
-    return {}, text
+        order.append(key.strip())
+    return {}, [], text
 
 
-def render_frontmatter(meta: dict, body: str):
+def render_frontmatter(meta: dict, body: str, preferred_order: list[str] | None = None):
     ordered_keys = []
-    preferred = [
+    preferred = preferred_order or [
         "title",
         "type",
         "date",
@@ -149,7 +151,8 @@ def main():
         raise SystemExit(f"compacted target not found: {compacted_into}")
 
     source_text = source_path.read_text(encoding="utf-8")
-    meta, body = parse_frontmatter(source_text)
+    source_meta, source_order, body = parse_frontmatter(source_text)
+    meta = dict(source_meta)
     archive_ref = manifest_rel
     meta.pop("expires_on", None)
     meta["memory_tier"] = "L2"
@@ -158,7 +161,11 @@ def main():
     if not meta.get("status"):
         meta["status"] = "archived"
 
-    archived_text = render_frontmatter(meta, body)
+    archived_order = [key for key in source_order if key != "expires_on"]
+    for key in ["memory_tier", "compacted_into", "archive_ref"]:
+        if key not in archived_order:
+            archived_order.append(key)
+    archived_text = render_frontmatter(meta, body, preferred_order=archived_order)
     archived_at = args.archived_at or now_utc()
     archive_path = root / archive_rel
     manifest_path = root / manifest_rel
@@ -172,7 +179,9 @@ def main():
         "archive_ref": archive_ref,
         "compacted_into": compacted_into,
         "memory_tier": "L2",
-        "initiative": meta.get("initiative", ""),
+        "initiative": source_meta.get("initiative", ""),
+        "source_frontmatter": source_meta,
+        "source_frontmatter_order": source_order,
         "source_checksum_sha256": sha256_text(source_text),
         "archive_checksum_sha256": sha256_text(archived_text),
     }
