@@ -8,6 +8,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+SCRIPTS_ROOT = Path(__file__).resolve().parent
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from planning_context import normalize_value, parse_depends_on_plan_item_keys, parse_execution_order, parse_metadata
+
 
 DEFAULT_OUTPUT = Path("planningops/artifacts/program/program-manifest.json")
 DEFAULT_REPORT = Path("planningops/artifacts/validation/program-manifest-report.json")
@@ -24,16 +30,6 @@ DEFAULT_REPOS = [
     "rather-not-work-on/monday",
 ]
 DEFAULT_PLAN_ITEM_REGEX = r"^[ABC][0-9]{2}$"
-METADATA_KEYS = [
-    "plan_item_id",
-    "target_repo",
-    "component",
-    "workflow_state",
-    "loop_profile",
-    "execution_order",
-    "depends_on",
-    "plan_lane",
-]
 
 
 def now_utc():
@@ -43,32 +39,6 @@ def now_utc():
 def run(cmd):
     cp = subprocess.run(cmd, capture_output=True, text=True)
     return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
-
-
-def parse_metadata(body: str):
-    metadata = {}
-    for key in METADATA_KEYS:
-        match = re.search(rf"(?m)^-\s*{re.escape(key)}:\s*`?([^`\n]+)`?\s*$", body or "")
-        if match:
-            metadata[key] = match.group(1).strip()
-    return metadata
-
-
-def parse_depends_on_keys(raw: str):
-    if not raw:
-        return []
-    return sorted(set(re.findall(r"[ABC][0-9]{2}", raw)))
-
-
-def parse_execution_order(raw: str):
-    if raw is None:
-        return None
-    value = str(raw).strip()
-    return int(value) if value.isdigit() else None
-
-
-def normalize_value(raw: str):
-    return str(raw or "").strip().strip("`")
 
 
 def classify_track(plan_item_id: str):
@@ -159,7 +129,7 @@ def build_manifest(source_rows, args):
             "workflow_state": normalize_value(metadata.get("workflow_state")),
             "loop_profile": normalize_value(metadata.get("loop_profile")),
             "plan_lane": normalize_value(metadata.get("plan_lane")),
-            "depends_on": parse_depends_on_keys(metadata.get("depends_on", "")),
+            "depends_on": parse_depends_on_plan_item_keys(metadata.get("depends_on", "")),
         }
         items.append(item)
 

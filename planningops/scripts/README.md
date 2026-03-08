@@ -68,7 +68,9 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `compile_plan_to_backlog.py`
   - `build_program_manifest.py`
   - `sync_project_fields_after_issue_create.py`
+  - `planning_context.py`
   - `build_meta_plan_graph.py`
+  - `test_planning_context_contract.sh`
   - `test_build_program_manifest_contract.sh`
   - `test_compile_plan_to_backlog_contract.sh`
   - `test_sync_project_fields_after_issue_create_contract.sh`

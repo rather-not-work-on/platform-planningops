@@ -6,6 +6,14 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 import re
+import sys
+
+
+SCRIPTS_ROOT = Path(__file__).resolve().parents[2]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from planning_context import parse_metadata
 
 
 HIGH_VALUE_READY_STATES = {"ready-contract", "ready-implementation"}
@@ -44,10 +52,11 @@ def normalize_execution_kind(raw: str | None, default: str = EXECUTION_KIND_EXEC
 
 
 def parse_execution_kind(issue_body: str, default: str = EXECUTION_KIND_EXECUTABLE):
-    match = re.search(r"(?mi)^(?:-\s*)?execution_kind:\s*`?([^`\n]+)`?\s*$", issue_body or "")
-    if not match:
+    metadata = parse_metadata(issue_body, keys=["execution_kind"])
+    raw_value = metadata.get("execution_kind")
+    if raw_value is None:
         return default
-    parsed, error = normalize_execution_kind(match.group(1), default=default)
+    parsed, error = normalize_execution_kind(raw_value, default=default)
     return parsed or default
 
 
@@ -57,10 +66,8 @@ def is_executable_execution_kind(execution_kind: str):
 
 
 def parse_plan_item_id(issue_body: str):
-    match = re.search(r"plan_item_id:\s*`([^`]+)`", issue_body or "")
-    if not match:
-        return None
-    value = match.group(1).strip()
+    metadata = parse_metadata(issue_body, keys=["plan_item_id"])
+    value = (metadata.get("plan_item_id") or "").strip()
     return value or None
 
 
