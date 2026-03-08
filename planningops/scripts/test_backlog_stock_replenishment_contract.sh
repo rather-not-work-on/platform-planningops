@@ -24,11 +24,17 @@ stock = mod.evaluate_stock(rows, policy)
 assert stock["breach_count"] == 0, stock
 ready_numbers = [row["issue_number"] for row in stock["class_rows"]["ready_now"]]
 assert 106 not in ready_numbers, ready_numbers
+assert 107 not in ready_numbers, ready_numbers
+quality_numbers = [row["issue_number"] for row in stock["class_rows"]["quality_hardening"]]
+assert 107 not in quality_numbers, quality_numbers
+assert stock["stock_rows"][0]["issue_refs"][0]["execution_kind"] == "executable", stock["stock_rows"][0]["issue_refs"]
+assert mod.parse_execution_kind("- execution_kind: `inventory`") == "inventory"
 
 high_value = mod.select_high_value_ready(stock["class_rows"])
 assert high_value is not None, high_value
 assert high_value["issue_number"] == 101, high_value
 assert high_value["reason"] == "high_value_ready_first", high_value
+assert high_value["execution_kind"] == "executable", high_value
 
 invalid_candidates = [
     {
@@ -41,6 +47,11 @@ candidate_validation = mod.validate_replenishment_candidates(invalid_candidates,
 assert candidate_validation["violation_count"] == 1, candidate_validation
 assert "evidence_refs is required and must be non-empty" in candidate_validation["violations"][0]["errors"], candidate_validation
 assert "acceptance_criteria must be a list" in candidate_validation["violations"][0]["errors"], candidate_validation
+
+good_candidates = mod.load_json(Path("planningops/fixtures/backlog-replenishment-candidates-sample.json"), {})
+good_validation = mod.validate_replenishment_candidates(good_candidates["candidates"], policy["candidate_requirements"])
+assert good_validation["violation_count"] == 0, good_validation
+assert "execution_kind: `executable`" in good_validation["normalized_candidates"][0]["body_baseline"], good_validation
 
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
@@ -64,6 +75,7 @@ with tempfile.TemporaryDirectory() as td:
     assert pass_rc == 0, pass_rc
     pass_doc = json.loads(pass_report.read_text(encoding="utf-8"))
     assert pass_doc["verdict"] == "pass", pass_doc
+    assert pass_doc["stock"]["execution_kind_counts"]["inventory"] == 1, pass_doc
 
     bad_candidates_path = td_path / "bad-candidates.json"
     bad_candidates_path.write_text(

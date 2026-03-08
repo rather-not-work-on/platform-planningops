@@ -9,6 +9,17 @@ import re
 
 
 HIGH_VALUE_READY_STATES = {"ready-contract", "ready-implementation"}
+EXECUTION_KIND_EXECUTABLE = "executable"
+EXECUTION_KIND_INVENTORY = "inventory"
+EXECUTION_KIND_ALIASES = {
+    "executable": EXECUTION_KIND_EXECUTABLE,
+    "execute": EXECUTION_KIND_EXECUTABLE,
+    "real": EXECUTION_KIND_EXECUTABLE,
+    "inventory": EXECUTION_KIND_INVENTORY,
+    "inventory_only": EXECUTION_KIND_INVENTORY,
+    "stock_seed": EXECUTION_KIND_INVENTORY,
+    "seed": EXECUTION_KIND_INVENTORY,
+}
 
 
 def parse_depends_on(issue_body: str):
@@ -17,6 +28,32 @@ def parse_depends_on(issue_body: str):
         if "depends_on:" in line:
             deps.update(int(n) for n in re.findall(r"#(\d+)", line))
     return sorted(deps)
+
+
+def normalize_execution_kind(raw: str | None, default: str = EXECUTION_KIND_EXECUTABLE):
+    if raw is None:
+        return default, None
+    value = str(raw).strip().strip("`")
+    if not value:
+        return default, None
+    key = re.sub(r"[\s-]+", "_", value.lower())
+    mapped = EXECUTION_KIND_ALIASES.get(key)
+    if mapped:
+        return mapped, None
+    return None, f"unsupported execution_kind: {value}"
+
+
+def parse_execution_kind(issue_body: str, default: str = EXECUTION_KIND_EXECUTABLE):
+    match = re.search(r"(?mi)^(?:-\s*)?execution_kind:\s*`?([^`\n]+)`?\s*$", issue_body or "")
+    if not match:
+        return default
+    parsed, error = normalize_execution_kind(match.group(1), default=default)
+    return parsed or default
+
+
+def is_executable_execution_kind(execution_kind: str):
+    normalized, _ = normalize_execution_kind(execution_kind, default=EXECUTION_KIND_EXECUTABLE)
+    return normalized == EXECUTION_KIND_EXECUTABLE
 
 
 def parse_plan_item_id(issue_body: str):
@@ -106,6 +143,9 @@ def normalize_candidates(items, allowed_workflow_states, high_value_ready_states
 
         target_repo = it.get("target_repo") or issue_repo
         order = it.get("execution_order") or 0
+        execution_kind, _ = normalize_execution_kind(it.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)
+        if not is_executable_execution_kind(execution_kind):
+            continue
         candidates.append(
             {
                 "item": it,
@@ -118,6 +158,7 @@ def normalize_candidates(items, allowed_workflow_states, high_value_ready_states
                 "workflow_state": workflow_state,
                 "issue_repo": issue_repo,
                 "target_repo": target_repo,
+                "execution_kind": execution_kind,
             }
         )
 
@@ -146,6 +187,7 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
             "loop_profile": selected.get("loop_profile"),
             "initiative": selected.get("initiative"),
             "plan_item_id": selected.get("plan_item_id"),
+            "execution_kind": selected.get("execution_kind", EXECUTION_KIND_EXECUTABLE),
             "depends_on": selected.get("deps", []),
             "attempt_budget": selected.get("attempt_budget", default_attempt_budget or {}),
             "simulation_required": selected.get("simulation_required", False),
@@ -174,6 +216,7 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
                 "loop_profile": c.get("loop_profile"),
                 "initiative": c.get("initiative"),
                 "plan_item_id": c.get("plan_item_id"),
+                "execution_kind": c.get("execution_kind", EXECUTION_KIND_EXECUTABLE),
                 "simulation_required": c.get("simulation_required", False),
                 "uncertainty_level": c.get("uncertainty_level"),
                 "blueprint_refs": c.get("blueprint_refs", {}),
@@ -210,6 +253,7 @@ def build_replenishment_candidates(
         "candidate_id": f"issue-{issue_num}-follow-up",
         "title": f"Recovery follow-up for issue #{issue_num} ({reason_code})",
         "target_repo": target_repo,
+        "execution_kind": EXECUTION_KIND_EXECUTABLE,
         "depends_on": [issue_num],
         "acceptance_criteria": [
             f"Root cause for `{reason_code}` is documented with evidence.",

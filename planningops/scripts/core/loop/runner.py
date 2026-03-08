@@ -30,15 +30,18 @@ from core.loop.checkpoint_lock import (
     save_checkpoint as _save_checkpoint,
 )
 from core.loop.selection import (
+    EXECUTION_KIND_EXECUTABLE,
     HIGH_VALUE_READY_STATES,
     build_replenishment_candidates,
     build_selection_trace,
     determine_loop_profile,
     ensure_single_select_field,
     ensure_text_field,
+    is_executable_execution_kind,
     normalize_candidates,
     parse_blueprint_refs,
     parse_depends_on,
+    parse_execution_kind,
     parse_plan_item_id,
     parse_selector_hints,
 )
@@ -540,7 +543,20 @@ def main():
         attempt_budget, budget_errors = parse_attempt_budget(issue_body)
         selector_hints = parse_selector_hints(issue_body)
         blueprint_meta = parse_blueprint_refs(issue_body)
+        execution_kind = parse_execution_kind(issue_body, default=EXECUTION_KIND_EXECUTABLE)
         c["plan_item_id"] = plan_item_id
+        c["execution_kind"] = execution_kind
+        if not is_executable_execution_kind(execution_kind):
+            selection_attempts.append(
+                {
+                    "number": num,
+                    "issue_repo": issue_repo,
+                    "result": "inventory_only",
+                    "plan_item_id": plan_item_id,
+                    "execution_kind": execution_kind,
+                }
+            )
+            continue
         if budget_errors:
             selection_attempts.append(
                 {
@@ -580,6 +596,7 @@ def main():
                     "issue_repo": issue_repo,
                     "result": "selected",
                     "plan_item_id": plan_item_id,
+                    "execution_kind": execution_kind,
                     "depends_on": deps,
                     "dep_checks": closed_checks,
                     "attempt_budget": attempt_budget,
@@ -594,6 +611,7 @@ def main():
                 "issue_repo": issue_repo,
                 "result": "dependency_blocked",
                 "plan_item_id": plan_item_id,
+                "execution_kind": execution_kind,
                 "depends_on": deps,
                 "dep_checks": closed_checks,
                 "selector_hints": selector_hints,

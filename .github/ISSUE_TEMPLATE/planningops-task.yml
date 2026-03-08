@@ -13,11 +13,12 @@ body:
     id: planning_context
     attributes:
       label: Planning Context
-      description: Include plan_item_id/target_repo/component/workflow_state/loop_profile/execution_order/depends_on.
+      description: Include plan_item_id/target_repo/component/workflow_state/loop_profile/execution_order/depends_on. Add execution_kind when the card is inventory-only.
       placeholder: |
         - plan_item_id: `...`
         - target_repo: `owner/repo`
         - component: `...`
+        - execution_kind: `executable` # optional; use `inventory` for non-executable stock/support cards
         - workflow_state: `...`
         - loop_profile: `...`
         - execution_order: `...`

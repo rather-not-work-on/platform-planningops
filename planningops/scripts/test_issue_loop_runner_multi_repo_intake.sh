@@ -23,6 +23,14 @@ items = [
     {
         "status": "Todo",
         "workflow_state": "ready-contract",
+        "execution_order": 1,
+        "execution_kind": "inventory",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "content": {"type": "Issue", "number": 78, "repository": "rather-not-work-on/platform-planningops"},
+    },
+    {
+        "status": "Todo",
+        "workflow_state": "ready-contract",
         "execution_order": 10,
         "target_repo": "rather-not-work-on/monday",
         "content": {"type": "Issue", "number": 42, "repository": "rather-not-work-on/monday"},
@@ -64,6 +72,7 @@ trace = mod.build_selection_trace(candidates, selected, attempts, allowed)
 assert trace["candidate_count"] == 2, trace
 assert trace["selected"]["number"] == 77, trace
 assert trace["selected"]["target_repo"] == "rather-not-work-on/platform-planningops", trace
+assert trace["selected"]["execution_kind"] == "executable", trace
 
 l1_profile = mod.determine_loop_profile(selected, {}, "rather-not-work-on/platform-planningops")
 assert l1_profile == "L1 Contract-Clarification", l1_profile
@@ -85,6 +94,9 @@ assert l2_profile_uncertainty == "L2 Simulation", l2_profile_uncertainty
 selector_hints = mod.parse_selector_hints("simulation_required: true\nuncertainty_level: critical\n")
 assert selector_hints["simulation_required"] is True, selector_hints
 assert selector_hints["uncertainty_level"] == "critical", selector_hints
+assert mod.parse_execution_kind("- execution_kind: `inventory`") == "inventory"
+assert mod.parse_execution_kind("execution_kind: executable") == "executable"
+assert mod.parse_execution_kind("no marker") == "executable"
 
 blueprint_ok = mod.parse_blueprint_refs(
     "\n".join(

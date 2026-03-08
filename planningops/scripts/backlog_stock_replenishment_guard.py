@@ -6,6 +6,19 @@ import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
+
+
+SCRIPTS_ROOT = Path(__file__).resolve().parent
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from core.loop.selection import (
+    EXECUTION_KIND_EXECUTABLE,
+    is_executable_execution_kind,
+    normalize_execution_kind,
+    parse_execution_kind,
+)
 
 
 DEFAULT_STOCK_POLICY_FILE = Path("planningops/config/backlog-stock-policy.json")
@@ -100,6 +113,7 @@ def render_issue_body_baseline(candidate):
     criteria_lines = "\n".join(f"- [ ] {row}" for row in candidate.get("acceptance_criteria", []))
     evidence_lines = "\n".join(f"- `{row}`" for row in candidate.get("evidence_refs", []))
     target_repo = str(candidate.get("target_repo") or "").strip() or "rather-not-work-on/platform-planningops"
+    execution_kind = candidate.get("execution_kind") or EXECUTION_KIND_EXECUTABLE
 
     return "\n".join(
         [
@@ -107,6 +121,7 @@ def render_issue_body_baseline(candidate):
             f"- plan_item_id: `{candidate.get('candidate_id', '')}`",
             f"- target_repo: `{target_repo}`",
             "- component: `planningops`",
+            f"- execution_kind: `{execution_kind}`",
             "- workflow_state: `ready_contract`",
             "- loop_profile: `l1_contract_clarification`",
             "- execution_order: `0`",
@@ -144,6 +159,7 @@ def validate_replenishment_candidates(candidates, requirements):
         candidate_id = str(entry.get("candidate_id") or f"candidate-{idx + 1}")
         title = str(entry.get("title", "")).strip()
         evidence_refs = normalize_evidence_refs(entry)
+        execution_kind, execution_kind_error = normalize_execution_kind(entry.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)
 
         depends_on = []
         depends_error = None
@@ -160,6 +176,8 @@ def validate_replenishment_candidates(candidates, requirements):
             errors.append("title is required")
         if require_evidence and not evidence_refs:
             errors.append("evidence_refs is required and must be non-empty")
+        if execution_kind_error:
+            errors.append(execution_kind_error)
         if depends_error:
             errors.append(depends_error)
         if acceptance_error:
@@ -169,6 +187,7 @@ def validate_replenishment_candidates(candidates, requirements):
             "candidate_id": candidate_id,
             "title": title,
             "target_repo": str(entry.get("target_repo", "")).strip() or None,
+            "execution_kind": execution_kind,
             "depends_on": depends_on if isinstance(depends_on, list) else [],
             "acceptance_criteria": acceptance_criteria if isinstance(acceptance_criteria, list) else [],
             "evidence_refs": evidence_refs,
@@ -215,6 +234,7 @@ def normalize_item(raw):
             "issue_body": str(raw.get("issue_body", "")),
             "issue_state": str(raw.get("issue_state", "")),
             "open_dependency_count": raw.get("open_dependency_count"),
+            "execution_kind": normalize_execution_kind(raw.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)[0],
         }
 
     # gh project item-list shape
@@ -236,6 +256,7 @@ def normalize_item(raw):
         "issue_body": str(raw.get("issue_body", "")),
         "issue_state": str(content.get("state", "")),
         "open_dependency_count": raw.get("open_dependency_count"),
+        "execution_kind": normalize_execution_kind(raw.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)[0],
     }
 
 
@@ -330,6 +351,8 @@ def hydrate_dependency_counts(rows, issue_catalog=None, offline=False):
 
     for row in rows:
         if isinstance(row.get("open_dependency_count"), int):
+            if row.get("issue_body"):
+                row["execution_kind"] = parse_execution_kind(row["issue_body"], default=row.get("execution_kind") or EXECUTION_KIND_EXECUTABLE)
             row["depends_on"] = []
             row["dependency_status"] = "provided"
             continue
@@ -357,6 +380,7 @@ def hydrate_dependency_counts(rows, issue_catalog=None, offline=False):
                 }
             )
         row["issue_body"] = issue_body
+        row["execution_kind"] = parse_execution_kind(issue_body, default=row.get("execution_kind") or EXECUTION_KIND_EXECUTABLE)
 
         deps = parse_depends_on(issue_body)
         row["depends_on"] = deps
@@ -396,6 +420,11 @@ def hydrate_dependency_counts(rows, issue_catalog=None, offline=False):
 
 def row_matches_rule(row, rule):
     if str(row.get("issue_state", "")).upper() == "CLOSED":
+        return False
+
+    execution_kind = row.get("execution_kind") or EXECUTION_KIND_EXECUTABLE
+    allowed_execution_kinds = set(rule.get("execution_kinds") or [EXECUTION_KIND_EXECUTABLE])
+    if allowed_execution_kinds and execution_kind not in allowed_execution_kinds:
         return False
 
     statuses = set(rule.get("statuses") or [])
@@ -444,6 +473,7 @@ def evaluate_stock(rows, policy):
                     "issue_number": m.get("issue_number"),
                     "issue_repo": m.get("issue_repo"),
                     "execution_order": m.get("execution_order"),
+                    "execution_kind": m.get("execution_kind"),
                     "open_dependency_count": m.get("open_dependency_count"),
                 }
                 for m in matched_sorted
@@ -477,6 +507,7 @@ def select_high_value_ready(class_rows):
         "issue_number": selected.get("issue_number"),
         "issue_repo": selected.get("issue_repo"),
         "execution_order": selected.get("execution_order"),
+        "execution_kind": selected.get("execution_kind"),
         "workflow_state": selected.get("workflow_state"),
         "reason": "high_value_ready_first",
     }
@@ -525,8 +556,17 @@ def validate_policy(policy):
             min_stock = queue_class.get("min_stock")
             if not isinstance(min_stock, int) or min_stock < 0:
                 errors.append(f"queue_classes[{idx}].min_stock must be non-negative integer")
-            if not isinstance(queue_class.get("rule"), dict):
+            rule = queue_class.get("rule")
+            if not isinstance(rule, dict):
                 errors.append(f"queue_classes[{idx}].rule must be object")
+                continue
+            execution_kinds = rule.get("execution_kinds") or []
+            if execution_kinds and not isinstance(execution_kinds, list):
+                errors.append(f"queue_classes[{idx}].rule.execution_kinds must be list")
+            for raw_kind in execution_kinds:
+                _, error = normalize_execution_kind(raw_kind, default=EXECUTION_KIND_EXECUTABLE)
+                if error:
+                    errors.append(f"queue_classes[{idx}].rule.execution_kinds invalid: {raw_kind}")
     req = policy.get("candidate_requirements")
     if not isinstance(req, dict):
         errors.append("candidate_requirements must be object")
@@ -619,6 +659,10 @@ def main():
         },
         "stock": {
             "evaluated_items": len(rows),
+            "execution_kind_counts": {
+                "executable": sum(1 for row in rows if is_executable_execution_kind(row.get("execution_kind"))),
+                "inventory": sum(1 for row in rows if not is_executable_execution_kind(row.get("execution_kind"))),
+            },
             "rows": stock["stock_rows"],
             "breach_count": stock["breach_count"],
             "breaches": breaches,

@@ -67,6 +67,9 @@ This contract fixes:
 - `initiative` must use the canonical slug shared by docs and project fields.
 - `plan_item_id` must match `^[A-Z][0-9]{2}$`.
 - `target_repo` must use full repository coordinates (`owner/repo`), not shorthand.
+- `execution_kind` may be used to refine delivery semantics:
+  - `executable` (default when omitted)
+  - `inventory`
 - `component` must use the canonical project field vocabulary:
   - `planningops`
   - `contracts`
@@ -98,6 +101,7 @@ This contract fixes:
 4. A `RuntimeArtifact` without `repo`, `logical_path`, or governing refs is invalid for completion evidence.
 5. A `MemoryRecord` cannot compact sources from multiple initiatives without an explicit cross-initiative note.
 6. `platform-planningops` may validate evidence from execution repos, but runtime ownership remains with the emitting repo.
+7. `execution_kind=inventory` items are valid backlog records, but they are not eligible for executable queue stock or loop pull selection.
 
 ## Verification
 - Backlog/project metadata quality: `python3 planningops/scripts/validate_issue_quality.py --strict`

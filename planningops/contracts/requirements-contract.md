@@ -1,7 +1,7 @@
 # Ralph Loop Requirements Contract
 
 ## Functional Requirements
-1. Intake must select only issues where `Status=Todo` and `workflow_state in {ready-contract, ready-implementation}`, then enforce `execution_order` ascending.
+1. Intake must select only issues where `Status=Todo`, `workflow_state in {ready-contract, ready-implementation}`, and `execution_kind=executable` (default when omitted), then enforce `execution_order` ascending.
 2. Intake must block issues with unsatisfied `depends_on`.
 3. Selector must deterministically assign `loop_profile` from issue context and transition history (`L1|L2|L3|L4|L5`), including explicit contract-stage simulation signals (`simulation_required`, `uncertainty_level`).
 4. Each loop must produce deterministic artifacts for the same input and commit.
@@ -32,17 +32,18 @@
 29. Autonomous run control must be convergence/risk bounded; wall-clock duration is metadata and cannot override safety or quality stop conditions.
 30. Autonomous stop conditions must explicitly include quality failure, escalation trigger, and runtime safety conflict with deterministic evidence output.
 31. High-uncertainty or architecture-tradeoff changes must use branch/worktree comparative experiment protocol with artifact-backed selection record.
-32. Backlog operation must define queue classes (`ready_now`, `next_up`, `quality_hardening`) with explicit minimum stock targets.
+32. Backlog operation must define queue classes (`ready_now`, `next_up`, `quality_hardening`) with explicit minimum stock targets for executable work only.
 33. Intake selection must enforce `high_value_ready_first` so non-ready cards cannot preempt a ready-now candidate.
 34. Replenishment candidates must be evidence-backed and rejected when artifact references are missing.
-35. Replenishment candidate normalization must preserve dependency baseline (`depends_on`) and checklist acceptance criteria.
-36. Supervisor loop must orchestrate multi-cycle `plan -> work -> review -> replan` with deterministic per-cycle records.
-37. Supervisor must evaluate experiment triggers from uncertainty/simulation signals and emit explicit experiment trigger artifacts.
-38. Supervisor decisions must treat replan and replenishment outputs as first-class cycle outputs.
-39. Supervisor summary must publish final stop reason and contract references for each run.
-40. Supervisor experiment trigger must be able to invoke an automatic comparative executor that creates deterministic option worktrees.
-41. Automatic comparative executor must emit per-option reports and weighted decision record artifacts.
-42. Automatic comparative executor failure must map to supervisor stop reason `experiment_auto_executor_failed`.
+35. Replenishment candidate normalization must preserve `execution_kind`, dependency baseline (`depends_on`), and checklist acceptance criteria.
+36. Inventory-only backlog cards must remain distinguishable via issue metadata and must never satisfy executable stock floors or live pull selection.
+37. Supervisor loop must orchestrate multi-cycle `plan -> work -> review -> replan` with deterministic per-cycle records.
+38. Supervisor must evaluate experiment triggers from uncertainty/simulation signals and emit explicit experiment trigger artifacts.
+39. Supervisor decisions must treat replan and replenishment outputs as first-class cycle outputs.
+40. Supervisor summary must publish final stop reason and contract references for each run.
+41. Supervisor experiment trigger must be able to invoke an automatic comparative executor that creates deterministic option worktrees.
+42. Automatic comparative executor must emit per-option reports and weighted decision record artifacts.
+43. Automatic comparative executor failure must map to supervisor stop reason `experiment_auto_executor_failed`.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.
