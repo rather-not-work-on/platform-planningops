@@ -1,0 +1,126 @@
+{
+  "policy_version": 1,
+  "memory_tiers": {
+    "L0": {
+      "label": "short",
+      "description": "active working memory for unresolved planning context",
+      "default_roots": [
+        "docs/workbench/**",
+        "planningops/artifacts/**",
+        "todos/**"
+      ],
+      "ttl_days": {
+        "min": 7,
+        "max": 14,
+        "default": 14
+      },
+      "required_frontmatter": [
+        "memory_tier",
+        "expires_on"
+      ],
+      "required_when_compacted": [
+        "compacted_into"
+      ],
+      "allowed_next_tiers": [
+        "L1",
+        "L2"
+      ]
+    },
+    "L1": {
+      "label": "mid",
+      "description": "operational canonical memory for reusable policy and design knowledge",
+      "default_roots": [
+        "docs/initiatives/**",
+        "planningops/contracts/**",
+        "planningops/config/**",
+        "planningops/adr/**"
+      ],
+      "review_cycle_days": 90,
+      "required_frontmatter": [
+        "memory_tier"
+      ],
+      "optional_frontmatter": [
+        "expires_on",
+        "compacted_into"
+      ],
+      "allowed_next_tiers": [
+        "L2"
+      ]
+    },
+    "L2": {
+      "label": "long",
+      "description": "institutional archive with deterministic rehydrate pointers",
+      "default_roots": [
+        "docs/archive/**",
+        "planningops/archive-manifest/**"
+      ],
+      "retention_days": 3650,
+      "required_frontmatter": [
+        "memory_tier",
+        "archive_ref"
+      ],
+      "allowed_next_tiers": []
+    }
+  },
+  "frontmatter_keys": {
+    "memory_tier": {
+      "allowed_values": ["L0", "L1", "L2"]
+    },
+    "expires_on": {
+      "required_for_tiers": ["L0"]
+    },
+    "compacted_into": {
+      "required_when": "promoted_or_archived_from_L0"
+    },
+    "archive_ref": {
+      "required_for_tiers": ["L2"]
+    }
+  },
+  "compaction_triggers": [
+    {
+      "code": "stale_l0_uncompacted",
+      "tier": "L0",
+      "max_age_days": 14,
+      "requires": ["compacted_into"]
+    },
+    {
+      "code": "topic_compaction_required",
+      "tier": "L0",
+      "topic_threshold": 3,
+      "requires": ["summary"]
+    },
+    {
+      "code": "closed_issue_memory_summary_missing",
+      "applies_to": "done_plan_items",
+      "requires": ["summary", "evidence_refs", "retained_memory_target"]
+    }
+  ],
+  "promotion_rules": {
+    "L0_to_L1_requires": [
+      "authoritative_source",
+      "validation_evidence",
+      "distilled_summary",
+      "target_canonical_path"
+    ],
+    "L0_to_L2_requires": [
+      "distilled_summary_or_replacement",
+      "archive_ref",
+      "compacted_into"
+    ],
+    "L1_to_L2_requires": [
+      "superseded_by_newer_canonical_record",
+      "archive_ref"
+    ]
+  },
+  "rehydrate_rules": {
+    "required_inputs": [
+      "archive_ref_or_pointer",
+      "output_path"
+    ],
+    "path_root": "repo-root-relative"
+  },
+  "storage_interop": {
+    "artifact_storage_contract": "planningops/contracts/artifact-retention-tier-contract.md",
+    "memory_tier_overrides_storage_tier": false
+  }
+}

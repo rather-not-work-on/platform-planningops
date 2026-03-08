@@ -110,12 +110,12 @@
       "required_fields": ["memory_tier", "source_refs", "summary", "status"],
       "source_of_truth": {
         "repo": "rather-not-work-on/platform-planningops",
-        "path": "planningops/contracts/control-tower-ontology-contract.md"
+        "path": "planningops/contracts/memory-tier-contract.md"
       },
       "sample_refs": [
         {
           "repo": "rather-not-work-on/platform-planningops",
-          "path": "docs/workbench/unified-personal-agent-platform/"
+          "path": "planningops/config/memory-tier-rules.json"
         }
       ]
     }

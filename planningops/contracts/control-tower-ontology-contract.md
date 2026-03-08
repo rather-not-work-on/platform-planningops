@@ -34,7 +34,7 @@ This contract fixes:
 | `Contract` | Normative interface, policy, or behavior boundary. | `contract_id` or canonical contract path | `path`, `owner_repo`, `purpose`, `verification_cmd` | `planningops/contracts/**` or owning repo contract directory |
 | `RepositoryRole` | Declared ownership role for a repository or component. | repository coordinate (`owner/repo`) + component | `repo`, `plane`, `component`, `responsibilities` | `docs/initiatives/**`, `planningops/config/**` |
 | `RuntimeArtifact` | Evidence emitted by execution or validation runs. | `run_id` + `logical_path` within owning repo | `run_id`, `repo`, `logical_path`, `reason_code`, `contract_refs` | owning execution repo or external artifact sink |
-| `MemoryRecord` | Distilled or archived knowledge unit derived from work history. | `memory_id` or canonical path | `memory_tier`, `source_refs`, `summary`, `status` | future memory tier system in planningops |
+| `MemoryRecord` | Distilled or archived knowledge unit derived from work history. | `memory_id` or canonical path | `memory_tier`, `source_refs`, `summary`, `status` | `planningops/contracts/memory-tier-contract.md` + `planningops/config/memory-tier-rules.json` |
 
 ## Canonical Relations
 | Relation | Source -> Target | Meaning | Cardinality rule |
@@ -109,3 +109,4 @@ This contract fixes:
 - `planningops/contracts/control-plane-boundary-contract.md`
 - `planningops/contracts/issue-quality-contract.md`
 - `planningops/contracts/artifact-retention-tier-contract.md`
+- `planningops/contracts/memory-tier-contract.md`

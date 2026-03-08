@@ -31,6 +31,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `artifact-sink-contract.md`: backend selector abstraction + pointer/rehydrate behavior
 - `repository-governance-contract.md`: default-branch protection baseline and required-check governance
 - `control-tower-ontology-contract.md`: canonical entity/relation/path model for planningops as control tower
+- `memory-tier-contract.md`: 3-tier memory lifecycle, frontmatter keys, and compaction trigger contract
 - `federated-label-taxonomy-contract.md`: federated required labels and in-scope issue label quality rules
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary

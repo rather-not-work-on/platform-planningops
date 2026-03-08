@@ -206,6 +206,7 @@ jobs:
           python3 planningops/scripts/validate_artifact_storage_policy.py --strict
           bash planningops/scripts/test_control_tower_ontology_contract.sh
           bash planningops/scripts/test_ontology_entity_map_contract.sh
+          bash planningops/scripts/test_memory_tier_contract.sh
           bash planningops/scripts/test_audit_branch_protection_contract.sh
           bash planningops/scripts/test_apply_branch_protection_contract.sh
           python3 planningops/scripts/audit_branch_protection.py \
