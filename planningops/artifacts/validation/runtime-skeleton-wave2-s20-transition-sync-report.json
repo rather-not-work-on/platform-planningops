@@ -1,0 +1,52 @@
+{
+  "mode": "apply",
+  "project_owner": "rather-not-work-on",
+  "project_number": 2,
+  "project_id": "PVT_kwDOD8NujM4BQYNE",
+  "plan_item_regex": "^[A-Z][0-9]{2}$",
+  "issues_total": 2,
+  "updated_count": 2,
+  "error_count": 0,
+  "results": [
+    {
+      "plan_item_id": "S20",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 158,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/158",
+      "component": "provider_gateway",
+      "workflow_state": "done",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "S21",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 159,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/159",
+      "component": "provider_gateway",
+      "workflow_state": "ready_implementation",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}

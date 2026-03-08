@@ -33,6 +33,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `memory_rehydrate.py`
   - `inventory_issue_lifecycle.py`
 - Validation and reporting:
+  - `federation/validate_runtime_skeleton_scaffold.py`
   - `backlog_stock_replenishment_guard.py`
   - `memory_compactor.py`
   - `validate_memory_archive_manifest.py`
@@ -40,6 +41,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_ontology_entity_map.py`
   - `validate_memory_tier_rules.py`
   - `validate_worker_task_pack.py`
+  - `validate_blueprint_pack.py`
   - `validate_project_field_schema.py`
   - `validate_repo_boundaries.py`
   - `validate_script_roles.py`
@@ -94,6 +96,8 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_supervisor_experiment_auto_executor_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
+  - `test_validate_blueprint_pack_contract.sh`
+  - `test_validate_runtime_skeleton_scaffold_contract.sh`
   - `test_validate_repo_boundaries_contract.sh`
   - `test_validate_script_roles_contract.sh`
   - `test_validate_issue_quality_contract.sh`

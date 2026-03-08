@@ -1,0 +1,52 @@
+{
+  "mode": "apply",
+  "project_owner": "rather-not-work-on",
+  "project_number": 2,
+  "project_id": "PVT_kwDOD8NujM4BQYNE",
+  "plan_item_regex": "^[A-Z][0-9]{2}$",
+  "issues_total": 2,
+  "updated_count": 2,
+  "error_count": 0,
+  "results": [
+    {
+      "plan_item_id": "R14",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 152,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/152",
+      "component": "contracts",
+      "workflow_state": "done",
+      "plan_lane": "m1_contract_freeze",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "R15",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 153,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/153",
+      "component": "planningops",
+      "workflow_state": "done",
+      "plan_lane": "m1_contract_freeze",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}
