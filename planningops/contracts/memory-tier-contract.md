@@ -106,6 +106,7 @@ Allowed when:
 - Rules config: `planningops/config/memory-tier-rules.json`
 - Validator: `planningops/scripts/validate_memory_tier_rules.py`
 - Check mode: `python3 planningops/scripts/memory_compactor.py --mode check`
+- CI gate: `python3 planningops/scripts/memory_compactor.py --mode check --root . --rules planningops/config/memory-tier-rules.json --output planningops/artifacts/validation/memory-gate-report.json --strict`
 - Archive command: `python3 planningops/scripts/memory_archive.py --source <repo-relative-source> --compacted-into <repo-relative-target>`
 - Rehydrate command: `python3 planningops/scripts/memory_rehydrate.py --manifest <archive-ref-or-manifest-path>`
 - Manifest schema: `planningops/schemas/memory-archive-manifest.schema.json`
