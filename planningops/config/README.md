@@ -20,6 +20,7 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - `artifact-storage-policy.json`: artifact tier map, backend selector, and retention policy
 - `repository-governance-policy.json`: default-branch protection baseline and required checks policy
 - `federated-label-taxonomy.json`: execution-repo label catalog and default backfill mapping
+- `memory-tier-rules.json`: machine-readable L0/L1/L2 definitions, triggers, and promotion/archive rules
 
 ## Change Rules
 - Field id updates must be synchronized with validator scripts and CI tests.

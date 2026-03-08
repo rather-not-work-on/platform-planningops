@@ -27,6 +27,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `backlog_stock_replenishment_guard.py`
   - `validate_contracts.py`
   - `validate_ontology_entity_map.py`
+  - `validate_memory_tier_rules.py`
   - `validate_worker_task_pack.py`
   - `validate_project_field_schema.py`
   - `validate_repo_boundaries.py`
@@ -40,6 +41,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `apply_branch_protection.py`
   - `test_control_tower_ontology_contract.sh`
   - `test_ontology_entity_map_contract.sh`
+  - `test_memory_tier_contract.sh`
   - `validate_external_only_commit_guard.py`
   - `migrate_external_only_artifacts.py`
   - `rehydrate_artifact_pointer.py`
@@ -83,6 +85,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_apply_branch_protection_contract.sh`
   - `test_control_tower_ontology_contract.sh`
   - `test_ontology_entity_map_contract.sh`
+  - `test_memory_tier_contract.sh`
   - `test_validate_external_only_commit_guard.sh`
   - `test_artifact_sink_e2e.sh`
   - `test_*.sh`
