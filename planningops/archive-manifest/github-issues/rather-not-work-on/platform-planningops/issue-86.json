@@ -1,0 +1,24 @@
+{
+  "manifest_version": 1,
+  "archived_at_utc": "2026-03-08T13:51:35.364201Z",
+  "source_issue_ref": "rather-not-work-on/platform-planningops#86",
+  "source_repo": "rather-not-work-on/platform-planningops",
+  "source_issue_number": 86,
+  "source_issue_title": "[stock-034] dependency blocker seed",
+  "source_issue_state": "OPEN",
+  "source_issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/86",
+  "source_issue_body": "## Planning Context\n- plan_item_id: `stock-034-9599`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- execution_kind: `inventory`\n- workflow_state: `backlog`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `9599`\n- plan_lane: `M3 Guardrails`\n- depends_on: `-`\n\n## Problem Statement\n- Retain the dependency-root record for `stock-034` as inventory-only queue memory.\n- This card must remain non-executable and must not be pulled by the live loop.\n\n## Interfaces & Dependencies\n- project schema: `planningops/config/project-field-ids.json`\n- stock policy: `planningops/config/backlog-stock-policy.json`\n- depends_on: `-`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/audits/2026-03-05-live-stock-replenishment-pack-audit.md`\n- `planningops/artifacts/validation/backlog-stock-live-before-034.json`\n\n## Acceptance Criteria\n- [ ] Card remains inventory-only with `workflow_state=backlog` and correct project field projection.\n- [ ] Follow-up stock history can reference this card without dependency parse errors.\n\n## Definition of Done\n- [ ] Validation report attached\n- [ ] Project fields synced with evidence\n\n",
+  "source_body_checksum_sha256": "8e74e09b078e5a0eb12eb4f73d9a074eb24d36d9dce2af7b4198adf52b5d8caa",
+  "source_metadata": {
+    "workflow_state": "backlog",
+    "execution_kind": "inventory",
+    "plan_item_id": "stock-034-9599"
+  },
+  "archive_path": "docs/archive/github-issues/rather-not-work-on/platform-planningops/issue-86.md",
+  "manifest_path": "planningops/archive-manifest/github-issues/rather-not-work-on/platform-planningops/issue-86.json",
+  "archive_ref": "planningops/archive-manifest/github-issues/rather-not-work-on/platform-planningops/issue-86.json",
+  "compacted_into": "docs/initiatives/unified-personal-agent-platform/40-quality/uap-inventory-issue-lifecycle-summary.quality.md",
+  "archive_checksum_sha256": "db1d79c0104ebcc9b827e0ad11a799b8c5aebe135c903ac131fd57c151f4d7a7",
+  "archived_issue_body": "## Planning Context\n- plan_item_id: `stock-034-9599`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- execution_kind: `inventory`\n- workflow_state: `done`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `9599`\n- plan_lane: `M3 Guardrails`\n- depends_on: `-`\n\n- inventory_lifecycle: `archived`\n- compacted_into: `docs/initiatives/unified-personal-agent-platform/40-quality/uap-inventory-issue-lifecycle-summary.quality.md`\n- archive_ref: `planningops/archive-manifest/github-issues/rather-not-work-on/platform-planningops/issue-86.json`\n## Problem Statement\n- Retain the dependency-root record for `stock-034` as inventory-only queue memory.\n- This card must remain non-executable and must not be pulled by the live loop.\n\n## Interfaces & Dependencies\n- project schema: `planningops/config/project-field-ids.json`\n- stock policy: `planningops/config/backlog-stock-policy.json`\n- depends_on: `-`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/audits/2026-03-05-live-stock-replenishment-pack-audit.md`\n- `planningops/artifacts/validation/backlog-stock-live-before-034.json`\n\n## Acceptance Criteria\n- [ ] Card remains inventory-only with `workflow_state=backlog` and correct project field projection.\n- [ ] Follow-up stock history can reference this card without dependency parse errors.\n\n## Definition of Done\n- [ ] Validation report attached\n- [ ] Project fields synced with evidence\n",
+  "archived_issue_body_checksum_sha256": "8fa911b6fe6569cbbe18bd3b8fb37bae49be4ace65d5a20f9e905dd7499343eb"
+}

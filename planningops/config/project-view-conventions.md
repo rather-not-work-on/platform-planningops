@@ -19,11 +19,17 @@ Use lowercase prefixes and stable keys.
 - `component/<initiative>/<component>`
 - example: `component/unified-personal-agent-platform/provider-gateway`
 
+### History views
+- `history/<initiative>/inventory`
+- example: `history/unified-personal-agent-platform/inventory`
+
 ## Required Filters
 - `initiative == unified-personal-agent-platform`
 - `Status in (Todo, In Progress, Blocked, Done)` as needed
 - `workflow_state` filter를 목적에 맞게 병행(`ready-contract`, `ready-implementation`, `blocked`, `done`)
 - optional: `target_repo == rather-not-work-on/<repo>`
+- queue views should exclude `Status=Done`
+- inventory history views should use `Status=Done` and optionally `target_repo == rather-not-work-on/platform-planningops`
 
 ## Sort and Group Defaults
 - Primary sort: `execution_order` ascending

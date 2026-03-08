@@ -27,6 +27,7 @@ jobs:
           bash planningops/scripts/test_verify_loop_run_hard_gate_contract.sh
           bash planningops/scripts/test_lease_lock_watchdog.sh
           bash planningops/scripts/test_planning_context_contract.sh
+          bash planningops/scripts/test_inventory_issue_lifecycle_contract.sh
           bash planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh
           bash planningops/scripts/test_loop_checkpoint_resume.sh
           bash planningops/scripts/test_backlog_stock_replenishment_contract.sh
@@ -54,6 +55,7 @@ jobs:
                   "test_verify_loop_run_hard_gate_contract",
                   "test_lease_lock_watchdog",
                   "test_planning_context_contract",
+                  "test_inventory_issue_lifecycle_contract",
                   "test_issue_loop_runner_multi_repo_intake",
                   "test_loop_checkpoint_resume",
                   "test_backlog_stock_replenishment_contract",

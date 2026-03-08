@@ -15,6 +15,9 @@ PLANNING_CONTEXT_KEYS = [
     "depends_on",
     "plan_lane",
     "execution_kind",
+    "inventory_lifecycle",
+    "archive_ref",
+    "compacted_into",
 ]
 
 

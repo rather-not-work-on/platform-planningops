@@ -218,12 +218,18 @@ jobs:
           bash planningops/scripts/test_memory_compactor_contract.sh
           bash planningops/scripts/test_memory_archive_contract.sh
           bash planningops/scripts/test_memory_rehydrate_contract.sh
+          bash planningops/scripts/test_inventory_issue_lifecycle_contract.sh
           python3 planningops/scripts/memory_compactor.py \
             --mode check \
             --root . \
             --rules planningops/config/memory-tier-rules.json \
             --output planningops/artifacts/validation/memory-gate-report.json \
             --strict
+          python3 planningops/scripts/inventory_issue_lifecycle.py \
+            audit \
+            --repo rather-not-work-on/platform-planningops \
+            --strict \
+            --output planningops/artifacts/validation/inventory-issue-lifecycle-report.json
           bash planningops/scripts/test_audit_branch_protection_contract.sh
           bash planningops/scripts/test_apply_branch_protection_contract.sh
           python3 planningops/scripts/audit_branch_protection.py \

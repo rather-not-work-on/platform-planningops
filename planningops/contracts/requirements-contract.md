@@ -44,6 +44,7 @@
 41. Supervisor experiment trigger must be able to invoke an automatic comparative executor that creates deterministic option worktrees.
 42. Automatic comparative executor must emit per-option reports and weighted decision record artifacts.
 43. Automatic comparative executor failure must map to supervisor stop reason `experiment_auto_executor_failed`.
+44. Inventory-only backlog records must follow explicit lifecycle states: open records use `inventory_lifecycle=active`, archived records require closed issue state, `workflow_state=done`, `archive_ref`, and `compacted_into`.
 
 ## Non-Functional Requirements
 1. Idempotency: repeated execution for same issue+commit must not duplicate updates.

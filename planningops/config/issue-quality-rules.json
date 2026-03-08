@@ -27,6 +27,16 @@
     "p2",
     "p3"
   ],
+  "inventory_open_required_lifecycle": "active",
+  "inventory_archived_required_lifecycle": "archived",
+  "inventory_archived_required_workflow_state": "done",
+  "inventory_required_metadata_keys": [
+    "inventory_lifecycle"
+  ],
+  "inventory_archived_required_metadata_keys": [
+    "archive_ref",
+    "compacted_into"
+  ],
   "required_label_prefixes": [
     "area/",
     "type/"

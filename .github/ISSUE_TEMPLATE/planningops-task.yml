@@ -19,10 +19,13 @@ body:
         - target_repo: `owner/repo`
         - component: `...`
         - execution_kind: `executable` # optional; use `inventory` for non-executable stock/support cards
+        - inventory_lifecycle: `active` # required when execution_kind=inventory
         - workflow_state: `...`
         - loop_profile: `...`
         - execution_order: `...`
         - depends_on: `...`
+        - archive_ref: `...` # required only when archiving an inventory card
+        - compacted_into: `...` # required only when archiving an inventory card
     validations:
       required: true
   - type: textarea

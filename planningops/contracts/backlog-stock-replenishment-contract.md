@@ -18,6 +18,9 @@ Inventory cards are never counted as stock, even when they remain open for audit
   - `executable` (default when omitted)
   - `inventory`
 - `inventory` means the issue exists to preserve queue memory, replenishment history, or bookkeeping state. It is not eligible for stock floors or live pull selection.
+- Inventory lifecycle is governed separately:
+  - open inventory uses `inventory_lifecycle=active`
+  - archived inventory uses `workflow_state=done`, `inventory_lifecycle=archived`, `archive_ref`, and `compacted_into`
 
 Stock floor source:
 - `planningops/config/backlog-stock-policy.json`
@@ -57,6 +60,8 @@ Candidate normalization output must include:
   - `planningops/artifacts/validation/backlog-stock-report.json`
 - Runner replenishment candidate artifact:
   - `planningops/artifacts/backlog/issue-<n>-replenishment-candidates.json`
+- Inventory archive tool:
+  - `planningops/scripts/inventory_issue_lifecycle.py`
 
 ## Testability Mapping
 - stock/replenishment validation implementation:
@@ -66,3 +71,4 @@ Candidate normalization output must include:
 - regression:
   - `planningops/scripts/test_backlog_stock_replenishment_contract.sh`
   - `planningops/scripts/test_issue_loop_runner_multi_repo_intake.sh`
+  - `planningops/scripts/test_inventory_issue_lifecycle_contract.sh`
