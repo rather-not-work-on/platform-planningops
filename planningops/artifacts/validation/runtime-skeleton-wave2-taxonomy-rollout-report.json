@@ -1,0 +1,65 @@
+{
+  "generated_at_utc": "2026-03-08T16:21:49.444863+00:00",
+  "mode": "apply",
+  "config_path": "planningops/config/federated-label-taxonomy.json",
+  "repo_count": 5,
+  "label_catalog_count": 10,
+  "missing_count": 3,
+  "mismatch_count": 0,
+  "error_count": 0,
+  "results": [
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "missing": [
+        "area/provider",
+        "area/observability",
+        "area/runtime"
+      ],
+      "mismatched": [],
+      "applied": [
+        {
+          "name": "area/provider",
+          "action": "created"
+        },
+        {
+          "name": "area/observability",
+          "action": "created"
+        },
+        {
+          "name": "area/runtime",
+          "action": "created"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "missing": [],
+      "mismatched": [],
+      "applied": [],
+      "errors": []
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "missing": [],
+      "mismatched": [],
+      "applied": [],
+      "errors": []
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "missing": [],
+      "mismatched": [],
+      "applied": [],
+      "errors": []
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "missing": [],
+      "mismatched": [],
+      "applied": [],
+      "errors": []
+    }
+  ],
+  "verdict": "pass"
+}

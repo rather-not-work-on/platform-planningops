@@ -1,0 +1,109 @@
+{
+  "generated_at_utc": "2026-03-08T16:06:39.372364+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "mode": "apply",
+  "issues_in_scope": 7,
+  "issues_with_missing_labels": 7,
+  "issues_applied": 7,
+  "rows": [
+    {
+      "number": 154,
+      "title": "plan: [70] projectable implementation issue pack for runtime skeleton wave",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/154",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 153,
+      "title": "plan: [60] runtime skeleton readiness gate dry-run",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/153",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 152,
+      "title": "plan: [50] shared contract gap matrix for runtime skeleton wave",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/152",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/contracts",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 151,
+      "title": "plan: [40] observability gateway ready-implementation blueprint pack",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/151",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 150,
+      "title": "plan: [30] provider gateway ready-implementation blueprint pack",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/150",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 149,
+      "title": "plan: [20] monday runtime ready-implementation blueprint pack",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/149",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 148,
+      "title": "plan: [10] federated runtime skeleton blueprint pack meta",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/148",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}

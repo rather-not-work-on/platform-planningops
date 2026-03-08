@@ -1,0 +1,17 @@
+{
+  "generated_at_utc": "2026-03-08T16:37:12.961208+00:00",
+  "config_path": "planningops/config/script-role-map.json",
+  "verdict": "pass",
+  "violation_count": 0,
+  "violations": [],
+  "info_count": 1,
+  "infos": [
+    {
+      "type": "CHECK_SUMMARY",
+      "core_dir_count": 3,
+      "oneoff_entrypoint_count": 1,
+      "wrapper_count": 8,
+      "metadata_ignored_count": 0
+    }
+  ]
+}

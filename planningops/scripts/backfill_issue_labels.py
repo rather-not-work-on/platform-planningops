@@ -63,7 +63,43 @@ def parse_component(issue: dict):
     return match.group(1).strip().lower()
 
 
+def parse_target_repo(issue: dict):
+    body = issue.get("body") or ""
+    match = re.search(r"(?m)^-\s+target_repo:\s+`?([^`\n]+)`?\s*$", body)
+    if not match:
+        return ""
+    return match.group(1).strip().lower()
+
+
+def parse_workflow_state(issue: dict):
+    body = issue.get("body") or ""
+    match = re.search(r"(?m)^-\s+workflow_state:\s+`?([^`\n]+)`?\s*$", body)
+    if not match:
+        return ""
+    return match.group(1).strip().lower()
+
+
+def parse_loop_profile(issue: dict):
+    body = issue.get("body") or ""
+    match = re.search(r"(?m)^-\s+loop_profile:\s+`?([^`\n]+)`?\s*$", body)
+    if not match:
+        return ""
+    return match.group(1).strip().lower()
+
+
 def infer_area_label(issue: dict):
+    target_repo = parse_target_repo(issue)
+    if target_repo.endswith("/platform-contracts"):
+        return "area/contracts"
+    if target_repo.endswith("/platform-provider-gateway"):
+        return "area/provider"
+    if target_repo.endswith("/platform-observability-gateway"):
+        return "area/observability"
+    if target_repo.endswith("/monday"):
+        return "area/runtime"
+    if target_repo.endswith("/platform-planningops"):
+        return "area/planningops"
+
     component = parse_component(issue)
     if "contract" in component:
         return "area/contracts"
@@ -77,6 +113,11 @@ def infer_area_label(issue: dict):
 
 
 def infer_type_label(issue: dict):
+    workflow_state = parse_workflow_state(issue)
+    loop_profile = parse_loop_profile(issue)
+    if workflow_state == "ready_implementation" or "implementation" in loop_profile:
+        return "type/hardening"
+
     text = f"{issue.get('title', '')}\n{issue.get('body', '')}".lower()
     governance_markers = ["policy", "contract", "taxonomy", "governance", "schema"]
     if any(marker in text for marker in governance_markers):

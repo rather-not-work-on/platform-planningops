@@ -68,6 +68,11 @@
   ],
   "repos": [
     {
+      "repo": "rather-not-work-on/platform-planningops",
+      "default_area_label": "area/planningops",
+      "default_type_label": "type/governance"
+    },
+    {
       "repo": "rather-not-work-on/platform-contracts",
       "default_area_label": "area/contracts",
       "default_type_label": "type/governance"
