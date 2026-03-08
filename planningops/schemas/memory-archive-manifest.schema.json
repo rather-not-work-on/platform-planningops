@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops/schemas/memory-archive-manifest.schema.json",
+  "title": "Memory Archive Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "archived_at_utc",
+    "source_path",
+    "archive_path",
+    "manifest_path",
+    "archive_ref",
+    "compacted_into",
+    "memory_tier",
+    "initiative",
+    "source_checksum_sha256",
+    "archive_checksum_sha256"
+  ],
+  "properties": {
+    "manifest_version": {
+      "type": "integer"
+    },
+    "archived_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "archive_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "archive_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "compacted_into": {
+      "type": "string",
+      "minLength": 1
+    },
+    "memory_tier": {
+      "type": "string",
+      "const": "L2"
+    },
+    "initiative": {
+      "type": "string"
+    },
+    "source_checksum_sha256": {
+      "type": "string",
+      "minLength": 64
+    },
+    "archive_checksum_sha256": {
+      "type": "string",
+      "minLength": 64
+    }
+  }
+}
