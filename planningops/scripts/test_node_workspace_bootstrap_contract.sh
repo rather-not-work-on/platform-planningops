@@ -4,7 +4,7 @@ set -euo pipefail
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
-python3 planningops/scripts/validate_node_workspace_bootstrap_policy.py \
+python3 planningops/scripts/validate_node_workspace_policy.py \
   --policy planningops/config/node-workspace-bootstrap-policy.json \
   --output "$tmp_dir/node-workspace-bootstrap-policy-valid.json" \
   --strict
@@ -43,7 +43,7 @@ cat > "$tmp_dir/invalid-policy.json" <<'JSON'
 JSON
 
 set +e
-python3 planningops/scripts/validate_node_workspace_bootstrap_policy.py \
+python3 planningops/scripts/validate_node_workspace_policy.py \
   --policy "$tmp_dir/invalid-policy.json" \
   --output "$tmp_dir/node-workspace-bootstrap-policy-invalid.json" \
   --strict

@@ -28,7 +28,7 @@ Define a deterministic, local-first bootstrap contract for TypeScript workspaces
 - Policy config: `planningops/config/node-workspace-bootstrap-policy.json`
 
 ## Verification
-- Policy validator: `planningops/scripts/validate_node_workspace_bootstrap_policy.py`
+- Policy validator: `planningops/scripts/validate_node_workspace_policy.py`
 - Contract test: `planningops/scripts/test_node_workspace_bootstrap_contract.sh`
 - Expected downstream evidence:
   - `pnpm-lock.yaml`

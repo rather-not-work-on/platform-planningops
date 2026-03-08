@@ -41,7 +41,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_contracts.py`
   - `validate_ontology_entity_map.py`
   - `validate_memory_tier_rules.py`
-  - `validate_node_workspace_bootstrap_policy.py`
+  - `validate_node_workspace_policy.py`
   - `validate_worker_task_pack.py`
   - `validate_blueprint_pack.py`
   - `validate_project_field_schema.py`
