@@ -213,6 +213,7 @@ def normalize_item(raw):
             "component": str(raw.get("component", "")),
             "initiative": str(raw.get("initiative", "")),
             "issue_body": str(raw.get("issue_body", "")),
+            "issue_state": str(raw.get("issue_state", "")),
             "open_dependency_count": raw.get("open_dependency_count"),
         }
 
@@ -233,6 +234,7 @@ def normalize_item(raw):
         "component": str(raw.get("component", "")),
         "initiative": str(raw.get("initiative", "")),
         "issue_body": str(raw.get("issue_body", "")),
+        "issue_state": str(content.get("state", "")),
         "open_dependency_count": raw.get("open_dependency_count"),
     }
 
@@ -251,9 +253,80 @@ def hydrate_issue_body(issue_repo: str, issue_number: int):
     return out, "ok"
 
 
-def hydrate_dependency_counts(rows, offline=False):
+def fetch_issue_metadata_for_repo(repo: str, limit: int = 500):
+    rc, out, err = run(
+        ["gh", "issue", "list", "--repo", repo, "--state", "all", "--limit", str(limit), "--json", "number,state,body"]
+    )
+    if rc != 0:
+        return {}, f"issue_list_failed:{err}"
+    try:
+        rows = json.loads(out)
+    except json.JSONDecodeError:
+        return {}, "issue_list_invalid_json"
+
+    items = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        number = row.get("number")
+        state = str(row.get("state", "")).upper()
+        body = str(row.get("body", ""))
+        if isinstance(number, int):
+            items[number] = {
+                "state": state if state in {"OPEN", "CLOSED"} else "",
+                "body": body,
+            }
+    return items, "ok"
+
+
+def hydrate_issue_states(rows, issue_catalog=None, offline=False):
+    diagnostics = []
+    state_cache = {}
+    issue_catalog = issue_catalog or {}
+    repo_status = {}
+
+    if not offline:
+        repos = sorted({row["issue_repo"] for row in rows if row.get("issue_repo")})
+        for repo in repos:
+            if repo in issue_catalog:
+                continue
+            issue_catalog[repo], repo_status[repo] = fetch_issue_metadata_for_repo(repo)
+
+    for row in rows:
+        issue_state = str(row.get("issue_state", "")).upper()
+        if issue_state in {"OPEN", "CLOSED"}:
+            continue
+
+        key = (row["issue_repo"], row["issue_number"])
+        if key not in state_cache:
+            if offline:
+                state_cache[key] = ("OPEN", "offline_default_open")
+            else:
+                repo = row["issue_repo"]
+                repo_items = issue_catalog.get(repo, {})
+                if row["issue_number"] in repo_items and repo_items[row["issue_number"]].get("state"):
+                    state_cache[key] = (repo_items[row["issue_number"]]["state"], repo_status.get(repo, "ok"))
+                else:
+                    closed, reason = issue_is_closed(row["issue_number"], row["issue_repo"])
+                    state_cache[key] = ("CLOSED" if closed else "OPEN", reason)
+        state_value, reason = state_cache[key]
+        row["issue_state"] = state_value
+        diagnostics.append(
+            {
+                "issue_number": row["issue_number"],
+                "issue_repo": row["issue_repo"],
+                "event": "hydrate_issue_state",
+                "status": reason,
+                "issue_state": state_value,
+            }
+        )
+    return diagnostics
+
+
+def hydrate_dependency_counts(rows, issue_catalog=None, offline=False):
     closed_cache = {}
     diagnostics = []
+    issue_catalog = issue_catalog or {}
 
     for row in rows:
         if isinstance(row.get("open_dependency_count"), int):
@@ -268,8 +341,13 @@ def hydrate_dependency_counts(rows, offline=False):
                 row["depends_on"] = []
                 row["dependency_status"] = "offline_missing_issue_body"
                 continue
-            hydrated_body, status = hydrate_issue_body(row["issue_repo"], row["issue_number"])
-            issue_body = hydrated_body
+            repo_items = issue_catalog.get(row["issue_repo"], {})
+            if row["issue_number"] in repo_items and repo_items[row["issue_number"]].get("body"):
+                issue_body = repo_items[row["issue_number"]]["body"]
+                status = "bulk_issue_metadata"
+            else:
+                hydrated_body, status = hydrate_issue_body(row["issue_repo"], row["issue_number"])
+                issue_body = hydrated_body
             diagnostics.append(
                 {
                     "issue_number": row["issue_number"],
@@ -295,7 +373,11 @@ def hydrate_dependency_counts(rows, offline=False):
                 if offline:
                     closed_cache[key] = (False, "offline_dependency_unknown")
                 else:
-                    closed_cache[key] = issue_is_closed(dep, row["issue_repo"])
+                    repo_items = issue_catalog.get(row["issue_repo"], {})
+                    if dep in repo_items and repo_items[dep].get("state") in {"OPEN", "CLOSED"}:
+                        closed_cache[key] = (repo_items[dep]["state"] == "CLOSED", "bulk_issue_metadata")
+                    else:
+                        closed_cache[key] = issue_is_closed(dep, row["issue_repo"])
             closed, reason = closed_cache[key]
             if not closed:
                 open_count += 1
@@ -313,6 +395,9 @@ def hydrate_dependency_counts(rows, offline=False):
 
 
 def row_matches_rule(row, rule):
+    if str(row.get("issue_state", "")).upper() == "CLOSED":
+        return False
+
     statuses = set(rule.get("statuses") or [])
     if statuses and row.get("status") not in statuses:
         return False
@@ -496,7 +581,9 @@ def main():
             continue
         rows.append(normalized)
 
-    dependency_diagnostics = hydrate_dependency_counts(rows, offline=args.offline)
+    issue_catalog = {}
+    issue_state_diagnostics = hydrate_issue_states(rows, issue_catalog=issue_catalog, offline=args.offline)
+    dependency_diagnostics = hydrate_dependency_counts(rows, issue_catalog=issue_catalog, offline=args.offline)
     stock = evaluate_stock(rows, policy)
     high_value_ready = select_high_value_ready(stock["class_rows"])
 
@@ -537,6 +624,7 @@ def main():
             "breaches": breaches,
         },
         "candidate_validation": candidate_validation,
+        "issue_state_diagnostics": issue_state_diagnostics,
         "dependency_diagnostics": dependency_diagnostics,
     }
     save_json(Path(args.output), report)
