@@ -1,0 +1,25 @@
+{
+  "repo": "rather-not-work-on/platform-planningops",
+  "inventory_execution_kind": "inventory",
+  "archive_root": "docs/archive/github-issues",
+  "manifest_root": "planningops/archive-manifest/github-issues",
+  "rehydrate_root": "planningops/artifacts/rehydrate/github-issues",
+  "compacted_summary_path": "docs/initiatives/unified-personal-agent-platform/40-quality/uap-inventory-issue-lifecycle-summary.quality.md",
+  "open_inventory": {
+    "required_issue_state": "OPEN",
+    "allowed_workflow_states": [
+      "backlog"
+    ],
+    "required_inventory_lifecycle": "active",
+    "forbid_archive_ref": true,
+    "forbid_compacted_into": true,
+    "max_open_days": 14
+  },
+  "archived_inventory": {
+    "required_issue_state": "CLOSED",
+    "required_workflow_state": "done",
+    "required_inventory_lifecycle": "archived",
+    "require_archive_ref": true,
+    "require_compacted_into": true
+  }
+}

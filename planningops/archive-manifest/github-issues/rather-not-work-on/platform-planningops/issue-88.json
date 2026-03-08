@@ -1,0 +1,24 @@
+{
+  "manifest_version": 1,
+  "archived_at_utc": "2026-03-08T13:51:36.299047Z",
+  "source_issue_ref": "rather-not-work-on/platform-planningops#88",
+  "source_repo": "rather-not-work-on/platform-planningops",
+  "source_issue_number": 88,
+  "source_issue_title": "[stock-034] next-up candidate A",
+  "source_issue_state": "OPEN",
+  "source_issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/88",
+  "source_issue_body": "## Planning Context\n- plan_item_id: `stock-034-9602`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- execution_kind: `inventory`\n- workflow_state: `backlog`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `9602`\n- plan_lane: `M3 Guardrails`\n- depends_on: `#86`\n\n## Problem Statement\n- Retain the first dependency-linked `stock-034` next-up record as inventory-only queue memory.\n- This card must not be treated as executable work even though it preserves dependency context.\n\n## Interfaces & Dependencies\n- depends_on: `#86`\n- scheduler projection: `planningops/scripts/verify_plan_projection.py`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/audits/2026-03-05-live-stock-replenishment-pack-audit.md`\n- `planningops/artifacts/validation/backlog-stock-live-after-034.json`\n\n## Acceptance Criteria\n- [ ] Card remains dependency-linked to `#86` and classified as inventory-only.\n- [ ] Live pull and executable stock accounting ignore this card while preserving the dependency record.\n\n## Definition of Done\n- [ ] Validation report attached\n- [ ] Project fields synced with evidence\n\n",
+  "source_body_checksum_sha256": "20f03f09188404131d123260012a8890f82f32069ea02065525f2890d4a3b731",
+  "source_metadata": {
+    "workflow_state": "backlog",
+    "execution_kind": "inventory",
+    "plan_item_id": "stock-034-9602"
+  },
+  "archive_path": "docs/archive/github-issues/rather-not-work-on/platform-planningops/issue-88.md",
+  "manifest_path": "planningops/archive-manifest/github-issues/rather-not-work-on/platform-planningops/issue-88.json",
+  "archive_ref": "planningops/archive-manifest/github-issues/rather-not-work-on/platform-planningops/issue-88.json",
+  "compacted_into": "docs/initiatives/unified-personal-agent-platform/40-quality/uap-inventory-issue-lifecycle-summary.quality.md",
+  "archive_checksum_sha256": "c7ef02355a147bcee844f362225325561f2cebf9f79a67957a9ad338ff12c093",
+  "archived_issue_body": "## Planning Context\n- plan_item_id: `stock-034-9602`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- execution_kind: `inventory`\n- workflow_state: `done`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `9602`\n- plan_lane: `M3 Guardrails`\n- depends_on: `#86`\n\n- inventory_lifecycle: `archived`\n- compacted_into: `docs/initiatives/unified-personal-agent-platform/40-quality/uap-inventory-issue-lifecycle-summary.quality.md`\n- archive_ref: `planningops/archive-manifest/github-issues/rather-not-work-on/platform-planningops/issue-88.json`\n## Problem Statement\n- Retain the first dependency-linked `stock-034` next-up record as inventory-only queue memory.\n- This card must not be treated as executable work even though it preserves dependency context.\n\n## Interfaces & Dependencies\n- depends_on: `#86`\n- scheduler projection: `planningops/scripts/verify_plan_projection.py`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/audits/2026-03-05-live-stock-replenishment-pack-audit.md`\n- `planningops/artifacts/validation/backlog-stock-live-after-034.json`\n\n## Acceptance Criteria\n- [ ] Card remains dependency-linked to `#86` and classified as inventory-only.\n- [ ] Live pull and executable stock accounting ignore this card while preserving the dependency record.\n\n## Definition of Done\n- [ ] Validation report attached\n- [ ] Project fields synced with evidence\n",
+  "archived_issue_body_checksum_sha256": "736c13181ffe82af5fd0af3e0cbec337c9186eb415681e60b213e29cb8ed58cd"
+}

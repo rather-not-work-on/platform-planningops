@@ -31,6 +31,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `repo_execution_adapters.py` compatibility wrapper for `federation/adapter_registry.py`
   - `memory_archive.py`
   - `memory_rehydrate.py`
+  - `inventory_issue_lifecycle.py`
 - Validation and reporting:
   - `backlog_stock_replenishment_guard.py`
   - `memory_compactor.py`
@@ -57,6 +58,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
   - `test_memory_rehydrate_contract.sh`
+  - `test_inventory_issue_lifecycle_contract.sh`
   - `migrate_external_only_artifacts.py`
   - `rehydrate_artifact_pointer.py`
   - `verify_loop_run.py` (`--execution-attempts-schema`)
@@ -109,6 +111,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
   - `test_memory_rehydrate_contract.sh`
+  - `test_inventory_issue_lifecycle_contract.sh`
   - `test_artifact_sink_e2e.sh`
   - `test_*.sh`
 

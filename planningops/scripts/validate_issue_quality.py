@@ -8,6 +8,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+SCRIPTS_ROOT = Path(__file__).resolve().parent
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from planning_context import parse_metadata
+
 
 DEFAULT_RULES = Path("planningops/config/issue-quality-rules.json")
 DEFAULT_OUTPUT = Path("planningops/artifacts/validation/issue-quality-report.json")
@@ -59,6 +65,8 @@ def validate_issue(issue: dict, rules: dict):
     violations = []
     labels = extract_label_names(issue)
     label_set = set(labels)
+    metadata = parse_metadata(body, keys=["execution_kind", "inventory_lifecycle", "archive_ref", "compacted_into", "workflow_state"])
+    issue_state = str(issue.get("state") or "OPEN").strip().upper()
 
     for section in rules.get("required_sections", []):
         if not has_section(body, section):
@@ -76,6 +84,27 @@ def validate_issue(issue: dict, rules: dict):
     for marker in rules.get("forbidden_evidence_markers", []):
         if marker and marker in body:
             violations.append(f"forbidden evidence marker present: {marker}")
+
+    if metadata.get("execution_kind") == "inventory":
+        for key in rules.get("inventory_required_metadata_keys", []):
+            if not metadata.get(key):
+                violations.append(f"inventory issue missing metadata key: {key}")
+        if issue_state == "CLOSED" or metadata.get("inventory_lifecycle") == rules.get("inventory_archived_required_lifecycle"):
+            if metadata.get("workflow_state") != rules.get("inventory_archived_required_workflow_state"):
+                violations.append(
+                    f"archived inventory workflow_state must be {rules.get('inventory_archived_required_workflow_state')}"
+                )
+            if metadata.get("inventory_lifecycle") != rules.get("inventory_archived_required_lifecycle"):
+                violations.append(
+                    f"archived inventory must declare inventory_lifecycle={rules.get('inventory_archived_required_lifecycle')}"
+                )
+            for key in rules.get("inventory_archived_required_metadata_keys", []):
+                if not metadata.get(key):
+                    violations.append(f"archived inventory missing metadata key: {key}")
+        elif metadata.get("inventory_lifecycle") != rules.get("inventory_open_required_lifecycle"):
+            violations.append(
+                f"open inventory must declare inventory_lifecycle={rules.get('inventory_open_required_lifecycle')}"
+            )
 
     for label in rules.get("required_labels_all", []):
         if label not in label_set:

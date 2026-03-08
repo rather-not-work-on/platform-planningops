@@ -70,6 +70,9 @@ This contract fixes:
 - `execution_kind` may be used to refine delivery semantics:
   - `executable` (default when omitted)
   - `inventory`
+- `inventory_lifecycle` may further classify inventory records:
+  - `active`
+  - `archived`
 - `component` must use the canonical project field vocabulary:
   - `planningops`
   - `contracts`
@@ -102,6 +105,7 @@ This contract fixes:
 5. A `MemoryRecord` cannot compact sources from multiple initiatives without an explicit cross-initiative note.
 6. `platform-planningops` may validate evidence from execution repos, but runtime ownership remains with the emitting repo.
 7. `execution_kind=inventory` items are valid backlog records, but they are not eligible for executable queue stock or loop pull selection.
+8. Archived inventory records must move to `workflow_state=done`, carry `archive_ref` + `compacted_into`, and remain traceable through `docs/archive/**` plus `planningops/archive-manifest/**`.
 
 ## Verification
 - Backlog/project metadata quality: `python3 planningops/scripts/validate_issue_quality.py --strict`
@@ -114,3 +118,4 @@ This contract fixes:
 - `planningops/contracts/issue-quality-contract.md`
 - `planningops/contracts/artifact-retention-tier-contract.md`
 - `planningops/contracts/memory-tier-contract.md`
+- `planningops/contracts/inventory-issue-lifecycle-contract.md`

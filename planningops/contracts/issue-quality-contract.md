@@ -27,6 +27,9 @@ Prevent low-quality backlog issues by enforcing deterministic structure, metadat
 ## Quality Rules
 - Acceptance checklist must contain at least 2 items.
 - Placeholder evidence markers (`- (none)`, `<TBD>`) are forbidden.
+- `execution_kind=inventory` issues must declare `inventory_lifecycle`.
+- open inventory issues must use `inventory_lifecycle=active`.
+- archived inventory issues must use `workflow_state=done`, `inventory_lifecycle=archived`, and include `archive_ref` + `compacted_into`.
 - Labels must satisfy taxonomy contract:
   - include `task`
   - include exactly one of `p1|p2|p3`
