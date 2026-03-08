@@ -43,6 +43,85 @@
       "mock_base_path": "planningops/runtime-artifacts/oci-mock"
     }
   },
+  "portability_profile": {
+    "mode": "local_first",
+    "default_backend": "local",
+    "approved_migration_backends": ["s3", "oci"],
+    "target_platforms": ["local", "oracle_cloud"],
+    "canonical_pointer_strategy": "git_pointer_only"
+  },
+  "execution_event_families": {
+    "loop_attempts": {
+      "logical_root": "planningops/artifacts/loops/",
+      "residency": "external_only",
+      "pointer_visibility": "git_pointer_only",
+      "default_backend": "local",
+      "migration_backends": ["s3", "oci"],
+      "retention_days": 30,
+      "owner_scripts": [
+        "planningops/scripts/core/loop/runner.py",
+        "planningops/scripts/ralph_loop_local.py"
+      ]
+    },
+    "transition_logs": {
+      "logical_root": "planningops/artifacts/transition-log/",
+      "residency": "external_only",
+      "pointer_visibility": "git_pointer_only",
+      "default_backend": "local",
+      "migration_backends": ["s3", "oci"],
+      "retention_days": 30,
+      "owner_scripts": [
+        "planningops/scripts/core/loop/runner.py",
+        "planningops/scripts/ralph_loop_local.py"
+      ]
+    },
+    "adapter_hook_records": {
+      "logical_root": "planningops/artifacts/adapter-hooks/",
+      "residency": "external_only",
+      "pointer_visibility": "git_pointer_only",
+      "default_backend": "local",
+      "migration_backends": ["s3", "oci"],
+      "retention_days": 30,
+      "owner_scripts": [
+        "planningops/scripts/core/loop/runner.py"
+      ]
+    },
+    "sync_summaries": {
+      "logical_root": "planningops/artifacts/sync-summary/",
+      "residency": "external_only",
+      "pointer_visibility": "git_pointer_only",
+      "default_backend": "local",
+      "migration_backends": ["s3", "oci"],
+      "retention_days": 30,
+      "owner_scripts": [
+        "planningops/scripts/parser_diff_dry_run.py",
+        "planningops/scripts/ralph_loop_local.py"
+      ]
+    },
+    "supervisor_runs": {
+      "logical_root": "planningops/artifacts/supervisor/",
+      "residency": "external_only",
+      "pointer_visibility": "git_pointer_only",
+      "default_backend": "local",
+      "migration_backends": ["s3", "oci"],
+      "retention_days": 30,
+      "owner_scripts": [
+        "planningops/scripts/autonomous_supervisor_loop.py"
+      ]
+    },
+    "experiment_runs": {
+      "logical_root": "planningops/artifacts/experiments/",
+      "residency": "external_only",
+      "pointer_visibility": "git_pointer_only",
+      "default_backend": "local",
+      "migration_backends": ["s3", "oci"],
+      "retention_days": 30,
+      "owner_scripts": [
+        "planningops/scripts/autonomous_supervisor_loop.py",
+        "planningops/scripts/supervisor_experiment_auto_executor.py"
+      ]
+    }
+  },
   "retention": {
     "git_canonical_days": 3650,
     "git_optional_days": 180,

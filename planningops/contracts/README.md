@@ -29,6 +29,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `issue-label-taxonomy-contract.md`: required label taxonomy (`task`/priority/area/type) and gates
 - `artifact-retention-tier-contract.md`: Git vs external artifact storage tier policy
 - `artifact-sink-contract.md`: backend selector abstraction + pointer/rehydrate behavior
+- `execution-event-storage-residency-contract.md`: local-first external-only residency map for runtime event families
 - `repository-governance-contract.md`: default-branch protection baseline and required-check governance
 - `control-tower-ontology-contract.md`: canonical entity/relation/path model for planningops as control tower
 - `memory-tier-contract.md`: 3-tier memory lifecycle, frontmatter keys, and compaction trigger contract

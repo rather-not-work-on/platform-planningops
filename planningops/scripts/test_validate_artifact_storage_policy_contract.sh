@@ -24,6 +24,24 @@ cat > "$tmp_dir/invalid-policy.json" <<'JSON'
       "kind": "local"
     }
   },
+  "portability_profile": {
+    "mode": "remote_first",
+    "default_backend": "s3",
+    "approved_migration_backends": [],
+    "target_platforms": [],
+    "canonical_pointer_strategy": "inline_git"
+  },
+  "execution_event_families": {
+    "broken_family": {
+      "logical_root": "planningops/artifacts/validation",
+      "residency": "git_canonical",
+      "pointer_visibility": "inline_git",
+      "default_backend": "s3",
+      "migration_backends": ["local"],
+      "retention_days": 999,
+      "owner_scripts": ["planningops/scripts/does-not-exist.py"]
+    }
+  },
   "retention": {
     "git_canonical_days": 0,
     "git_optional_days": -1,

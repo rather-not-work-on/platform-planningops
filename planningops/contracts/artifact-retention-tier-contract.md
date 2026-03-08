@@ -50,3 +50,6 @@ Backend selection is controlled by:
 - Diff guard command: `python3 planningops/scripts/validate_external_only_commit_guard.py --base-ref <base> --head-ref <head> --strict`
 - Tracked baseline audit: `python3 planningops/scripts/validate_external_only_commit_guard.py --mode tracked --strict`
 - Migration/rehydrate: `planningops/scripts/migrate_external_only_artifacts.py`, `planningops/scripts/rehydrate_artifact_pointer.py`
+
+## Related Contracts
+- `planningops/contracts/execution-event-storage-residency-contract.md`
