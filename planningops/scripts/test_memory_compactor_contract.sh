@@ -109,6 +109,7 @@ assert report["verdict"] == "fail", report
 assert report["trigger_count"] == 4, report
 assert len(report["stale_l0_uncompacted"]) == 3, report
 assert len(report["topic_compaction_required"]) == 1, report
+assert len(report["missing_archive_linkage"]) == 0, report
 topic = report["topic_compaction_required"][0]
 assert topic["topic"] == "alpha", topic
 assert topic["record_count"] == 3, topic
@@ -164,6 +165,49 @@ report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert report["verdict"] == "pass", report
 assert report["trigger_count"] == 0, report
 assert report["error_count"] == 0, report
+PY
+
+archive_root="$tmp_dir/archive-repo"
+mkdir -p "$archive_root/docs/archive/workbench/unified-personal-agent-platform/plans"
+
+cat > "$archive_root/docs/archive/workbench/unified-personal-agent-platform/plans/2026-03-07-archived-plan.md" <<'EOF'
+---
+title: Archived Plan
+type: plan
+date: 2026-03-07
+initiative: unified-personal-agent-platform
+lifecycle: canonical
+status: archived
+summary: Archived plan missing archive ref.
+memory_tier: L2
+compacted_into: docs/initiatives/unified-personal-agent-platform/contracts/archived-contract.md
+---
+EOF
+
+set +e
+python3 planningops/scripts/memory_compactor.py \
+  --mode check \
+  --root "$archive_root" \
+  --rules planningops/config/memory-tier-rules.json \
+  --as-of 2026-03-08 \
+  --output "$tmp_dir/report-archive-link-missing.json" \
+  --strict
+rc=$?
+set -e
+
+if [[ "$rc" -eq 0 ]]; then
+  echo "expected strict failure for missing archive linkage"
+  exit 1
+fi
+
+python3 - "$tmp_dir/report-archive-link-missing.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert len(report["missing_archive_linkage"]) == 1, report
+assert report["missing_archive_linkage"][0]["reason"] == "archive_ref_missing", report
 PY
 
 python3 - <<'PY'

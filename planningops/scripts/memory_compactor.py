@@ -152,6 +152,7 @@ def build_record(path: Path, root: Path, rules: dict, as_of: date):
     anchor_date, anchor_source = pick_anchor_date(meta, path)
     expires_on = parse_iso_date(meta.get("expires_on"))
     compacted_into = str(meta.get("compacted_into") or "").strip()
+    archive_ref = str(meta.get("archive_ref") or "").strip()
     topic = derive_topic(meta, path)
     age_days = max((as_of - anchor_date).days, 0)
     return {
@@ -166,6 +167,7 @@ def build_record(path: Path, root: Path, rules: dict, as_of: date):
         "age_days": age_days,
         "expires_on": expires_on.isoformat() if expires_on else None,
         "compacted_into": compacted_into,
+        "archive_ref": archive_ref,
         "frontmatter_present": bool(meta),
     }
 
@@ -226,6 +228,81 @@ def detect_duplicate_topics(records: list[dict], rules: dict):
     return findings
 
 
+def detect_archive_linkage(records: list[dict], root: Path):
+    findings = []
+    index = {row["path"]: row for row in records}
+    for row in records:
+        if Path(row["path"]).name == "README.md":
+            continue
+        is_archive_record = row["path"].startswith("docs/archive/")
+        if not is_archive_record and row["memory_tier"] != "L2":
+            continue
+        archive_ref = row.get("archive_ref") or ""
+        if not archive_ref:
+            findings.append(
+                {
+                    "code": "missing_archive_linkage",
+                    "path": row["path"],
+                    "reason": "archive_ref_missing",
+                }
+            )
+            continue
+        manifest_path = root / archive_ref
+        if not manifest_path.exists():
+            findings.append(
+                {
+                    "code": "missing_archive_linkage",
+                    "path": row["path"],
+                    "archive_ref": archive_ref,
+                    "reason": "manifest_missing",
+                }
+            )
+            continue
+        try:
+            manifest = load_json(manifest_path)
+        except Exception as exc:  # noqa: BLE001
+            findings.append(
+                {
+                    "code": "missing_archive_linkage",
+                    "path": row["path"],
+                    "archive_ref": archive_ref,
+                    "reason": f"manifest_unreadable:{exc}",
+                }
+            )
+            continue
+        if manifest.get("archive_path") != row["path"]:
+            findings.append(
+                {
+                    "code": "missing_archive_linkage",
+                    "path": row["path"],
+                    "archive_ref": archive_ref,
+                    "reason": "archive_path_mismatch",
+                }
+            )
+            continue
+        if manifest.get("archive_ref") != archive_ref:
+            findings.append(
+                {
+                    "code": "missing_archive_linkage",
+                    "path": row["path"],
+                    "archive_ref": archive_ref,
+                    "reason": "archive_ref_mismatch",
+                }
+            )
+            continue
+        source_path = manifest.get("source_path")
+        if source_path and source_path in index and index[source_path].get("compacted_into") not in {"", row["compacted_into"]}:
+            findings.append(
+                {
+                    "code": "missing_archive_linkage",
+                    "path": row["path"],
+                    "archive_ref": archive_ref,
+                    "reason": "compacted_target_mismatch",
+                }
+            )
+    return findings
+
+
 def main():
     parser = argparse.ArgumentParser(description="Memory compactor dry validator for L0/L1/L2 planning knowledge")
     parser.add_argument("--mode", choices=["check"], default="check")
@@ -253,7 +330,8 @@ def main():
 
     stale_l0 = detect_stale_l0(records, rules, as_of)
     duplicate_topics = detect_duplicate_topics(records, rules)
-    trigger_count = len(stale_l0) + len(duplicate_topics)
+    archive_linkage = detect_archive_linkage(records, root)
+    trigger_count = len(stale_l0) + len(duplicate_topics) + len(archive_linkage)
 
     report = {
         "generated_at_utc": now_utc(),
@@ -267,6 +345,7 @@ def main():
         "error_count": len(errors),
         "stale_l0_uncompacted": stale_l0,
         "topic_compaction_required": duplicate_topics,
+        "missing_archive_linkage": archive_linkage,
         "errors": errors,
         "verdict": "pass" if trigger_count == 0 and not errors else "fail",
     }
