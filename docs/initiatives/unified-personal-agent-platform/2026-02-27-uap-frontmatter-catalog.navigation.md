@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-03-05
+updated: 2026-03-08
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -60,4 +60,5 @@ related_docs:
 | planning | execution-plan | uap-module-refactor-hygiene-loop-plan | active | [30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md](30-execution-plan/2026-03-01-uap-module-refactor-hygiene-loop.execution-plan.md) | feat: UAP Module Refactor Hygiene Loop Plan | Defines a periodic, bounded module-level refactor loop that enforces external dependency cleanup before internal dependency cleanup with mandatory context-pruning checkpoints. |
 | planning | execution-plan | uap-github-planningops-sync-plan | active | [30-execution-plan/uap-github-planningops-sync.execution-plan.md](30-execution-plan/uap-github-planningops-sync.execution-plan.md) | feat: UAP GitHub PlanningOps Sync Foundation | Defines a plan-repo-centric, one-way sync architecture to automate GitHub Issues, Milestones, and Projects v2 tracking across multiple repositories. |
 | quality | quality | uap-issue-closure-matrix | active | [20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md) | UAP Issue Closure Matrix | Maps review issues to architecture documents, closure conditions, and quality gates. |
+| quality | quality | uap-inventory-issue-lifecycle-summary | active | [40-quality/uap-inventory-issue-lifecycle-summary.quality.md](40-quality/uap-inventory-issue-lifecycle-summary.quality.md) | UAP Inventory Issue Lifecycle Summary | Canonical retained summary for inventory-only backlog records after compaction out of active queue views. |
 | quality | quality | uap-planningops-tradeoff-decision-framework | active | [40-quality/uap-planningops-tradeoff-decision-framework.quality.md](40-quality/uap-planningops-tradeoff-decision-framework.quality.md) | UAP PlanningOps Trade-off Decision Framework | Provides a decision framework, scoring model, and impact map so deferred planning decisions can be made quickly with clear consequences. |
