@@ -1,0 +1,229 @@
+{
+  "generated_at_utc": "2026-03-08T16:51:12.202620+00:00",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "policy_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/node-workspace-bootstrap-policy.json",
+  "repos_checked": 3,
+  "skip_install": false,
+  "skip_typecheck": false,
+  "rows": [
+    {
+      "target_repo": "rather-not-work-on/monday",
+      "repo_root": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "root_file_checks": [
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/package.json",
+          "exists": true,
+          "verdict": "pass"
+        },
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/pnpm-workspace.yaml",
+          "exists": true,
+          "verdict": "pass"
+        },
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/tsconfig.base.json",
+          "exists": true,
+          "verdict": "pass"
+        }
+      ],
+      "manifest_checks": [
+        {
+          "kind": "script",
+          "key": "typecheck",
+          "present": true,
+          "verdict": "pass"
+        },
+        {
+          "kind": "devDependency",
+          "key": "typescript",
+          "present": true,
+          "verdict": "pass"
+        }
+      ],
+      "command_checks": [
+        {
+          "kind": "local_install",
+          "command": [
+            "npm",
+            "exec",
+            "--yes",
+            "pnpm@9.15.9",
+            "--",
+            "install"
+          ],
+          "exit_code": 0,
+          "stdout_tail": "Scope: all 8 workspace projects\nLockfile is up to date, resolution step is skipped\nAlready up to date\n\nDone in 248ms using pnpm v9.15.9",
+          "stderr_tail": "(node:44394) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)",
+          "verdict": "pass"
+        },
+        {
+          "kind": "typecheck",
+          "command": [
+            "npm",
+            "exec",
+            "--yes",
+            "pnpm@9.15.9",
+            "--",
+            "typecheck"
+          ],
+          "exit_code": 0,
+          "stdout_tail": "> @rather-not-work-on/monday@0.0.0 typecheck /Volumes/T7 Touch/mini/rather-not-work-on/monday\n> pnpm -r exec tsc --noEmit",
+          "stderr_tail": "",
+          "verdict": "pass"
+        }
+      ],
+      "lockfile_check": {
+        "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/pnpm-lock.yaml",
+        "exists": true,
+        "verdict": "pass"
+      }
+    },
+    {
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "root_file_checks": [
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/package.json",
+          "exists": true,
+          "verdict": "pass"
+        },
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/pnpm-workspace.yaml",
+          "exists": true,
+          "verdict": "pass"
+        },
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/tsconfig.base.json",
+          "exists": true,
+          "verdict": "pass"
+        }
+      ],
+      "manifest_checks": [
+        {
+          "kind": "script",
+          "key": "typecheck",
+          "present": true,
+          "verdict": "pass"
+        },
+        {
+          "kind": "devDependency",
+          "key": "typescript",
+          "present": true,
+          "verdict": "pass"
+        }
+      ],
+      "command_checks": [
+        {
+          "kind": "local_install",
+          "command": [
+            "npm",
+            "exec",
+            "--yes",
+            "pnpm@9.15.9",
+            "--",
+            "install"
+          ],
+          "exit_code": 0,
+          "stdout_tail": "Scope: all 5 workspace projects\nLockfile is up to date, resolution step is skipped\nAlready up to date\n\nDone in 237ms using pnpm v9.15.9",
+          "stderr_tail": "(node:44714) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)",
+          "verdict": "pass"
+        },
+        {
+          "kind": "typecheck",
+          "command": [
+            "npm",
+            "exec",
+            "--yes",
+            "pnpm@9.15.9",
+            "--",
+            "typecheck"
+          ],
+          "exit_code": 0,
+          "stdout_tail": "> @rather-not-work-on/platform-provider-gateway@0.0.0 typecheck /Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway\n> pnpm -r exec tsc --noEmit",
+          "stderr_tail": "",
+          "verdict": "pass"
+        }
+      ],
+      "lockfile_check": {
+        "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/pnpm-lock.yaml",
+        "exists": true,
+        "verdict": "pass"
+      }
+    },
+    {
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "root_file_checks": [
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/package.json",
+          "exists": true,
+          "verdict": "pass"
+        },
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/pnpm-workspace.yaml",
+          "exists": true,
+          "verdict": "pass"
+        },
+        {
+          "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/tsconfig.base.json",
+          "exists": true,
+          "verdict": "pass"
+        }
+      ],
+      "manifest_checks": [
+        {
+          "kind": "script",
+          "key": "typecheck",
+          "present": true,
+          "verdict": "pass"
+        },
+        {
+          "kind": "devDependency",
+          "key": "typescript",
+          "present": true,
+          "verdict": "pass"
+        }
+      ],
+      "command_checks": [
+        {
+          "kind": "local_install",
+          "command": [
+            "npm",
+            "exec",
+            "--yes",
+            "pnpm@9.15.9",
+            "--",
+            "install"
+          ],
+          "exit_code": 0,
+          "stdout_tail": "Scope: all 4 workspace projects\nLockfile is up to date, resolution step is skipped\nAlready up to date\n\nDone in 245ms using pnpm v9.15.9",
+          "stderr_tail": "(node:44792) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)",
+          "verdict": "pass"
+        },
+        {
+          "kind": "typecheck",
+          "command": [
+            "npm",
+            "exec",
+            "--yes",
+            "pnpm@9.15.9",
+            "--",
+            "typecheck"
+          ],
+          "exit_code": 0,
+          "stdout_tail": "> @rather-not-work-on/platform-observability-gateway@0.0.0 typecheck /Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway\n> pnpm -r exec tsc --noEmit",
+          "stderr_tail": "",
+          "verdict": "pass"
+        }
+      ],
+      "lockfile_check": {
+        "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/pnpm-lock.yaml",
+        "exists": true,
+        "verdict": "pass"
+      }
+    }
+  ],
+  "error_count": 0,
+  "errors": [],
+  "verdict": "pass"
+}
