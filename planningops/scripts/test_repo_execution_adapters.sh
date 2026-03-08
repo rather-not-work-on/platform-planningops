@@ -7,8 +7,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-module_path = Path("planningops/scripts/repo_execution_adapters.py")
-spec = importlib.util.spec_from_file_location("repo_execution_adapters", module_path)
+module_path = Path("planningops/scripts/federation/adapter_registry.py")
+spec = importlib.util.spec_from_file_location("adapter_registry", module_path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 

@@ -42,25 +42,35 @@
   },
   "script_layout": {
     "scripts_root": "planningops/scripts",
+    "core_dir": "planningops/scripts/core",
     "federation_dir": "planningops/scripts/federation",
+    "core_entrypoints": [
+      "loop/runner.py",
+      "loop/checkpoint_lock.py",
+      "loop/selection.py"
+    ],
     "federation_entrypoints": [
+      "adapter_registry.py",
       "cross_repo_conformance_check.py",
       "github_sync_adapter.py",
       "multi_repo_projection_report.py",
       "run_local_oracle_rehearsal.py",
       "federated_ci_matrix_local.sh"
     ],
-    "root_wrappers": [
-      "cross_repo_conformance_check.py",
-      "github_sync_adapter.py",
-      "multi_repo_projection_report.py",
-      "run_local_oracle_rehearsal.py",
-      "federated_ci_matrix_local.sh"
-    ],
+    "root_wrappers": {
+      "repo_execution_adapters.py": "federation/adapter_registry.py",
+      "cross_repo_conformance_check.py": "federation/cross_repo_conformance_check.py",
+      "github_sync_adapter.py": "federation/github_sync_adapter.py",
+      "issue_loop_runner.py": "core/loop/runner.py",
+      "multi_repo_projection_report.py": "federation/multi_repo_projection_report.py",
+      "run_local_oracle_rehearsal.py": "federation/run_local_oracle_rehearsal.py",
+      "federated_ci_matrix_local.sh": "federation/federated_ci_matrix_local.sh"
+    },
     "must_live_in_federation_patterns": [
       "cross_repo",
       "github_sync_adapter",
       "multi_repo_projection",
+      "repo_execution_adapters",
       "oracle_rehearsal",
       "federated_ci_matrix"
     ]

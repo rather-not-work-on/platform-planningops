@@ -6,8 +6,8 @@ import importlib.util
 import tempfile
 from pathlib import Path
 
-module_path = Path("planningops/scripts/issue_loop_runner.py")
-spec = importlib.util.spec_from_file_location("issue_loop_runner", module_path)
+module_path = Path("planningops/scripts/core/loop/runner.py")
+spec = importlib.util.spec_from_file_location("issue_loop_runner_core", module_path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 

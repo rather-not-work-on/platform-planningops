@@ -22,6 +22,7 @@ finally:
 
 assert report["verdict"] == "pass", report
 assert report["violation_count"] == 0, report
+assert report["infos"][0]["wrapper_count"] >= 3, report
 for violation in report.get("violations", []):
     assert "._bootstrap_two_track_backlog.py" not in violation.get("path", ""), report
 print("script role contract ok")

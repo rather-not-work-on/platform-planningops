@@ -23,6 +23,8 @@ finally:
 assert report["verdict"] == "pass", report
 assert report["violation_count"] == 0, report
 assert report["info_count"] >= 1, report
+assert report["infos"][0]["core_entrypoint_count"] >= 3, report
+assert report["infos"][0]["root_wrapper_count"] >= 7, report
 for violation in report.get("violations", []):
     assert "._github_sync_adapter.py" not in violation.get("path", ""), report
 print("repo boundary contract ok")

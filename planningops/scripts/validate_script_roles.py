@@ -29,13 +29,20 @@ def main():
 
     cfg = load_json(Path(args.config))
     oneoff_dir = Path(cfg.get("oneoff_dir", "planningops/scripts/oneoff"))
+    core_dirs = [Path(p) for p in cfg.get("core_dirs", [])]
     oneoff_entrypoints = cfg.get("oneoff_entrypoints", [])
-    wrappers = cfg.get("root_wrappers", {})
+    wrappers = cfg.get("compatibility_wrappers") or {
+        name: {"target": target, "role": "oneoff"} for name, target in (cfg.get("root_wrappers", {}) or {}).items()
+    }
     scripts_root = Path("planningops/scripts")
 
     violations = []
     infos = []
     metadata_ignored_count = 0
+
+    for core_dir in core_dirs:
+        if not core_dir.is_dir():
+            violations.append({"type": "MISSING_CORE_DIR", "path": str(core_dir)})
 
     if not oneoff_dir.is_dir():
         violations.append({"type": "MISSING_ONEOFF_DIR", "path": str(oneoff_dir)})
@@ -45,10 +52,22 @@ def main():
         if not path.is_file():
             violations.append({"type": "MISSING_ONEOFF_ENTRYPOINT", "path": str(path)})
 
-    for wrapper_name, target_rel in wrappers.items():
+    allowed_roles = {"core", "federation", "oneoff"}
+    for wrapper_name, wrapper_meta in wrappers.items():
+        target_rel = wrapper_meta.get("target", "")
+        role = wrapper_meta.get("role", "")
         wrapper_path = scripts_root / wrapper_name
         target_path = scripts_root / target_rel
 
+        if role not in allowed_roles:
+            violations.append(
+                {
+                    "type": "INVALID_WRAPPER_ROLE",
+                    "path": str(wrapper_path),
+                    "role": role,
+                }
+            )
+            continue
         if not wrapper_path.is_file():
             violations.append({"type": "MISSING_WRAPPER", "path": str(wrapper_path)})
             continue
@@ -89,6 +108,7 @@ def main():
     infos.append(
         {
             "type": "CHECK_SUMMARY",
+            "core_dir_count": len(core_dirs),
             "oneoff_entrypoint_count": len(oneoff_entrypoints),
             "wrapper_count": len(wrappers),
             "metadata_ignored_count": metadata_ignored_count,

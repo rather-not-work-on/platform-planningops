@@ -4,25 +4,30 @@
 Host executable runners, validators, and contract tests for planningops loops.
 
 ## Contents
+- Canonical core modules:
+  - `core/loop/runner.py`
+  - `core/loop/checkpoint_lock.py`
+  - `core/loop/selection.py`
 - Federation entrypoints (canonical location):
+  - `federation/adapter_registry.py`
   - `federation/cross_repo_conformance_check.py`
   - `federation/github_sync_adapter.py`
   - `federation/multi_repo_projection_report.py`
   - `federation/run_local_oracle_rehearsal.py`
   - `federation/federated_ci_matrix_local.sh`
-  - compatibility wrappers are preserved at the root with identical filenames
+  - compatibility wrappers are preserved at the root with identical filenames where needed
 - One-off entrypoints (canonical location):
   - `oneoff/bootstrap_two_track_backlog.py`
   - compatibility wrapper: `bootstrap_two_track_backlog.py`
 - Runtime runners:
   - `autonomous_supervisor_loop.py`
   - `supervisor_experiment_auto_executor.py`
-  - `issue_loop_runner.py` (`--pec-preflight-mode legacy|hybrid|strict-pec`)
+  - `issue_loop_runner.py` compatibility wrapper for `core/loop/runner.py` (`--pec-preflight-mode legacy|hybrid|strict-pec`)
   - `ralph_loop_local.py`
   - `worker_executor.py`
   - `meta_plan_orchestrator.py`
   - `github_sync_adapter.py`
-  - `repo_execution_adapters.py`
+  - `repo_execution_adapters.py` compatibility wrapper for `federation/adapter_registry.py`
   - `memory_archive.py`
   - `memory_rehydrate.py`
 - Validation and reporting:
@@ -43,6 +48,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_artifact_storage_policy.py`
   - `audit_branch_protection.py`
   - `apply_branch_protection.py`
+  - `validate_wrapper_deprecation.py`
   - `test_control_tower_ontology_contract.sh`
   - `test_ontology_entity_map_contract.sh`
   - `test_memory_tier_contract.sh`
@@ -90,6 +96,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_artifact_storage_policy_contract.sh`
   - `test_audit_branch_protection_contract.sh`
   - `test_apply_branch_protection_contract.sh`
+  - `test_validate_wrapper_deprecation_contract.sh`
   - `test_control_tower_ontology_contract.sh`
   - `test_ontology_entity_map_contract.sh`
   - `test_memory_tier_contract.sh`
@@ -105,5 +112,14 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Contract-impacting behavior changes must include/adjust a `test_*.sh` regression test.
 - Commands must run from repo root with repo-relative paths.
 - New non-recurring scripts must be placed under `planningops/scripts/oneoff` with a root wrapper only if needed.
+- New recurring control-plane logic must move into `planningops/scripts/core/` and keep root wrappers thin while compatibility is required.
+- Federation mappings must live under `planningops/scripts/federation/`; root compatibility wrappers must be registered in `planningops/config/script-role-map.json` and `planningops/config/wrapper-deprecation-map.json`.
 - Backlog issue creation/update flows must satisfy `planningops/contracts/issue-quality-contract.md`.
 - Validators must ignore filesystem metadata files (`._*`, `.DS_Store`, `Thumbs.db`) to prevent false CI failures.
+
+## Compatibility Wrappers
+- Register every approved root compatibility wrapper in `planningops/config/wrapper-deprecation-map.json`.
+- Allow only explicit repo-relative callsites via `allowed_reference_paths`.
+- Run `python3 planningops/scripts/validate_wrapper_deprecation.py --mode warn` while migration is active.
+- Keep `--mode fail` in CI so new or expired wrapper references are rejected automatically after `fail_after`.
+- Remove the root wrapper only after its allowlist is empty and the fail-mode report stays clean.

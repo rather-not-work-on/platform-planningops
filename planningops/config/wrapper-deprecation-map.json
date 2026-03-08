@@ -1,0 +1,98 @@
+{
+  "policy_version": 1,
+  "scan_roots": [
+    "planningops",
+    ".github",
+    "README.md"
+  ],
+  "exclude_globs": [
+    "planningops/artifacts/**",
+    "planningops/archive-manifest/**",
+    "planningops/config/wrapper-deprecation-map.json",
+    "planningops/runtime-artifacts/**",
+    "planningops/scripts/test_*.sh",
+    "docs/**",
+    "todos/**"
+  ],
+  "wrappers": [
+    {
+      "wrapper_path": "planningops/scripts/bootstrap_two_track_backlog.py",
+      "target_path": "planningops/scripts/oneoff/bootstrap_two_track_backlog.py",
+      "role": "oneoff",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-05-01",
+      "allowed_reference_paths": []
+    },
+    {
+      "wrapper_path": "planningops/scripts/cross_repo_conformance_check.py",
+      "target_path": "planningops/scripts/federation/cross_repo_conformance_check.py",
+      "role": "federation",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-05-15",
+      "allowed_reference_paths": [
+        "planningops/README.md",
+        "planningops/contracts/cross-repo-contract-version-pin-policy.md"
+      ]
+    },
+    {
+      "wrapper_path": "planningops/scripts/github_sync_adapter.py",
+      "target_path": "planningops/scripts/federation/github_sync_adapter.py",
+      "role": "federation",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-04-01",
+      "allowed_reference_paths": []
+    },
+    {
+      "wrapper_path": "planningops/scripts/issue_loop_runner.py",
+      "target_path": "planningops/scripts/core/loop/runner.py",
+      "role": "core",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-05-15",
+      "allowed_reference_paths": [
+        "planningops/README.md",
+        "planningops/contracts/attempt-budget-contract.md",
+        "planningops/contracts/autonomous-run-policy-contract.md",
+        "planningops/contracts/backlog-stock-replenishment-contract.md",
+        "planningops/scripts/autonomous_supervisor_loop.py",
+        "planningops/scripts/core/loop/README.md",
+        "planningops/scripts/run_track2_contract_pack_validation.py"
+      ]
+    },
+    {
+      "wrapper_path": "planningops/scripts/multi_repo_projection_report.py",
+      "target_path": "planningops/scripts/federation/multi_repo_projection_report.py",
+      "role": "federation",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-04-01",
+      "allowed_reference_paths": []
+    },
+    {
+      "wrapper_path": "planningops/scripts/repo_execution_adapters.py",
+      "target_path": "planningops/scripts/federation/adapter_registry.py",
+      "role": "federation",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-04-01",
+      "allowed_reference_paths": []
+    },
+    {
+      "wrapper_path": "planningops/scripts/run_local_oracle_rehearsal.py",
+      "target_path": "planningops/scripts/federation/run_local_oracle_rehearsal.py",
+      "role": "federation",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-05-15",
+      "allowed_reference_paths": [
+        "planningops/README.md"
+      ]
+    },
+    {
+      "wrapper_path": "planningops/scripts/federated_ci_matrix_local.sh",
+      "target_path": "planningops/scripts/federation/federated_ci_matrix_local.sh",
+      "role": "federation",
+      "warn_after": "2026-03-08",
+      "fail_after": "2026-05-15",
+      "allowed_reference_paths": [
+        "planningops/contracts/meta-plan-orchestration-runbook.md"
+      ]
+    }
+  ]
+}

@@ -1,13 +1,45 @@
 {
   "core_dirs": [
     "planningops/scripts",
+    "planningops/scripts/core",
     "planningops/scripts/federation"
   ],
   "oneoff_dir": "planningops/scripts/oneoff",
   "oneoff_entrypoints": [
     "bootstrap_two_track_backlog.py"
   ],
-  "root_wrappers": {
-    "bootstrap_two_track_backlog.py": "oneoff/bootstrap_two_track_backlog.py"
+  "compatibility_wrappers": {
+    "bootstrap_two_track_backlog.py": {
+      "target": "oneoff/bootstrap_two_track_backlog.py",
+      "role": "oneoff"
+    },
+    "cross_repo_conformance_check.py": {
+      "target": "federation/cross_repo_conformance_check.py",
+      "role": "federation"
+    },
+    "github_sync_adapter.py": {
+      "target": "federation/github_sync_adapter.py",
+      "role": "federation"
+    },
+    "issue_loop_runner.py": {
+      "target": "core/loop/runner.py",
+      "role": "core"
+    },
+    "multi_repo_projection_report.py": {
+      "target": "federation/multi_repo_projection_report.py",
+      "role": "federation"
+    },
+    "repo_execution_adapters.py": {
+      "target": "federation/adapter_registry.py",
+      "role": "federation"
+    },
+    "run_local_oracle_rehearsal.py": {
+      "target": "federation/run_local_oracle_rehearsal.py",
+      "role": "federation"
+    },
+    "federated_ci_matrix_local.sh": {
+      "target": "federation/federated_ci_matrix_local.sh",
+      "role": "federation"
+    }
   }
 }
