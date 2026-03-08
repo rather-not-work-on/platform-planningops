@@ -64,5 +64,17 @@
     "component": "planningops",
     "initiative": "unified-personal-agent-platform",
     "open_dependency_count": 0
+  },
+  {
+    "issue_number": 107,
+    "issue_repo": "rather-not-work-on/platform-planningops",
+    "issue_state": "OPEN",
+    "status": "Todo",
+    "workflow_state": "ready-contract",
+    "execution_kind": "inventory",
+    "execution_order": 8,
+    "component": "planningops",
+    "initiative": "unified-personal-agent-platform",
+    "open_dependency_count": 0
   }
 ]

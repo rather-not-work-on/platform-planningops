@@ -4,6 +4,7 @@
       "candidate_id": "candidate-001",
       "title": "Harden dependency unblock path for ready-implementation lane",
       "target_repo": "rather-not-work-on/monday",
+      "execution_kind": "executable",
       "depends_on": [101],
       "acceptance_criteria": [
         "Dependency mapping is documented and reproducible.",

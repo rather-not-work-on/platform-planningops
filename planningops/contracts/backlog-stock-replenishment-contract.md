@@ -5,11 +5,19 @@ Keep autonomous Kanban execution stable by enforcing queue stock floors and evid
 
 ## Queue Classes
 Three queue classes are mandatory:
-1. `ready_now`: executable now (`Todo` + `ready-*` + no open dependency blocker)
-2. `next_up`: near-ready (`Todo` + `ready-*` + dependency blocker exists)
-3. `quality_hardening`: contract/test/governance hardening queue
+1. `ready_now`: executable now (`Todo` + `ready-*` + `execution_kind=executable` + no open dependency blocker)
+2. `next_up`: near-ready (`Todo` + `ready-*` + `execution_kind=executable` + dependency blocker exists)
+3. `quality_hardening`: executable contract/test/governance hardening queue
 
 Closed issues are never counted as stock, even if stale project fields still show `Todo` or `ready-*`.
+Inventory cards are never counted as stock, even when they remain open for audit or replenishment bookkeeping.
+
+## Execution Kind Semantics
+- Issue body metadata may declare `execution_kind`.
+- Allowed values:
+  - `executable` (default when omitted)
+  - `inventory`
+- `inventory` means the issue exists to preserve queue memory, replenishment history, or bookkeeping state. It is not eligible for stock floors or live pull selection.
 
 Stock floor source:
 - `planningops/config/backlog-stock-policy.json`
@@ -18,6 +26,7 @@ Stock floor source:
 - Intake must apply `high_value_ready_first`.
 - Selection target is always the smallest `(execution_order, issue_number)` inside `ready_now`.
 - `backlog`/non-ready cards cannot preempt a `ready_now` candidate even when they have smaller `execution_order`.
+- `execution_kind=inventory` cards must be skipped before dependency and blueprint checks.
 
 ## Replenishment Gate
 New follow-up backlog candidates must be evidence-backed and normalized before queue insertion.
@@ -31,6 +40,7 @@ Required candidate fields:
 Candidate normalization output must include:
 - deterministic `candidate_id`
 - baseline issue body template with:
+  - `execution_kind`
   - `depends_on`
   - checklist-style acceptance criteria
   - evidence references section

@@ -27,6 +27,9 @@ assert wrapper_mod.determine_loop_profile(selected, payload, control_repo) == ca
 assert wrapper_mod.parse_selector_hints("simulation_required: true\nuncertainty_level: high\n") == canonical_mod.parse_selector_hints(
     "simulation_required: true\nuncertainty_level: high\n"
 )
+assert wrapper_mod.parse_execution_kind("- execution_kind: inventory") == canonical_mod.parse_execution_kind(
+    "- execution_kind: inventory"
+)
 assert wrapper_mod.parse_blueprint_refs("interface_contract_refs: a\n") == canonical_mod.parse_blueprint_refs(
     "interface_contract_refs: a\n"
 )
