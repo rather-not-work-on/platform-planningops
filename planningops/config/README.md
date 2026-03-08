@@ -17,7 +17,7 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 - `supervisor-experiment-validation-pack.json`: command pack for automatic worktree comparative execution
 - `refactor-hygiene-policy.json`: single-repo refactor hygiene policy
 - `refactor-hygiene-multi-repo.json`: multi-repo hygiene matrix config
-- `artifact-storage-policy.json`: artifact tier map, backend selector, and retention policy
+- `artifact-storage-policy.json`: artifact tier map, backend selector, retention policy, and local-first execution event residency map
 - `repository-governance-policy.json`: default-branch protection baseline and required checks policy
 - `federated-label-taxonomy.json`: execution-repo label catalog and default backfill mapping
 - `memory-tier-rules.json`: machine-readable L0/L1/L2 definitions, triggers, and promotion/archive rules
