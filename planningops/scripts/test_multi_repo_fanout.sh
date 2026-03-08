@@ -13,7 +13,7 @@ python3 planningops/scripts/parser_diff_dry_run.py \
   --run-id multi-repo-b \
   --mode dry-run
 
-python3 planningops/scripts/multi_repo_projection_report.py \
+python3 planningops/scripts/federation/multi_repo_projection_report.py \
   --summary planningops/artifacts/sync-summary/multi-repo-a.json \
   --output planningops/artifacts/drift/multi-repo-a-drift-report.json
 

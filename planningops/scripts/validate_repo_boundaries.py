@@ -32,9 +32,15 @@ def main():
     layout = cfg.get("script_layout", {})
 
     scripts_root = Path(layout.get("scripts_root", "planningops/scripts"))
+    core_dir = Path(layout.get("core_dir", "planningops/scripts/core"))
     federation_dir = Path(layout.get("federation_dir", "planningops/scripts/federation"))
+    core_entrypoints = layout.get("core_entrypoints", [])
     federation_entrypoints = layout.get("federation_entrypoints", [])
-    root_wrappers = layout.get("root_wrappers", [])
+    raw_root_wrappers = layout.get("root_wrappers", [])
+    if isinstance(raw_root_wrappers, dict):
+        root_wrappers = raw_root_wrappers
+    else:
+        root_wrappers = {name: "federation" for name in raw_root_wrappers}
     pattern_tokens = layout.get("must_live_in_federation_patterns", [])
 
     violations = []
@@ -43,8 +49,20 @@ def main():
 
     if not scripts_root.is_dir():
         violations.append({"type": "MISSING_DIR", "path": str(scripts_root)})
+    if not core_dir.is_dir():
+        violations.append({"type": "MISSING_DIR", "path": str(core_dir)})
     if not federation_dir.is_dir():
         violations.append({"type": "MISSING_DIR", "path": str(federation_dir)})
+
+    for name in core_entrypoints:
+        entry = core_dir / name
+        if not entry.is_file():
+            violations.append(
+                {
+                    "type": "MISSING_CORE_ENTRYPOINT",
+                    "path": str(entry),
+                }
+            )
 
     for name in federation_entrypoints:
         entry = federation_dir / name
@@ -56,7 +74,7 @@ def main():
                 }
             )
 
-    for name in root_wrappers:
+    for name, target_rel in root_wrappers.items():
         wrapper = scripts_root / name
         if not wrapper.is_file():
             violations.append(
@@ -68,12 +86,14 @@ def main():
             continue
 
         text = wrapper.read_text(encoding="utf-8")
-        if "federation" not in text:
+        target_name = Path(target_rel).name
+        target_dir = str(Path(target_rel).parent)
+        if target_name not in text or target_dir not in text:
             violations.append(
                 {
                     "type": "INVALID_WRAPPER_TARGET",
                     "path": str(wrapper),
-                    "message": "wrapper must dispatch to scripts/federation",
+                    "expected_target": target_rel,
                 }
             )
 
@@ -83,6 +103,8 @@ def main():
             continue
         if is_metadata_file(p):
             metadata_ignored_count += 1
+            continue
+        if p.name.startswith("test_"):
             continue
         root_files.append(p)
     for f in root_files:
@@ -104,6 +126,7 @@ def main():
         {
             "type": "CHECK_SUMMARY",
             "scripts_root_file_count": len(root_files),
+            "core_entrypoint_count": len(core_entrypoints),
             "federation_entrypoint_count": len(federation_entrypoints),
             "root_wrapper_count": len(root_wrappers),
             "metadata_ignored_count": metadata_ignored_count,

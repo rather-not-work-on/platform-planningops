@@ -43,7 +43,7 @@ PY
 }
 
 run_check "contract-conformance" "contract" \
-  python3 "${ROOT_DIR}/planningops/scripts/cross_repo_conformance_check.py" --run-id "${RUN_ID}-contract"
+  python3 "${ROOT_DIR}/planningops/scripts/federation/cross_repo_conformance_check.py" --run-id "${RUN_ID}-contract"
 
 run_check "provider-profile" "infra" \
   bash -lc "cd '${WORKSPACE_DIR}/platform-provider-gateway' && bash scripts/litellm_stack_launcher.sh --mode dry-run --profiles local,oracle_cloud --run-id '${RUN_ID}-provider'"

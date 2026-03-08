@@ -7,8 +7,8 @@ import json
 import tempfile
 from pathlib import Path
 
-module_path = Path("planningops/scripts/issue_loop_runner.py")
-spec = importlib.util.spec_from_file_location("issue_loop_runner", module_path)
+module_path = Path("planningops/scripts/core/loop/runner.py")
+spec = importlib.util.spec_from_file_location("issue_loop_runner_core", module_path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
@@ -130,7 +130,7 @@ with tempfile.TemporaryDirectory() as td:
                             "workflow_state": "ready_contract",
                             "loop_profile": "l1_contract_clarification",
                             "depends_on": [],
-                            "primary_output": "planningops/scripts/issue_loop_runner.py",
+                            "primary_output": "planningops/scripts/core/loop/runner.py",
                         }
                     ],
                 }
