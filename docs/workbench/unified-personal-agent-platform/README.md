@@ -27,6 +27,7 @@ summary: Initiative-scoped workbench for ephemeral brainstorm/plan/audit artifac
 ```bash
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile workbench
 bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all
+python3 planningops/scripts/memory_compactor.py --mode check --root . --rules planningops/config/memory-tier-rules.json
 ```
 
 ## Active Plans

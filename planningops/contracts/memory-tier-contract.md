@@ -105,6 +105,7 @@ Allowed when:
 ## Verification
 - Rules config: `planningops/config/memory-tier-rules.json`
 - Validator: `planningops/scripts/validate_memory_tier_rules.py`
+- Check mode: `python3 planningops/scripts/memory_compactor.py --mode check`
 - Contract test: `bash planningops/scripts/test_memory_tier_contract.sh`
 - Future runtime tooling:
   - `planningops/scripts/memory_compactor.py`
