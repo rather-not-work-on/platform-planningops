@@ -1,0 +1,56 @@
+{
+  "policy_version": 1,
+  "package_manager": {
+    "name": "pnpm",
+    "version": "9.15.9",
+    "invocation_prefix": [
+      "npm",
+      "exec",
+      "--yes",
+      "pnpm@9.15.9",
+      "--"
+    ]
+  },
+  "root_files": [
+    "package.json",
+    "pnpm-workspace.yaml",
+    "tsconfig.base.json"
+  ],
+  "required_root_scripts": [
+    "typecheck"
+  ],
+  "required_root_dev_dependencies": [
+    "typescript"
+  ],
+  "lockfile": {
+    "path": "pnpm-lock.yaml",
+    "committed": true
+  },
+  "commands": {
+    "local_install": [
+      "npm",
+      "exec",
+      "--yes",
+      "pnpm@9.15.9",
+      "--",
+      "install"
+    ],
+    "ci_install": [
+      "npm",
+      "exec",
+      "--yes",
+      "pnpm@9.15.9",
+      "--",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "typecheck": [
+      "npm",
+      "exec",
+      "--yes",
+      "pnpm@9.15.9",
+      "--",
+      "typecheck"
+    ]
+  }
+}

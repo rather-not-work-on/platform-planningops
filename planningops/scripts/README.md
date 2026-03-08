@@ -12,6 +12,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `federation/federated_python_env.py`
   - `federation/adapter_registry.py`
   - `federation/cross_repo_conformance_check.py`
+  - `federation/validate_runtime_workspace_build.py`
   - `federation/github_sync_adapter.py`
   - `federation/multi_repo_projection_report.py`
   - `federation/run_local_oracle_rehearsal.py`
@@ -40,6 +41,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_contracts.py`
   - `validate_ontology_entity_map.py`
   - `validate_memory_tier_rules.py`
+  - `validate_node_workspace_bootstrap_policy.py`
   - `validate_worker_task_pack.py`
   - `validate_blueprint_pack.py`
   - `validate_project_field_schema.py`
@@ -60,6 +62,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_memory_compactor_contract.sh`
   - `test_memory_archive_contract.sh`
   - `test_memory_rehydrate_contract.sh`
+  - `test_node_workspace_bootstrap_contract.sh`
   - `test_inventory_issue_lifecycle_contract.sh`
   - `migrate_external_only_artifacts.py`
   - `rehydrate_artifact_pointer.py`
@@ -97,6 +100,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
   - `test_validate_blueprint_pack_contract.sh`
+  - `test_validate_runtime_workspace_build_contract.sh`
   - `test_validate_runtime_skeleton_scaffold_contract.sh`
   - `test_validate_repo_boundaries_contract.sh`
   - `test_validate_script_roles_contract.sh`

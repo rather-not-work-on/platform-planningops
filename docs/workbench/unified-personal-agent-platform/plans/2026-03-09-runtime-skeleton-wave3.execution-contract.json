@@ -1,0 +1,99 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-skeleton-wave3",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-skeleton-wave3-build-baseline-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "B10",
+        "execution_order": 10,
+        "title": "node workspace bootstrap contract and local pnpm policy",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l1_contract_clarification",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/contracts/node-workspace-bootstrap-contract.md",
+        "required_checks": [
+          "validate-and-dry-run",
+          "docs-check"
+        ]
+      },
+      {
+        "plan_item_id": "B11",
+        "execution_order": 20,
+        "title": "monday local install and typecheck baseline",
+        "target_repo": "rather-not-work-on/monday",
+        "component": "runtime",
+        "workflow_state": "backlog",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "pnpm-lock.yaml",
+        "required_checks": [
+          "monday-local-ci",
+          "implementation-readiness-dryrun"
+        ]
+      },
+      {
+        "plan_item_id": "B20",
+        "execution_order": 30,
+        "title": "provider gateway local install and typecheck baseline",
+        "target_repo": "rather-not-work-on/platform-provider-gateway",
+        "component": "provider_gateway",
+        "workflow_state": "backlog",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "pnpm-lock.yaml",
+        "required_checks": [
+          "provider-local-ci",
+          "implementation-readiness-dryrun"
+        ]
+      },
+      {
+        "plan_item_id": "B30",
+        "execution_order": 40,
+        "title": "observability gateway local install and typecheck baseline",
+        "target_repo": "rather-not-work-on/platform-observability-gateway",
+        "component": "observability_gateway",
+        "workflow_state": "backlog",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "pnpm-lock.yaml",
+        "required_checks": [
+          "observability-local-ci",
+          "implementation-readiness-dryrun"
+        ]
+      },
+      {
+        "plan_item_id": "B40",
+        "execution_order": 50,
+        "title": "runtime skeleton workspace build review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "backlog",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          20,
+          30,
+          40
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-skeleton-wave3-build-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}
