@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.869910+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/transition-log/2026-03-01.ndjson",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/transition-log/2026-03-01.ndjson",
+  "backend_target_path": "planningops/runtime-artifacts/local/transition-log/2026-03-01.ndjson",
+  "bytes": 2450,
+  "sha256": "0991b2e9470514902dc4d00de62db280c27c1f4cbf707243a6bbcde00aa0cd19",
+  "local_cache_external": false
+}

@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.556531+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/decision-record.md",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/decision-record.md",
+  "backend_target_path": "planningops/runtime-artifacts/local/experiments/pilot-20260305-experiment-autoexec-cycle-01-issue-201/decision-record.md",
+  "bytes": 706,
+  "sha256": "cbea0e32affc12a56bdec7dd96ef7bfd24e7c1a947cdf5b2c5ce308e11b752a7",
+  "local_cache_external": false
+}

@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.516960+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/adapter-hooks/integration-smoke/smoke-20260301T055519Z.json",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/smoke-20260301T055519Z.json",
+  "backend_target_path": "planningops/runtime-artifacts/local/adapter-hooks/integration-smoke/smoke-20260301T055519Z.json",
+  "bytes": 483,
+  "sha256": "6699a2d76fa03ffda42c7ef08e5046e34efb8d92eb39ee1eb72e8238e6278a71",
+  "local_cache_external": false
+}

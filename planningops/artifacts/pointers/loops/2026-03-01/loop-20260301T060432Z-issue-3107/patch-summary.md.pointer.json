@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-08T06:04:29.717338+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "policy_version": 1,
+  "tier": "external_only",
+  "logical_path": "planningops/artifacts/loops/2026-03-01/loop-20260301T060432Z-issue-3107/patch-summary.md",
+  "backend": "local",
+  "uri": "file://planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3107/patch-summary.md",
+  "backend_target_path": "planningops/runtime-artifacts/local/loops/2026-03-01/loop-20260301T060432Z-issue-3107/patch-summary.md",
+  "bytes": 229,
+  "sha256": "dad4eaa191335405dcbe780fbdff827e4a03b3156cd933d3242b39b16ab38a03",
+  "local_cache_external": false
+}
