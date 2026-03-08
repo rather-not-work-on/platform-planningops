@@ -11,6 +11,7 @@ import sys
 
 DEFAULT_POLICY = Path("planningops/config/artifact-storage-policy.json")
 DEFAULT_OUTPUT = Path("planningops/artifacts/validation/external-only-commit-guard-report.json")
+METADATA_FILENAMES = {".DS_Store", "Thumbs.db", "desktop.ini"}
 
 
 def now_utc():
@@ -24,6 +25,11 @@ def run(cmd):
 
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def is_metadata_path(path_str: str):
+    name = Path(path_str).name
+    return name.startswith("._") or name in METADATA_FILENAMES
 
 
 def changed_files(base_ref: str | None, head_ref: str):
@@ -48,10 +54,23 @@ def changed_files(base_ref: str | None, head_ref: str):
     return files
 
 
+def tracked_files():
+    rc, out, err = run(["git", "ls-files"])
+    if rc != 0:
+        raise RuntimeError(f"git ls-files failed: {err or out}")
+    return [line.strip() for line in out.splitlines() if line.strip()]
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Fail when external-only artifact paths are changed in Git diff")
+    parser = argparse.ArgumentParser(description="Fail when external-only artifact paths appear in disallowed Git scopes")
     parser.add_argument("--policy", default=str(DEFAULT_POLICY))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
+    parser.add_argument(
+        "--mode",
+        choices=["diff", "tracked"],
+        default="diff",
+        help="Check changed files in the current diff or all tracked files in the repository",
+    )
     parser.add_argument("--base-ref", default=None)
     parser.add_argument("--head-ref", default="HEAD")
     parser.add_argument("--files-file", default=None, help="Optional newline-delimited file list override")
@@ -64,11 +83,15 @@ def main():
 
     if args.files_file:
         files = [line.strip() for line in Path(args.files_file).read_text(encoding="utf-8").splitlines() if line.strip()]
+    elif args.mode == "tracked":
+        files = tracked_files()
     else:
         files = changed_files(args.base_ref, args.head_ref)
 
+    metadata_files = sorted({file_path for file_path in files if is_metadata_path(file_path)})
+    candidate_files = [file_path for file_path in files if not is_metadata_path(file_path)]
     violations = []
-    for file_path in files:
+    for file_path in candidate_files:
         for pattern in patterns:
             if isinstance(pattern, str) and pattern and fnmatch(file_path, pattern):
                 violations.append(file_path)
@@ -77,9 +100,13 @@ def main():
     report = {
         "generated_at_utc": now_utc(),
         "policy_path": str(Path(args.policy)),
+        "mode": args.mode,
         "base_ref": args.base_ref,
         "head_ref": args.head_ref,
         "changed_file_count": len(files),
+        "candidate_file_count": len(candidate_files),
+        "metadata_file_count": len(metadata_files),
+        "metadata_files": metadata_files,
         "violation_count": len(violations),
         "violations": sorted(set(violations)),
         "verdict": "pass" if len(violations) == 0 else "fail",
