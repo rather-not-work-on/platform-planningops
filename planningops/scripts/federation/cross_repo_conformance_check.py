@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import argparse
 import json
-import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
+import subprocess
 import sys
+from datetime import datetime, timezone
+
+from federated_python_env import build_bootstrap_plan, build_managed_env, ensure_bootstrap_environment, resolve_bootstrap_root
 
 
 PIN_PATHS = {
@@ -120,10 +124,78 @@ def main():
         default=None,
         help="Directory for support artifacts generated during conformance execution",
     )
+    parser.add_argument(
+        "--bootstrap-mode",
+        choices=["auto", "off", "require"],
+        default="auto",
+        help="Manage a deterministic local Python env for sibling-repo validation commands",
+    )
+    parser.add_argument(
+        "--bootstrap-root",
+        default="planningops/runtime-artifacts/tooling/federated-conformance",
+        help="Managed virtualenv root used when local bootstrap is required",
+    )
+    parser.add_argument(
+        "--bootstrap-plan-output",
+        default=None,
+        help="Optional JSON file for bootstrap metadata",
+    )
+    parser.add_argument(
+        "--bootstrap-plan-only",
+        action="store_true",
+        help="Write bootstrap metadata and exit before running conformance checks",
+    )
     args = parser.parse_args()
 
     planningops_repo = resolve_repo_root()
     workspace_root = resolve_workspace_root(planningops_repo, args.workspace_root)
+    bootstrap_root = resolve_bootstrap_root(planningops_repo, args.bootstrap_root)
+    bootstrap_plan = build_bootstrap_plan(planningops_repo, workspace_root, bootstrap_root)
+    if args.bootstrap_plan_only:
+        bootstrap_info = {
+            "mode": args.bootstrap_mode,
+            "plan_only": True,
+            "current_python": str(Path(sys.executable).absolute()),
+            "managed_python": bootstrap_plan["managed_python"],
+            "bootstrap_root": bootstrap_plan["bootstrap_root"],
+            "requirements_hash": bootstrap_plan["requirements_hash"],
+            "requirements_files": [entry["path"] for entry in bootstrap_plan["requirements"]],
+            "missing_requirement_files": list(bootstrap_plan["missing_requirement_files"]),
+            "import_names": list(bootstrap_plan["import_names"]),
+            "workspace_root": str(workspace_root),
+        }
+    else:
+        bootstrap_info = ensure_bootstrap_environment(bootstrap_plan, args.bootstrap_mode)
+        bootstrap_info["workspace_root"] = str(workspace_root)
+
+    if args.bootstrap_plan_output:
+        bootstrap_output_path = Path(args.bootstrap_plan_output)
+        if not bootstrap_output_path.is_absolute():
+            bootstrap_output_path = planningops_repo / bootstrap_output_path
+        bootstrap_output_path.parent.mkdir(parents=True, exist_ok=True)
+        bootstrap_output_path.write_text(json.dumps(bootstrap_info, ensure_ascii=True, indent=2), encoding="utf-8")
+
+    if args.bootstrap_plan_only:
+        summary_output = args.bootstrap_plan_output or "-"
+        print(f"bootstrap metadata written: {summary_output}")
+        print(
+            " ".join(
+                [
+                    f"mode={bootstrap_info['mode']}",
+                    f"requirements_hash={bootstrap_info['requirements_hash']}",
+                    f"missing_module_count={len(bootstrap_info.get('missing_modules_current', []))}",
+                    f"reexec_required={str(bool(bootstrap_info.get('reexec_required'))).lower()}",
+                ]
+            )
+        )
+        return 0
+
+    if bootstrap_info.get("reexec_required"):
+        child_cmd = [bootstrap_info["managed_python"], str(Path(__file__).resolve()), *sys.argv[1:]]
+        child = subprocess.run(child_cmd, env=build_managed_env(bootstrap_info))
+        return int(child.returncode)
+
+    python_bin = sys.executable
     output_path = (
         Path(args.output)
         if args.output
@@ -171,7 +243,7 @@ def main():
         checks,
         "contracts.validate",
         contract_repo,
-        ["python3", "scripts/validate_contracts.py", "--root", "."],
+        [python_bin, "scripts/validate_contracts.py", "--root", "."],
         expected_exit=0,
     )
     _, semver_doc = add_check(
@@ -179,7 +251,7 @@ def main():
         "contracts.semver_classification",
         contract_repo,
         [
-            "python3",
+            python_bin,
             "scripts/classify_schema_change.py",
             "--enforce-expected",
             "--report",
@@ -196,7 +268,7 @@ def main():
         "contracts.publish_bundle",
         contract_repo,
         [
-            "python3",
+            python_bin,
             "scripts/publish_contract_bundle.py",
             "--bundle-version",
             bundle_version,
@@ -227,7 +299,7 @@ def main():
         "provider.primary_success",
         provider_repo,
         [
-            "python3",
+            python_bin,
             "scripts/litellm_gateway_smoke.py",
             "--scenario",
             "primary_success",
@@ -245,7 +317,7 @@ def main():
         "provider.primary_success_validation",
         provider_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_provider_smoke_evidence.py",
             "--report",
             str(provider_primary_report),
@@ -261,7 +333,7 @@ def main():
         "provider.contract_violation_fail_fast",
         provider_repo,
         [
-            "python3",
+            python_bin,
             "scripts/litellm_gateway_smoke.py",
             "--scenario",
             "contract_violation",
@@ -279,7 +351,7 @@ def main():
         "provider.contract_violation_validation",
         provider_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_provider_smoke_evidence.py",
             "--report",
             str(provider_violation_report),
@@ -295,7 +367,7 @@ def main():
         "provider.contract_pin",
         provider_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_contract_pin.py",
             "--output",
             str(provider_pin_validation),
@@ -318,7 +390,7 @@ def main():
         "o11y.normal",
         o11y_repo,
         [
-            "python3",
+            python_bin,
             "scripts/langfuse_ingest_smoke.py",
             "--scenario",
             "normal",
@@ -336,7 +408,7 @@ def main():
         "o11y.normal_validation",
         o11y_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_ingest_smoke_evidence.py",
             "--report",
             str(o11y_normal_report),
@@ -352,7 +424,7 @@ def main():
         "o11y.delay_and_replay",
         o11y_repo,
         [
-            "python3",
+            python_bin,
             "scripts/langfuse_ingest_smoke.py",
             "--scenario",
             "delay_and_replay",
@@ -370,7 +442,7 @@ def main():
         "o11y.delay_and_replay_validation",
         o11y_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_ingest_smoke_evidence.py",
             "--report",
             str(o11y_replay_report),
@@ -386,7 +458,7 @@ def main():
         "o11y.contract_pin",
         o11y_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_contract_pin.py",
             "--output",
             str(o11y_pin_validation),
@@ -412,7 +484,7 @@ def main():
         "monday.handoff_mapping",
         monday_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_handoff_mapping.py",
             "--run-id",
             args.run_id,
@@ -428,7 +500,7 @@ def main():
         "monday.handoff_validation",
         monday_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_runtime_evidence.py",
             "--kind",
             "handoff",
@@ -446,7 +518,7 @@ def main():
         "monday.integration",
         monday_repo,
         [
-            "python3",
+            python_bin,
             "scripts/integrate_planningops_handoff.py",
             "--planningops-last-run",
             str(planningops_repo / "planningops" / "artifacts" / "loop-runner" / "last-run.json"),
@@ -474,7 +546,7 @@ def main():
         "monday.scheduler_validation",
         monday_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_runtime_evidence.py",
             "--kind",
             "scheduler",
@@ -492,7 +564,7 @@ def main():
         "monday.integration_validation",
         monday_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_runtime_evidence.py",
             "--kind",
             "integration",
@@ -510,7 +582,7 @@ def main():
         "monday.contract_pin",
         monday_repo,
         [
-            "python3",
+            python_bin,
             "scripts/validate_contract_pin.py",
             "--output",
             str(monday_pin_validation),
@@ -592,6 +664,7 @@ def main():
     report = {
         "generated_at_utc": now_utc(),
         "run_id": args.run_id,
+        "python_bootstrap": bootstrap_info,
         "workspace_root": str(workspace_root),
         "run_root": str(run_root),
         "checks": checks,

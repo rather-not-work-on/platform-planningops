@@ -89,7 +89,7 @@ bash planningops/scripts/test_autonomous_supervisor_loop_contract.sh
 bash planningops/scripts/test_supervisor_experiment_auto_executor_contract.sh
 python3 planningops/scripts/normalize_ready_implementation_blueprint_refs.py
 python3 planningops/scripts/run_track2_contract_pack_validation.py --strict
-python3 planningops/scripts/cross_repo_conformance_check.py
+python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-mode auto
 python3 planningops/scripts/run_local_oracle_rehearsal.py --days 7
 bash planningops/scripts/test_module_readme_contract.sh
 bash planningops/scripts/test_validate_repo_boundaries_contract.sh

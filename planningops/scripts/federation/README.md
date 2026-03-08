@@ -4,6 +4,7 @@
 Keep cross-repository execution entrypoints isolated from the planningops core loop.
 
 ## Contents
+- `federated_python_env.py`: deterministic local Python bootstrap helper for sibling-repo federated checks
 - `adapter_registry.py`: repo-to-adapter mapping registry for execution hooks
 - `cross_repo_conformance_check.py`: federated contract/provider/o11y/runtime conformance matrix
 - `github_sync_adapter.py`: GitHub sync smoke/idempotency/drift helper
@@ -16,5 +17,6 @@ Compatibility wrappers are kept at `planningops/scripts/*.py|*.sh`; `repo_execut
 ## Change Rules
 - New multi-repo execution entrypoints must be added here, not at `planningops/scripts/` root.
 - Repo-specific execution mapping must stay here; core loop modules must consume this directory through thin interfaces only.
+- Shared local bootstrap logic for federated checks should live here so shell runners and Python entrypoints reuse the same managed environment policy.
 - Root wrappers must remain thin dispatch-only files.
 - Any federation entrypoint addition must update `planningops/config/repository-boundary-map.json` and pass `test_validate_repo_boundaries_contract.sh`.
