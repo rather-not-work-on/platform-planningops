@@ -7,4 +7,5 @@ Store deterministic pointer manifests for archived memory records so future rehy
 - one manifest per archived source document
 - manifest path is the canonical `archive_ref`
 - manifest must validate against `planningops/schemas/memory-archive-manifest.schema.json`
+- manifest must retain source frontmatter/order required for deterministic rehydrate
 - manifest fields stay repo-root-relative so local and CI paths resolve the same way

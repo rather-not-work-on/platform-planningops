@@ -21,5 +21,6 @@ summary: Long-term archive root for memory records compacted out of active workb
 ## Validation
 ```bash
 python3 planningops/scripts/memory_archive.py --source <repo-relative-source> --compacted-into <repo-relative-target>
+python3 planningops/scripts/memory_rehydrate.py --manifest <archive-ref-or-manifest-path>
 python3 planningops/scripts/validate_memory_archive_manifest.py --manifest <manifest-path> --schema planningops/schemas/memory-archive-manifest.schema.json --strict
 ```

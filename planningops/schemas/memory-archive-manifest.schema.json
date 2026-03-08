@@ -14,6 +14,8 @@
     "compacted_into",
     "memory_tier",
     "initiative",
+    "source_frontmatter",
+    "source_frontmatter_order",
     "source_checksum_sha256",
     "archive_checksum_sha256"
   ],
@@ -51,6 +53,19 @@
     },
     "initiative": {
       "type": "string"
+    },
+    "source_frontmatter": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "source_frontmatter_order": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "source_checksum_sha256": {
       "type": "string",

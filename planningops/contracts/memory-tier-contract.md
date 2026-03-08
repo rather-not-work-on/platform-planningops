@@ -107,6 +107,7 @@ Allowed when:
 - Validator: `planningops/scripts/validate_memory_tier_rules.py`
 - Check mode: `python3 planningops/scripts/memory_compactor.py --mode check`
 - Archive command: `python3 planningops/scripts/memory_archive.py --source <repo-relative-source> --compacted-into <repo-relative-target>`
+- Rehydrate command: `python3 planningops/scripts/memory_rehydrate.py --manifest <archive-ref-or-manifest-path>`
 - Manifest schema: `planningops/schemas/memory-archive-manifest.schema.json`
 - Contract test: `bash planningops/scripts/test_memory_tier_contract.sh`
 - Future runtime tooling:

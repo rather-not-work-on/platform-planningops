@@ -93,6 +93,8 @@ assert manifest["manifest_version"] == 1, manifest
 assert manifest["archive_ref"] == manifest["manifest_path"], manifest
 assert manifest["memory_tier"] == "L2", manifest
 assert manifest["compacted_into"] == "docs/initiatives/unified-personal-agent-platform/contracts/sample-contract.md", manifest
+assert manifest["source_frontmatter"]["title"] == "plan: Sample", manifest
+assert "title" in manifest["source_frontmatter_order"], manifest
 PY
 
 python3 - "$archive_path" <<'PY'

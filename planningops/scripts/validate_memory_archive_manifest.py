@@ -32,10 +32,22 @@ def validate(instance, schema, path="$"):
         properties = schema.get("properties", {})
         for key, value in instance.items():
             if key not in properties:
-                if schema.get("additionalProperties") is False:
+                additional = schema.get("additionalProperties", True)
+                if additional is False:
                     errors.append(f"{path}.{key}: additional property not allowed")
+                elif isinstance(additional, dict):
+                    errors.extend(validate(value, additional, f"{path}.{key}"))
                 continue
             errors.extend(validate(value, properties[key], f"{path}.{key}"))
+        return errors
+
+    if expected_type == "array":
+        if not isinstance(instance, list):
+            return [f"{path}: expected array"]
+        item_schema = schema.get("items")
+        if isinstance(item_schema, dict):
+            for idx, value in enumerate(instance):
+                errors.extend(validate(value, item_schema, f"{path}[{idx}]"))
         return errors
 
     if expected_type == "string":
