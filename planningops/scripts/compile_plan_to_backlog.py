@@ -34,6 +34,15 @@ LOOP_ENUM = {
     "l4_integration_reconcile",
     "l5_recovery_replan",
 }
+WORKFLOW_LOOP_PROFILE_MATRIX = {
+    "backlog": {"l1_contract_clarification", "l2_simulation"},
+    "ready_contract": {"l1_contract_clarification", "l2_simulation"},
+    "ready_implementation": {"l3_implementation_tdd", "l4_integration_reconcile"},
+    "in_progress": set(LOOP_ENUM),
+    "review_gate": {"l3_implementation_tdd", "l4_integration_reconcile", "l5_recovery_replan"},
+    "blocked": {"l5_recovery_replan"},
+    "done": set(LOOP_ENUM),
+}
 PLAN_LANE_ENUM = {
     "m0_bootstrap",
     "m1_contract_freeze",
@@ -138,6 +147,12 @@ def validate_contract(contract_doc):
             errors.append(f"{path}.workflow_state invalid: {item['workflow_state']}")
         if "loop_profile" in item and item["loop_profile"] not in LOOP_ENUM:
             errors.append(f"{path}.loop_profile invalid: {item['loop_profile']}")
+        if "workflow_state" in item and "loop_profile" in item:
+            expected_profiles = WORKFLOW_LOOP_PROFILE_MATRIX.get(item["workflow_state"])
+            if expected_profiles and item["loop_profile"] not in expected_profiles:
+                errors.append(
+                    f"{path}.loop_profile {item['loop_profile']} incompatible with workflow_state {item['workflow_state']}"
+                )
         if "plan_lane" in item and item["plan_lane"] not in PLAN_LANE_ENUM:
             errors.append(f"{path}.plan_lane invalid: {item['plan_lane']}")
 

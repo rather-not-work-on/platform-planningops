@@ -45,7 +45,7 @@
         "target_repo": "rather-not-work-on/platform-planningops",
         "component": "planningops",
         "workflow_state": "backlog",
-        "loop_profile": "l4_integration_reconcile",
+        "loop_profile": "l2_simulation",
         "plan_lane": "m3_guardrails",
         "depends_on": [
           10,
@@ -60,4 +60,3 @@
     ]
   }
 }
-

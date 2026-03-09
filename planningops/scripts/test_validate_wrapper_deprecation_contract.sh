@@ -34,6 +34,7 @@ PY
 cat > "$tmp_dir/planningops/scripts/consumer.py" <<'PY'
 WRAPPED = "planningops/scripts/issue_loop_runner.py"
 PY
+ln -s /opt/homebrew/bin/python3 "$tmp_dir/planningops/scripts/external-python"
 
 cat > "$tmp_dir/planningops/config/script-role-map.json" <<'JSON'
 {
