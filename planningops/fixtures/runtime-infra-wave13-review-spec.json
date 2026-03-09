@@ -1,0 +1,47 @@
+{
+  "wave_id": "uap-runtime-infra-wave13",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [234, 236],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave13-federated-smoke-issue-pack.md",
+      "must_contain": [
+        "planningops owns orchestration and aggregate evidence only",
+        "monday/provider/observability continue to own their repo-local smoke entrypoints",
+        "aggregate output must reference repo-owned evidence"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/federation/run_local_runtime_stack_smoke.py",
+      "must_contain": [
+        "\"scripts/run_local_runtime_smoke.py\"",
+        "\"scripts/litellm_live_smoke.py\"",
+        "\"scripts/langfuse_live_smoke.py\"",
+        "\"component_runs\""
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/test_local_runtime_stack_smoke_contract.sh",
+      "must_contain": [
+        "component_runs",
+        "report_summary",
+        "local runtime stack smoke contract ok"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/run_local_runtime_stack_smoke.py",
+      "must_contain": [
+        "\"run_local_runtime_stack_smoke.py\"",
+        "runpy.run_path"
+      ]
+    }
+  ]
+}

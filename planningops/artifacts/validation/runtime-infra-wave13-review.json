@@ -1,0 +1,58 @@
+{
+  "generated_at_utc": "2026-03-09T12:13:26.612471+00:00",
+  "wave_id": "uap-runtime-infra-wave13",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-infra-wave13-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 234,
+      "state": "CLOSED",
+      "title": "plan: [10] federated local runtime stack smoke runner",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/234",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 236,
+      "state": "CLOSED",
+      "title": "plan: [20] federated local runtime stack smoke contract test",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/236",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave13-federated-smoke-issue-pack.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_local_runtime_stack_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_local_runtime_stack_smoke_contract.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/run_local_runtime_stack_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "check_count": 6,
+  "failure_count": 0,
+  "verdict": "pass"
+}
