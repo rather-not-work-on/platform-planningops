@@ -1,0 +1,66 @@
+{
+  "wave_id": "uap-runtime-infra-wave11",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [224, 226, 228],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave11-implementation-issue-pack.md",
+      "must_contain": [
+        "monday owns local runtime composition that binds profiled provider and telemetry clients without knowing launcher internals",
+        "platform-provider-gateway owns LiteLLM local composer wiring on top of the existing launcher/profile drill",
+        "platform-observability-gateway owns Langfuse local composer wiring on top of the existing launcher/replay drill"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "packages/orchestrator/src/default_local_runtime.ts",
+      "must_contain": [
+        "resolveLocalRuntimeProfile",
+        "buildDefaultLocalRuntimeDependencies",
+        "new ProviderClient(providerOptions)",
+        "new TimelineEmitterClient(telemetryOptions)"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "packages/provider-client-adapter/src/provider_client.ts",
+      "must_contain": [
+        "ProviderClientProfile",
+        "provider_client_profiled"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": "services/provider-gateway-composer/src/default_litellm_runtime.ts",
+      "must_contain": [
+        "resolveLiteLLMRuntimeProfile",
+        "createDefaultLiteLLMRuntime",
+        "new ProviderLocalLlmDriver"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "services/telemetry-gateway-composer/src/default_langfuse_gateway.ts",
+      "must_contain": [
+        "resolveLangfuseRuntimeProfile",
+        "createDefaultLangfuseGateway",
+        "new LangfuseSink"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "sinks/langfuse-sink/src/langfuse_sink.ts",
+      "must_contain": [
+        "LangfuseSinkProfile",
+        "this.options.profile"
+      ]
+    }
+  ]
+}
