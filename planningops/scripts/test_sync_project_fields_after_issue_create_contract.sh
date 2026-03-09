@@ -106,5 +106,38 @@ assert "O_COMPONENT_PROVIDER" in select_option_ids, select_calls
 assert "O_WF_READY_IMPL" in select_option_ids, select_calls
 assert "O_LANE_M2" in select_option_ids, select_calls
 
+listed_states = []
+
+
+def fake_list_issues(repo, issue_state):
+    listed_states.append((repo, issue_state))
+    return [
+        {
+            "repo": repo,
+            "number": 44,
+            "title": "closed card",
+            "url": f"https://github.com/{repo}/issues/44",
+            "body": body,
+            "state": "CLOSED",
+        }
+    ]
+
+
+mod.list_issues = fake_list_issues
+
+
+class Args:
+    issue_ref = []
+    repos = "rather-not-work-on/platform-provider-gateway"
+    plan_item_regex = r"^B21$"
+    issue_state = "all"
+
+
+candidates = mod.collect_candidates(Args())
+assert listed_states == [("rather-not-work-on/platform-provider-gateway", "all")], listed_states
+assert len(candidates) == 1, candidates
+assert candidates[0]["state"] == "CLOSED", candidates
+assert candidates[0]["metadata"]["plan_item_id"] == "B21", candidates
+
 print("sync_project_fields_after_issue_create contract tests ok")
 PY
