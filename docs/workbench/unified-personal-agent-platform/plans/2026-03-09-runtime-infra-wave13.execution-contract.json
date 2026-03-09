@@ -1,0 +1,63 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-infra-wave13",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave13-federated-smoke-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AE10",
+        "execution_order": 10,
+        "title": "federated local runtime stack smoke runner",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/scripts/federation/run_local_runtime_stack_smoke.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AE20",
+        "execution_order": 20,
+        "title": "federated local runtime stack smoke contract test",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/scripts/test_local_runtime_stack_smoke_contract.sh",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AE30",
+        "execution_order": 30,
+        "title": "runtime infra wave13 review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "backlog",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-infra-wave13-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}
+
