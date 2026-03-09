@@ -258,6 +258,7 @@ jobs:
           bash planningops/scripts/test_ralph_loop_local_worker_policy.sh
           bash planningops/scripts/test_validate_worker_task_pack_contract.sh
           bash planningops/scripts/test_issue_driven_mission_smoke_contract.sh
+          bash planningops/scripts/test_issue_driven_runtime_stack_smoke_contract.sh
           bash planningops/scripts/test_loop_checkpoint_resume.sh
           bash planningops/scripts/test_lease_lock_watchdog.sh
           bash planningops/scripts/test_escalation_gate.sh

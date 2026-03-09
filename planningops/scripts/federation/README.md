@@ -10,6 +10,7 @@ Keep cross-repository execution entrypoints isolated from the planningops core l
 - `github_sync_adapter.py`: GitHub sync smoke/idempotency/drift helper
 - `multi_repo_projection_report.py`: repo-level projection drift aggregation
 - `run_issue_driven_mission_smoke.py`: planningops-owned bridge from GitHub issue context into monday local runtime smoke
+- `run_issue_driven_runtime_stack_smoke.py`: planningops-owned aggregate runner that links an issue-driven monday mission smoke with provider and observability repo-owned smoke evidence
 - `run_local_runtime_stack_smoke.py`: planningops-owned federated local smoke runner over repo-owned monday/provider/o11y entrypoints
 - `run_local_oracle_rehearsal.py`: local-first vs oracle_cloud rehearsal harness
 - `run_wave14_oracle_rehearsal.py`: wave-owned rehearsal runner that compares wave13 local vs oracle_cloud smoke outputs without changing the default local profile

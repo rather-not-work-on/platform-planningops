@@ -1,0 +1,37 @@
+{
+  "wave_id": "runtime-mission-wave16",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [
+    251,
+    252
+  ],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave16-issue-driven-stack-smoke-issue-pack.md",
+      "must_contain": [
+        "planningops owns issue selection, orchestration, and aggregate evidence only",
+        "provider and observability continue to own their smoke entrypoints and local evidence contracts"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/federation/run_issue_driven_runtime_stack_smoke.py",
+      "must_contain": [
+        "monday_issue_mission",
+        "issue_runtime_stack_smoke_ok",
+        "provider"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/test_issue_driven_runtime_stack_smoke_contract.sh",
+      "must_contain": [
+        "issue-driven runtime stack smoke contract ok"
+      ]
+    }
+  ]
+}

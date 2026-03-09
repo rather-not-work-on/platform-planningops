@@ -1,0 +1,62 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-mission-wave16",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave16-issue-driven-stack-smoke-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AH10",
+        "execution_order": 10,
+        "title": "planningops issue-driven federated stack smoke runner",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/scripts/federation/run_issue_driven_runtime_stack_smoke.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AH20",
+        "execution_order": 20,
+        "title": "planningops issue-driven federated stack smoke contract test",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/scripts/test_issue_driven_runtime_stack_smoke_contract.sh",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AH30",
+        "execution_order": 30,
+        "title": "runtime mission wave16 review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-mission-wave16-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}

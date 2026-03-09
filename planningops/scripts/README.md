@@ -16,6 +16,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `federation/github_sync_adapter.py`
   - `federation/multi_repo_projection_report.py`
   - `federation/run_issue_driven_mission_smoke.py`
+  - `federation/run_issue_driven_runtime_stack_smoke.py`
   - `federation/run_local_runtime_stack_smoke.py`
   - `federation/run_local_oracle_rehearsal.py`
   - `federation/run_wave14_oracle_rehearsal.py`
