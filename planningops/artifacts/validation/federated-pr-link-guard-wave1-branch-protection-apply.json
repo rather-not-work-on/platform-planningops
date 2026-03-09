@@ -1,0 +1,177 @@
+{
+  "generated_at_utc": "2026-03-09T04:58:30.912894+00:00",
+  "mode": "apply",
+  "policy_path": "planningops/config/repository-governance-policy.json",
+  "owner": "rather-not-work-on",
+  "repo_count": 4,
+  "repo_evaluated_count": 4,
+  "error_count": 0,
+  "results": [
+    {
+      "repo": "platform-contracts",
+      "branch": "main",
+      "mode": "apply",
+      "required_status_checks": [
+        "template-and-link-check",
+        "contracts"
+      ],
+      "payload": {
+        "enforce_admins": false,
+        "restrictions": null,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "required_status_checks": {
+          "strict": true,
+          "contexts": [
+            "template-and-link-check",
+            "contracts"
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": false,
+          "require_code_owner_reviews": false,
+          "required_approving_review_count": 1,
+          "require_last_push_approval": false
+        }
+      },
+      "response": {
+        "url": "https://api.github.com/repos/rather-not-work-on/platform-contracts/branches/main/protection",
+        "required_status_checks": [
+          "contracts",
+          "template-and-link-check"
+        ],
+        "required_approving_review_count": 1,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "enforce_admins": false
+      }
+    },
+    {
+      "repo": "monday",
+      "branch": "main",
+      "mode": "apply",
+      "required_status_checks": [
+        "template-and-link-check",
+        "monday-local-ci"
+      ],
+      "payload": {
+        "enforce_admins": false,
+        "restrictions": null,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "required_status_checks": {
+          "strict": true,
+          "contexts": [
+            "template-and-link-check",
+            "monday-local-ci"
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": false,
+          "require_code_owner_reviews": false,
+          "required_approving_review_count": 1,
+          "require_last_push_approval": false
+        }
+      },
+      "response": {
+        "url": "https://api.github.com/repos/rather-not-work-on/monday/branches/main/protection",
+        "required_status_checks": [
+          "monday-local-ci",
+          "template-and-link-check"
+        ],
+        "required_approving_review_count": 1,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "enforce_admins": false
+      }
+    },
+    {
+      "repo": "platform-provider-gateway",
+      "branch": "main",
+      "mode": "apply",
+      "required_status_checks": [
+        "template-and-link-check",
+        "provider-local-ci"
+      ],
+      "payload": {
+        "enforce_admins": false,
+        "restrictions": null,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "required_status_checks": {
+          "strict": true,
+          "contexts": [
+            "template-and-link-check",
+            "provider-local-ci"
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": false,
+          "require_code_owner_reviews": false,
+          "required_approving_review_count": 1,
+          "require_last_push_approval": false
+        }
+      },
+      "response": {
+        "url": "https://api.github.com/repos/rather-not-work-on/platform-provider-gateway/branches/main/protection",
+        "required_status_checks": [
+          "provider-local-ci",
+          "template-and-link-check"
+        ],
+        "required_approving_review_count": 1,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "enforce_admins": false
+      }
+    },
+    {
+      "repo": "platform-observability-gateway",
+      "branch": "main",
+      "mode": "apply",
+      "required_status_checks": [
+        "template-and-link-check",
+        "observability-local-ci"
+      ],
+      "payload": {
+        "enforce_admins": false,
+        "restrictions": null,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "required_status_checks": {
+          "strict": true,
+          "contexts": [
+            "template-and-link-check",
+            "observability-local-ci"
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": false,
+          "require_code_owner_reviews": false,
+          "required_approving_review_count": 1,
+          "require_last_push_approval": false
+        }
+      },
+      "response": {
+        "url": "https://api.github.com/repos/rather-not-work-on/platform-observability-gateway/branches/main/protection",
+        "required_status_checks": [
+          "observability-local-ci",
+          "template-and-link-check"
+        ],
+        "required_approving_review_count": 1,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "enforce_admins": false
+      }
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}

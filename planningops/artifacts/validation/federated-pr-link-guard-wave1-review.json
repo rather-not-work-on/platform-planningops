@@ -1,0 +1,123 @@
+{
+  "generated_at_utc": "2026-03-09T04:59:26.901293+00:00",
+  "wave_id": "uap-federated-pr-link-guard-wave1",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/federated-pr-link-guard-wave1-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 207,
+      "state": "CLOSED",
+      "title": "plan: [10] monday PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/207",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 208,
+      "state": "CLOSED",
+      "title": "plan: [20] provider PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/208",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 209,
+      "state": "CLOSED",
+      "title": "plan: [30] observability PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/209",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 210,
+      "state": "CLOSED",
+      "title": "plan: [40] contracts PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/210",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/.github/pull_request_template.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/.github/workflows/pr-review-gate.yml",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/.github/pull_request_template.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/.github/workflows/pr-review-gate.yml",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/.github/pull_request_template.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/.github/workflows/pr-review-gate.yml",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts/.github/pull_request_template.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-contracts"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts/.github/workflows/pr-review-gate.yml",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-contracts"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/repository-governance-policy.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-pr-link-guard-wave1-branch-protection-apply.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-pr-link-guard-wave1-branch-protection-audit.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "check_count": 15,
+  "failure_count": 0,
+  "verdict": "pass"
+}

@@ -23,24 +23,28 @@
     {
       "name": "platform-contracts",
       "required_status_checks_all": [
+        "template-and-link-check",
         "contracts"
       ]
     },
     {
       "name": "monday",
       "required_status_checks_all": [
+        "template-and-link-check",
         "monday-local-ci"
       ]
     },
     {
       "name": "platform-provider-gateway",
       "required_status_checks_all": [
+        "template-and-link-check",
         "provider-local-ci"
       ]
     },
     {
       "name": "platform-observability-gateway",
       "required_status_checks_all": [
+        "template-and-link-check",
         "observability-local-ci"
       ]
     }

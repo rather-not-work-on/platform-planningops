@@ -1,0 +1,66 @@
+{
+  "generated_at_utc": "2026-03-09T04:58:50.267939+00:00",
+  "mode": "live",
+  "policy_path": "planningops/config/repository-governance-policy.json",
+  "owner": "rather-not-work-on",
+  "repo_count": 5,
+  "repo_evaluated_count": 5,
+  "fetch_error_count": 0,
+  "fetch_errors": [],
+  "violation_count": 0,
+  "violations": [],
+  "results": [
+    {
+      "repo": "platform-planningops",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [
+        "federated-summary",
+        "template-and-link-check",
+        "validate-and-dry-run"
+      ],
+      "violations": []
+    },
+    {
+      "repo": "platform-contracts",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [
+        "contracts",
+        "template-and-link-check"
+      ],
+      "violations": []
+    },
+    {
+      "repo": "monday",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [
+        "monday-local-ci",
+        "template-and-link-check"
+      ],
+      "violations": []
+    },
+    {
+      "repo": "platform-provider-gateway",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [
+        "provider-local-ci",
+        "template-and-link-check"
+      ],
+      "violations": []
+    },
+    {
+      "repo": "platform-observability-gateway",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [
+        "observability-local-ci",
+        "template-and-link-check"
+      ],
+      "violations": []
+    }
+  ],
+  "verdict": "pass"
+}

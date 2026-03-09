@@ -30,6 +30,7 @@ cat > "$tmp_dir/policy.json" <<'JSON'
     {
       "name": "platform-provider-gateway",
       "required_status_checks_all": [
+        "template-and-link-check",
         "provider-local-ci"
       ]
     }
@@ -70,7 +71,7 @@ assert planningops["required_status_checks"] == [
     "validate-and-dry-run",
     "federated-summary",
 ], planningops
-assert provider["required_status_checks"] == ["provider-local-ci"], provider
+assert provider["required_status_checks"] == ["template-and-link-check", "provider-local-ci"], provider
 
 payload = planningops["payload"]
 assert payload["required_status_checks"]["strict"] is True, payload
