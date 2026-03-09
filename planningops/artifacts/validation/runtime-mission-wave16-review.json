@@ -1,0 +1,51 @@
+{
+  "generated_at_utc": "2026-03-09T13:33:21.744693+00:00",
+  "wave_id": "runtime-mission-wave16",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-mission-wave16-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 251,
+      "state": "CLOSED",
+      "title": "plan: [10] planningops issue-driven federated stack smoke runner",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/251",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 252,
+      "state": "CLOSED",
+      "title": "plan: [20] planningops issue-driven federated stack smoke contract test",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/252",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave16-issue-driven-stack-smoke-issue-pack.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_issue_driven_runtime_stack_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_issue_driven_runtime_stack_smoke_contract.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "check_count": 5,
+  "failure_count": 0,
+  "verdict": "pass"
+}
