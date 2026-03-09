@@ -1,0 +1,81 @@
+{
+  "generated_at_utc": "2026-03-09T04:54:08.563304+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "mode": "apply",
+  "issues_in_scope": 5,
+  "issues_with_missing_labels": 5,
+  "issues_applied": 5,
+  "rows": [
+    {
+      "number": 211,
+      "title": "plan: [50] federated PR link guard wave1 review",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/211",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 210,
+      "title": "plan: [40] contracts PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/210",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/contracts",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 209,
+      "title": "plan: [30] observability PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/209",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/observability",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 208,
+      "title": "plan: [20] provider PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/208",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/provider",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 207,
+      "title": "plan: [10] monday PR link guard rollout",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/207",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}
