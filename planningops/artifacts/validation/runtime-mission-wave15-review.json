@@ -1,0 +1,66 @@
+{
+  "generated_at_utc": "2026-03-09T13:24:57.989308+00:00",
+  "wave_id": "runtime-mission-wave15",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-mission-wave15-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 244,
+      "state": "CLOSED",
+      "title": "plan: [10] monday mission-file smoke input baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/244",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 245,
+      "state": "CLOSED",
+      "title": "plan: [20] planningops issue-driven mission smoke runner",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/245",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 246,
+      "state": "CLOSED",
+      "title": "plan: [30] planningops issue-driven mission smoke contract test",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/246",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave15-issue-driven-smoke-issue-pack.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_local_runtime_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_issue_driven_mission_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_issue_driven_mission_smoke_contract.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "check_count": 7,
+  "failure_count": 0,
+  "verdict": "pass"
+}
