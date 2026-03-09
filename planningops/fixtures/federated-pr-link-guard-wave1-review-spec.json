@@ -1,0 +1,111 @@
+{
+  "wave_id": "uap-federated-pr-link-guard-wave1",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [207, 208, 209, 210],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": ".github/pull_request_template.md",
+      "must_contain": [
+        "## Linked Issues",
+        "Closes rather-not-work-on/platform-planningops#"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": ".github/workflows/pr-review-gate.yml",
+      "must_contain": [
+        "name: pr-review-gate",
+        "platform-planningops#\\d+",
+        "template-and-link-check"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": ".github/pull_request_template.md",
+      "must_contain": [
+        "## Linked Issues",
+        "Closes rather-not-work-on/platform-planningops#"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": ".github/workflows/pr-review-gate.yml",
+      "must_contain": [
+        "name: pr-review-gate",
+        "platform-planningops#\\d+",
+        "template-and-link-check"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": ".github/pull_request_template.md",
+      "must_contain": [
+        "## Linked Issues",
+        "Closes rather-not-work-on/platform-planningops#"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": ".github/workflows/pr-review-gate.yml",
+      "must_contain": [
+        "name: pr-review-gate",
+        "platform-planningops#\\d+",
+        "template-and-link-check"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "repo_dir": "platform-contracts",
+      "path": ".github/pull_request_template.md",
+      "must_contain": [
+        "## Linked Issues",
+        "Closes rather-not-work-on/platform-planningops#"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "repo_dir": "platform-contracts",
+      "path": ".github/workflows/pr-review-gate.yml",
+      "must_contain": [
+        "name: pr-review-gate",
+        "platform-planningops#\\d+",
+        "template-and-link-check"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/config/repository-governance-policy.json",
+      "must_contain": [
+        "\"name\": \"platform-contracts\"",
+        "\"template-and-link-check\"",
+        "\"observability-local-ci\""
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/artifacts/validation/federated-pr-link-guard-wave1-branch-protection-apply.json",
+      "must_contain": [
+        "\"verdict\": \"pass\"",
+        "\"template-and-link-check\""
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/artifacts/validation/federated-pr-link-guard-wave1-branch-protection-audit.json",
+      "must_contain": [
+        "\"verdict\": \"pass\"",
+        "\"violation_count\": 0"
+      ]
+    }
+  ]
+}

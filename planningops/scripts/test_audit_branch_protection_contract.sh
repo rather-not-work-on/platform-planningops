@@ -25,7 +25,7 @@ cat > "$tmp_dir/policy.json" <<'JSON'
     },
     {
       "name": "monday",
-      "required_status_checks_all": ["monday-local-ci"]
+      "required_status_checks_all": ["template-and-link-check", "monday-local-ci"]
     }
   ]
 }
@@ -65,7 +65,7 @@ cat > "$tmp_dir/snapshot-valid.json" <<'JSON'
           "requiresApprovingReviews": true,
           "requiredApprovingReviewCount": 1,
           "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": ["monday-local-ci"],
+          "requiredStatusCheckContexts": ["template-and-link-check", "monday-local-ci"],
           "requiresStrictStatusChecks": true,
           "requiresConversationResolution": true,
           "allowsForcePushes": false,
