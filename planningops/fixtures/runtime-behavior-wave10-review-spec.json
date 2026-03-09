@@ -1,0 +1,47 @@
+{
+  "wave_id": "uap-runtime-behavior-wave10",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [218, 219, 220],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-behavior-wave10-implementation-issue-pack.md",
+      "must_contain": [
+        "monday owns default executor dependency composition",
+        "platform-provider-gateway owns default provider driver registry composition in a composer package, not inside core runtime",
+        "platform-observability-gateway owns default telemetry gateway composition in a composer package, not inside core gateway"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "packages/orchestrator/src/default_runtime_dependencies.ts",
+      "must_contain": ["buildDefaultExecutorDependencies", "new ProviderClient()", "new TimelineEmitterClient()", "new MessagingAdapter()"]
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "packages/orchestrator/src/mission_orchestrator.ts",
+      "must_contain": ["buildDefaultExecutor()", "dependencies?.executor ?? buildDefaultExecutor()"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": "services/provider-gateway-composer/src/default_provider_registry.ts",
+      "must_contain": ["createDefaultProviderRegistry", "new ProviderCodexDriver()", "new ProviderClaudeDriver()", "new ProviderLocalLlmDriver()"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "services/telemetry-gateway-composer/src/default_telemetry_gateway.ts",
+      "must_contain": ["createDefaultTelemetryGateway", "new FileBuffer()", "new LangfuseSink()"]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "services/telemetry-gateway/src/index.ts",
+      "must_contain": ["TelemetryGatewayDependencies"]
+    }
+  ]
+}

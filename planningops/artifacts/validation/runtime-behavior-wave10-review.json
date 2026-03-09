@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-09T07:19:08.590630+00:00",
+  "wave_id": "uap-runtime-behavior-wave10",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-behavior-wave10-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 218,
+      "state": "CLOSED",
+      "title": "plan: [10] monday default executor composition baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/218",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 219,
+      "state": "CLOSED",
+      "title": "plan: [20] provider default registry composition baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/219",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 220,
+      "state": "CLOSED",
+      "title": "plan: [30] observability default gateway composition baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/220",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/runtime-behavior-wave10-implementation-issue-pack.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/orchestrator/src/default_runtime_dependencies.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/orchestrator/src/mission_orchestrator.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-gateway-composer/src/default_provider_registry.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/services/telemetry-gateway-composer/src/default_telemetry_gateway.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/services/telemetry-gateway/src/index.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    }
+  ],
+  "check_count": 9,
+  "failure_count": 0,
+  "verdict": "pass"
+}
