@@ -56,6 +56,7 @@
       "multi_repo_projection_report.py",
       "run_local_runtime_stack_smoke.py",
       "run_local_oracle_rehearsal.py",
+      "run_wave14_oracle_rehearsal.py",
       "federated_ci_matrix_local.sh"
     ],
     "root_wrappers": {
@@ -66,6 +67,7 @@
       "multi_repo_projection_report.py": "federation/multi_repo_projection_report.py",
       "run_local_runtime_stack_smoke.py": "federation/run_local_runtime_stack_smoke.py",
       "run_local_oracle_rehearsal.py": "federation/run_local_oracle_rehearsal.py",
+      "run_wave14_oracle_rehearsal.py": "federation/run_wave14_oracle_rehearsal.py",
       "federated_ci_matrix_local.sh": "federation/federated_ci_matrix_local.sh"
     },
     "must_live_in_federation_patterns": [

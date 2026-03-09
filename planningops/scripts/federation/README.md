@@ -11,6 +11,7 @@ Keep cross-repository execution entrypoints isolated from the planningops core l
 - `multi_repo_projection_report.py`: repo-level projection drift aggregation
 - `run_local_runtime_stack_smoke.py`: planningops-owned federated local smoke runner over repo-owned monday/provider/o11y entrypoints
 - `run_local_oracle_rehearsal.py`: local-first vs oracle_cloud rehearsal harness
+- `run_wave14_oracle_rehearsal.py`: wave-owned rehearsal runner that compares wave13 local vs oracle_cloud smoke outputs without changing the default local profile
 - `validate_execution_wave_readiness.py`: readiness validator for plan waves that must verify prerequisite outputs and closed issues before projecting the next issue pack
 - `review_interface_adoption.py`: spec-driven cross-repo review generator for completed interface waves
 - `federated_ci_matrix_local.sh`: local federated CI matrix runner
