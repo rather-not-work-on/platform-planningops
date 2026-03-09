@@ -1,0 +1,12 @@
+{
+  "plan_doc": "docs/initiatives/unified-personal-agent-platform/30-execution-plan/uap-runtime-interface-wave4.execution-plan.md",
+  "blueprint_report": "planningops/artifacts/validation/runtime-interface-wave4-blueprint-report.json",
+  "required_outputs": [
+    "docs/initiatives/unified-personal-agent-platform/30-execution-plan/uap-runtime-interface-wave4.execution-plan.md",
+    "docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/runtime-interface-wiring-pack.md",
+    "docs/initiatives/unified-personal-agent-platform/20-repos/platform-provider-gateway/30-execution-plan/runtime-interface-wiring-pack.md",
+    "docs/initiatives/unified-personal-agent-platform/20-repos/platform-observability-gateway/30-execution-plan/runtime-interface-wiring-pack.md",
+    "docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md"
+  ],
+  "verdict": "pass"
+}
