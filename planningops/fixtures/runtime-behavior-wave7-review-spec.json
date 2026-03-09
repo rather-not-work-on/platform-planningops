@@ -1,0 +1,77 @@
+{
+  "wave_id": "uap-runtime-behavior-wave7",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [195, 196, 197],
+  "gap_checks": [
+    {
+      "path": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md",
+      "must_contain": [
+        "| `rather-not-work-on/monday` | internal runtime ports between orchestrator, executor, kernel, and adapters | `C1`, `C2`, `C3`, `C8` | no gap | keep port interfaces repo-local in `contract-bindings` |",
+        "| `rather-not-work-on/platform-provider-gateway` | runtime-to-driver request/result and routing interfaces | `C4` | no gap | keep driver/runtime interfaces repo-local; normalize to `C4` at the public boundary |",
+        "| `rather-not-work-on/platform-observability-gateway` | ingest/buffer/replay/sink interfaces | `C5` | no gap | keep buffer/sink interfaces repo-local; normalize to `C5` at the public ingest boundary |"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "packages/agent-kernel/src/handoff_plan.ts",
+      "must_contain": [
+        "export function buildHandoffPlan",
+        "const taskId = buildTaskId",
+        "handoffId: buildHandoffId"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "packages/orchestrator/src/mission_orchestrator.ts",
+      "must_contain": [
+        "const handoffs = buildHandoffPlan",
+        "const primaryHandoff = handoffs[0];",
+        "this.dependencies.executor.execute(mission, primaryHandoff)"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": "services/provider-runtime/src/routing_policy.ts",
+      "must_contain": [
+        "export function resolveProviderKey",
+        "input.defaultProviderKey",
+        "input.registeredProviderKeys.length === 1"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": "services/provider-runtime/src/provider_runtime.ts",
+      "must_contain": [
+        "const providerKey = resolveProviderKey",
+        "defaultProviderKey: this.dependencies.defaultProviderKey",
+        "const driver = this.dependencies.registry?.find(providerKey)"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "buffer/replay-worker/src/replay_policy.ts",
+      "must_contain": [
+        "export function resolveReplayPolicy",
+        "dispatchMode: \"skip\"",
+        "dispatchMode: \"replay\""
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "buffer/replay-worker/src/replay_worker.ts",
+      "must_contain": [
+        "const replayPolicy = resolveReplayPolicy",
+        "if (replayPolicy.dispatchMode === \"skip\")",
+        "replayed: false"
+      ]
+    }
+  ]
+}
