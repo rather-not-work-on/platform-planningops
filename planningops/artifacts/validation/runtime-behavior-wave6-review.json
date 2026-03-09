@@ -1,0 +1,87 @@
+{
+  "generated_at_utc": "2026-03-09T03:17:10.168006+00:00",
+  "wave_id": "uap-runtime-behavior-wave6",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-behavior-wave6-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 190,
+      "state": "CLOSED",
+      "title": "plan: [10] monday run lifecycle baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/190",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 191,
+      "state": "CLOSED",
+      "title": "plan: [20] provider runtime registry baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/191",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 192,
+      "state": "CLOSED",
+      "title": "plan: [30] observability dispatch mode baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/192",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/orchestrator/src/run_lifecycle.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/orchestrator/src/mission_orchestrator.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-runtime/src/provider_registry.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-runtime/src/provider_runtime.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/services/telemetry-gateway/src/dispatch_mode.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/services/telemetry-gateway/src/telemetry_gateway.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    }
+  ],
+  "check_count": 10,
+  "failure_count": 0,
+  "verdict": "pass"
+}
