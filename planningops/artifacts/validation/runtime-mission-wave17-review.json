@@ -1,0 +1,52 @@
+{
+  "generated_at_utc": "2026-03-09T14:06:02.816651+00:00",
+  "wave": "runtime-mission-wave17",
+  "plan_id": "uap-runtime-mission-wave17",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave17-blueprint-projection-alignment-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "projection_alignment": {
+      "verdict": "pass",
+      "metadata_sync_applied_plan_item_ids": [
+        "AI20",
+        "AI30"
+      ],
+      "ready_implementation_issue_numbers": [
+        256,
+        257
+      ]
+    },
+    "live_projection_gate": {
+      "verdict": "pass",
+      "project_items_scanned": 207,
+      "project_items_limit_hit": false,
+      "relevant_duplicate_plan_item_id_count": 0,
+      "missing_count": 0,
+      "mismatch_count": 0
+    },
+    "live_issue_loop_pilot": {
+      "selected_issue": 256,
+      "selected_plan_item_id": "AI10",
+      "selected_loop_profile": "L3 Implementation-TDD",
+      "pec_preflight_status": "pass",
+      "worker_task_pack_status": "pass",
+      "last_verdict": "pass",
+      "reason_code": "ok",
+      "no_feedback": true,
+      "project_item_limit_hit": false
+    }
+  },
+  "decisions": [
+    "compile_plan_to_backlog emits blueprint refs for ready_implementation at issue creation time",
+    "compile_plan_to_backlog resolves depends_on to issue-number links during apply projection",
+    "verify_plan_projection treats unrelated historical duplicate plan_item_id rows as non-blocking noise",
+    "verify_plan_projection and issue_loop_runner now request up to 1000 project items and report limit-hit explicitly"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave18",
+      "title": "project close-state reconciliation guard",
+      "reason": "live issue loop scanned many closed issues that still remain Todo/ready-implementation in the project view, creating intake noise and extra GitHub calls"
+    }
+  ]
+}

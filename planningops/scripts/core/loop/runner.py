@@ -486,6 +486,12 @@ def main():
         default=900,
         help="Lease lock TTL in seconds for duplicate/zombie execution prevention",
     )
+    parser.add_argument(
+        "--project-item-limit",
+        type=int,
+        default=1000,
+        help="Maximum number of GitHub Project items to request for intake selection",
+    )
     args = parser.parse_args()
     allowed_workflow_states = set(parse_csv(args.pull_workflow_states))
 
@@ -498,7 +504,7 @@ def main():
             "--owner",
             args.owner,
             "--limit",
-            "200",
+            str(args.project_item_limit),
             "--format",
             "json",
         ]
@@ -620,6 +626,8 @@ def main():
         )
 
     selection_trace = build_selection_trace(candidates, selected, selection_attempts, allowed_workflow_states)
+    selection_trace["project_item_limit"] = args.project_item_limit
+    selection_trace["project_item_limit_hit"] = len(items) >= args.project_item_limit
     selection_trace["pec_preflight"] = {
         "mode": args.pec_preflight_mode,
         "contract_file": args.pec_contract_file,

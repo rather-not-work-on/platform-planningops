@@ -164,7 +164,8 @@ def load_project_items(owner, project_number, limit):
     )
     if rc != 0:
         raise RuntimeError(f"failed to fetch project items: {err}")
-    return json.loads(out).get("items", [])
+    items = json.loads(out).get("items", [])
+    return items, len(items) >= limit
 
 
 def load_snapshot_items(snapshot_file: Path):
@@ -287,7 +288,7 @@ def main():
     parser.add_argument("--owner", default="rather-not-work-on", help="GitHub org/user owner for project lookup")
     parser.add_argument("--project-number", type=int, default=2, help="GitHub project number")
     parser.add_argument("--initiative", default="unified-personal-agent-platform", help="Initiative field filter")
-    parser.add_argument("--limit", type=int, default=200, help="Project item-list limit")
+    parser.add_argument("--limit", type=int, default=1000, help="Project item-list limit")
     parser.add_argument("--fail-on-unexpected", action="store_true", help="Fail when project has plan_item_id not in contract")
     parser.add_argument("--strict", action="store_true", help="Return non-zero on drift")
     parser.add_argument(
@@ -330,17 +331,20 @@ def main():
     if args.snapshot_file:
         items = load_snapshot_items(Path(args.snapshot_file))
         mode = "snapshot"
+        report["project_items_limit_hit"] = False
     else:
-        items = load_project_items(args.owner, args.project_number, args.limit)
+        items, limit_hit = load_project_items(args.owner, args.project_number, args.limit)
         mode = "live"
+        report["project_items_limit_hit"] = limit_hit
     report["mode"] = mode
     report["project_items_scanned"] = len(items)
 
     actual, duplicate_ids = build_actual_projection(items, args.initiative)
+    relevant_duplicate_ids = sorted(plan_item_id for plan_item_id in duplicate_ids if plan_item_id in expected)
     missing, mismatches, unexpected = compare_projection(expected, actual, args.fail_on_unexpected)
 
     reasons = []
-    if duplicate_ids:
+    if relevant_duplicate_ids:
         reasons.append("duplicate_plan_item_id_in_project")
     if missing:
         reasons.append("projection_item_missing")
@@ -354,6 +358,8 @@ def main():
             "actual_items_total": len(actual),
             "duplicate_plan_item_id_count": len(duplicate_ids),
             "duplicate_plan_item_ids": duplicate_ids,
+            "relevant_duplicate_plan_item_id_count": len(relevant_duplicate_ids),
+            "relevant_duplicate_plan_item_ids": relevant_duplicate_ids,
             "missing_count": len(missing),
             "mismatch_count": len(mismatches),
             "unexpected_count": len(unexpected),
