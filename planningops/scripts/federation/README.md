@@ -9,6 +9,7 @@ Keep cross-repository execution entrypoints isolated from the planningops core l
 - `cross_repo_conformance_check.py`: federated contract/provider/o11y/runtime conformance matrix
 - `github_sync_adapter.py`: GitHub sync smoke/idempotency/drift helper
 - `multi_repo_projection_report.py`: repo-level projection drift aggregation
+- `run_local_runtime_stack_smoke.py`: planningops-owned federated local smoke runner over repo-owned monday/provider/o11y entrypoints
 - `run_local_oracle_rehearsal.py`: local-first vs oracle_cloud rehearsal harness
 - `validate_execution_wave_readiness.py`: readiness validator for plan waves that must verify prerequisite outputs and closed issues before projecting the next issue pack
 - `review_interface_adoption.py`: spec-driven cross-repo review generator for completed interface waves

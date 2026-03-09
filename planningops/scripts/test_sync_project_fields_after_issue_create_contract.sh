@@ -55,6 +55,7 @@ issue = {
     "number": 3,
     "url": "https://github.com/rather-not-work-on/platform-provider-gateway/issues/3",
     "body": body,
+    "state": "OPEN",
     "metadata": meta,
 }
 
@@ -66,6 +67,25 @@ assert dry["plan_lane"] == "m2_sync_core", dry
 assert "component(provider_gateway)" in dry["field_updates"], dry
 assert "workflow_state(ready_implementation)" in dry["field_updates"], dry
 assert "plan_lane(m2_sync_core)" in dry["field_updates"], dry
+
+closed_project = {
+    **project,
+    "fields": {
+        **project["fields"],
+        "workflow_state": {
+            "id": "F_WF",
+            "options": {
+                "ready_implementation": "O_WF_READY_IMPL",
+                "done": "O_WF_DONE",
+            },
+        },
+    },
+}
+closed_issue = {**issue, "state": "CLOSED"}
+closed_dry = mod.sync_one_issue(closed_project, closed_issue, apply_mode=False, issue_index={})
+assert closed_dry["issue_state"] == "closed", closed_dry
+assert closed_dry["workflow_state"] == "done", closed_dry
+assert "workflow_state(done)" in closed_dry["field_updates"], closed_dry
 
 calls = []
 mod.ensure_project_item = lambda owner, project_number, issue_url: "PVTI_TEST_1"

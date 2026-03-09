@@ -54,6 +54,7 @@
       "cross_repo_conformance_check.py",
       "github_sync_adapter.py",
       "multi_repo_projection_report.py",
+      "run_local_runtime_stack_smoke.py",
       "run_local_oracle_rehearsal.py",
       "federated_ci_matrix_local.sh"
     ],
@@ -63,6 +64,7 @@
       "github_sync_adapter.py": "federation/github_sync_adapter.py",
       "issue_loop_runner.py": "core/loop/runner.py",
       "multi_repo_projection_report.py": "federation/multi_repo_projection_report.py",
+      "run_local_runtime_stack_smoke.py": "federation/run_local_runtime_stack_smoke.py",
       "run_local_oracle_rehearsal.py": "federation/run_local_oracle_rehearsal.py",
       "federated_ci_matrix_local.sh": "federation/federated_ci_matrix_local.sh"
     },
@@ -70,6 +72,7 @@
       "cross_repo",
       "github_sync_adapter",
       "multi_repo_projection",
+      "runtime_stack_smoke",
       "repo_execution_adapters",
       "oracle_rehearsal",
       "federated_ci_matrix"

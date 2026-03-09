@@ -40,7 +40,8 @@ def resolve_path(repo_root: Path, raw: str) -> Path:
 
 
 def relative_posix(repo_root: Path, path: Path) -> str:
-    return path.resolve().relative_to(repo_root.resolve()).as_posix()
+    absolute = path if path.is_absolute() else repo_root / path
+    return absolute.relative_to(repo_root).as_posix()
 
 
 def should_exclude(relative_path: str, exclude_globs: list[str]) -> bool:

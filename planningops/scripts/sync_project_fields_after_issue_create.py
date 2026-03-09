@@ -73,7 +73,7 @@ def parse_issue_ref(raw: str):
 
 
 def list_open_issues(repo: str):
-    rc, out, err = run(["gh", "issue", "list", "--repo", repo, "--state", "open", "--limit", "200", "--json", "number,title,url,body"])
+    rc, out, err = run(["gh", "issue", "list", "--repo", repo, "--state", "open", "--limit", "200", "--json", "number,title,url,body,state"])
     if rc != 0:
         raise RuntimeError(f"failed to list issues for {repo}: {err}")
     rows = json.loads(out)
@@ -86,13 +86,14 @@ def list_open_issues(repo: str):
                 "title": row.get("title") or "",
                 "url": row.get("url") or "",
                 "body": row.get("body") or "",
+                "state": row.get("state") or "OPEN",
             }
         )
     return issues
 
 
 def get_issue(repo: str, number: int):
-    rc, out, err = run(["gh", "issue", "view", str(number), "--repo", repo, "--json", "number,title,url,body"])
+    rc, out, err = run(["gh", "issue", "view", str(number), "--repo", repo, "--json", "number,title,url,body,state"])
     if rc != 0:
         raise RuntimeError(f"failed to read issue {repo}#{number}: {err}")
     row = json.loads(out)
@@ -102,6 +103,7 @@ def get_issue(repo: str, number: int):
         "title": row.get("title") or "",
         "url": row.get("url") or "",
         "body": row.get("body") or "",
+        "state": row.get("state") or "OPEN",
     }
 
 
@@ -302,12 +304,17 @@ def sync_one_issue(project: dict, issue: dict, apply_mode: bool, issue_index: di
     loop_profile = normalize_option_key(metadata.get("loop_profile", ""))
     execution_order = parse_execution_order(metadata.get("execution_order"))
     target_repo = metadata.get("target_repo") or issue["repo"]
+    issue_state = normalize_option_key(issue.get("state", "open"))
+
+    if issue_state == "closed":
+        workflow_state = "done"
 
     result = {
         "plan_item_id": plan_item_id,
         "issue_repo": issue["repo"],
         "issue_number": issue["number"],
         "issue_url": issue["url"],
+        "issue_state": issue_state,
         "component": component,
         "workflow_state": workflow_state,
         "plan_lane": plan_lane,
@@ -324,7 +331,7 @@ def sync_one_issue(project: dict, issue: dict, apply_mode: bool, issue_index: di
     if missing:
         raise RuntimeError(f"missing metadata keys: {','.join(missing)}")
 
-    status_key = WORKFLOW_TO_STATUS.get(workflow_state)
+    status_key = "done" if issue_state == "closed" else WORKFLOW_TO_STATUS.get(workflow_state)
     if not status_key:
         raise RuntimeError(f"unsupported workflow_state: {workflow_state}")
 
