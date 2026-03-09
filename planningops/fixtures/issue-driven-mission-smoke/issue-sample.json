@@ -1,0 +1,7 @@
+{
+  "number": 4242,
+  "title": "demo: issue-driven mission smoke",
+  "body": "## Planning Context\n- plan_item_id: `demo-4242`\n\n## Problem Statement\n- Verify that a planningops issue can be normalized into a monday mission input.\n- Preserve repo boundaries while doing so.\n\n## Interfaces & Dependencies\n- monday local runtime smoke\n",
+  "url": "https://github.com/rather-not-work-on/platform-planningops/issues/4242",
+  "state": "OPEN"
+}

@@ -1,0 +1,48 @@
+{
+  "wave_id": "runtime-mission-wave15",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [
+    244,
+    245,
+    246
+  ],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave15-issue-driven-smoke-issue-pack.md",
+      "must_contain": [
+        "planningops owns issue retrieval, issue-to-mission normalization, and aggregate evidence",
+        "monday owns mission execution and local runtime smoke behavior"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "scripts/run_local_runtime_smoke.py",
+      "must_contain": [
+        "--mission-file",
+        "mission_source",
+        "requested_mission"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/federation/run_issue_driven_mission_smoke.py",
+      "must_contain": [
+        "--issue-number",
+        "build_mission(",
+        "issue_mission_smoke_ok"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/test_issue_driven_mission_smoke_contract.sh",
+      "must_contain": [
+        "issue-driven mission smoke contract ok"
+      ]
+    }
+  ]
+}
