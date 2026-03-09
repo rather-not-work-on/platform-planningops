@@ -32,6 +32,12 @@ REQUIRED_ITEM_KEYS = [
 ]
 
 PLAN_ITEM_ID_RE = re.compile(r"plan_item_id:\s*`([^`]+)`")
+BLUEPRINT_KEYS = [
+    "interface_contract_refs",
+    "package_topology_ref",
+    "dependency_manifest_ref",
+    "file_plan_ref",
+]
 
 
 def run(cmd):
@@ -63,6 +69,23 @@ def parse_plan_item_id(issue_body: str):
     if not match:
         return None
     return match.group(1).strip()
+
+
+def parse_blueprint_refs(issue_body: str):
+    refs = {}
+    for key in BLUEPRINT_KEYS:
+        refs[key] = None
+        match = re.search(rf"(?mi)^{key}:\s*(.+?)\s*$", issue_body or "")
+        if match:
+            value = match.group(1).strip()
+            if value:
+                refs[key] = value
+    missing = [key for key in BLUEPRINT_KEYS if not refs.get(key)]
+    return {
+        "refs": refs,
+        "missing": missing,
+        "complete": len(missing) == 0,
+    }
 
 
 def validate_contract(contract_doc):
@@ -109,15 +132,17 @@ def build_expected_projection(contract_doc, initiative):
     expected = {}
     for item in contract_doc["execution_contract"]["items"]:
         plan_item_id = item["plan_item_id"]
+        workflow_state = normalize_key(item["workflow_state"])
         expected[plan_item_id] = {
             "plan_item_id": plan_item_id,
             "execution_order": as_int(item["execution_order"]),
             "target_repo": item["target_repo"],
             "component": normalize_key(item["component"]),
-            "workflow_state": normalize_key(item["workflow_state"]),
+            "workflow_state": workflow_state,
             "loop_profile": normalize_key(item["loop_profile"]),
             "status": WORKFLOW_TO_STATUS[item["workflow_state"]],
             "initiative": initiative,
+            "blueprint_required": workflow_state == "ready_implementation",
         }
     return expected
 
@@ -179,6 +204,9 @@ def build_actual_projection(items, initiative_filter):
             "status": normalize_key(item.get("status")),
             "initiative": initiative,
         }
+        blueprint_meta = parse_blueprint_refs(content.get("body") or "")
+        row["blueprint_complete"] = blueprint_meta["complete"]
+        row["blueprint_missing"] = blueprint_meta["missing"]
 
         if plan_item_id in by_plan_item:
             duplicate_plan_item_ids.append(plan_item_id)
@@ -226,6 +254,17 @@ def compare_projection(expected, actual, fail_on_unexpected):
                         "actual": act[field],
                     }
                 )
+        if exp.get("blueprint_required") and not act.get("blueprint_complete", False):
+            mismatches.append(
+                {
+                    "plan_item_id": plan_item_id,
+                    "issue_number": act.get("issue_number"),
+                    "field": "blueprint_complete",
+                    "expected": True,
+                    "actual": False,
+                    "missing_refs": act.get("blueprint_missing", []),
+                }
+            )
 
     if fail_on_unexpected:
         for plan_item_id, act in actual.items():
