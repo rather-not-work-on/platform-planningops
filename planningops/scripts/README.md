@@ -15,6 +15,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `federation/validate_runtime_workspace_build.py`
   - `federation/github_sync_adapter.py`
   - `federation/multi_repo_projection_report.py`
+  - `federation/run_local_runtime_stack_smoke.py`
   - `federation/run_local_oracle_rehearsal.py`
   - `federation/federated_ci_matrix_local.sh`
   - compatibility wrappers are preserved at the root with identical filenames where needed
