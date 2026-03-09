@@ -1,0 +1,10 @@
+{
+  "generated_at_utc": "2026-03-09T01:42:50.224201+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_scanned": 7,
+  "issues_in_scope": 7,
+  "violation_count": 0,
+  "violations": [],
+  "verdict": "pass"
+}
