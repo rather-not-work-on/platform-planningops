@@ -1,0 +1,65 @@
+{
+  "wave_id": "uap-runtime-infra-wave12",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [223, 225, 227],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave12-local-smoke-issue-pack.md",
+      "must_contain": [
+        "monday owns the local mission smoke entrypoint",
+        "platform-provider-gateway owns the launcher-backed provider smoke path",
+        "platform-observability-gateway owns the launcher-backed ingest smoke path"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/monday",
+      "repo_dir": "monday",
+      "path": "scripts/run_local_runtime_smoke.py",
+      "must_contain": [
+        "buildDefaultLocalExecutor",
+        "runtime-artifacts/smoke",
+        "local_runtime_smoke_failed"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": "scripts/litellm_live_smoke.py",
+      "must_contain": [
+        "scripts/litellm_stack_launcher.sh",
+        "scripts/litellm_gateway_smoke.py",
+        "runtime-artifacts/live"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-provider-gateway",
+      "repo_dir": "platform-provider-gateway",
+      "path": "scripts/litellm_stack_launcher.sh",
+      "must_contain": [
+        "PYTHON_BIN",
+        "\"$PYTHON_BIN\" scripts/litellm_profile_drill.py"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "scripts/langfuse_live_smoke.py",
+      "must_contain": [
+        "scripts/langfuse_stack_launcher.sh",
+        "validate_ingest_smoke_evidence.py",
+        "runtime-artifacts/live"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-observability-gateway",
+      "repo_dir": "platform-observability-gateway",
+      "path": "scripts/langfuse_stack_launcher.sh",
+      "must_contain": [
+        "PYTHON_BIN",
+        "\"$PYTHON_BIN\" scripts/langfuse_ingest_smoke.py"
+      ]
+    }
+  ]
+}
