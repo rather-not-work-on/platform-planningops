@@ -1,0 +1,123 @@
+{
+  "generated_at_utc": "2026-03-09T08:10:26.214863+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "mode": "apply",
+  "issues_in_scope": 8,
+  "issues_with_missing_labels": 8,
+  "issues_applied": 8,
+  "rows": [
+    {
+      "number": 230,
+      "title": "plan: [40] runtime infra wave11 review",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/230",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 229,
+      "title": "plan: [40] runtime infra wave12 review",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/229",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 228,
+      "title": "plan: [30] observability Langfuse local composer baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/228",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/observability",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 227,
+      "title": "plan: [30] observability live local smoke baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/227",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/observability",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 226,
+      "title": "plan: [20] provider LiteLLM local composer baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/226",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/provider",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 225,
+      "title": "plan: [20] provider live local smoke baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/225",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/provider",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 224,
+      "title": "plan: [10] monday local runtime composition baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/224",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 223,
+      "title": "plan: [10] monday local mission smoke baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/223",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}
