@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-09T11:12:46.111151+00:00",
+  "wave_id": "uap-runtime-infra-wave11",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-infra-wave11-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 224,
+      "state": "CLOSED",
+      "title": "plan: [10] monday local runtime composition baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/224",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 226,
+      "state": "CLOSED",
+      "title": "plan: [20] provider LiteLLM local composer baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/226",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 228,
+      "state": "CLOSED",
+      "title": "plan: [30] observability Langfuse local composer baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/228",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave11-implementation-issue-pack.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/orchestrator/src/default_local_runtime.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/provider-client-adapter/src/provider_client.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-gateway-composer/src/default_litellm_runtime.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/services/telemetry-gateway-composer/src/default_langfuse_gateway.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/sinks/langfuse-sink/src/langfuse_sink.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    }
+  ],
+  "check_count": 9,
+  "failure_count": 0,
+  "verdict": "pass"
+}
