@@ -24,13 +24,18 @@ assert success["final_return_code"] == 0, success
 # 2) retry path (fail once, then pass)
 with tempfile.TemporaryDirectory() as td:
     flag = Path(td) / "flag.txt"
+    retry_cmd = (
+        "from pathlib import Path; import sys; "
+        f"flag = Path({str(flag)!r}); "
+        "seen = flag.exists(); "
+        "flag.touch(exist_ok=True); "
+        "sys.stdout.write('second-ok\\n' if seen else ''); "
+        "sys.stderr.write('first-fail\\n' if not seen else ''); "
+        "raise SystemExit(0 if seen else 1)"
+    )
     retry = mod.execute_worker_command(
-        [
-            "bash",
-            "-lc",
-            f"if [ -f '{flag}' ]; then echo second-ok; exit 0; else touch '{flag}'; echo first-fail 1>&2; exit 1; fi",
-        ],
-        mod.WorkerExecutionPolicy(max_retries=2, timeout_ms=2000, max_attempts=3),
+        ["python3", "-c", retry_cmd],
+        mod.WorkerExecutionPolicy(max_retries=2, timeout_ms=5000, max_attempts=3),
     )
     assert retry["status"] == "pass", retry
     assert retry["attempts_executed"] == 2, retry
