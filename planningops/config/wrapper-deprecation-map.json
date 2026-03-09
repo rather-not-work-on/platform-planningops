@@ -95,6 +95,16 @@
       ]
     },
     {
+      "wrapper_path": "planningops/scripts/run_wave14_oracle_rehearsal.py",
+      "target_path": "planningops/scripts/federation/run_wave14_oracle_rehearsal.py",
+      "role": "federation",
+      "warn_after": "2026-03-09",
+      "fail_after": "2026-05-15",
+      "allowed_reference_paths": [
+        "planningops/README.md"
+      ]
+    },
+    {
       "wrapper_path": "planningops/scripts/federated_ci_matrix_local.sh",
       "target_path": "planningops/scripts/federation/federated_ci_matrix_local.sh",
       "role": "federation",

@@ -41,6 +41,10 @@
       "target": "federation/run_local_runtime_stack_smoke.py",
       "role": "federation"
     },
+    "run_wave14_oracle_rehearsal.py": {
+      "target": "federation/run_wave14_oracle_rehearsal.py",
+      "role": "federation"
+    },
     "federated_ci_matrix_local.sh": {
       "target": "federation/federated_ci_matrix_local.sh",
       "role": "federation"
