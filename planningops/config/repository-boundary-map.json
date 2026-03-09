@@ -55,6 +55,7 @@
       "github_sync_adapter.py",
       "multi_repo_projection_report.py",
       "run_issue_driven_mission_smoke.py",
+      "run_issue_driven_runtime_stack_smoke.py",
       "run_local_runtime_stack_smoke.py",
       "run_local_oracle_rehearsal.py",
       "run_wave14_oracle_rehearsal.py",
@@ -74,6 +75,7 @@
     "must_live_in_federation_patterns": [
       "cross_repo",
       "issue_driven_mission_smoke",
+      "issue_driven_runtime_stack_smoke",
       "github_sync_adapter",
       "multi_repo_projection",
       "runtime_stack_smoke",
