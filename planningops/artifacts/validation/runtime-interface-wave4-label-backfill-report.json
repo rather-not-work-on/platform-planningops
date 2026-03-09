@@ -1,108 +1,108 @@
 {
-  "generated_at_utc": "2026-03-09T01:39:36.844897+00:00",
+  "generated_at_utc": "2026-03-09T01:42:50.196015+00:00",
   "repo": "rather-not-work-on/platform-planningops",
   "rules_path": "planningops/config/issue-quality-rules.json",
   "mode": "apply",
   "issues_in_scope": 7,
-  "issues_with_missing_labels": 7,
-  "issues_applied": 7,
+  "issues_with_missing_labels": 0,
+  "issues_applied": 0,
   "rows": [
     {
       "number": 175,
       "title": "plan: [70] runtime behavior wave5 implementation issue pack",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/175",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/planningops",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     },
     {
       "number": 174,
       "title": "plan: [60] runtime interface wave4 readiness review",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/174",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/planningops",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     },
     {
       "number": 173,
       "title": "plan: [50] runtime interface shared contract gap matrix",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/173",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/contracts",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     },
     {
       "number": 172,
       "title": "plan: [40] observability gateway runtime interface wiring pack",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/172",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/observability",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     },
     {
       "number": 171,
       "title": "plan: [30] provider gateway runtime interface wiring pack",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/171",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/provider",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     },
     {
       "number": 170,
       "title": "plan: [20] monday runtime interface wiring pack",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/170",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/runtime",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     },
     {
       "number": 169,
       "title": "plan: [10] runtime interface wave4 meta execution plan",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/169",
-      "existing_labels": [],
-      "planned_labels": [
+      "existing_labels": [
         "area/planningops",
         "p2",
         "task",
         "type/governance"
       ],
-      "apply_status": "applied",
+      "planned_labels": [],
+      "apply_status": "skipped",
       "error": ""
     }
   ]
