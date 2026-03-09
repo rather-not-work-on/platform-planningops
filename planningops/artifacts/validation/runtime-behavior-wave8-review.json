@@ -1,0 +1,87 @@
+{
+  "generated_at_utc": "2026-03-09T03:37:19.038995+00:00",
+  "wave_id": "uap-runtime-behavior-wave8",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-behavior-wave8-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 201,
+      "state": "CLOSED",
+      "title": "plan: [10] monday executor event policy baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/201",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 202,
+      "state": "CLOSED",
+      "title": "plan: [20] provider outcome policy baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/202",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 203,
+      "state": "CLOSED",
+      "title": "plan: [30] observability delivery policy baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/203",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/executor-ralph-loop/src/event_policy.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/executor-ralph-loop/src/ralph_loop_executor.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-runtime/src/outcome_policy.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-runtime/src/provider_runtime.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/sinks/langfuse-sink/src/delivery_policy.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/sinks/langfuse-sink/src/langfuse_sink.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    }
+  ],
+  "check_count": 10,
+  "failure_count": 0,
+  "verdict": "pass"
+}
