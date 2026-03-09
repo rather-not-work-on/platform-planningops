@@ -1,0 +1,43 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-infra-wave14",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave14-oracle-rehearsal-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AF10",
+        "execution_order": 10,
+        "title": "wave14 oracle rehearsal wrapper",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "backlog",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/scripts/federation/run_wave14_oracle_rehearsal.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AF20",
+        "execution_order": 20,
+        "title": "runtime infra wave14 review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "backlog",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-infra-wave14-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}
