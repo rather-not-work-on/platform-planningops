@@ -10,6 +10,7 @@ Keep cross-repository execution entrypoints isolated from the planningops core l
 - `github_sync_adapter.py`: GitHub sync smoke/idempotency/drift helper
 - `multi_repo_projection_report.py`: repo-level projection drift aggregation
 - `run_local_oracle_rehearsal.py`: local-first vs oracle_cloud rehearsal harness
+- `validate_execution_wave_readiness.py`: readiness validator for plan waves that must verify prerequisite outputs and closed issues before projecting the next issue pack
 - `federated_ci_matrix_local.sh`: local federated CI matrix runner
 
 Compatibility wrappers are kept at `planningops/scripts/*.py|*.sh`; `repo_execution_adapters.py` remains the legacy root name for `adapter_registry.py`.

@@ -1,0 +1,75 @@
+{
+  "generated_at_utc": "2026-03-09T01:54:41.086645+00:00",
+  "contract": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-09-runtime-interface-wave4.execution-contract.json",
+  "plan_id": "uap-runtime-interface-wave4",
+  "ready_order": 60,
+  "ready_plan_item_id": "I15",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "prerequisite_item_count": 5,
+  "contract_error_count": 0,
+  "errors": [],
+  "output_checks": [
+    {
+      "plan_item_id": "I10",
+      "execution_order": 10,
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "primary_output": "docs/initiatives/unified-personal-agent-platform/30-execution-plan/uap-runtime-interface-wave4.execution-plan.md",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/30-execution-plan/uap-runtime-interface-wave4.execution-plan.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "I11",
+      "execution_order": 20,
+      "target_repo": "rather-not-work-on/monday",
+      "primary_output": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/runtime-interface-wiring-pack.md",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/runtime-interface-wiring-pack.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "I12",
+      "execution_order": 30,
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "primary_output": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-provider-gateway/30-execution-plan/runtime-interface-wiring-pack.md",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/platform-provider-gateway/30-execution-plan/runtime-interface-wiring-pack.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "I13",
+      "execution_order": 40,
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "primary_output": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-observability-gateway/30-execution-plan/runtime-interface-wiring-pack.md",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/platform-observability-gateway/30-execution-plan/runtime-interface-wiring-pack.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "I14",
+      "execution_order": 50,
+      "target_repo": "rather-not-work-on/platform-contracts",
+      "primary_output": "docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md",
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md",
+      "exists": true,
+      "verdict": "pass"
+    }
+  ],
+  "report_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/runtime-interface-wave4-blueprint-report.json",
+      "exists": true,
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/runtime-interface-wave4-meta-report.json",
+      "exists": true,
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "open_issue_checks": [],
+  "failure_count": 0,
+  "verdict": "pass"
+}
