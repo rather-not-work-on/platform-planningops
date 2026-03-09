@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-09T11:19:06.205897+00:00",
+  "wave_id": "uap-runtime-infra-wave12",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-infra-wave12-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 223,
+      "state": "CLOSED",
+      "title": "plan: [10] monday local mission smoke baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/223",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 225,
+      "state": "CLOSED",
+      "title": "plan: [20] provider live local smoke baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/225",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 227,
+      "state": "CLOSED",
+      "title": "plan: [30] observability live local smoke baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/227",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave12-local-smoke-issue-pack.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_local_runtime_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/scripts/litellm_live_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/scripts/litellm_stack_launcher.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/scripts/langfuse_live_smoke.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/scripts/langfuse_stack_launcher.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    }
+  ],
+  "check_count": 9,
+  "failure_count": 0,
+  "verdict": "pass"
+}
