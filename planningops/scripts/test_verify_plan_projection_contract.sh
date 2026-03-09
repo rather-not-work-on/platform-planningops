@@ -38,7 +38,13 @@ def build_contract():
     }
 
 
-def build_snapshot(workflow_state="ready-contract", loop_profile="L1 Contract-Clarification", status="Todo"):
+def build_snapshot(
+    workflow_state="ready-contract",
+    loop_profile="L1 Contract-Clarification",
+    status="Todo",
+    body=None,
+):
+    issue_body = body or "## Planning Context\n- plan_item_id: `sample-001`\n"
     return {
         "items": [
             {
@@ -55,7 +61,7 @@ def build_snapshot(workflow_state="ready-contract", loop_profile="L1 Contract-Cl
                     "number": 9991,
                     "url": "https://github.com/rather-not-work-on/platform-planningops/issues/9991",
                     "repository": "rather-not-work-on/platform-planningops",
-                    "body": "## Planning Context\n- plan_item_id: `sample-001`\n",
+                    "body": issue_body,
                 },
             }
         ]
@@ -134,6 +140,76 @@ with tempfile.TemporaryDirectory() as td:
     assert missing_report["verdict"] == "fail", missing_report
     assert missing_report["missing_count"] == 1, missing_report
     assert "projection_item_missing" in missing_report["reasons"], missing_report
+
+    # ready_implementation item must carry blueprint refs.
+    ready_contract = build_contract()
+    ready_contract["execution_contract"]["items"][0]["workflow_state"] = "ready_implementation"
+    contract_path.write_text(json.dumps(ready_contract, ensure_ascii=True), encoding="utf-8")
+    snapshot_path.write_text(
+        json.dumps(
+            build_snapshot(
+                workflow_state="ready-implementation",
+                body="## Planning Context\n- plan_item_id: `sample-001`\n",
+            ),
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+    argv_before = list(sys.argv)
+    sys.argv = [
+        "verify_plan_projection.py",
+        "--contract-file",
+        str(contract_path),
+        "--snapshot-file",
+        str(snapshot_path),
+        "--strict",
+        "--output",
+        str(output_path),
+    ]
+    rc_ready_missing = mod.main()
+    sys.argv = argv_before
+    assert rc_ready_missing == 1, rc_ready_missing
+    ready_missing_report = json.loads(output_path.read_text(encoding="utf-8"))
+    assert any(row["field"] == "blueprint_complete" for row in ready_missing_report["mismatches"]), ready_missing_report
+
+    snapshot_path.write_text(
+        json.dumps(
+            build_snapshot(
+                workflow_state="ready-implementation",
+                body="\n".join(
+                    [
+                        "## Planning Context",
+                        "- plan_item_id: `sample-001`",
+                        "",
+                        "## Implementation Blueprint Refs",
+                        "interface_contract_refs: planningops/contracts/requirements-contract.md",
+                        "package_topology_ref: planningops/README.md",
+                        "dependency_manifest_ref: planningops/config/runtime-profiles.json",
+                        "file_plan_ref: docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave17-blueprint-projection-alignment-issue-pack.md",
+                    ]
+                )
+                + "\n",
+            ),
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+    argv_before = list(sys.argv)
+    sys.argv = [
+        "verify_plan_projection.py",
+        "--contract-file",
+        str(contract_path),
+        "--snapshot-file",
+        str(snapshot_path),
+        "--strict",
+        "--output",
+        str(output_path),
+    ]
+    rc_ready_ok = mod.main()
+    sys.argv = argv_before
+    assert rc_ready_ok == 0, rc_ready_ok
+    ready_ok_report = json.loads(output_path.read_text(encoding="utf-8"))
+    assert ready_ok_report["verdict"] == "pass", ready_ok_report
 
 print("verify_plan_projection contract tests ok")
 PY

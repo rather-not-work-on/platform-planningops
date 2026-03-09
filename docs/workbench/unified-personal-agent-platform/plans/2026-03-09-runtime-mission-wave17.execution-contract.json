@@ -1,0 +1,62 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-mission-wave17",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave17-blueprint-projection-alignment-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AI10",
+        "execution_order": 10,
+        "title": "planningops ready-implementation blueprint projection alignment",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/scripts/compile_plan_to_backlog.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AI20",
+        "execution_order": 20,
+        "title": "planningops projection gate blueprint completeness validation",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/scripts/verify_plan_projection.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AI30",
+        "execution_order": 30,
+        "title": "runtime mission wave17 review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-mission-wave17-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}

@@ -55,6 +55,34 @@ for token in [
 ]:
     assert token in issue_body, issue_body
 
+ready_item = json.loads(json.dumps(item))
+ready_item["workflow_state"] = "ready_implementation"
+ready_issue_body = mod.issue_body(
+    fixture_doc["execution_contract"]["source_of_truth"],
+    fixture_doc["execution_contract"]["plan_id"],
+    fixture_doc["execution_contract"]["plan_revision"],
+    ready_item,
+)
+for token in [
+    "## Implementation Blueprint Refs",
+    "interface_contract_refs:",
+    "package_topology_ref:",
+    "dependency_manifest_ref:",
+    "file_plan_ref:",
+]:
+    assert token in ready_issue_body, ready_issue_body
+
+dependent_item = json.loads(json.dumps(item))
+dependent_item["depends_on"] = [10, 20]
+apply_depends_body = mod.issue_body(
+    fixture_doc["execution_contract"]["source_of_truth"],
+    fixture_doc["execution_contract"]["plan_id"],
+    fixture_doc["execution_contract"]["plan_revision"],
+    dependent_item,
+    execution_order_issue_index={10: 1010, 20: 2020},
+)
+assert "- depends_on: `#1010,#2020`" in apply_depends_body, apply_depends_body
+
 # 4) Issue list pagination should aggregate every page and keep marker search stable.
 pages = {1: [], 2: []}
 for i in range(1, 101):
@@ -311,6 +339,48 @@ assert set(["initiative", "target_repo", "execution_order", "status", "component
     set(apply_result["field_updates"])
 ), apply_result
 assert "plan_lane" in apply_result["field_updates"], apply_result
+
+execution_order_issue_index = {10: 910}
+dependent_apply_item = json.loads(json.dumps(item_with_lane))
+dependent_apply_item["execution_order"] = 20
+dependent_apply_item["plan_item_id"] = "sample-002"
+dependent_apply_item["depends_on"] = [10]
+dependent_closed_issue = {
+    "number": 902,
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/902",
+    "body": "\n".join(
+        [
+            "- plan_id: `sample-pec-plan`",
+            "- plan_item_id: `sample-002`",
+            "- target_repo: `rather-not-work-on/platform-planningops`",
+        ]
+    ),
+    "state": "closed",
+}
+dependency_edit_calls = []
+
+
+def fake_edit_issue_with_dep(repo, issue_number, title, body):
+    dependency_edit_calls.append((repo, issue_number, title, body))
+
+
+mod.edit_issue = fake_edit_issue_with_dep
+mod.compile_item(
+    project=project,
+    source_of_truth=fixture_doc["execution_contract"]["source_of_truth"],
+    plan_id=fixture_doc["execution_contract"]["plan_id"],
+    plan_revision=fixture_doc["execution_contract"]["plan_revision"],
+    item=dependent_apply_item,
+    apply_mode=True,
+    open_issues=[],
+    closed_issues=[dependent_closed_issue],
+    allow_reopen_closed=True,
+    project_item_issue_index={},
+    execution_order_issue_index=execution_order_issue_index,
+)
+assert len(dependency_edit_calls) == 1, dependency_edit_calls
+assert "- depends_on: `#910`" in dependency_edit_calls[0][3], dependency_edit_calls[0][3]
+mod.edit_issue = fake_edit_issue
 
 # 8) Existing open issue drift should request/perform metadata sync.
 stale_open_issue = {

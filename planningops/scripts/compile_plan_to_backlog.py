@@ -7,8 +7,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from normalize_ready_implementation_blueprint_refs import load_defaults as load_blueprint_defaults
+from normalize_ready_implementation_blueprint_refs import normalize_issue_body
+
 
 CONTROL_REPO = "rather-not-work-on/platform-planningops"
+DEFAULT_BLUEPRINT_DEFAULTS_CONFIG = Path("planningops/config/ready-implementation-blueprint-defaults.json")
 
 COMPONENT_ENUM = {
     "planningops",
@@ -175,8 +183,26 @@ def validate_contract(contract_doc):
     return errors
 
 
-def issue_body(source_of_truth, plan_id, plan_revision, item):
-    depends = ",".join(str(x) for x in item["depends_on"]) if item["depends_on"] else "-"
+def format_depends_on(item, execution_order_issue_index=None):
+    depends_on = item.get("depends_on") or []
+    if not depends_on:
+        return "-"
+    if not execution_order_issue_index:
+        return ",".join(str(x) for x in depends_on)
+
+    refs = []
+    unresolved = []
+    for dep in depends_on:
+        issue_number = execution_order_issue_index.get(dep)
+        if issue_number:
+            refs.append(f"#{issue_number}")
+        else:
+            unresolved.append(str(dep))
+    return ",".join(refs + unresolved) if (refs or unresolved) else "-"
+
+
+def issue_body(source_of_truth, plan_id, plan_revision, item, blueprint_defaults_doc=None, execution_order_issue_index=None):
+    depends = format_depends_on(item, execution_order_issue_index=execution_order_issue_index)
     evidence_refs = [source_of_truth, item["primary_output"]]
     evidence_lines = "\n".join(f"- `{ref}`" for ref in evidence_refs)
     planning_context_lines = [
@@ -196,7 +222,7 @@ def issue_body(source_of_truth, plan_id, plan_revision, item):
     if item.get("plan_lane"):
         planning_context_lines.insert(-2, f"- plan_lane: `{item['plan_lane']}`")
 
-    return "\n".join(
+    body = "\n".join(
         [
             *planning_context_lines,
             "",
@@ -220,6 +246,17 @@ def issue_body(source_of_truth, plan_id, plan_revision, item):
             "- [ ] Project fields updated with evidence",
         ]
     )
+
+    if item.get("workflow_state") == "ready_implementation":
+        defaults_doc = blueprint_defaults_doc or load_blueprint_defaults(DEFAULT_BLUEPRINT_DEFAULTS_CONFIG)
+        normalized = normalize_issue_body(
+            issue_body=body,
+            target_repo=item.get("target_repo") or CONTROL_REPO,
+            defaults_doc=defaults_doc,
+        )
+        body = normalized["normalized_body"]
+
+    return body
 
 
 def parse_issue_metadata(body: str):
@@ -465,9 +502,29 @@ def field_option_id(fields, field_key: str, option_key: str):
     return field["id"], option_id
 
 
-def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_mode, open_issues, closed_issues, allow_reopen_closed, project_item_issue_index):
+def compile_item(
+    project,
+    source_of_truth,
+    plan_id,
+    plan_revision,
+    item,
+    apply_mode,
+    open_issues,
+    closed_issues,
+    allow_reopen_closed,
+    project_item_issue_index,
+    blueprint_defaults_doc=None,
+    execution_order_issue_index=None,
+):
     desired_title = f"plan: [{item['execution_order']}] {item['title']}"
-    desired_body = issue_body(source_of_truth, plan_id, plan_revision, item)
+    desired_body = issue_body(
+        source_of_truth,
+        plan_id,
+        plan_revision,
+        item,
+        blueprint_defaults_doc=blueprint_defaults_doc,
+        execution_order_issue_index=execution_order_issue_index,
+    )
     issue, dedup_strategy = find_issue_for_item(open_issues, plan_id, item["plan_item_id"], item["target_repo"])
     reused_closed_issue = False
     reopened_closed_issue = False
@@ -502,6 +559,8 @@ def compile_item(project, source_of_truth, plan_id, plan_revision, item, apply_m
         open_issues.append(
             {"number": issue_number, "url": issue_url, "title": desired_title, "body": desired_body, "state": "open"}
         )
+    if issue_number is not None and execution_order_issue_index is not None:
+        execution_order_issue_index[item["execution_order"]] = issue_number
 
     metadata_sync_required = False
     metadata_sync_action = "none"
@@ -582,6 +641,11 @@ def main():
     parser = argparse.ArgumentParser(description="Compile Plan Execution Contract (PEC v1) into backlog issues and project fields")
     parser.add_argument("--contract-file", required=True, help="PEC v1 JSON file path")
     parser.add_argument("--config", default="planningops/config/project-field-ids.json", help="Project field config JSON path")
+    parser.add_argument(
+        "--blueprint-defaults-config",
+        default=str(DEFAULT_BLUEPRINT_DEFAULTS_CONFIG),
+        help="Ready-implementation blueprint defaults config path",
+    )
     parser.add_argument("--apply", action="store_true", help="Apply GitHub mutations (default dry-run)")
     parser.add_argument("--allow-reopen-closed", action="store_true", help="Allow closed dedup matches and reopen in apply mode")
     parser.add_argument("--output", default="planningops/artifacts/validation/plan-compile-report.json", help="Output report path")
@@ -606,9 +670,11 @@ def main():
     ec = contract_doc["execution_contract"]
     items = sorted(ec["items"], key=lambda x: x["execution_order"])
     project = load_project_config(Path(args.config))
+    blueprint_defaults_doc = load_blueprint_defaults(Path(args.blueprint_defaults_config))
     open_issues = list_existing_issues(CONTROL_REPO, "open")
     closed_issues = list_existing_issues(CONTROL_REPO, "closed") if args.allow_reopen_closed else []
     project_item_issue_index = {}
+    execution_order_issue_index = {}
 
     report.update(
         {
@@ -635,6 +701,8 @@ def main():
                     closed_issues,
                     args.allow_reopen_closed,
                     project_item_issue_index,
+                    blueprint_defaults_doc,
+                    execution_order_issue_index,
                 )
             )
     except Exception as exc:

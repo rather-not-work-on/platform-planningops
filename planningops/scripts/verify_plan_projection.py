@@ -32,6 +32,12 @@ REQUIRED_ITEM_KEYS = [
 ]
 
 PLAN_ITEM_ID_RE = re.compile(r"plan_item_id:\s*`([^`]+)`")
+BLUEPRINT_KEYS = [
+    "interface_contract_refs",
+    "package_topology_ref",
+    "dependency_manifest_ref",
+    "file_plan_ref",
+]
 
 
 def run(cmd):
@@ -63,6 +69,23 @@ def parse_plan_item_id(issue_body: str):
     if not match:
         return None
     return match.group(1).strip()
+
+
+def parse_blueprint_refs(issue_body: str):
+    refs = {}
+    for key in BLUEPRINT_KEYS:
+        refs[key] = None
+        match = re.search(rf"(?mi)^{key}:\s*(.+?)\s*$", issue_body or "")
+        if match:
+            value = match.group(1).strip()
+            if value:
+                refs[key] = value
+    missing = [key for key in BLUEPRINT_KEYS if not refs.get(key)]
+    return {
+        "refs": refs,
+        "missing": missing,
+        "complete": len(missing) == 0,
+    }
 
 
 def validate_contract(contract_doc):
@@ -109,15 +132,17 @@ def build_expected_projection(contract_doc, initiative):
     expected = {}
     for item in contract_doc["execution_contract"]["items"]:
         plan_item_id = item["plan_item_id"]
+        workflow_state = normalize_key(item["workflow_state"])
         expected[plan_item_id] = {
             "plan_item_id": plan_item_id,
             "execution_order": as_int(item["execution_order"]),
             "target_repo": item["target_repo"],
             "component": normalize_key(item["component"]),
-            "workflow_state": normalize_key(item["workflow_state"]),
+            "workflow_state": workflow_state,
             "loop_profile": normalize_key(item["loop_profile"]),
             "status": WORKFLOW_TO_STATUS[item["workflow_state"]],
             "initiative": initiative,
+            "blueprint_required": workflow_state == "ready_implementation",
         }
     return expected
 
@@ -139,7 +164,8 @@ def load_project_items(owner, project_number, limit):
     )
     if rc != 0:
         raise RuntimeError(f"failed to fetch project items: {err}")
-    return json.loads(out).get("items", [])
+    items = json.loads(out).get("items", [])
+    return items, len(items) >= limit
 
 
 def load_snapshot_items(snapshot_file: Path):
@@ -179,6 +205,9 @@ def build_actual_projection(items, initiative_filter):
             "status": normalize_key(item.get("status")),
             "initiative": initiative,
         }
+        blueprint_meta = parse_blueprint_refs(content.get("body") or "")
+        row["blueprint_complete"] = blueprint_meta["complete"]
+        row["blueprint_missing"] = blueprint_meta["missing"]
 
         if plan_item_id in by_plan_item:
             duplicate_plan_item_ids.append(plan_item_id)
@@ -226,6 +255,17 @@ def compare_projection(expected, actual, fail_on_unexpected):
                         "actual": act[field],
                     }
                 )
+        if exp.get("blueprint_required") and not act.get("blueprint_complete", False):
+            mismatches.append(
+                {
+                    "plan_item_id": plan_item_id,
+                    "issue_number": act.get("issue_number"),
+                    "field": "blueprint_complete",
+                    "expected": True,
+                    "actual": False,
+                    "missing_refs": act.get("blueprint_missing", []),
+                }
+            )
 
     if fail_on_unexpected:
         for plan_item_id, act in actual.items():
@@ -248,7 +288,7 @@ def main():
     parser.add_argument("--owner", default="rather-not-work-on", help="GitHub org/user owner for project lookup")
     parser.add_argument("--project-number", type=int, default=2, help="GitHub project number")
     parser.add_argument("--initiative", default="unified-personal-agent-platform", help="Initiative field filter")
-    parser.add_argument("--limit", type=int, default=200, help="Project item-list limit")
+    parser.add_argument("--limit", type=int, default=1000, help="Project item-list limit")
     parser.add_argument("--fail-on-unexpected", action="store_true", help="Fail when project has plan_item_id not in contract")
     parser.add_argument("--strict", action="store_true", help="Return non-zero on drift")
     parser.add_argument(
@@ -291,17 +331,20 @@ def main():
     if args.snapshot_file:
         items = load_snapshot_items(Path(args.snapshot_file))
         mode = "snapshot"
+        report["project_items_limit_hit"] = False
     else:
-        items = load_project_items(args.owner, args.project_number, args.limit)
+        items, limit_hit = load_project_items(args.owner, args.project_number, args.limit)
         mode = "live"
+        report["project_items_limit_hit"] = limit_hit
     report["mode"] = mode
     report["project_items_scanned"] = len(items)
 
     actual, duplicate_ids = build_actual_projection(items, args.initiative)
+    relevant_duplicate_ids = sorted(plan_item_id for plan_item_id in duplicate_ids if plan_item_id in expected)
     missing, mismatches, unexpected = compare_projection(expected, actual, args.fail_on_unexpected)
 
     reasons = []
-    if duplicate_ids:
+    if relevant_duplicate_ids:
         reasons.append("duplicate_plan_item_id_in_project")
     if missing:
         reasons.append("projection_item_missing")
@@ -315,6 +358,8 @@ def main():
             "actual_items_total": len(actual),
             "duplicate_plan_item_id_count": len(duplicate_ids),
             "duplicate_plan_item_ids": duplicate_ids,
+            "relevant_duplicate_plan_item_id_count": len(relevant_duplicate_ids),
+            "relevant_duplicate_plan_item_ids": relevant_duplicate_ids,
             "missing_count": len(missing),
             "mismatch_count": len(mismatches),
             "unexpected_count": len(unexpected),
