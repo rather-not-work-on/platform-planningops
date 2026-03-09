@@ -1,0 +1,115 @@
+{
+  "generated_at_utc": "2026-03-09T03:00:28.985968+00:00",
+  "wave_id": "uap-runtime-behavior-wave5",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/fixtures/runtime-behavior-wave5-interface-review-spec.json",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 181,
+      "state": "CLOSED",
+      "title": "plan: [20] monday orchestrator and executor port adoption",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/181",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 183,
+      "state": "CLOSED",
+      "title": "plan: [40] provider adapter typed adoption",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/183",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 185,
+      "state": "CLOSED",
+      "title": "plan: [60] observability replay and sink typed adoption",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/185",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "gap_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/initiatives/unified-personal-agent-platform/20-repos/platform-contracts/30-execution-plan/runtime-interface-contract-gap-matrix.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass"
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/contract-bindings/src/runtime_ports.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/orchestrator/src/orchestrator_ports.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/executor-ralph-loop/src/ralph_loop_executor.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/services/provider-runtime/src/provider_driver.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/adapters/provider-codex/src/driver.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/adapters/provider-claude/src/driver.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/adapters/provider-local-llm/src/driver.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-provider-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/services/telemetry-gateway/src/telemetry_ports.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/buffer/replay-worker/src/replay_worker.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway/sinks/langfuse-sink/src/langfuse_sink.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-observability-gateway"
+    }
+  ],
+  "check_count": 14,
+  "failure_count": 0,
+  "verdict": "pass"
+}
