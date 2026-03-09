@@ -1,0 +1,108 @@
+{
+  "generated_at_utc": "2026-03-09T01:57:36.163341+00:00",
+  "plan_id": "uap-runtime-behavior-wave5",
+  "issue_count": 7,
+  "missing_labels": [],
+  "missing_project_items": [],
+  "rows": [
+    {
+      "plan_item_id": "W10",
+      "number": 180,
+      "title": "plan: [10] monday runtime port surface",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/180",
+      "labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    },
+    {
+      "plan_item_id": "W11",
+      "number": 181,
+      "title": "plan: [20] monday orchestrator and executor port adoption",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/181",
+      "labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    },
+    {
+      "plan_item_id": "W20",
+      "number": 182,
+      "title": "plan: [30] provider runtime driver contract surface",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/182",
+      "labels": [
+        "area/provider",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    },
+    {
+      "plan_item_id": "W21",
+      "number": 183,
+      "title": "plan: [40] provider adapter typed adoption",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/183",
+      "labels": [
+        "area/provider",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    },
+    {
+      "plan_item_id": "W30",
+      "number": 184,
+      "title": "plan: [50] observability ingest envelope and ports",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/184",
+      "labels": [
+        "area/observability",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    },
+    {
+      "plan_item_id": "W31",
+      "number": 185,
+      "title": "plan: [60] observability replay and sink typed adoption",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/185",
+      "labels": [
+        "area/observability",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    },
+    {
+      "plan_item_id": "W40",
+      "number": 186,
+      "title": "plan: [70] runtime behavior wave5 interface review",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/186",
+      "labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "project_title": "UAP PlanningOps Schema Demo 2026-02-28",
+      "project_status": "Todo"
+    }
+  ],
+  "verdict": "pass"
+}
