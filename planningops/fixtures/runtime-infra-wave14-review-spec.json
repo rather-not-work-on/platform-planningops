@@ -1,0 +1,46 @@
+{
+  "wave_id": "uap-runtime-infra-wave14",
+  "issues_repo": "rather-not-work-on/platform-planningops",
+  "required_closed_issues": [235],
+  "gap_checks": [
+    {
+      "path": "docs/workbench/unified-personal-agent-platform/plans/runtime-infra-wave14-oracle-rehearsal-issue-pack.md",
+      "must_contain": [
+        "local remains the default execution profile",
+        "Oracle remains rehearsal-only",
+        "planningops owns portability evidence"
+      ]
+    }
+  ],
+  "file_checks": [
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/federation/run_wave14_oracle_rehearsal.py",
+      "must_contain": [
+        "run_local_runtime_stack_smoke.py",
+        "\"default_profile_preserved\"",
+        "\"oracle_rehearsal_only\""
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/test_wave14_oracle_rehearsal_contract.sh",
+      "must_contain": [
+        "rehearsal_supported_components",
+        "shared_profile_components",
+        "wave14 oracle rehearsal contract ok"
+      ]
+    },
+    {
+      "repo": "rather-not-work-on/platform-planningops",
+      "repo_dir": "platform-planningops",
+      "path": "planningops/scripts/run_wave14_oracle_rehearsal.py",
+      "must_contain": [
+        "\"run_wave14_oracle_rehearsal.py\"",
+        "runpy.run_path"
+      ]
+    }
+  ]
+}
