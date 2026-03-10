@@ -1,0 +1,62 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-mission-wave18",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave18-project-close-state-reconcile-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AJ10",
+        "execution_order": 10,
+        "title": "planningops closed issue project reconcile scan mode",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/scripts/sync_project_fields_after_issue_create.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AJ20",
+        "execution_order": 20,
+        "title": "planningops project close-state reconcile report",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/artifacts/validation/project-close-state-reconcile-report.json",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AJ30",
+        "execution_order": 30,
+        "title": "runtime mission wave18 review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-mission-wave18-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}

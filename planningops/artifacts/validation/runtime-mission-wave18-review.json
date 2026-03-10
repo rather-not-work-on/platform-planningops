@@ -1,0 +1,56 @@
+{
+  "generated_at_utc": "2026-03-09T14:18:44.836698+00:00",
+  "wave": "runtime-mission-wave18",
+  "plan_id": "uap-runtime-mission-wave18",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave18-project-close-state-reconcile-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "close_state_reconcile": {
+      "verdict": "pass",
+      "issues_total": 10,
+      "updated_count": 10,
+      "error_count": 0,
+      "done_issue_numbers": [
+        180,
+        190,
+        207,
+        213,
+        218,
+        223,
+        224,
+        234,
+        244,
+        251
+      ]
+    },
+    "live_projection_gate": {
+      "verdict": "pass",
+      "project_items_scanned": 210,
+      "project_items_limit_hit": false,
+      "missing_count": 0,
+      "mismatch_count": 0
+    },
+    "live_issue_loop_pilot": {
+      "selected_issue": 260,
+      "selected_plan_item_id": "AJ10",
+      "candidate_count_after_reconcile": 35,
+      "candidate_count_before_reconcile": 46,
+      "candidate_count_delta": 11,
+      "first_attempt_result": "issue_not_open",
+      "last_verdict": "pass",
+      "reason_code": "ok"
+    }
+  },
+  "decisions": [
+    "close-state drift reuses the existing project-field sync path instead of introducing a second reconcile implementation",
+    "targeted reconcile of known closed candidates is sufficient to reduce current live-intake noise immediately",
+    "remaining stale cards should be handled by an automatic close-event sync or scheduled full reconcile, not by repeated manual wave-specific repair"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave19",
+      "title": "automatic close-event project sync or scheduled full reconcile",
+      "reason": "candidate_count dropped from 46 to 35, but newly closed cards like #256 remain noise until another reconcile pass runs"
+    }
+  ]
+}

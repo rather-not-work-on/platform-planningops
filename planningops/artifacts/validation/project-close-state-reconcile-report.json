@@ -1,0 +1,211 @@
+{
+  "generated_at_utc": "2026-03-09T14:18:21.239250+00:00",
+  "mode": "apply",
+  "issues_total": 10,
+  "updated_count": 10,
+  "error_count": 0,
+  "results": [
+    {
+      "plan_item_id": "W10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 180,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/180",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "X10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 190,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/190",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "G10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 207,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/207",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m3_guardrails",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AA10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 213,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/213",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AB10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 218,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/218",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AD10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 223,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/223",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m3_guardrails",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AC10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 224,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/224",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m3_guardrails",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AE10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 234,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/234",
+      "issue_state": "closed",
+      "component": "planningops",
+      "workflow_state": "done",
+      "plan_lane": "m3_guardrails",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AG10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 244,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/244",
+      "issue_state": "closed",
+      "component": "runtime",
+      "workflow_state": "done",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "AH10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 251,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/251",
+      "issue_state": "closed",
+      "component": "planningops",
+      "workflow_state": "done",
+      "plan_lane": "m3_guardrails",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}

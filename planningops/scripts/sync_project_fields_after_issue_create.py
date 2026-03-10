@@ -24,6 +24,7 @@ DEFAULT_REPOS = [
     "rather-not-work-on/monday",
 ]
 DEFAULT_PLAN_ITEM_REGEX = r"^[A-Z][0-9]{2}$"
+ISSUE_STATE_CHOICES = {"open", "closed", "all"}
 WORKFLOW_TO_STATUS = {
     "backlog": "todo",
     "ready_contract": "todo",
@@ -72,8 +73,25 @@ def parse_issue_ref(raw: str):
     return match.group(1), int(match.group(2))
 
 
-def list_open_issues(repo: str):
-    rc, out, err = run(["gh", "issue", "list", "--repo", repo, "--state", "open", "--limit", "200", "--json", "number,title,url,body,state"])
+def list_issues(repo: str, issue_state: str):
+    normalized_state = normalize_option_key(issue_state) or "open"
+    if normalized_state not in ISSUE_STATE_CHOICES:
+        raise ValueError(f"unsupported issue_state: {issue_state}")
+    rc, out, err = run(
+        [
+            "gh",
+            "issue",
+            "list",
+            "--repo",
+            repo,
+            "--state",
+            normalized_state,
+            "--limit",
+            "400",
+            "--json",
+            "number,title,url,body,state",
+        ]
+    )
     if rc != 0:
         raise RuntimeError(f"failed to list issues for {repo}: {err}")
     rows = json.loads(out)
@@ -278,7 +296,7 @@ def collect_candidates(args):
     repos = [x.strip() for x in args.repos.split(",") if x.strip()]
     rows = []
     for repo in repos:
-        for issue in list_open_issues(repo):
+        for issue in list_issues(repo, args.issue_state):
             metadata = parse_metadata(issue["body"])
             plan_item_id = metadata.get("plan_item_id", "")
             if not plan_item_id:
@@ -414,6 +432,12 @@ def main():
         default=[],
         help="Explicit issue refs (owner/repo#number). Can be repeated.",
     )
+    parser.add_argument(
+        "--issue-state",
+        default="open",
+        choices=sorted(ISSUE_STATE_CHOICES),
+        help="Issue state scope for repo scan when --issue-ref is not used",
+    )
     args = parser.parse_args()
 
     project = load_config(Path(args.config))
@@ -423,6 +447,7 @@ def main():
         "project_number": project["project_number"],
         "project_id": project["project_id"],
         "plan_item_regex": args.plan_item_regex,
+        "issue_state": args.issue_state,
         "issues_total": 0,
         "updated_count": 0,
         "error_count": 0,
