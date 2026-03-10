@@ -1,0 +1,35 @@
+{
+  "generated_at_utc": "2026-03-10T13:48:00+00:00",
+  "wave": "runtime-mission-wave24",
+  "plan_id": "uap-runtime-mission-wave24",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave24-supervisor-inbox-summary-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "operator_summary_outputs": {
+      "run_markdown_sidecar": "implemented",
+      "last_run_markdown_sidecar": "implemented",
+      "status_action_lines": "implemented"
+    },
+    "representation_matrix": {
+      "ok": "Action: none",
+      "degraded": "Action: retry_live_after_cooldown",
+      "blocked": "Action: wait_for_cooldown_then_retry_live"
+    },
+    "local_contracts": {
+      "autonomous_supervisor_loop": "pass",
+      "uap_docs_workbench": "pass"
+    }
+  },
+  "decisions": [
+    "markdown summary is emitted from the operator report, not from raw cycle data, so human-facing presentation stays downstream of the machine contract",
+    "the summary stays intentionally compact and links back to the full summary and cycle evidence instead of duplicating logs",
+    "status and action are the first two human-readable fields because they are the minimum needed for inbox triage"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave25",
+      "title": "issue-loop inbox payload projection from operator summary",
+      "reason": "the markdown summary now exists, so the next step is a deterministic payload that recurring automation can emit directly into its inbox item"
+    }
+  ]
+}

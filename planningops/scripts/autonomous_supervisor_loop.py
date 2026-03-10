@@ -198,6 +198,31 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
     return report
 
 
+def build_operator_summary_markdown(operator_report: dict):
+    allowed_modes = operator_report.get("allowed_modes") or []
+    blocked_modes = operator_report.get("blocked_modes") or []
+    lines = [
+        "# Supervisor Operator Summary",
+        "",
+        f"- Status: {operator_report.get('status')}",
+        f"- Headline: {operator_report.get('headline')}",
+        f"- Action: {operator_report.get('operator_action')}",
+        f"- Wait Minutes: {operator_report.get('recommended_wait_minutes')}",
+        f"- Retry Mode: {operator_report.get('retry_mode')}",
+        f"- Allowed Modes: {', '.join(allowed_modes) if allowed_modes else 'none'}",
+        f"- Blocked Modes: {', '.join(blocked_modes) if blocked_modes else 'none'}",
+        f"- Needs Human Attention: {'yes' if operator_report.get('needs_human_attention') else 'no'}",
+        f"- Summary Path: {operator_report.get('summary_path')}",
+    ]
+    cycle_report_path = operator_report.get("cycle_report_path")
+    if cycle_report_path:
+        lines.append(f"- Cycle Report Path: {cycle_report_path}")
+    reason = operator_report.get("reason")
+    if reason:
+        lines.extend(["", "## Reason", "", reason])
+    return "\n".join(lines) + "\n"
+
+
 def build_issue_runner_command(args):
     cmd = [
         "python3",
@@ -575,13 +600,20 @@ def main():
     output_path = Path(args.output)
     operator_report_path = run_dir / "operator-report.json"
     last_operator_report_path = output_path.with_name(f"{output_path.stem}-operator-report.json")
+    operator_summary_path = run_dir / "operator-summary.md"
+    last_operator_summary_path = output_path.with_name(f"{output_path.stem}-operator-summary.md")
     summary["operator_report_path"] = str(operator_report_path)
     summary["operator_report_last_path"] = str(last_operator_report_path)
+    summary["operator_summary_path"] = str(operator_summary_path)
+    summary["operator_summary_last_path"] = str(last_operator_summary_path)
     save_json(output_path, summary)
     save_json(run_dir / "summary.json", summary)
     operator_report = build_operator_report(summary, output_path, run_dir)
     save_json(operator_report_path, operator_report)
     save_json(last_operator_report_path, operator_report)
+    operator_summary = build_operator_summary_markdown(operator_report)
+    operator_summary_path.write_text(operator_summary, encoding="utf-8")
+    last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=True, indent=2))
     return 0 if supervisor_verdict == "pass" else 1
 
