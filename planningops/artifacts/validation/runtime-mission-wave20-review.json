@@ -1,0 +1,35 @@
+{
+  "generated_at_utc": "2026-03-10T12:40:00+00:00",
+  "wave": "runtime-mission-wave20",
+  "plan_id": "uap-runtime-mission-wave20",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave20-github-rate-limit-resilience-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "runner_hardening": {
+      "issue_doc_cache": "implemented",
+      "project_items_snapshot_fallback": "implemented",
+      "auto_mode_behavior": "dry-run uses snapshot fallback when rate-limited; mutating apply mode fails live instead of silently degrading"
+    },
+    "local_contracts": {
+      "issue_loop_runner_multi_repo_intake": "pass",
+      "sync_project_fields_after_issue_create": "pass",
+      "uap_docs_workbench": "pass"
+    },
+    "live_observation": {
+      "status": "rate_limit_observed",
+      "reason": "GitHub GraphQL API rate limit exceeded during repeated project item listing on 2026-03-10"
+    }
+  },
+  "decisions": [
+    "issue documents are cached in-process so reconcile, selection, and dependency checks reuse the same issue payload",
+    "project item snapshots are refreshed on successful live reads and can be reused only when fallback policy allows it",
+    "auto fallback is disabled for mutating apply mode to avoid hiding stale GitHub data during state-changing runs"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave21",
+      "title": "rate-limit aware loop reporting and backoff guidance",
+      "reason": "the runner now has snapshot fallback but still surfaces raw API errors; the next step is a clearer operator-facing rate-limit report and cooldown guidance"
+    }
+  ]
+}

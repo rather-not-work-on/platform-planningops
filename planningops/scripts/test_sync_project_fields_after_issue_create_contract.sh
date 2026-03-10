@@ -88,8 +88,22 @@ assert closed_dry["workflow_state"] == "done", closed_dry
 assert "workflow_state(done)" in closed_dry["field_updates"], closed_dry
 
 calls = []
-mod.ensure_project_item = lambda owner, project_number, issue_url: "PVTI_TEST_1"
-mod.find_project_item_id = lambda owner, project_number, issue_number, issue_repo, issue_index: "PVTI_TEST_1"
+lookup_calls = []
+ensure_calls = []
+
+
+def fake_find_project_item_id(owner, project_number, issue_number, issue_repo, issue_index):
+    lookup_calls.append((owner, project_number, issue_number, issue_repo))
+    return "PVTI_TEST_1"
+
+
+def fake_ensure_project_item(owner, project_number, issue_url):
+    ensure_calls.append((owner, project_number, issue_url))
+    return "PVTI_TEST_1"
+
+
+mod.ensure_project_item = fake_ensure_project_item
+mod.find_project_item_id = fake_find_project_item_id
 mod.set_text_field = lambda project_id, item_id, field_id, text: calls.append(("text", field_id, text))
 mod.set_number_field = lambda project_id, item_id, field_id, number_value: calls.append(("number", field_id, number_value))
 mod.set_select_field = lambda project_id, item_id, field_id, option_id: calls.append(("select", field_id, option_id))
@@ -98,6 +112,8 @@ apply_row = mod.sync_one_issue(project, issue, apply_mode=True, issue_index={})
 updated = set(apply_row["field_updates"])
 assert {"component", "workflow_state", "plan_lane"}.issubset(updated), apply_row
 assert {"status", "initiative", "target_repo", "execution_order", "loop_profile"}.issubset(updated), apply_row
+assert lookup_calls, lookup_calls
+assert ensure_calls == [], ensure_calls
 
 # Ensure we touched the expected select options.
 select_calls = [c for c in calls if c[0] == "select"]

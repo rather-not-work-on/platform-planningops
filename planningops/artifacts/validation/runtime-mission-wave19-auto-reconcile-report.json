@@ -1,0 +1,50 @@
+{
+  "generated_at_utc": "2026-03-10T12:30:09.605996+00:00",
+  "wave": "runtime-mission-wave19",
+  "before": {
+    "candidate_count": 27,
+    "candidate_numbers_head": [
+      264,
+      257,
+      261,
+      265,
+      182,
+      192,
+      215,
+      220,
+      227,
+      228
+    ]
+  },
+  "closed_issue_reconcile": {
+    "requested_mode": "apply",
+    "effective_mode": "apply",
+    "candidate_scope_count": 27,
+    "leading_closed_candidate_count": 0,
+    "status": "skipped",
+    "reason_code": "closed_issue_reconcile_not_needed",
+    "report_path": null,
+    "issues_total": 0,
+    "updated_count": 0,
+    "error_count": 0,
+    "verdict": "pass",
+    "issue_refs": []
+  },
+  "after": {
+    "candidate_count": 25,
+    "candidate_numbers_head": [
+      264,
+      265,
+      182,
+      192,
+      215,
+      220,
+      227,
+      228,
+      246,
+      184
+    ]
+  },
+  "candidate_count_delta": 2,
+  "verdict": "pass"
+}

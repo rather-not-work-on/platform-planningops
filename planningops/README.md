@@ -68,6 +68,8 @@ Example task keys:
 ```bash
 python3 planningops/scripts/ralph_loop_local.py --issue-number 18 --mode dry-run
 python3 planningops/scripts/issue_loop_runner.py --mode apply
+python3 planningops/scripts/issue_loop_runner.py --mode apply --closed-issue-reconcile-mode auto
+python3 planningops/scripts/issue_loop_runner.py --mode dry-run --project-items-snapshot-fallback auto
 python3 planningops/scripts/issue_loop_runner.py --mode dry-run --pec-preflight-mode strict-pec --pec-contract-file planningops/fixtures/plan-execution-contract-sample.json --no-feedback
 python3 planningops/scripts/compile_plan_to_backlog.py --contract-file planningops/fixtures/plan-execution-contract-sample.json
 python3 planningops/scripts/build_meta_plan_graph.py --contract-file planningops/fixtures/meta-plan-graph-sample.json --strict
