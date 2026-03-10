@@ -15,6 +15,8 @@ Cycle report artifact:
 - `planningops/artifacts/supervisor/<run-id>/cycle-<nn>/cycle-report.json`
 Operator report artifact:
 - `planningops/artifacts/supervisor/<run-id>/operator-report.json`
+Operator summary artifact:
+- `planningops/artifacts/supervisor/<run-id>/operator-summary.md`
 
 ## Required Decisions Per Cycle
 1. `last_verdict` and `reason_code`
@@ -72,6 +74,7 @@ Run summary must include:
 Output:
 - `planningops/artifacts/supervisor/last-run.json`
 - `planningops/artifacts/supervisor/last-run-operator-report.json`
+- `planningops/artifacts/supervisor/last-run-operator-summary.md`
 
 ## Testability Mapping
 - implementation:

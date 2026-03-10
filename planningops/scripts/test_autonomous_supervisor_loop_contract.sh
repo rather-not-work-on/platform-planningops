@@ -52,6 +52,9 @@ with tempfile.TemporaryDirectory() as td:
     converged_operator = json.loads(Path(converged["operator_report_last_path"]).read_text(encoding="utf-8"))
     assert converged_operator["status"] == "ok", converged_operator
     assert converged_operator["operator_action"] == "none", converged_operator
+    converged_summary = Path(converged["operator_summary_last_path"]).read_text(encoding="utf-8")
+    assert "# Supervisor Operator Summary" in converged_summary, converged_summary
+    assert "Action: none" in converged_summary, converged_summary
 
     # 2) default behavior should stop when experiment trigger is detected.
     out_exp_stop = td_path / "supervisor-experiment-stop.json"
@@ -215,6 +218,9 @@ with tempfile.TemporaryDirectory() as td:
     assert snapshot_operator["status"] == "degraded", snapshot_operator
     assert snapshot_operator["operator_action"] == "retry_live_after_cooldown", snapshot_operator
     assert "dry-run" in snapshot_operator["allowed_modes"], snapshot_operator
+    snapshot_summary = Path(snapshot_doc["operator_summary_last_path"]).read_text(encoding="utf-8")
+    assert "Status: degraded" in snapshot_summary, snapshot_summary
+    assert "Action: retry_live_after_cooldown" in snapshot_summary, snapshot_summary
 
     # 5) explicit github rate-limit failure must stop with dedicated reason and guidance.
     rate_limit_sequence = td_path / "rate-limit-sequence.json"
@@ -274,6 +280,9 @@ with tempfile.TemporaryDirectory() as td:
     assert rate_limit_operator["status"] == "blocked", rate_limit_operator
     assert rate_limit_operator["operator_action"] == "wait_for_cooldown_then_retry_live", rate_limit_operator
     assert rate_limit_operator["blocked_modes"] == ["apply"], rate_limit_operator
+    rate_limit_summary = Path(rate_limit_doc["operator_summary_last_path"]).read_text(encoding="utf-8")
+    assert "Status: blocked" in rate_limit_summary, rate_limit_summary
+    assert "Action: wait_for_cooldown_then_retry_live" in rate_limit_summary, rate_limit_summary
 
 print("autonomous supervisor loop contract tests ok")
 PY
