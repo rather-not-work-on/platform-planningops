@@ -55,6 +55,9 @@ with tempfile.TemporaryDirectory() as td:
     converged_summary = Path(converged["operator_summary_last_path"]).read_text(encoding="utf-8")
     assert "# Supervisor Operator Summary" in converged_summary, converged_summary
     assert "Action: none" in converged_summary, converged_summary
+    converged_inbox = json.loads(Path(converged["inbox_payload_last_path"]).read_text(encoding="utf-8"))
+    assert converged_inbox["status"] == "ok", converged_inbox
+    assert converged_inbox["title"].startswith("[OK]"), converged_inbox
 
     # 2) default behavior should stop when experiment trigger is detected.
     out_exp_stop = td_path / "supervisor-experiment-stop.json"
@@ -221,6 +224,9 @@ with tempfile.TemporaryDirectory() as td:
     snapshot_summary = Path(snapshot_doc["operator_summary_last_path"]).read_text(encoding="utf-8")
     assert "Status: degraded" in snapshot_summary, snapshot_summary
     assert "Action: retry_live_after_cooldown" in snapshot_summary, snapshot_summary
+    snapshot_inbox = json.loads(Path(snapshot_doc["inbox_payload_last_path"]).read_text(encoding="utf-8"))
+    assert snapshot_inbox["status"] == "degraded", snapshot_inbox
+    assert "retry_live_after_cooldown" in snapshot_inbox["body_markdown"], snapshot_inbox
 
     # 5) explicit github rate-limit failure must stop with dedicated reason and guidance.
     rate_limit_sequence = td_path / "rate-limit-sequence.json"
@@ -283,6 +289,9 @@ with tempfile.TemporaryDirectory() as td:
     rate_limit_summary = Path(rate_limit_doc["operator_summary_last_path"]).read_text(encoding="utf-8")
     assert "Status: blocked" in rate_limit_summary, rate_limit_summary
     assert "Action: wait_for_cooldown_then_retry_live" in rate_limit_summary, rate_limit_summary
+    rate_limit_inbox = json.loads(Path(rate_limit_doc["inbox_payload_last_path"]).read_text(encoding="utf-8"))
+    assert rate_limit_inbox["status"] == "blocked", rate_limit_inbox
+    assert rate_limit_inbox["attachments"][0].endswith("-operator-summary.md"), rate_limit_inbox
 
 print("autonomous supervisor loop contract tests ok")
 PY

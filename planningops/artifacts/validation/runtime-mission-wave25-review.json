@@ -1,0 +1,35 @@
+{
+  "generated_at_utc": "2026-03-10T14:02:00+00:00",
+  "wave": "runtime-mission-wave25",
+  "plan_id": "uap-runtime-mission-wave25",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave25-supervisor-inbox-payload-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "inbox_payload_outputs": {
+      "run_json_sidecar": "implemented",
+      "last_run_json_sidecar": "implemented",
+      "attachments": "operator summary + full summary + optional cycle report"
+    },
+    "payload_projection": {
+      "title": "implemented",
+      "body_markdown": "implemented",
+      "action_fields": "implemented"
+    },
+    "local_contracts": {
+      "autonomous_supervisor_loop": "pass",
+      "uap_docs_workbench": "pass"
+    }
+  },
+  "decisions": [
+    "the inbox payload is derived from the operator report so automation handoff stays downstream of the stable supervisor contract",
+    "attachments are explicit paths instead of inline evidence duplication to keep payloads compact and auditable",
+    "publishing is intentionally out of scope so the payload can be validated locally without network side effects"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave26",
+      "title": "autonomous schedule/report runner from inbox payload",
+      "reason": "the payload is now ready, so the next step is a local automation wrapper that reads it and emits a final operator-facing run report"
+    }
+  ]
+}

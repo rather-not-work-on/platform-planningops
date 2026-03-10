@@ -17,6 +17,8 @@ Operator report artifact:
 - `planningops/artifacts/supervisor/<run-id>/operator-report.json`
 Operator summary artifact:
 - `planningops/artifacts/supervisor/<run-id>/operator-summary.md`
+Inbox payload artifact:
+- `planningops/artifacts/supervisor/<run-id>/inbox-payload.json`
 
 ## Required Decisions Per Cycle
 1. `last_verdict` and `reason_code`
@@ -75,6 +77,7 @@ Output:
 - `planningops/artifacts/supervisor/last-run.json`
 - `planningops/artifacts/supervisor/last-run-operator-report.json`
 - `planningops/artifacts/supervisor/last-run-operator-summary.md`
+- `planningops/artifacts/supervisor/last-run-inbox-payload.json`
 
 ## Testability Mapping
 - implementation:

@@ -223,6 +223,40 @@ def build_operator_summary_markdown(operator_report: dict):
     return "\n".join(lines) + "\n"
 
 
+def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
+    attachments = [str(operator_summary_path), str(operator_report.get("summary_path"))]
+    cycle_report_path = operator_report.get("cycle_report_path")
+    if cycle_report_path:
+        attachments.append(str(cycle_report_path))
+
+    lines = [
+        f"Status: {operator_report.get('status')}",
+        f"Headline: {operator_report.get('headline')}",
+        f"Action: {operator_report.get('operator_action')}",
+        f"Wait Minutes: {operator_report.get('recommended_wait_minutes')}",
+        f"Retry Mode: {operator_report.get('retry_mode')}",
+        f"Allowed Modes: {', '.join(operator_report.get('allowed_modes') or []) or 'none'}",
+        f"Blocked Modes: {', '.join(operator_report.get('blocked_modes') or []) or 'none'}",
+        f"Needs Human Attention: {'yes' if operator_report.get('needs_human_attention') else 'no'}",
+    ]
+    reason = operator_report.get("reason")
+    if reason:
+        lines.extend(["", "Reason:", reason])
+
+    return {
+        "generated_at_utc": now_utc(),
+        "title": f"[{str(operator_report.get('status') or 'unknown').upper()}] {operator_report.get('headline')}",
+        "status": operator_report.get("status"),
+        "headline": operator_report.get("headline"),
+        "operator_action": operator_report.get("operator_action"),
+        "recommended_wait_minutes": operator_report.get("recommended_wait_minutes"),
+        "retry_mode": operator_report.get("retry_mode"),
+        "needs_human_attention": operator_report.get("needs_human_attention"),
+        "attachments": attachments,
+        "body_markdown": "\n".join(lines) + "\n",
+    }
+
+
 def build_issue_runner_command(args):
     cmd = [
         "python3",
@@ -602,10 +636,14 @@ def main():
     last_operator_report_path = output_path.with_name(f"{output_path.stem}-operator-report.json")
     operator_summary_path = run_dir / "operator-summary.md"
     last_operator_summary_path = output_path.with_name(f"{output_path.stem}-operator-summary.md")
+    inbox_payload_path = run_dir / "inbox-payload.json"
+    last_inbox_payload_path = output_path.with_name(f"{output_path.stem}-inbox-payload.json")
     summary["operator_report_path"] = str(operator_report_path)
     summary["operator_report_last_path"] = str(last_operator_report_path)
     summary["operator_summary_path"] = str(operator_summary_path)
     summary["operator_summary_last_path"] = str(last_operator_summary_path)
+    summary["inbox_payload_path"] = str(inbox_payload_path)
+    summary["inbox_payload_last_path"] = str(last_inbox_payload_path)
     save_json(output_path, summary)
     save_json(run_dir / "summary.json", summary)
     operator_report = build_operator_report(summary, output_path, run_dir)
@@ -614,6 +652,9 @@ def main():
     operator_summary = build_operator_summary_markdown(operator_report)
     operator_summary_path.write_text(operator_summary, encoding="utf-8")
     last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
+    inbox_payload = build_inbox_payload(operator_report, last_operator_summary_path)
+    save_json(inbox_payload_path, inbox_payload)
+    save_json(last_inbox_payload_path, inbox_payload)
     print(json.dumps(summary, ensure_ascii=True, indent=2))
     return 0 if supervisor_verdict == "pass" else 1
 
