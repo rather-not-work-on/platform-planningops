@@ -45,6 +45,7 @@ with tempfile.TemporaryDirectory() as td:
     assert converged["executed_cycles"] == 2, converged
     assert converged["cycles"][0]["experiment_trigger"]["triggered"] is True, converged
     assert converged["cycles"][1]["replenishment_candidates_count"] == 0, converged
+    assert converged["cycles"][0]["project_items_rate_limit_fallback_used"] is False, converged
 
     # 2) default behavior should stop when experiment trigger is detected.
     out_exp_stop = td_path / "supervisor-experiment-stop.json"
@@ -121,6 +122,81 @@ with tempfile.TemporaryDirectory() as td:
     assert fail_doc["supervisor_verdict"] == "fail", fail_doc
     assert fail_doc["stop_reason"] == "quality_gate_fail", fail_doc
     assert fail_doc["cycles"][0]["reason_code"] == "verdict_consistency_error", fail_doc
+
+    # 4) snapshot-backed convergence must remain explicit in the stop reason.
+    snapshot_sequence = td_path / "snapshot-sequence.json"
+    snapshot_sequence.write_text(
+        json.dumps(
+            {
+                "cycles": [
+                    {
+                        "rc": 0,
+                        "loop_result": {
+                            "selected_issue": 401,
+                            "last_verdict": "pass",
+                            "reason_code": "ok",
+                            "auto_paused": False,
+                            "replenishment_candidates_count": 0,
+                            "selection_trace": {
+                                "selected": {"uncertainty_level": "low", "simulation_required": False},
+                                "project_items_source": "snapshot",
+                                "project_items_rate_limit_fallback_used": True,
+                                "project_items_rate_limit_error": "GraphQL: API rate limit exceeded for user",
+                            },
+                            "final_loop_profile": "L3 Implementation-TDD",
+                        },
+                    },
+                    {
+                        "rc": 0,
+                        "loop_result": {
+                            "selected_issue": 402,
+                            "last_verdict": "pass",
+                            "reason_code": "ok",
+                            "auto_paused": False,
+                            "replenishment_candidates_count": 0,
+                            "selection_trace": {
+                                "selected": {"uncertainty_level": "low", "simulation_required": False},
+                                "project_items_source": "snapshot",
+                                "project_items_rate_limit_fallback_used": True,
+                                "project_items_rate_limit_error": "GraphQL: API rate limit exceeded for user",
+                            },
+                            "final_loop_profile": "L3 Implementation-TDD",
+                        },
+                    }
+                ]
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    out_snapshot = td_path / "supervisor-snapshot.json"
+    rc_snapshot, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "3",
+            "--convergence-pass-streak",
+            "2",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(snapshot_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--output",
+            str(out_snapshot),
+        ]
+    )
+    assert rc_snapshot == 0, rc_snapshot
+    snapshot_doc = json.loads(out_snapshot.read_text(encoding="utf-8"))
+    assert snapshot_doc["supervisor_verdict"] == "pass", snapshot_doc
+    assert snapshot_doc["stop_reason"] == "converged_with_snapshot_fallback", snapshot_doc
+    assert snapshot_doc["cycles"][0]["project_items_source"] == "snapshot", snapshot_doc
+    assert snapshot_doc["cycles"][0]["project_items_rate_limit_fallback_used"] is True, snapshot_doc
 
 print("autonomous supervisor loop contract tests ok")
 PY

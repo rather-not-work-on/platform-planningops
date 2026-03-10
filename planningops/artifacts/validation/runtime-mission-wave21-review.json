@@ -1,0 +1,31 @@
+{
+  "generated_at_utc": "2026-03-10T12:45:00+00:00",
+  "wave": "runtime-mission-wave21",
+  "plan_id": "uap-runtime-mission-wave21",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave21-supervisor-rate-limit-reporting-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "supervisor_passthrough": {
+      "project_items_snapshot": "implemented",
+      "project_items_snapshot_fallback": "implemented",
+      "degraded_convergence_reason": "converged_with_snapshot_fallback"
+    },
+    "local_contracts": {
+      "autonomous_supervisor_loop": "pass",
+      "issue_loop_runner_multi_repo_intake": "pass",
+      "uap_docs_workbench": "pass"
+    }
+  },
+  "decisions": [
+    "supervisor forwards runner snapshot controls instead of hardcoding live-only intake assumptions",
+    "per-cycle reports now surface project item data source and fallback usage so degraded runs are inspectable",
+    "snapshot-backed convergence stays pass but uses a distinct stop reason to avoid being mistaken for full live convergence"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave22",
+      "title": "operator-facing cooldown and retry guidance for GitHub API pressure",
+      "reason": "the supervisor now reports degraded convergence, but operators still need a compact cooldown / retry recommendation artifact"
+    }
+  ]
+}

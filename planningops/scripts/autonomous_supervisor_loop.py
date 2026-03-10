@@ -93,6 +93,10 @@ def build_issue_runner_command(args):
         str(args.project_num),
         "--initiative",
         args.initiative,
+        "--project-items-snapshot",
+        args.issue_runner_project_items_snapshot,
+        "--project-items-snapshot-fallback",
+        args.issue_runner_project_items_snapshot_fallback,
     ]
     if args.mode == "dry-run":
         cmd.append("--no-feedback")
@@ -227,6 +231,15 @@ def parse_args():
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--issue-runner-script", default="planningops/scripts/issue_loop_runner.py")
     parser.add_argument(
+        "--issue-runner-project-items-snapshot",
+        default="planningops/artifacts/loop-runner/project-items-snapshot.json",
+    )
+    parser.add_argument(
+        "--issue-runner-project-items-snapshot-fallback",
+        choices=["off", "auto", "require"],
+        default="auto",
+    )
+    parser.add_argument(
         "--loop-result-sequence-file",
         default=None,
         help="Optional simulation sequence file with loop_result rows for deterministic contract tests",
@@ -311,6 +324,10 @@ def main():
         backlog_gate = run_backlog_gate(args, cycle_dir, candidate_file)
         backlog_verdict = str((backlog_gate.get("report") or {}).get("verdict", "")).lower()
         backlog_failed = backlog_gate.get("rc", 1) != 0 or backlog_verdict == "fail"
+        selection_trace = loop_result.get("selection_trace") or {}
+        project_items_source = selection_trace.get("project_items_source")
+        project_items_rate_limit_fallback_used = bool(selection_trace.get("project_items_rate_limit_fallback_used"))
+        project_items_rate_limit_error = selection_trace.get("project_items_rate_limit_error")
 
         cycle_record = {
             "cycle": cycle_index,
@@ -333,6 +350,9 @@ def main():
                 "verdict": (experiment_executor.get("report") or {}).get("verdict"),
                 "selected_option": (experiment_executor.get("report") or {}).get("selected_option"),
             },
+            "project_items_source": project_items_source,
+            "project_items_rate_limit_fallback_used": project_items_rate_limit_fallback_used,
+            "project_items_rate_limit_error": project_items_rate_limit_error,
             "backlog_gate": {
                 "rc": backlog_gate.get("rc"),
                 "report_path": backlog_gate.get("report_path"),
@@ -376,8 +396,12 @@ def main():
             stop_details = {"cycle": cycle_index, "reasons": experiment["reasons"]}
             break
         if pass_streak >= args.convergence_pass_streak and int(cycle_record["replenishment_candidates_count"]) == 0:
-            stop_reason = "converged"
-            stop_details = {"cycle": cycle_index, "pass_streak": pass_streak}
+            if project_items_rate_limit_fallback_used:
+                stop_reason = "converged_with_snapshot_fallback"
+                stop_details = {"cycle": cycle_index, "pass_streak": pass_streak}
+            else:
+                stop_reason = "converged"
+                stop_details = {"cycle": cycle_index, "pass_streak": pass_streak}
             break
 
     if stop_reason is None:
