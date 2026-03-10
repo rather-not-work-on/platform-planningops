@@ -363,7 +363,15 @@ def sync_one_issue(project: dict, issue: dict, apply_mode: bool, issue_index: di
         )
         return result
 
-    item_id = ensure_project_item(project["owner"], project["project_number"], issue["url"])
+    item_id = find_project_item_id(
+        project["owner"],
+        project["project_number"],
+        issue["number"],
+        issue["repo"],
+        issue_index,
+    )
+    if not item_id:
+        item_id = ensure_project_item(project["owner"], project["project_number"], issue["url"])
     if not item_id:
         item_id = find_project_item_id(
             project["owner"],

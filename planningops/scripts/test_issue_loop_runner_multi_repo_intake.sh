@@ -254,6 +254,129 @@ with tempfile.TemporaryDirectory() as td:
     if generated_report.exists():
         generated_report.unlink()
 
+    reconcile_items = [
+        {
+            "status": "Todo",
+            "workflow_state": "ready-implementation",
+            "execution_order": 10,
+            "target_repo": "rather-not-work-on/platform-planningops",
+            "content": {"type": "Issue", "number": 301, "repository": "rather-not-work-on/platform-planningops"},
+        },
+        {
+            "status": "Todo",
+            "workflow_state": "ready-implementation",
+            "execution_order": 20,
+            "target_repo": "rather-not-work-on/monday",
+            "content": {"type": "Issue", "number": 302, "repository": "rather-not-work-on/monday"},
+        },
+    ]
+
+    def fake_run_closed_reconcile_ok(args):
+        if args[:3] == ["gh", "issue", "view"]:
+            issue_number = int(args[3])
+            state = "CLOSED" if issue_number == 301 else "OPEN"
+            return 0, json.dumps({"state": state}, ensure_ascii=True), ""
+        raise AssertionError(f"unexpected run call: {args}")
+
+    mod.run = fake_run_closed_reconcile_ok
+    project_config_fixture = {
+        "status": {"id": "F_STATUS", "options": {"todo": "O_TODO", "done": "O_DONE"}},
+        "initiative": {"id": "F_INIT"},
+        "target_repo": {"id": "F_REPO"},
+        "execution_order": {"id": "F_ORDER"},
+        "component": {"id": "F_COMPONENT", "options": {"planningops": "O_COMPONENT_PLANNINGOPS"}},
+        "workflow_state": {"id": "F_WF", "options": {"done": "O_WF_DONE", "ready_implementation": "O_WF_READY_IMPL"}},
+        "plan_lane": {"id": "F_LANE", "options": {"m3_guardrails": "O_LANE_M3"}},
+        "loop_profile": {"id": "F_LOOP", "options": {"l4_integration_reconcile": "O_LOOP_L4"}},
+    }
+    mod.load_project_sync_config = lambda path: {
+        "owner": "rather-not-work-on",
+        "project_number": 2,
+        "project_id": "PVT_TEST",
+        "initiative": "unified-personal-agent-platform",
+        "fields": project_config_fixture,
+    }
+    mod.build_project_sync_issue_index = lambda owner, project_number: {}
+    mod.load_project_sync_issue = lambda repo, number: {
+        "repo": repo,
+        "number": number,
+        "url": f"https://github.com/{repo}/issues/{number}",
+        "title": f"issue-{number}",
+        "body": "\n".join(
+            [
+                "## Planning Context",
+                "- plan_item_id: `AK10`",
+                "- target_repo: `rather-not-work-on/platform-planningops`",
+                "- component: `planningops`",
+                "- workflow_state: `ready-implementation`",
+                "- loop_profile: `l4_integration_reconcile`",
+                "- execution_order: `10`",
+                "- plan_lane: `M3 Guardrails`",
+            ]
+        ),
+        "state": "CLOSED" if number == 301 else "OPEN",
+    }
+    sync_calls = []
+    mod.sync_project_issue_fields = lambda project, issue, apply_mode, issue_index: sync_calls.append(
+        (issue["repo"], issue["number"], apply_mode)
+    ) or {"issue_repo": issue["repo"], "issue_number": issue["number"], "field_updates": ["status"]}
+    reconcile_apply = mod.evaluate_closed_issue_reconcile(
+        requested_mode="auto",
+        run_mode="apply",
+        no_feedback=False,
+        items=reconcile_items,
+        allowed_workflow_states={"ready-implementation"},
+        output_path=str(Path(td) / "closed-reconcile-apply.json"),
+    )
+    assert reconcile_apply["status"] == "pass", reconcile_apply
+    assert reconcile_apply["effective_mode"] == "apply", reconcile_apply
+    assert reconcile_apply["updated_count"] == 1, reconcile_apply
+    assert reconcile_apply["issue_refs"] == ["rather-not-work-on/platform-planningops#301"], reconcile_apply
+    assert sync_calls == [("rather-not-work-on/platform-planningops", 301, True)], sync_calls
+
+    reconcile_check = mod.evaluate_closed_issue_reconcile(
+        requested_mode="auto",
+        run_mode="dry-run",
+        no_feedback=True,
+        items=reconcile_items,
+        allowed_workflow_states={"ready-implementation"},
+        output_path=str(Path(td) / "closed-reconcile-check.json"),
+    )
+    assert reconcile_check["status"] == "pass", reconcile_check
+    assert reconcile_check["effective_mode"] == "check", reconcile_check
+    assert sync_calls[-1] == ("rather-not-work-on/platform-planningops", 301, False), sync_calls
+
+    reconcile_off = mod.evaluate_closed_issue_reconcile(
+        requested_mode="off",
+        run_mode="apply",
+        no_feedback=False,
+        items=reconcile_items,
+        allowed_workflow_states={"ready-implementation"},
+        output_path=str(Path(td) / "closed-reconcile-off.json"),
+    )
+    assert reconcile_off["status"] == "skipped", reconcile_off
+    assert reconcile_off["reason_code"] == "closed_issue_reconcile_off", reconcile_off
+
+    def fake_run_closed_reconcile_fail(args):
+        if args[:3] == ["gh", "issue", "view"]:
+            return 0, json.dumps({"state": "CLOSED"}, ensure_ascii=True), ""
+        raise AssertionError(f"unexpected run call: {args}")
+
+    mod.run = fake_run_closed_reconcile_fail
+    mod.sync_project_issue_fields = lambda project, issue, apply_mode, issue_index: (_ for _ in ()).throw(
+        RuntimeError("closed-reconcile-fail")
+    )
+    reconcile_fail = mod.evaluate_closed_issue_reconcile(
+        requested_mode="apply",
+        run_mode="apply",
+        no_feedback=False,
+        items=reconcile_items,
+        allowed_workflow_states={"ready-implementation"},
+        output_path=str(Path(td) / "closed-reconcile-fail.json"),
+    )
+    assert reconcile_fail["status"] == "fail", reconcile_fail
+    assert reconcile_fail["reason_code"] == "closed_issue_reconcile_failed", reconcile_fail
+
 ready_impl_cross_repo = {
     "workflow_state": "ready-implementation",
     "target_repo": "rather-not-work-on/monday",

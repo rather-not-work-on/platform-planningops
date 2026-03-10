@@ -46,6 +46,14 @@ from core.loop.selection import (
     parse_selector_hints,
 )
 from federation.adapter_registry import invoke_adapter_hook, resolve_execution_adapter
+from sync_project_fields_after_issue_create import (
+    DEFAULT_CONFIG as PROJECT_SYNC_DEFAULT_CONFIG,
+    build_project_item_issue_index as build_project_sync_issue_index,
+    get_issue as load_project_sync_issue,
+    load_config as load_project_sync_config,
+    parse_metadata as parse_project_sync_metadata,
+    sync_one_issue as sync_project_issue_fields,
+)
 
 ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
 
@@ -395,6 +403,141 @@ def evaluate_worker_task_pack_preflight(runtime_profile_file, selected, mode, lo
     }
 
 
+def resolve_closed_issue_reconcile_mode(requested_mode: str, run_mode: str, no_feedback: bool):
+    normalized = str(requested_mode or "auto").strip().lower()
+    if normalized == "auto":
+        if run_mode == "apply" and not no_feedback:
+            return "apply"
+        return "check"
+    return normalized
+
+
+def load_project_items(owner: str, project_num: int, project_item_limit: int):
+    rc, out, err = run(
+        [
+            "gh",
+            "project",
+            "item-list",
+            str(project_num),
+            "--owner",
+            owner,
+            "--limit",
+            str(project_item_limit),
+            "--format",
+            "json",
+        ]
+    )
+    if rc != 0:
+        raise RuntimeError(f"failed to list project items: {err}")
+    return json.loads(out).get("items", [])
+
+
+def evaluate_closed_issue_reconcile(requested_mode, run_mode, no_feedback, items, allowed_workflow_states, output_path=None):
+    effective_mode = resolve_closed_issue_reconcile_mode(requested_mode, run_mode, no_feedback)
+    candidate_scope = normalize_candidates(items, allowed_workflow_states)
+    result = {
+        "requested_mode": str(requested_mode or "auto"),
+        "effective_mode": effective_mode,
+        "candidate_scope_count": len(candidate_scope),
+        "leading_closed_candidate_count": 0,
+        "status": "not_evaluated",
+        "reason_code": "closed_issue_reconcile_not_evaluated",
+        "report_path": None,
+        "issues_total": 0,
+        "updated_count": 0,
+        "error_count": 0,
+        "verdict": None,
+        "issue_refs": [],
+    }
+
+    if effective_mode == "off":
+        result["status"] = "skipped"
+        result["reason_code"] = "closed_issue_reconcile_off"
+        return result
+
+    issue_refs = []
+    for candidate in candidate_scope:
+        issue_num = int(candidate.get("number", 0))
+        issue_repo = candidate.get("issue_repo") or candidate.get("target_repo") or ""
+        if issue_num <= 0 or not issue_repo:
+            continue
+        rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", issue_repo, "--json", "state"])
+        if rc != 0:
+            result["status"] = "fail"
+            result["reason_code"] = "closed_issue_reconcile_issue_fetch_failed"
+            result["stderr"] = err[-2000:]
+            return result
+        state = (json.loads(out).get("state") or "").upper()
+        if state == "CLOSED":
+            issue_refs.append(f"{issue_repo}#{issue_num}")
+            continue
+        break
+
+    result["issue_refs"] = issue_refs
+    result["issues_total"] = len(issue_refs)
+    result["leading_closed_candidate_count"] = len(issue_refs)
+    if not issue_refs:
+        result["status"] = "skipped"
+        result["reason_code"] = "closed_issue_reconcile_not_needed"
+        result["verdict"] = "pass"
+        return result
+
+    report_path = Path(output_path) if output_path else Path(
+        f"/tmp/planningops-issue-loop-closed-issue-reconcile-{os.getpid()}-{effective_mode}.json"
+    )
+    report_doc = {
+        "mode": "apply" if effective_mode == "apply" else "dry-run",
+        "project_owner": None,
+        "project_number": None,
+        "issues_total": len(issue_refs),
+        "updated_count": 0,
+        "error_count": 0,
+        "results": [],
+        "errors": [],
+    }
+
+    try:
+        project = load_project_sync_config(Path(PROJECT_SYNC_DEFAULT_CONFIG))
+        report_doc["project_owner"] = project["owner"]
+        report_doc["project_number"] = project["project_number"]
+        issue_index = build_project_sync_issue_index(project["owner"], project["project_number"])
+
+        for issue_ref in issue_refs:
+            issue_repo, raw_number = issue_ref.split("#", 1)
+            issue = load_project_sync_issue(issue_repo, int(raw_number))
+            issue["metadata"] = parse_project_sync_metadata(issue["body"])
+            row = sync_project_issue_fields(
+                project=project,
+                issue=issue,
+                apply_mode=(effective_mode == "apply"),
+                issue_index=issue_index,
+            )
+            report_doc["results"].append(row)
+            report_doc["updated_count"] += 1
+    except Exception as exc:  # noqa: BLE001
+        report_doc["error_count"] += 1
+        report_doc["errors"].append({"error": str(exc)})
+
+    report_doc["verdict"] = "pass" if report_doc["error_count"] == 0 else "fail"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report_doc, ensure_ascii=True, indent=2), encoding="utf-8")
+
+    result["report_path"] = str(report_path)
+    result["updated_count"] = int(report_doc.get("updated_count") or 0)
+    result["error_count"] = int(report_doc.get("error_count") or 0)
+    result["verdict"] = report_doc.get("verdict")
+    result["errors"] = report_doc.get("errors", [])
+
+    if result["verdict"] == "pass":
+        result["status"] = "pass"
+        result["reason_code"] = "closed_issue_reconcile_ok"
+        return result
+
+    result["status"] = "fail"
+    result["reason_code"] = "closed_issue_reconcile_failed"
+    return result
+
+
 def issue_is_closed(issue_num: int, repo: str):
     rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "state", "--jq", ".state"])
     if rc != 0:
@@ -492,28 +635,51 @@ def main():
         default=1000,
         help="Maximum number of GitHub Project items to request for intake selection",
     )
+    parser.add_argument(
+        "--closed-issue-reconcile-mode",
+        choices=["off", "check", "apply", "auto"],
+        default="auto",
+        help="Pre-selection reconcile mode for closed issues that still drift inside the Project",
+    )
+    parser.add_argument(
+        "--closed-issue-reconcile-output",
+        default=None,
+        help="Optional report path for the closed-issue reconcile preflight",
+    )
     args = parser.parse_args()
     allowed_workflow_states = set(parse_csv(args.pull_workflow_states))
-
-    rc, out, err = run(
-        [
-            "gh",
-            "project",
-            "item-list",
-            str(args.project_num),
-            "--owner",
-            args.owner,
-            "--limit",
-            str(args.project_item_limit),
-            "--format",
-            "json",
-        ]
-    )
-    if rc != 0:
-        print(f"failed to list project items: {err}")
+    try:
+        items = load_project_items(args.owner, args.project_num, args.project_item_limit)
+    except RuntimeError as exc:
+        print(str(exc))
         return 1
 
-    items = json.loads(out).get("items", [])
+    closed_issue_reconcile = evaluate_closed_issue_reconcile(
+        args.closed_issue_reconcile_mode,
+        args.mode,
+        args.no_feedback,
+        items,
+        allowed_workflow_states,
+        args.closed_issue_reconcile_output,
+    )
+    if closed_issue_reconcile.get("status") == "fail":
+        print(
+            json.dumps(
+                {
+                    "result": "closed_issue_reconcile_failed",
+                    "closed_issue_reconcile": closed_issue_reconcile,
+                },
+                ensure_ascii=True,
+            )
+        )
+        return 8
+    if closed_issue_reconcile.get("effective_mode") == "apply" and closed_issue_reconcile.get("issues_total", 0) > 0:
+        try:
+            items = load_project_items(args.owner, args.project_num, args.project_item_limit)
+        except RuntimeError as exc:
+            print(str(exc))
+            return 1
+
     candidates = normalize_candidates(items, allowed_workflow_states)
 
     selected = None
@@ -628,6 +794,7 @@ def main():
     selection_trace = build_selection_trace(candidates, selected, selection_attempts, allowed_workflow_states)
     selection_trace["project_item_limit"] = args.project_item_limit
     selection_trace["project_item_limit_hit"] = len(items) >= args.project_item_limit
+    selection_trace["closed_issue_reconcile"] = closed_issue_reconcile
     selection_trace["pec_preflight"] = {
         "mode": args.pec_preflight_mode,
         "contract_file": args.pec_contract_file,

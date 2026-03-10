@@ -1,0 +1,88 @@
+{
+  "generated_at_utc": "2026-03-10T12:30:09.605996+00:00",
+  "wave": "runtime-mission-wave19",
+  "plan_id": "uap-runtime-mission-wave19",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave19-auto-closed-item-reconcile-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "baseline_live_selection_before_wave19": {
+      "selected_issue": 264,
+      "selected_issue_repo": "rather-not-work-on/platform-planningops",
+      "selected_plan_item_id": "AK10",
+      "candidate_count": 37,
+      "first_attempt_result": "issue_not_open",
+      "closed_issue_reconcile_status": "skipped"
+    },
+    "auto_reconcile": {
+      "generated_at_utc": "2026-03-10T12:30:09.605996+00:00",
+      "wave": "runtime-mission-wave19",
+      "before": {
+        "candidate_count": 27,
+        "candidate_numbers_head": [
+          264,
+          257,
+          261,
+          265,
+          182,
+          192,
+          215,
+          220,
+          227,
+          228
+        ]
+      },
+      "closed_issue_reconcile": {
+        "requested_mode": "apply",
+        "effective_mode": "apply",
+        "candidate_scope_count": 27,
+        "leading_closed_candidate_count": 0,
+        "status": "skipped",
+        "reason_code": "closed_issue_reconcile_not_needed",
+        "report_path": null,
+        "issues_total": 0,
+        "updated_count": 0,
+        "error_count": 0,
+        "verdict": "pass",
+        "issue_refs": []
+      },
+      "after": {
+        "candidate_count": 25,
+        "candidate_numbers_head": [
+          264,
+          265,
+          182,
+          192,
+          215,
+          220,
+          227,
+          228,
+          246,
+          184
+        ]
+      },
+      "candidate_count_delta": 2,
+      "verdict": "pass"
+    },
+    "local_contracts": {
+      "issue_loop_runner_multi_repo_intake": "pass",
+      "sync_project_fields_after_issue_create": "pass",
+      "uap_docs_workbench": "pass"
+    },
+    "live_follow_up_check": {
+      "status": "skipped_due_rate_limit",
+      "reason": "GitHub GraphQL API rate limit exceeded during post-change full dry-run verification"
+    }
+  },
+  "decisions": [
+    "closed-item reconcile now runs inside runner process using sync module functions instead of spawning a second CLI process",
+    "reconcile scope is restricted to leading closed ready candidates before the first open candidate, which is the only drift that blocks immediate intake",
+    "sync_project_fields_after_issue_create now resolves existing project item ids before attempting item-add, reducing GitHub mutation churn"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave20",
+      "title": "GitHub API rate-limit resilience for issue loop intake",
+      "reason": "full live verification hit GraphQL rate limits after repeated project/item queries; runner should degrade gracefully or reuse cached snapshots"
+    }
+  ]
+}
