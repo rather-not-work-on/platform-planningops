@@ -456,6 +456,49 @@ def resolve_project_items_snapshot_mode(requested_mode: str, run_mode: str, no_f
     return normalized
 
 
+def build_rate_limit_guidance(
+    *,
+    run_mode: str,
+    snapshot_path: str | None,
+    fallback_used: bool,
+    rate_limit_error: str | None,
+):
+    if fallback_used:
+        return {
+            "status": "snapshot_fallback_active",
+            "recommended_wait_minutes": 15,
+            "retry_mode": "retry_live_after_cooldown",
+            "allowed_modes": ["dry-run", "no-feedback"],
+            "blocked_modes": ["apply"],
+            "snapshot_path": snapshot_path,
+            "reason": "GitHub API rate limit forced project item snapshot fallback; use snapshot-backed dry-runs only until live quota recovers.",
+            "raw_error": rate_limit_error,
+        }
+
+    if rate_limit_error:
+        return {
+            "status": "live_api_blocked",
+            "recommended_wait_minutes": 15,
+            "retry_mode": "retry_live_after_cooldown",
+            "allowed_modes": [],
+            "blocked_modes": [run_mode],
+            "snapshot_path": snapshot_path,
+            "reason": "GitHub API rate limit blocked live project item loading and no safe snapshot fallback was available for this mode.",
+            "raw_error": rate_limit_error,
+        }
+
+    return {
+        "status": "not_needed",
+        "recommended_wait_minutes": 0,
+        "retry_mode": "none",
+        "allowed_modes": [run_mode],
+        "blocked_modes": [],
+        "snapshot_path": snapshot_path,
+        "reason": "No GitHub API rate-limit guidance required.",
+        "raw_error": None,
+    }
+
+
 def load_project_items(
     owner: str,
     project_num: int,
@@ -491,11 +534,23 @@ def load_project_items(
             "snapshot_path": str(effective_snapshot_path),
             "rate_limit_fallback_used": False,
             "rate_limit_error": None,
+            "rate_limit_guidance": build_rate_limit_guidance(
+                run_mode="dry-run",
+                snapshot_path=str(effective_snapshot_path),
+                fallback_used=False,
+                rate_limit_error=None,
+            ),
         }
 
     if normalized_mode == "auto" and is_rate_limit_error(err):
         snapshot = load_project_items_snapshot(effective_snapshot_path)
         snapshot["rate_limit_error"] = err
+        snapshot["rate_limit_guidance"] = build_rate_limit_guidance(
+            run_mode="dry-run",
+            snapshot_path=str(effective_snapshot_path),
+            fallback_used=True,
+            rate_limit_error=err,
+        )
         return snapshot
 
     raise RuntimeError(f"failed to list project items: {err}")
@@ -757,9 +812,34 @@ def main():
                 args.no_feedback,
             ),
         )
+        project_items_result["rate_limit_guidance"] = build_rate_limit_guidance(
+            run_mode=args.mode,
+            snapshot_path=project_items_result.get("snapshot_path"),
+            fallback_used=bool(project_items_result.get("rate_limit_fallback_used")),
+            rate_limit_error=project_items_result.get("rate_limit_error"),
+        )
         items = project_items_result["items"]
     except RuntimeError as exc:
-        print(str(exc))
+        guidance = None
+        if is_rate_limit_error(str(exc)):
+            guidance = build_rate_limit_guidance(
+                run_mode=args.mode,
+                snapshot_path=str(Path(args.project_items_snapshot)),
+                fallback_used=False,
+                rate_limit_error=str(exc),
+            )
+            print(
+                json.dumps(
+                    {
+                        "result": "github_rate_limited",
+                        "reason_code": "github_rate_limited",
+                        "rate_limit_guidance": guidance,
+                    },
+                    ensure_ascii=True,
+                )
+            )
+        else:
+            print(str(exc))
         return 1
 
     closed_issue_reconcile = evaluate_closed_issue_reconcile(
@@ -794,9 +874,32 @@ def main():
                     args.no_feedback,
                 ),
             )
+            project_items_result["rate_limit_guidance"] = build_rate_limit_guidance(
+                run_mode=args.mode,
+                snapshot_path=project_items_result.get("snapshot_path"),
+                fallback_used=bool(project_items_result.get("rate_limit_fallback_used")),
+                rate_limit_error=project_items_result.get("rate_limit_error"),
+            )
             items = project_items_result["items"]
         except RuntimeError as exc:
-            print(str(exc))
+            if is_rate_limit_error(str(exc)):
+                print(
+                    json.dumps(
+                        {
+                            "result": "github_rate_limited",
+                            "reason_code": "github_rate_limited",
+                            "rate_limit_guidance": build_rate_limit_guidance(
+                                run_mode=args.mode,
+                                snapshot_path=str(Path(args.project_items_snapshot)),
+                                fallback_used=False,
+                                rate_limit_error=str(exc),
+                            ),
+                        },
+                        ensure_ascii=True,
+                    )
+                )
+            else:
+                print(str(exc))
             return 1
 
     candidates = normalize_candidates(items, allowed_workflow_states)
@@ -917,6 +1020,7 @@ def main():
     selection_trace["project_items_snapshot_path"] = project_items_result.get("snapshot_path")
     selection_trace["project_items_rate_limit_fallback_used"] = project_items_result.get("rate_limit_fallback_used")
     selection_trace["project_items_rate_limit_error"] = project_items_result.get("rate_limit_error")
+    selection_trace["rate_limit_guidance"] = project_items_result.get("rate_limit_guidance")
     selection_trace["closed_issue_reconcile"] = closed_issue_reconcile
     selection_trace["pec_preflight"] = {
         "mode": args.pec_preflight_mode,

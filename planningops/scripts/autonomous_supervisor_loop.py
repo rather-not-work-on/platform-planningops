@@ -81,6 +81,36 @@ def detect_experiment_trigger(loop_result: dict):
     }
 
 
+def derive_rate_limit_guidance(loop_result: dict, project_items_source, fallback_used, rate_limit_error):
+    guidance = loop_result.get("rate_limit_guidance")
+    if isinstance(guidance, dict):
+        return guidance
+
+    if fallback_used:
+        return {
+            "status": "snapshot_fallback_active",
+            "recommended_wait_minutes": 15,
+            "retry_mode": "retry_live_after_cooldown",
+            "allowed_modes": ["dry-run", "no-feedback"],
+            "blocked_modes": ["apply"],
+            "reason": "Supervisor observed snapshot-backed issue intake due to GitHub API pressure.",
+            "raw_error": rate_limit_error,
+        }
+
+    if str(loop_result.get("reason_code") or "").strip() == "github_rate_limited":
+        return {
+            "status": "live_api_blocked",
+            "recommended_wait_minutes": 15,
+            "retry_mode": "retry_live_after_cooldown",
+            "allowed_modes": [],
+            "blocked_modes": ["apply"],
+            "reason": "Supervisor observed live GitHub rate limiting without safe fallback.",
+            "raw_error": rate_limit_error,
+        }
+
+    return None
+
+
 def build_issue_runner_command(args):
     cmd = [
         "python3",
@@ -328,6 +358,12 @@ def main():
         project_items_source = selection_trace.get("project_items_source")
         project_items_rate_limit_fallback_used = bool(selection_trace.get("project_items_rate_limit_fallback_used"))
         project_items_rate_limit_error = selection_trace.get("project_items_rate_limit_error")
+        rate_limit_guidance = derive_rate_limit_guidance(
+            loop_result,
+            project_items_source,
+            project_items_rate_limit_fallback_used,
+            project_items_rate_limit_error,
+        ) or selection_trace.get("rate_limit_guidance")
 
         cycle_record = {
             "cycle": cycle_index,
@@ -353,6 +389,7 @@ def main():
             "project_items_source": project_items_source,
             "project_items_rate_limit_fallback_used": project_items_rate_limit_fallback_used,
             "project_items_rate_limit_error": project_items_rate_limit_error,
+            "rate_limit_guidance": rate_limit_guidance,
             "backlog_gate": {
                 "rc": backlog_gate.get("rc"),
                 "report_path": backlog_gate.get("report_path"),
@@ -373,6 +410,10 @@ def main():
             pass_streak = 0
 
         if verdict == "fail":
+            if reason_code == "github_rate_limited":
+                stop_reason = "github_rate_limited"
+                stop_details = {"cycle": cycle_index, "rate_limit_guidance": rate_limit_guidance}
+                break
             stop_reason = "quality_gate_fail"
             stop_details = {"cycle": cycle_index, "reason_code": reason_code}
             break
@@ -398,7 +439,11 @@ def main():
         if pass_streak >= args.convergence_pass_streak and int(cycle_record["replenishment_candidates_count"]) == 0:
             if project_items_rate_limit_fallback_used:
                 stop_reason = "converged_with_snapshot_fallback"
-                stop_details = {"cycle": cycle_index, "pass_streak": pass_streak}
+                stop_details = {
+                    "cycle": cycle_index,
+                    "pass_streak": pass_streak,
+                    "rate_limit_guidance": rate_limit_guidance,
+                }
             else:
                 stop_reason = "converged"
                 stop_details = {"cycle": cycle_index, "pass_streak": pass_streak}
@@ -409,7 +454,13 @@ def main():
         stop_details = {"cycle_count": len(cycles)}
 
     supervisor_verdict = "pass"
-    if stop_reason in {"quality_gate_fail", "escalation_auto_pause", "backlog_gate_fail", "experiment_auto_executor_failed"}:
+    if stop_reason in {
+        "quality_gate_fail",
+        "escalation_auto_pause",
+        "backlog_gate_fail",
+        "experiment_auto_executor_failed",
+        "github_rate_limited",
+    }:
         supervisor_verdict = "fail"
     elif stop_reason in {"experiment_triggered", "sequence_exhausted"}:
         supervisor_verdict = "inconclusive"

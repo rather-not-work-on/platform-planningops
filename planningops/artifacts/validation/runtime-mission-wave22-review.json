@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "2026-03-10T13:25:00+00:00",
+  "wave": "runtime-mission-wave22",
+  "plan_id": "uap-runtime-mission-wave22",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave22-rate-limit-guidance-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "runner_guidance": {
+      "live_success": "not_needed",
+      "snapshot_fallback": "snapshot_fallback_active",
+      "live_apply_block": "github_rate_limited"
+    },
+    "supervisor_guidance": {
+      "cycle_reports": "rate_limit_guidance recorded",
+      "snapshot_convergence": "converged_with_snapshot_fallback includes stop_details guidance",
+      "apply_block": "github_rate_limited stops fail with stop_details guidance"
+    },
+    "local_contracts": {
+      "autonomous_supervisor_loop": "pass",
+      "issue_loop_runner_multi_repo_intake": "pass",
+      "uap_docs_workbench": "pass"
+    }
+  },
+  "decisions": [
+    "runner guidance is deterministic data, not prose-only logging, so automation and operators can consume the same structure",
+    "snapshot fallback remains tolerated only for dry-run style execution and is surfaced distinctly from full live convergence",
+    "live apply mode stays blocked under GitHub rate limiting and now exits with explicit cooldown and retry guidance instead of a raw transport error"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave23",
+      "title": "supervisor operator report from rate-limit aware summaries",
+      "reason": "the loop now produces structured guidance, but overnight automation still needs a compact operator-facing report artifact for inbox triage"
+    }
+  ]
+}

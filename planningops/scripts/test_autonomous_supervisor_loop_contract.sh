@@ -15,6 +15,7 @@ def run_supervisor(args):
 
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
+    artifacts_root = td_path / "supervisor-artifacts"
 
     # 1) continue-on-experiment should allow multi-cycle run and converge.
     out_converged = td_path / "supervisor-converged.json"
@@ -34,6 +35,8 @@ with tempfile.TemporaryDirectory() as td:
             "--items-file",
             "planningops/fixtures/backlog-stock-items-sample.json",
             "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
             "--output",
             str(out_converged),
         ]
@@ -62,6 +65,8 @@ with tempfile.TemporaryDirectory() as td:
             "--items-file",
             "planningops/fixtures/backlog-stock-items-sample.json",
             "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
             "--output",
             str(out_exp_stop),
         ]
@@ -113,6 +118,8 @@ with tempfile.TemporaryDirectory() as td:
             "--items-file",
             "planningops/fixtures/backlog-stock-items-sample.json",
             "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
             "--output",
             str(out_fail),
         ]
@@ -187,6 +194,8 @@ with tempfile.TemporaryDirectory() as td:
             "--items-file",
             "planningops/fixtures/backlog-stock-items-sample.json",
             "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
             "--output",
             str(out_snapshot),
         ]
@@ -197,6 +206,63 @@ with tempfile.TemporaryDirectory() as td:
     assert snapshot_doc["stop_reason"] == "converged_with_snapshot_fallback", snapshot_doc
     assert snapshot_doc["cycles"][0]["project_items_source"] == "snapshot", snapshot_doc
     assert snapshot_doc["cycles"][0]["project_items_rate_limit_fallback_used"] is True, snapshot_doc
+    assert snapshot_doc["cycles"][0]["rate_limit_guidance"]["status"] == "snapshot_fallback_active", snapshot_doc
+    assert snapshot_doc["stop_details"]["rate_limit_guidance"]["status"] == "snapshot_fallback_active", snapshot_doc
+
+    # 5) explicit github rate-limit failure must stop with dedicated reason and guidance.
+    rate_limit_sequence = td_path / "rate-limit-sequence.json"
+    rate_limit_sequence.write_text(
+        json.dumps(
+            {
+                "cycles": [
+                    {
+                        "rc": 1,
+                        "loop_result": {
+                            "result": "github_rate_limited",
+                            "reason_code": "github_rate_limited",
+                            "rate_limit_guidance": {
+                                "status": "live_api_blocked",
+                                "recommended_wait_minutes": 15,
+                                "retry_mode": "retry_live_after_cooldown",
+                                "allowed_modes": [],
+                                "blocked_modes": ["apply"],
+                            },
+                            "selection_trace": {"selected": {"uncertainty_level": "low", "simulation_required": False}},
+                        },
+                    }
+                ]
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    out_rate_limit = td_path / "supervisor-rate-limit.json"
+    rc_rate_limit, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "apply",
+            "--max-cycles",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(rate_limit_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_rate_limit),
+        ]
+    )
+    assert rc_rate_limit == 1, rc_rate_limit
+    rate_limit_doc = json.loads(out_rate_limit.read_text(encoding="utf-8"))
+    assert rate_limit_doc["supervisor_verdict"] == "fail", rate_limit_doc
+    assert rate_limit_doc["stop_reason"] == "github_rate_limited", rate_limit_doc
+    assert rate_limit_doc["stop_details"]["rate_limit_guidance"]["status"] == "live_api_blocked", rate_limit_doc
 
 print("autonomous supervisor loop contract tests ok")
 PY
