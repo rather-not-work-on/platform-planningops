@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "2026-03-10T13:40:00+00:00",
+  "wave": "runtime-mission-wave23",
+  "plan_id": "uap-runtime-mission-wave23",
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave23-supervisor-operator-report-issue-pack.md",
+  "verdict": "pass",
+  "summary": {
+    "operator_report_outputs": {
+      "run_sidecar": "implemented",
+      "last_run_sidecar": "implemented",
+      "summary_links": "operator_report_path and operator_report_last_path recorded"
+    },
+    "decision_matrix": {
+      "converged": "status=ok action=none",
+      "converged_with_snapshot_fallback": "status=degraded action=retry_live_after_cooldown",
+      "github_rate_limited": "status=blocked action=wait_for_cooldown_then_retry_live",
+      "gate_failures": "status=review_required action=inspect_failure_and_replan"
+    },
+    "local_contracts": {
+      "autonomous_supervisor_loop": "pass",
+      "uap_docs_workbench": "pass"
+    }
+  },
+  "decisions": [
+    "operator-facing reporting is emitted as a compact sidecar so inbox automation does not need to parse full cycle history",
+    "the sidecar stays machine-readable JSON and links back to the full summary and last cycle evidence instead of duplicating them",
+    "snapshot-backed convergence remains pass but is explicitly degraded in the operator report so live apply is not implied"
+  ],
+  "follow_up_candidates": [
+    {
+      "key": "wave24",
+      "title": "issue-loop inbox summary from supervisor operator report",
+      "reason": "the operator report now exists, so the next step is projecting it into a compact inbox-ready summary for recurring automation"
+    }
+  ]
+}

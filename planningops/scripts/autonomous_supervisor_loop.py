@@ -111,6 +111,93 @@ def derive_rate_limit_guidance(loop_result: dict, project_items_source, fallback
     return None
 
 
+def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
+    cycles = summary.get("cycles") or []
+    last_cycle = cycles[-1] if cycles else {}
+    stop_reason = str(summary.get("stop_reason") or "")
+    stop_details = summary.get("stop_details") or {}
+    guidance = stop_details.get("rate_limit_guidance") or last_cycle.get("rate_limit_guidance") or {}
+    cycle_number = stop_details.get("cycle") or last_cycle.get("cycle")
+    cycle_report_path = None
+    if cycle_number:
+        cycle_report_path = str(run_dir / f"cycle-{int(cycle_number):02d}" / "cycle-report.json")
+
+    report = {
+        "generated_at_utc": now_utc(),
+        "run_id": summary.get("run_id"),
+        "summary_path": str(summary_path),
+        "cycle_report_path": cycle_report_path,
+        "supervisor_verdict": summary.get("supervisor_verdict"),
+        "stop_reason": stop_reason,
+        "status": "review_required",
+        "headline": "Supervisor run requires review.",
+        "operator_action": "inspect_supervisor_summary",
+        "recommended_wait_minutes": int(guidance.get("recommended_wait_minutes") or 0),
+        "retry_mode": guidance.get("retry_mode") or "none",
+        "allowed_modes": list(guidance.get("allowed_modes") or []),
+        "blocked_modes": list(guidance.get("blocked_modes") or []),
+        "needs_human_attention": True,
+        "reason": guidance.get("reason") or stop_reason,
+        "guidance": guidance if isinstance(guidance, dict) else {},
+    }
+
+    if stop_reason == "converged":
+        report.update(
+            {
+                "status": "ok",
+                "headline": "Supervisor run converged with live project data.",
+                "operator_action": "none",
+                "needs_human_attention": False,
+                "reason": "No cooldown or retry guidance required.",
+            }
+        )
+        return report
+
+    if stop_reason == "converged_with_snapshot_fallback":
+        report.update(
+            {
+                "status": "degraded",
+                "headline": "Supervisor converged with snapshot-backed GitHub intake.",
+                "operator_action": "retry_live_after_cooldown",
+                "needs_human_attention": False,
+            }
+        )
+        return report
+
+    if stop_reason == "github_rate_limited":
+        report.update(
+            {
+                "status": "blocked",
+                "headline": "Live GitHub intake is blocked by API rate limiting.",
+                "operator_action": "wait_for_cooldown_then_retry_live",
+                "needs_human_attention": False,
+            }
+        )
+        return report
+
+    if stop_reason == "experiment_triggered":
+        report.update(
+            {
+                "status": "review_required",
+                "headline": "Supervisor paused on experiment trigger.",
+                "operator_action": "review_experiment_trigger",
+            }
+        )
+        return report
+
+    if stop_reason in {"quality_gate_fail", "backlog_gate_fail", "escalation_auto_pause", "experiment_auto_executor_failed"}:
+        report.update(
+            {
+                "status": "review_required",
+                "headline": "Supervisor stopped on a blocking gate failure.",
+                "operator_action": "inspect_failure_and_replan",
+            }
+        )
+        return report
+
+    return report
+
+
 def build_issue_runner_command(args):
     cmd = [
         "python3",
@@ -486,8 +573,15 @@ def main():
     }
 
     output_path = Path(args.output)
+    operator_report_path = run_dir / "operator-report.json"
+    last_operator_report_path = output_path.with_name(f"{output_path.stem}-operator-report.json")
+    summary["operator_report_path"] = str(operator_report_path)
+    summary["operator_report_last_path"] = str(last_operator_report_path)
     save_json(output_path, summary)
     save_json(run_dir / "summary.json", summary)
+    operator_report = build_operator_report(summary, output_path, run_dir)
+    save_json(operator_report_path, operator_report)
+    save_json(last_operator_report_path, operator_report)
     print(json.dumps(summary, ensure_ascii=True, indent=2))
     return 0 if supervisor_verdict == "pass" else 1
 
