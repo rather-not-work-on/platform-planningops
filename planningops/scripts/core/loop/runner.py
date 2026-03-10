@@ -62,11 +62,13 @@ CHECKPOINT_DIR = Path("planningops/artifacts/loop-runner/checkpoints")
 LOCK_DIR = Path("planningops/artifacts/loop-runner/locks")
 WATCHDOG_DIR = Path("planningops/artifacts/loop-runner/watchdog")
 ESCALATION_HISTORY_PATH = Path("planningops/artifacts/loop-runner/escalation-history.json")
+PROJECT_ITEMS_SNAPSHOT_PATH = Path("planningops/artifacts/loop-runner/project-items-snapshot.json")
 DEFAULT_ATTEMPT_BUDGET = {
     "max_attempts": 3,
     "max_duration_minutes": 30,
     "max_token_budget": 120000,
 }
+ISSUE_DOC_CACHE = {}
 WORKFLOW_TO_STATUS = {
     "backlog": "todo",
     "ready_contract": "todo",
@@ -412,7 +414,60 @@ def resolve_closed_issue_reconcile_mode(requested_mode: str, run_mode: str, no_f
     return normalized
 
 
-def load_project_items(owner: str, project_num: int, project_item_limit: int):
+def is_rate_limit_error(text: str):
+    return "rate limit exceeded" in str(text or "").lower()
+
+
+def load_project_items_snapshot(snapshot_path: Path):
+    if not snapshot_path.exists():
+        raise RuntimeError(f"project item snapshot missing: {snapshot_path}")
+    doc = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    items = doc.get("items")
+    if not isinstance(items, list):
+        raise RuntimeError(f"invalid project item snapshot: {snapshot_path}")
+    return {
+        "items": items,
+        "source": "snapshot",
+        "snapshot_path": str(snapshot_path),
+        "rate_limit_fallback_used": True,
+        "rate_limit_error": None,
+    }
+
+
+def save_project_items_snapshot(snapshot_path: Path, owner: str, project_num: int, project_item_limit: int, items):
+    snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+    snapshot_doc = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "owner": owner,
+        "project_num": project_num,
+        "project_item_limit": project_item_limit,
+        "item_count": len(items),
+        "items": items,
+    }
+    snapshot_path.write_text(json.dumps(snapshot_doc, ensure_ascii=True, indent=2), encoding="utf-8")
+
+
+def resolve_project_items_snapshot_mode(requested_mode: str, run_mode: str, no_feedback: bool):
+    normalized = str(requested_mode or "auto").strip().lower()
+    if normalized == "auto":
+        if run_mode == "apply" and not no_feedback:
+            return "off"
+        return "auto"
+    return normalized
+
+
+def load_project_items(
+    owner: str,
+    project_num: int,
+    project_item_limit: int,
+    snapshot_path: Path | None = None,
+    snapshot_fallback_mode: str = "off",
+):
+    effective_snapshot_path = Path(snapshot_path) if snapshot_path else PROJECT_ITEMS_SNAPSHOT_PATH
+    normalized_mode = str(snapshot_fallback_mode or "off").strip().lower()
+    if normalized_mode == "require":
+        return load_project_items_snapshot(effective_snapshot_path)
+
     rc, out, err = run(
         [
             "gh",
@@ -427,9 +482,37 @@ def load_project_items(owner: str, project_num: int, project_item_limit: int):
             "json",
         ]
     )
+    if rc == 0:
+        items = json.loads(out).get("items", [])
+        save_project_items_snapshot(effective_snapshot_path, owner, project_num, project_item_limit, items)
+        return {
+            "items": items,
+            "source": "live",
+            "snapshot_path": str(effective_snapshot_path),
+            "rate_limit_fallback_used": False,
+            "rate_limit_error": None,
+        }
+
+    if normalized_mode == "auto" and is_rate_limit_error(err):
+        snapshot = load_project_items_snapshot(effective_snapshot_path)
+        snapshot["rate_limit_error"] = err
+        return snapshot
+
+    raise RuntimeError(f"failed to list project items: {err}")
+
+
+def load_issue_doc(issue_num: int, repo: str):
+    cache_key = f"{repo}#{issue_num}"
+    cached = ISSUE_DOC_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "body,state"])
     if rc != 0:
-        raise RuntimeError(f"failed to list project items: {err}")
-    return json.loads(out).get("items", [])
+        raise RuntimeError(f"failed to read issue {repo}#{issue_num}: {err}")
+    doc = json.loads(out)
+    ISSUE_DOC_CACHE[cache_key] = doc
+    return doc
 
 
 def evaluate_closed_issue_reconcile(requested_mode, run_mode, no_feedback, items, allowed_workflow_states, output_path=None):
@@ -461,13 +544,14 @@ def evaluate_closed_issue_reconcile(requested_mode, run_mode, no_feedback, items
         issue_repo = candidate.get("issue_repo") or candidate.get("target_repo") or ""
         if issue_num <= 0 or not issue_repo:
             continue
-        rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", issue_repo, "--json", "state"])
-        if rc != 0:
+        try:
+            issue_doc = load_issue_doc(issue_num, issue_repo)
+        except RuntimeError as exc:
             result["status"] = "fail"
             result["reason_code"] = "closed_issue_reconcile_issue_fetch_failed"
-            result["stderr"] = err[-2000:]
+            result["errors"] = [{"error": str(exc)}]
             return result
-        state = (json.loads(out).get("state") or "").upper()
+        state = (issue_doc.get("state") or "").upper()
         if state == "CLOSED":
             issue_refs.append(f"{issue_repo}#{issue_num}")
             continue
@@ -539,10 +623,11 @@ def evaluate_closed_issue_reconcile(requested_mode, run_mode, no_feedback, items
 
 
 def issue_is_closed(issue_num: int, repo: str):
-    rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "state", "--jq", ".state"])
-    if rc != 0:
+    try:
+        issue_doc = load_issue_doc(issue_num, repo)
+    except RuntimeError:
         return False
-    return out.strip().upper() == "CLOSED"
+    return (issue_doc.get("state") or "").upper() == "CLOSED"
 
 
 def parse_csv(value: str):
@@ -636,6 +721,17 @@ def main():
         help="Maximum number of GitHub Project items to request for intake selection",
     )
     parser.add_argument(
+        "--project-items-snapshot",
+        default=str(PROJECT_ITEMS_SNAPSHOT_PATH),
+        help="Snapshot path used to persist and optionally reuse project items for dry-run intake",
+    )
+    parser.add_argument(
+        "--project-items-snapshot-fallback",
+        choices=["off", "auto", "require"],
+        default="auto",
+        help="Fallback policy when live project item loading is rate-limited",
+    )
+    parser.add_argument(
         "--closed-issue-reconcile-mode",
         choices=["off", "check", "apply", "auto"],
         default="auto",
@@ -647,9 +743,21 @@ def main():
         help="Optional report path for the closed-issue reconcile preflight",
     )
     args = parser.parse_args()
+    ISSUE_DOC_CACHE.clear()
     allowed_workflow_states = set(parse_csv(args.pull_workflow_states))
     try:
-        items = load_project_items(args.owner, args.project_num, args.project_item_limit)
+        project_items_result = load_project_items(
+            args.owner,
+            args.project_num,
+            args.project_item_limit,
+            snapshot_path=Path(args.project_items_snapshot),
+            snapshot_fallback_mode=resolve_project_items_snapshot_mode(
+                args.project_items_snapshot_fallback,
+                args.mode,
+                args.no_feedback,
+            ),
+        )
+        items = project_items_result["items"]
     except RuntimeError as exc:
         print(str(exc))
         return 1
@@ -675,7 +783,18 @@ def main():
         return 8
     if closed_issue_reconcile.get("effective_mode") == "apply" and closed_issue_reconcile.get("issues_total", 0) > 0:
         try:
-            items = load_project_items(args.owner, args.project_num, args.project_item_limit)
+            project_items_result = load_project_items(
+                args.owner,
+                args.project_num,
+                args.project_item_limit,
+                snapshot_path=Path(args.project_items_snapshot),
+                snapshot_fallback_mode=resolve_project_items_snapshot_mode(
+                    args.project_items_snapshot_fallback,
+                    args.mode,
+                    args.no_feedback,
+                ),
+            )
+            items = project_items_result["items"]
         except RuntimeError as exc:
             print(str(exc))
             return 1
@@ -687,18 +806,18 @@ def main():
     for c in candidates:
         num = c["number"]
         issue_repo = c.get("issue_repo") or args.control_repo
-        rc_i, out_i, err_i = run(["gh", "issue", "view", str(num), "--repo", issue_repo, "--json", "body,state"])
-        if rc_i != 0:
+        try:
+            issue_doc = load_issue_doc(num, issue_repo)
+        except RuntimeError as exc:
             selection_attempts.append(
                 {
                     "number": num,
                     "issue_repo": issue_repo,
                     "result": "issue_fetch_error",
-                    "error": err_i,
+                    "error": str(exc),
                 }
             )
             continue
-        issue_doc = json.loads(out_i)
         if issue_doc.get("state") != "OPEN":
             selection_attempts.append(
                 {
@@ -794,6 +913,10 @@ def main():
     selection_trace = build_selection_trace(candidates, selected, selection_attempts, allowed_workflow_states)
     selection_trace["project_item_limit"] = args.project_item_limit
     selection_trace["project_item_limit_hit"] = len(items) >= args.project_item_limit
+    selection_trace["project_items_source"] = project_items_result.get("source")
+    selection_trace["project_items_snapshot_path"] = project_items_result.get("snapshot_path")
+    selection_trace["project_items_rate_limit_fallback_used"] = project_items_result.get("rate_limit_fallback_used")
+    selection_trace["project_items_rate_limit_error"] = project_items_result.get("rate_limit_error")
     selection_trace["closed_issue_reconcile"] = closed_issue_reconcile
     selection_trace["pec_preflight"] = {
         "mode": args.pec_preflight_mode,

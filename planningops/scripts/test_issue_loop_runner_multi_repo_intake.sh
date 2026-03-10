@@ -377,6 +377,84 @@ with tempfile.TemporaryDirectory() as td:
     assert reconcile_fail["status"] == "fail", reconcile_fail
     assert reconcile_fail["reason_code"] == "closed_issue_reconcile_failed", reconcile_fail
 
+with tempfile.TemporaryDirectory() as td:
+    snapshot_path = Path(td) / "project-items-snapshot.json"
+    project_item_calls = []
+
+    def fake_run_project_items_live(args):
+        if args[:3] == ["gh", "project", "item-list"]:
+            project_item_calls.append(tuple(args))
+            return 0, json.dumps({"items": items}, ensure_ascii=True), ""
+        raise AssertionError(f"unexpected run call: {args}")
+
+    mod.run = fake_run_project_items_live
+    live_project_items = mod.load_project_items(
+        "rather-not-work-on",
+        2,
+        1000,
+        snapshot_path=snapshot_path,
+        snapshot_fallback_mode="auto",
+    )
+    assert live_project_items["source"] == "live", live_project_items
+    assert live_project_items["rate_limit_fallback_used"] is False, live_project_items
+    assert snapshot_path.exists(), snapshot_path
+
+    def fake_run_project_items_rate_limited(args):
+        if args[:3] == ["gh", "project", "item-list"]:
+            return 1, "", "GraphQL: API rate limit exceeded for user"
+        raise AssertionError(f"unexpected run call: {args}")
+
+    mod.run = fake_run_project_items_rate_limited
+    snapshot_project_items = mod.load_project_items(
+        "rather-not-work-on",
+        2,
+        1000,
+        snapshot_path=snapshot_path,
+        snapshot_fallback_mode="auto",
+    )
+    assert snapshot_project_items["source"] == "snapshot", snapshot_project_items
+    assert snapshot_project_items["rate_limit_fallback_used"] is True, snapshot_project_items
+    assert "rate limit exceeded" in snapshot_project_items["rate_limit_error"].lower(), snapshot_project_items
+
+    require_project_items = mod.load_project_items(
+        "rather-not-work-on",
+        2,
+        1000,
+        snapshot_path=snapshot_path,
+        snapshot_fallback_mode="require",
+    )
+    assert require_project_items["source"] == "snapshot", require_project_items
+
+    try:
+        mod.load_project_items(
+            "rather-not-work-on",
+            2,
+            1000,
+            snapshot_path=snapshot_path,
+            snapshot_fallback_mode="off",
+        )
+        raise AssertionError("expected rate-limit failure without snapshot fallback")
+    except RuntimeError as exc:
+        assert "rate limit" in str(exc).lower(), exc
+
+issue_doc_calls = []
+
+
+def fake_run_issue_doc_cached(args):
+    if args[:3] == ["gh", "issue", "view"]:
+        issue_doc_calls.append(tuple(args))
+        return 0, json.dumps({"body": "cached body", "state": "OPEN"}, ensure_ascii=True), ""
+    raise AssertionError(f"unexpected run call: {args}")
+
+
+mod.run = fake_run_issue_doc_cached
+mod.ISSUE_DOC_CACHE.clear()
+first_issue_doc = mod.load_issue_doc(77, "rather-not-work-on/platform-planningops")
+second_issue_doc = mod.load_issue_doc(77, "rather-not-work-on/platform-planningops")
+assert first_issue_doc["state"] == "OPEN", first_issue_doc
+assert second_issue_doc["body"] == "cached body", second_issue_doc
+assert len(issue_doc_calls) == 1, issue_doc_calls
+
 ready_impl_cross_repo = {
     "workflow_state": "ready-implementation",
     "target_repo": "rather-not-work-on/monday",

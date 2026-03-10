@@ -28,7 +28,7 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Runtime runners:
   - `autonomous_supervisor_loop.py`
   - `supervisor_experiment_auto_executor.py`
-  - `issue_loop_runner.py` compatibility wrapper for `core/loop/runner.py` (`--pec-preflight-mode legacy|hybrid|strict-pec`, `--closed-issue-reconcile-mode off|check|apply|auto`)
+  - `issue_loop_runner.py` compatibility wrapper for `core/loop/runner.py` (`--pec-preflight-mode legacy|hybrid|strict-pec`, `--closed-issue-reconcile-mode off|check|apply|auto`, `--project-items-snapshot-fallback off|auto|require`)
   - `ralph_loop_local.py`
   - `worker_executor.py`
   - `meta_plan_orchestrator.py`
