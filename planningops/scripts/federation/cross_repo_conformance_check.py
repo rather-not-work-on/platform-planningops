@@ -103,6 +103,24 @@ def add_check(checks, check_id: str, cwd: Path, cmd: list[str], expected_exit: i
     return check, report_doc
 
 
+def add_file_check(checks, check_id: str, path: Path, required_fragments: list[str] | None = None):
+    required_fragments = required_fragments or []
+    exists = path.exists()
+    text = path.read_text(encoding="utf-8") if exists else ""
+    missing_fragments = [fragment for fragment in required_fragments if fragment not in text]
+    verdict = "pass" if exists and not missing_fragments else "fail"
+    check = {
+        "check_id": check_id,
+        "file_path": str(path),
+        "required_fragment_count": len(required_fragments),
+        "missing_fragment_count": len(missing_fragments),
+        "missing_fragments": missing_fragments,
+        "verdict": verdict,
+    }
+    checks.append(check)
+    return check
+
+
 def main():
     parser = argparse.ArgumentParser(description="Cross-repo execution evidence conformance checks")
     parser.add_argument(
@@ -238,6 +256,7 @@ def main():
     semver_report = contracts_dir / "semver-classification.json"
     contract_bundle_report = contracts_dir / "contract-bundle.json"
     contract_pin_report = contracts_dir / "consumer-contract-pins.json"
+    contract_runbook_path = contract_repo / "compatibility" / "publish-and-pin-runbook.md"
 
     add_check(
         checks,
@@ -285,6 +304,16 @@ def main():
         summary_keys=["bundle_version", "schema_count", "source_repo"],
     )
     contract_pin_doc = load_json(contract_pin_report) if contract_pin_report.exists() else None
+    contracts_runbook_check = add_file_check(
+        checks,
+        "contracts.publish_and_pin_runbook",
+        contract_runbook_path,
+        required_fragments=[
+            "## Publish Command",
+            "## Pin Verification Checklist",
+            "## Conformance Note",
+        ],
+    )
 
     provider_smoke_dir = provider_dir / "smoke"
     provider_smoke_dir.mkdir(parents=True, exist_ok=True)
@@ -293,6 +322,7 @@ def main():
     provider_violation_report = provider_smoke_dir / f"{args.run_id}-contract_violation.json"
     provider_violation_validation = provider_dir / "contract_violation.validation.json"
     provider_pin_validation = provider_dir / "contract-pin-report.json"
+    provider_reason_taxonomy_validation = provider_dir / "reason-taxonomy-map.validation.json"
 
     _, provider_primary_doc = add_check(
         checks,
@@ -376,6 +406,20 @@ def main():
         report_path=provider_pin_validation,
         summary_keys=["verdict", "error_count", "warning_count"],
     )
+    _, provider_reason_taxonomy_doc = add_check(
+        checks,
+        "provider.reason_taxonomy_map",
+        provider_repo,
+        [
+            python_bin,
+            "scripts/validate_reason_taxonomy_map.py",
+            "--output",
+            str(provider_reason_taxonomy_validation),
+        ],
+        expected_exit=0,
+        report_path=provider_reason_taxonomy_validation,
+        summary_keys=["verdict", "error_count"],
+    )
 
     o11y_ingest_dir = o11y_dir / "ingest"
     o11y_ingest_dir.mkdir(parents=True, exist_ok=True)
@@ -384,6 +428,7 @@ def main():
     o11y_replay_report = o11y_ingest_dir / f"{args.run_id}-delay_and_replay.json"
     o11y_replay_validation = o11y_dir / "delay_and_replay.validation.json"
     o11y_pin_validation = o11y_dir / "contract-pin-report.json"
+    o11y_reason_taxonomy_validation = o11y_dir / "delay-replay-reason-taxonomy-map.validation.json"
 
     add_check(
         checks,
@@ -467,6 +512,20 @@ def main():
         report_path=o11y_pin_validation,
         summary_keys=["verdict", "error_count", "warning_count"],
     )
+    _, o11y_reason_taxonomy_doc = add_check(
+        checks,
+        "o11y.delay_replay_reason_taxonomy_map",
+        o11y_repo,
+        [
+            python_bin,
+            "scripts/validate_delay_replay_reason_taxonomy_map.py",
+            "--output",
+            str(o11y_reason_taxonomy_validation),
+        ],
+        expected_exit=0,
+        report_path=o11y_reason_taxonomy_validation,
+        summary_keys=["verdict", "error_count"],
+    )
 
     monday_handoff_report = monday_dir / "handoff-smoke-report.json"
     monday_handoff_validation = monday_dir / "handoff.validation.json"
@@ -478,6 +537,7 @@ def main():
     monday_idempotency = monday_dir / "idempotency.json"
     monday_transition_log = monday_dir / "scheduler.ndjson"
     monday_pin_validation = monday_dir / "contract-pin-report.json"
+    monday_runbook_validation = monday_dir / "runtime-integration-runbook.validation.json"
 
     add_check(
         checks,
@@ -591,6 +651,20 @@ def main():
         report_path=monday_pin_validation,
         summary_keys=["verdict", "error_count", "warning_count"],
     )
+    _, monday_runbook_doc = add_check(
+        checks,
+        "monday.runtime_integration_runbook",
+        monday_repo,
+        [
+            python_bin,
+            "scripts/validate_runtime_integration_runbook.py",
+            "--output",
+            str(monday_runbook_validation),
+        ],
+        expected_exit=0,
+        report_path=monday_runbook_validation,
+        summary_keys=["verdict", "error_count"],
+    )
 
     semver_major_present = False
     if isinstance(semver_doc, dict):
@@ -627,6 +701,11 @@ def main():
             and all(row.get("verdict") == "pass" for row in contract_pin_doc.get("consumer_results", []))
             else "fail",
         },
+        "contracts_runbook_evidence": {
+            "runbook_path": str(contract_runbook_path),
+            "missing_fragment_count": contracts_runbook_check.get("missing_fragment_count"),
+            "verdict": contracts_runbook_check.get("verdict", "fail"),
+        },
         "provider_evidence": {
             "primary_reason_code": provider_primary_doc.get("reason_code") if isinstance(provider_primary_doc, dict) else None,
             "violation_reason_code": provider_violation_doc.get("reason_code") if isinstance(provider_violation_doc, dict) else None,
@@ -639,6 +718,13 @@ def main():
             and provider_violation_doc.get("reason_code") == "contract_violation"
             else "fail",
         },
+        "provider_reason_taxonomy_evidence": {
+            "report_path": str(provider_reason_taxonomy_validation),
+            "verdict": "pass"
+            if isinstance(provider_reason_taxonomy_doc, dict)
+            and provider_reason_taxonomy_doc.get("verdict") == "pass"
+            else "fail",
+        },
         "observability_evidence": {
             "replay_reason_code": o11y_replay_doc.get("reason_code") if isinstance(o11y_replay_doc, dict) else None,
             "verdict": "pass"
@@ -647,12 +733,26 @@ def main():
             and o11y_replay_doc.get("reason_code") == "replay_recovered"
             else "fail",
         },
+        "observability_reason_taxonomy_evidence": {
+            "report_path": str(o11y_reason_taxonomy_validation),
+            "verdict": "pass"
+            if isinstance(o11y_reason_taxonomy_doc, dict)
+            and o11y_reason_taxonomy_doc.get("verdict") == "pass"
+            else "fail",
+        },
         "runtime_evidence": {
             "integration_reason_code": monday_integration_doc.get("reason_code") if isinstance(monday_integration_doc, dict) else None,
             "verdict": "pass"
             if isinstance(monday_integration_doc, dict)
             and monday_integration_doc.get("verdict") == "pass"
             and monday_integration_doc.get("reason_code") == "ok"
+            else "fail",
+        },
+        "runtime_runbook_evidence": {
+            "report_path": str(monday_runbook_validation),
+            "verdict": "pass"
+            if isinstance(monday_runbook_doc, dict)
+            and monday_runbook_doc.get("verdict") == "pass"
             else "fail",
         },
     }
