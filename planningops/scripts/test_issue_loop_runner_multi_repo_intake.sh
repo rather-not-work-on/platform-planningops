@@ -397,6 +397,7 @@ with tempfile.TemporaryDirectory() as td:
     )
     assert live_project_items["source"] == "live", live_project_items
     assert live_project_items["rate_limit_fallback_used"] is False, live_project_items
+    assert live_project_items["rate_limit_guidance"]["status"] == "not_needed", live_project_items
     assert snapshot_path.exists(), snapshot_path
 
     def fake_run_project_items_rate_limited(args):
@@ -415,6 +416,8 @@ with tempfile.TemporaryDirectory() as td:
     assert snapshot_project_items["source"] == "snapshot", snapshot_project_items
     assert snapshot_project_items["rate_limit_fallback_used"] is True, snapshot_project_items
     assert "rate limit exceeded" in snapshot_project_items["rate_limit_error"].lower(), snapshot_project_items
+    assert snapshot_project_items["rate_limit_guidance"]["status"] == "snapshot_fallback_active", snapshot_project_items
+    assert "apply" in snapshot_project_items["rate_limit_guidance"]["blocked_modes"], snapshot_project_items
 
     require_project_items = mod.load_project_items(
         "rather-not-work-on",
@@ -436,6 +439,15 @@ with tempfile.TemporaryDirectory() as td:
         raise AssertionError("expected rate-limit failure without snapshot fallback")
     except RuntimeError as exc:
         assert "rate limit" in str(exc).lower(), exc
+
+guidance_live_blocked = mod.build_rate_limit_guidance(
+    run_mode="apply",
+    snapshot_path="planningops/artifacts/loop-runner/project-items-snapshot.json",
+    fallback_used=False,
+    rate_limit_error="GraphQL: API rate limit exceeded for user",
+)
+assert guidance_live_blocked["status"] == "live_api_blocked", guidance_live_blocked
+assert guidance_live_blocked["blocked_modes"] == ["apply"], guidance_live_blocked
 
 issue_doc_calls = []
 

@@ -1,0 +1,62 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-runtime-mission-wave22",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave22-rate-limit-guidance-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AN10",
+        "execution_order": 10,
+        "title": "planningops runner rate-limit guidance",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/scripts/core/loop/runner.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AN20",
+        "execution_order": 20,
+        "title": "planningops supervisor rate-limit guidance summary",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/scripts/autonomous_supervisor_loop.py",
+        "required_checks": [
+          "validate-and-dry-run",
+          "federated-conformance"
+        ]
+      },
+      {
+        "plan_item_id": "AN30",
+        "execution_order": 30,
+        "title": "runtime mission wave22 review",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20
+        ],
+        "primary_output": "planningops/artifacts/validation/runtime-mission-wave22-review.json",
+        "required_checks": [
+          "federated-conformance",
+          "issue-quality"
+        ]
+      }
+    ]
+  }
+}
