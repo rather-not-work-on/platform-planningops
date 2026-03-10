@@ -13,6 +13,8 @@ Each cycle must run in this order:
 
 Cycle report artifact:
 - `planningops/artifacts/supervisor/<run-id>/cycle-<nn>/cycle-report.json`
+Operator report artifact:
+- `planningops/artifacts/supervisor/<run-id>/operator-report.json`
 
 ## Required Decisions Per Cycle
 1. `last_verdict` and `reason_code`
@@ -65,9 +67,11 @@ Run summary must include:
 2. `stop_reason` + `stop_details`
 3. full `cycles[]` records
 4. referenced contracts
+5. operator report sidecar paths when generated
 
 Output:
 - `planningops/artifacts/supervisor/last-run.json`
+- `planningops/artifacts/supervisor/last-run-operator-report.json`
 
 ## Testability Mapping
 - implementation:

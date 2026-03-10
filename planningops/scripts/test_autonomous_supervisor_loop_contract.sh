@@ -49,6 +49,9 @@ with tempfile.TemporaryDirectory() as td:
     assert converged["cycles"][0]["experiment_trigger"]["triggered"] is True, converged
     assert converged["cycles"][1]["replenishment_candidates_count"] == 0, converged
     assert converged["cycles"][0]["project_items_rate_limit_fallback_used"] is False, converged
+    converged_operator = json.loads(Path(converged["operator_report_last_path"]).read_text(encoding="utf-8"))
+    assert converged_operator["status"] == "ok", converged_operator
+    assert converged_operator["operator_action"] == "none", converged_operator
 
     # 2) default behavior should stop when experiment trigger is detected.
     out_exp_stop = td_path / "supervisor-experiment-stop.json"
@@ -208,6 +211,10 @@ with tempfile.TemporaryDirectory() as td:
     assert snapshot_doc["cycles"][0]["project_items_rate_limit_fallback_used"] is True, snapshot_doc
     assert snapshot_doc["cycles"][0]["rate_limit_guidance"]["status"] == "snapshot_fallback_active", snapshot_doc
     assert snapshot_doc["stop_details"]["rate_limit_guidance"]["status"] == "snapshot_fallback_active", snapshot_doc
+    snapshot_operator = json.loads(Path(snapshot_doc["operator_report_last_path"]).read_text(encoding="utf-8"))
+    assert snapshot_operator["status"] == "degraded", snapshot_operator
+    assert snapshot_operator["operator_action"] == "retry_live_after_cooldown", snapshot_operator
+    assert "dry-run" in snapshot_operator["allowed_modes"], snapshot_operator
 
     # 5) explicit github rate-limit failure must stop with dedicated reason and guidance.
     rate_limit_sequence = td_path / "rate-limit-sequence.json"
@@ -263,6 +270,10 @@ with tempfile.TemporaryDirectory() as td:
     assert rate_limit_doc["supervisor_verdict"] == "fail", rate_limit_doc
     assert rate_limit_doc["stop_reason"] == "github_rate_limited", rate_limit_doc
     assert rate_limit_doc["stop_details"]["rate_limit_guidance"]["status"] == "live_api_blocked", rate_limit_doc
+    rate_limit_operator = json.loads(Path(rate_limit_doc["operator_report_last_path"]).read_text(encoding="utf-8"))
+    assert rate_limit_operator["status"] == "blocked", rate_limit_operator
+    assert rate_limit_operator["operator_action"] == "wait_for_cooldown_then_retry_live", rate_limit_operator
+    assert rate_limit_operator["blocked_modes"] == ["apply"], rate_limit_operator
 
 print("autonomous supervisor loop contract tests ok")
 PY
