@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-03-09
+updated: 2026-03-11
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -70,5 +70,6 @@ related_docs:
 | planning | execution-plan | uap-runtime-interface-wave4 | active | [30-execution-plan/uap-runtime-interface-wave4.execution-plan.md](30-execution-plan/uap-runtime-interface-wave4.execution-plan.md) | feat: UAP Runtime Interface Wave 4 Execution Plan | Freezes the typed runtime port and interface wiring wave that follows scaffold/build-baseline completion across monday, provider, observability, and contracts. |
 | planning | execution-plan | uap-runtime-skeleton-wave1-blueprint-pack | active | [30-execution-plan/uap-runtime-skeleton-wave1-blueprint-pack.execution-plan.md](30-execution-plan/uap-runtime-skeleton-wave1-blueprint-pack.execution-plan.md) | feat: UAP Runtime Skeleton Wave 1 Blueprint Pack | Freezes the shared blueprint pack structure, path rules, and readiness criteria for the next runtime skeleton wave across monday, provider, observability, and contracts. |
 | quality | quality | uap-issue-closure-matrix | active | [20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md](20-repos/monday/40-quality/2026-02-27-uap-issue-closure-matrix.quality.md) | UAP Issue Closure Matrix | Maps review issues to architecture documents, closure conditions, and quality gates. |
+| quality | quality | uap-automation-operations-summary | active | [40-quality/uap-automation-operations-summary.quality.md](40-quality/uap-automation-operations-summary.quality.md) | UAP Automation Operations Summary | Canonical operating summary for active Codex automations, their role boundaries, the resolved local-only failure mode, and current execution rules. |
 | quality | quality | uap-inventory-issue-lifecycle-summary | active | [40-quality/uap-inventory-issue-lifecycle-summary.quality.md](40-quality/uap-inventory-issue-lifecycle-summary.quality.md) | UAP Inventory Issue Lifecycle Summary | Canonical retained summary for inventory-only backlog records after compaction out of active queue views. |
 | quality | quality | uap-planningops-tradeoff-decision-framework | active | [40-quality/uap-planningops-tradeoff-decision-framework.quality.md](40-quality/uap-planningops-tradeoff-decision-framework.quality.md) | UAP PlanningOps Trade-off Decision Framework | Provides a decision framework, scoring model, and impact map so deferred planning decisions can be made quickly with clear consequences. |

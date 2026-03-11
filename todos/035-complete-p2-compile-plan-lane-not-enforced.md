@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p2
 issue_id: "035"
 tags: [code-review, architecture, quality, planningops]
@@ -59,14 +59,20 @@ Evidence:
 
 ## Recommended Action
 
+Option 1 implemented: make `plan_lane` required and enforce it through runtime validator, JSON schema, contract doc, fixtures, and projection verification.
+
 
 ## Technical Details
 
 **Affected files:**
 - `planningops/scripts/compile_plan_to_backlog.py`
 - `planningops/scripts/test_compile_plan_to_backlog_contract.sh`
+- `planningops/scripts/verify_plan_projection.py`
+- `planningops/scripts/test_verify_plan_projection_contract.sh`
 - `planningops/contracts/plan-execution-contract-v1.md`
+- `planningops/schemas/plan-execution-contract.schema.json`
 - `planningops/fixtures/plan-execution-contract-sample.json`
+- `planningops/fixtures/plan-projection-snapshot-sample.json`
 
 ## Resources
 
@@ -74,9 +80,9 @@ Evidence:
 
 ## Acceptance Criteria
 
-- [ ] PEC validation fails when `plan_lane` is missing (or deterministic default is explicitly documented and tested).
-- [ ] Created/updated cards always have `plan_lane` set after `compile_plan_to_backlog --apply`.
-- [ ] Contract docs and fixtures are aligned.
+- [x] PEC validation fails when `plan_lane` is missing (or deterministic default is explicitly documented and tested).
+- [x] Created/updated cards always have `plan_lane` set after `compile_plan_to_backlog --apply`.
+- [x] Contract docs and fixtures are aligned.
 
 ## Work Log
 
@@ -90,6 +96,23 @@ Evidence:
 
 **Learnings:**
 - Sync support exists, but contract guarantee is incomplete.
+
+### 2026-03-11 - Contract Hardening Applied
+
+**By:** Codex
+
+**Actions:**
+- Added `plan_lane` to `REQUIRED_ITEM_KEYS` in compile and projection validators.
+- Made `plan_lane` required in PEC JSON schema and v1 contract doc.
+- Updated sample PEC/snapshot fixtures with canonical lane values.
+- Added regression coverage for missing-lane validation and lane projection mismatch.
+- Ran:
+  - `bash planningops/scripts/test_compile_plan_to_backlog_contract.sh`
+  - `bash planningops/scripts/test_verify_plan_projection_contract.sh`
+  - `python3 -m py_compile planningops/scripts/compile_plan_to_backlog.py planningops/scripts/verify_plan_projection.py`
+
+**Learnings:**
+- Requiring lane in both compile and projection validation closes the contract/runtime gap and keeps project lane sync deterministic.
 
 ## Notes
 

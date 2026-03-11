@@ -52,6 +52,7 @@
         "component",
         "workflow_state",
         "loop_profile",
+        "plan_lane",
         "depends_on",
         "primary_output"
       ],
@@ -105,6 +106,15 @@
             "l5_recovery_replan"
           ]
         },
+        "plan_lane": {
+          "type": "string",
+          "enum": [
+            "m0_bootstrap",
+            "m1_contract_freeze",
+            "m2_sync_core",
+            "m3_guardrails"
+          ]
+        },
         "depends_on": {
           "type": "array",
           "items": {
@@ -132,4 +142,3 @@
     }
   }
 }
-

@@ -24,6 +24,7 @@ with tempfile.TemporaryDirectory() as td:
             "repo": "rather-not-work-on/platform-planningops",
             "number": 94,
             "state": "open",
+            "updated_at": "2026-03-10T12:00:00Z",
             "title": "[PO-CT][A00]",
             "url": "https://github.com/rather-not-work-on/platform-planningops/issues/94",
             "body": "\n".join(
@@ -44,6 +45,7 @@ with tempfile.TemporaryDirectory() as td:
             "repo": "rather-not-work-on/platform-planningops",
             "number": 95,
             "state": "open",
+            "updated_at": "2026-03-10T13:00:00Z",
             "title": "[PO-CT][A10]",
             "url": "https://github.com/rather-not-work-on/platform-planningops/issues/95",
             "body": "\n".join(
@@ -64,6 +66,7 @@ with tempfile.TemporaryDirectory() as td:
             "repo": "rather-not-work-on/platform-contracts",
             "number": 2,
             "state": "open",
+            "updated_at": "2026-03-10T14:00:00Z",
             "title": "[PO-CT][B10]",
             "url": "https://github.com/rather-not-work-on/platform-contracts/issues/2",
             "body": "\n".join(
@@ -105,6 +108,54 @@ with tempfile.TemporaryDirectory() as td:
     assert [x["plan_item_id"] for x in manifest["items"]] == ["A00", "A10", "B10"], manifest
     assert manifest["items"][1]["depends_on"] == ["A00"], manifest
     assert manifest["items"][2]["depends_on"] == ["A10"], manifest
+    assert report["duplicate_group_count"] == 0, report
+
+    # Duplicate key history should select deterministic winner (open > closed > newest update).
+    duplicate_issues = json.loads(json.dumps(base_issues))
+    duplicate_issues.extend(
+        [
+            {
+                "repo": "rather-not-work-on/platform-planningops",
+                "number": 80,
+                "state": "closed",
+                "updated_at": "2026-03-10T17:00:00Z",
+                "title": "[PO-CT][A10] old",
+                "url": "https://github.com/rather-not-work-on/platform-planningops/issues/80",
+                "body": duplicate_issues[1]["body"],
+            },
+            {
+                "repo": "rather-not-work-on/platform-planningops",
+                "number": 96,
+                "state": "open",
+                "updated_at": "2026-03-10T15:00:00Z",
+                "title": "[PO-CT][A10] newer",
+                "url": "https://github.com/rather-not-work-on/platform-planningops/issues/96",
+                "body": duplicate_issues[1]["body"],
+            },
+        ]
+    )
+    issues_path.write_text(json.dumps(duplicate_issues, ensure_ascii=True, indent=2), encoding="utf-8")
+    rc_dup, out_dup, err_dup = run(
+        [
+            "python3",
+            "planningops/scripts/build_program_manifest.py",
+            "--issues-file",
+            str(issues_path),
+            "--output",
+            str(output_path),
+            "--report-output",
+            str(report_path),
+            "--strict",
+        ]
+    )
+    assert rc_dup == 0, (rc_dup, out_dup, err_dup)
+    dup_manifest = json.loads(output_path.read_text(encoding="utf-8"))
+    dup_report = json.loads(report_path.read_text(encoding="utf-8"))
+    selected_a10 = [row for row in dup_manifest["items"] if row["plan_item_id"] == "A10"][0]
+    assert selected_a10["issue_number"] == 96, dup_manifest
+    assert dup_report["duplicate_group_count"] == 1, dup_report
+    assert dup_report["duplicate_groups"][0]["winner"]["issue_number"] == 96, dup_report
+    assert [row["issue_number"] for row in dup_report["duplicate_groups"][0]["losers"]] == [95, 80], dup_report
 
     # Invalid graph: dependency points to unknown key.
     bad = json.loads(json.dumps(base_issues))

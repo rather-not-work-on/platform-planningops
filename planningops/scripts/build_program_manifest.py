@@ -69,6 +69,7 @@ def list_issues_all_states(repo: str):
                     "repo": repo,
                     "number": int(issue.get("number")),
                     "state": str(issue.get("state", "")).lower(),
+                    "updated_at": normalize_value(issue.get("updated_at")),
                     "title": issue.get("title") or "",
                     "url": issue.get("html_url") or "",
                     "body": issue.get("body") or "",
@@ -92,6 +93,7 @@ def load_source_issues(args):
                     "repo": normalize_value(raw.get("repo")),
                     "number": int(raw.get("number")),
                     "state": normalize_value(raw.get("state")).lower() or "open",
+                    "updated_at": normalize_value(raw.get("updated_at")),
                     "title": normalize_value(raw.get("title")),
                     "url": normalize_value(raw.get("url")),
                     "body": normalize_value(raw.get("body")),
@@ -104,6 +106,82 @@ def load_source_issues(args):
     for repo in repos:
         rows.extend(list_issues_all_states(repo))
     return rows
+
+
+def parse_iso8601_epoch(value: str) -> int:
+    if not value:
+        return 0
+    text = value.strip()
+    if not text:
+        return 0
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        return int(datetime.fromisoformat(text).timestamp())
+    except ValueError:
+        return 0
+
+
+def state_priority(state: str) -> int:
+    normalized = normalize_value(state).lower()
+    if normalized == "open":
+        return 0
+    if normalized == "closed":
+        return 1
+    return 9
+
+
+def choose_manifest_issue_winner(candidates):
+    ranked = sorted(
+        candidates,
+        key=lambda row: (
+            state_priority(row.get("issue_state")),
+            -parse_iso8601_epoch(row.get("issue_updated_at", "")),
+            -int(row.get("issue_number", 0)),
+        ),
+    )
+    winner = ranked[0]
+    losers = ranked[1:]
+    return winner, losers
+
+
+def dedupe_manifest_items(candidates):
+    grouped = {}
+    for item in candidates:
+        key = (item["plan_item_id"], item["target_repo"])
+        grouped.setdefault(key, []).append(item)
+
+    deduped = []
+    duplicate_groups = []
+    for key in sorted(grouped.keys()):
+        rows = grouped[key]
+        winner, losers = choose_manifest_issue_winner(rows)
+        deduped.append(winner)
+        if losers:
+            duplicate_groups.append(
+                {
+                    "plan_item_id": key[0],
+                    "target_repo": key[1],
+                    "candidate_count": len(rows),
+                    "winner": {
+                        "issue_repo": winner["issue_repo"],
+                        "issue_number": winner["issue_number"],
+                        "issue_state": winner["issue_state"],
+                        "issue_updated_at": winner["issue_updated_at"],
+                    },
+                    "losers": [
+                        {
+                            "issue_repo": row["issue_repo"],
+                            "issue_number": row["issue_number"],
+                            "issue_state": row["issue_state"],
+                            "issue_updated_at": row["issue_updated_at"],
+                        }
+                        for row in losers
+                    ],
+                }
+            )
+
+    return deduped, duplicate_groups
 
 
 def build_manifest(source_rows, args):
@@ -125,6 +203,7 @@ def build_manifest(source_rows, args):
             "issue_number": int(row["number"]),
             "issue_url": row["url"],
             "issue_state": row["state"],
+            "issue_updated_at": normalize_value(row.get("updated_at")),
             "component": normalize_value(metadata.get("component")),
             "workflow_state": normalize_value(metadata.get("workflow_state")),
             "loop_profile": normalize_value(metadata.get("loop_profile")),
@@ -133,16 +212,19 @@ def build_manifest(source_rows, args):
         }
         items.append(item)
 
+    items, duplicate_groups = dedupe_manifest_items(items)
     items.sort(key=lambda x: (x["execution_order"] or 10**9, x["plan_item_id"]))
-    return {
+    manifest = {
         "manifest_version": 1,
         "program_id": args.program_id,
         "initiative": args.initiative,
         "source_plan": args.source_plan,
         "generated_at_utc": now_utc(),
+        "selection_policy": "dedupe_by_plan_item_id_and_target_repo_open_first_then_latest_update",
         "item_count": len(items),
         "items": items,
     }
+    return manifest, duplicate_groups
 
 
 def validate_manifest(manifest):
@@ -240,10 +322,12 @@ def main():
 
     try:
         source_rows = load_source_issues(args)
-        manifest = build_manifest(source_rows, args)
+        manifest, duplicate_groups = build_manifest(source_rows, args)
         errors = validate_manifest(manifest)
         report["issues_scanned"] = len(source_rows)
         report["item_count"] = manifest["item_count"]
+        report["duplicate_group_count"] = len(duplicate_groups)
+        report["duplicate_groups"] = duplicate_groups
         report["track_summary"] = summarize_tracks(manifest.get("items", []))
         report["errors"] = errors
         report["verdict"] = "pass" if not errors else "fail"

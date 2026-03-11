@@ -29,6 +29,12 @@ bad_doc["execution_contract"]["items"][0]["depends_on"] = [999]
 errors = mod.validate_contract(bad_doc)
 assert any("references unknown execution_order: 999" in e for e in errors), errors
 
+# 2-0) Missing required plan_lane must fail validation.
+missing_lane = json.loads(json.dumps(fixture_doc))
+missing_lane["execution_contract"]["items"][0].pop("plan_lane", None)
+errors = mod.validate_contract(missing_lane)
+assert any("plan_lane is required" in e for e in errors), errors
+
 # 2-1) Incompatible workflow/loop pair must fail validation.
 bad_combo = json.loads(json.dumps(fixture_doc))
 bad_combo["execution_contract"]["items"][0]["workflow_state"] = "backlog"
@@ -470,6 +476,7 @@ with tempfile.TemporaryDirectory() as td:
                     "component": "planningops",
                     "workflow_state": "ready_contract",
                     "loop_profile": "l1_contract_clarification",
+                    "plan_lane": "m1_contract_freeze",
                     "depends_on": [10],
                     "primary_output": "planningops/contracts/later.md",
                 },
@@ -481,6 +488,7 @@ with tempfile.TemporaryDirectory() as td:
                     "component": "planningops",
                     "workflow_state": "ready_contract",
                     "loop_profile": "l1_contract_clarification",
+                    "plan_lane": "m1_contract_freeze",
                     "depends_on": [],
                     "primary_output": "planningops/contracts/early.md",
                 },

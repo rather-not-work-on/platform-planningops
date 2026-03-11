@@ -74,6 +74,7 @@ REQUIRED_ITEM_KEYS = [
     "component",
     "workflow_state",
     "loop_profile",
+    "plan_lane",
     "depends_on",
     "primary_output",
 ]
@@ -219,8 +220,7 @@ def issue_body(source_of_truth, plan_id, plan_revision, item, blueprint_defaults
         f"- depends_on: `{depends}`",
         f"- primary_output: `{item['primary_output']}`",
     ]
-    if item.get("plan_lane"):
-        planning_context_lines.insert(-2, f"- plan_lane: `{item['plan_lane']}`")
+    planning_context_lines.insert(-2, f"- plan_lane: `{item['plan_lane']}`")
 
     body = "\n".join(
         [

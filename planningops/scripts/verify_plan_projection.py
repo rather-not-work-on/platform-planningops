@@ -27,6 +27,7 @@ REQUIRED_ITEM_KEYS = [
     "component",
     "workflow_state",
     "loop_profile",
+    "plan_lane",
     "depends_on",
     "primary_output",
 ]
@@ -140,6 +141,7 @@ def build_expected_projection(contract_doc, initiative):
             "component": normalize_key(item["component"]),
             "workflow_state": workflow_state,
             "loop_profile": normalize_key(item["loop_profile"]),
+            "plan_lane": normalize_key(item["plan_lane"]),
             "status": WORKFLOW_TO_STATUS[item["workflow_state"]],
             "initiative": initiative,
             "blueprint_required": workflow_state == "ready_implementation",
@@ -202,6 +204,7 @@ def build_actual_projection(items, initiative_filter):
             "component": normalize_key(item.get("component")),
             "workflow_state": normalize_key(item.get("workflow_state")),
             "loop_profile": normalize_key(item.get("loop_profile")),
+            "plan_lane": normalize_key(item.get("plan_lane")),
             "status": normalize_key(item.get("status")),
             "initiative": initiative,
         }
@@ -228,6 +231,7 @@ def compare_projection(expected, actual, fail_on_unexpected):
         "component",
         "workflow_state",
         "loop_profile",
+        "plan_lane",
         "status",
         "initiative",
     ]

@@ -5,7 +5,7 @@ doc_type: navigation
 domain: navigation
 status: active
 date: 2026-02-27
-updated: 2026-03-05
+updated: 2026-03-11
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-document-map
 tags:
@@ -29,6 +29,7 @@ related_docs:
   - ../30-execution-plan/uap-github-planningops-sync.execution-plan.md
   - ../30-execution-plan/2026-02-27-uap-planningops-lifecycle-scenarios.execution-plan.md
   - ../40-quality/uap-planningops-tradeoff-decision-framework.quality.md
+  - ../40-quality/uap-automation-operations-summary.quality.md
   - ../2026-02-27-uap-frontmatter-catalog.navigation.md
   - ../../../workbench/unified-personal-agent-platform/README.md
 ---
@@ -151,6 +152,9 @@ Note: 이 문서(`uap-document-map.navigation.md`) 자체가 Entry Core 구성�
 
 - [Trade-off Decision Framework](../40-quality/uap-planningops-tradeoff-decision-framework.quality.md)
 - 역할: 판단 유예 항목의 점수화 기준, 분기 영향, 재평가 트리거 제공
+
+- [Automation Operations Summary](../40-quality/uap-automation-operations-summary.quality.md)
+- 역할: 실행 자동화와 관찰 자동화의 역할 경계, 로컬 전용 실패 원인, 현재 운영 규칙을 고정
 
 ## Domain Cross-Cut Layer (`30-domains`)
 - [Domains Hub](../30-domains/README.md)

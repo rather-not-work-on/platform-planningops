@@ -7,6 +7,7 @@
       "component": "planningops",
       "workflow_state": "ready-contract",
       "loop_profile": "L1 Contract-Clarification",
+      "plan_lane": "m1-contract-freeze",
       "status": "Todo",
       "execution_order": 1,
       "content": {

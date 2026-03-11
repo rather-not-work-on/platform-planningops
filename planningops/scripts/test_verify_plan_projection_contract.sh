@@ -30,6 +30,7 @@ def build_contract():
                     "component": "planningops",
                     "workflow_state": "ready_contract",
                     "loop_profile": "l1_contract_clarification",
+                    "plan_lane": "m1_contract_freeze",
                     "depends_on": [],
                     "primary_output": "planningops/contracts/plan-execution-contract-v1.md",
                 }
@@ -41,6 +42,7 @@ def build_contract():
 def build_snapshot(
     workflow_state="ready-contract",
     loop_profile="L1 Contract-Clarification",
+    plan_lane="m1-contract-freeze",
     status="Todo",
     body=None,
 ):
@@ -54,6 +56,7 @@ def build_snapshot(
                 "component": "planningops",
                 "workflow_state": workflow_state,
                 "loop_profile": loop_profile,
+                "plan_lane": plan_lane,
                 "status": status,
                 "execution_order": 1,
                 "content": {
@@ -119,6 +122,28 @@ with tempfile.TemporaryDirectory() as td:
     assert mismatch_report["verdict"] == "fail", mismatch_report
     assert mismatch_report["mismatch_count"] >= 1, mismatch_report
     assert "projection_field_mismatch" in mismatch_report["reasons"], mismatch_report
+
+    # plan_lane mismatch must fail in strict mode.
+    snapshot_path.write_text(
+        json.dumps(build_snapshot(plan_lane="m2-sync-core"), ensure_ascii=True),
+        encoding="utf-8",
+    )
+    argv_before = list(sys.argv)
+    sys.argv = [
+        "verify_plan_projection.py",
+        "--contract-file",
+        str(contract_path),
+        "--snapshot-file",
+        str(snapshot_path),
+        "--strict",
+        "--output",
+        str(output_path),
+    ]
+    rc_lane = mod.main()
+    sys.argv = argv_before
+    assert rc_lane == 1, rc_lane
+    lane_report = json.loads(output_path.read_text(encoding="utf-8"))
+    assert any(row["field"] == "plan_lane" for row in lane_report["mismatches"]), lane_report
 
     # missing item must fail in strict mode.
     snapshot_path.write_text(json.dumps({"items": []}, ensure_ascii=True), encoding="utf-8")
