@@ -5,7 +5,7 @@ date: 2026-03-11
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
-summary: C90 reconciliation evidence for B-track outputs is green; execution-repo PRs are merged and the earlier automation blocker was traced to a space-containing worktree cwd.
+summary: C90 reconciliation evidence for B-track outputs is green; execution-repo and PlanningOps follow-up PRs are merged, and the earlier automation blocker was traced to a space-containing worktree cwd.
 ---
 
 # Federated Reconciliation Report (2026-03-11)
@@ -23,8 +23,11 @@ summary: C90 reconciliation evidence for B-track outputs is green; execution-rep
   - `platform-provider-gateway` [#22](https://github.com/rather-not-work-on/platform-provider-gateway/pull/22)
   - `platform-observability-gateway` [#22](https://github.com/rather-not-work-on/platform-observability-gateway/pull/22)
   - `monday` [#24](https://github.com/rather-not-work-on/monday/pull/24)
+- PlanningOps follow-up PR is also merged on `main`:
+  - `platform-planningops` [#272](https://github.com/rather-not-work-on/platform-planningops/pull/272)
 - the earlier overnight automation blocker was not GitHub permission/auth drift; archived sessions show worktree execution truncating the cwd at the first space (`fatal: cannot change to '/Volumes/T7'`).
 - automation recurrence was mitigated by switching automation `cwds` to the space-free symlink `/Users/minijb/rather-not-work-on`.
+- current remaining delta is outside `C90`: three newer local PlanningOps commits are unrelated post-reconciliation backlog/PEC improvements, not unresolved B-track delivery.
 
 ## Evidence By Work Item
 ### B11 (platform-contracts)
@@ -67,18 +70,19 @@ summary: C90 reconciliation evidence for B-track outputs is green; execution-rep
 - result: pass (`local runtime smoke` skip is expected offline: `reason_code=tsx_fetch_unavailable_offline`)
 
 ### B50 (platform-planningops)
-- branch: `feat/wave25-supervisor-inbox-payload`
-- pending local commits:
+- merged PR: [#272](https://github.com/rather-not-work-on/platform-planningops/pull/272)
+- merge commit: `6cc9415`
+- included commits:
   - `78d1053` feat(planningops): project supervisor inbox payloads
   - `c37d098` feat(planningops): extend federated conformance for B-track artifacts
-  - `e7598d0` docs(planningops): add C90 federated reconciliation report for 2026-03-11
+  - `d29838f` docs(planningops): reconcile C90 automation follow-up
 - validation:
   - `bash planningops/scripts/test_cross_repo_conformance_bootstrap_contract.sh`
   - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-mode auto --run-id final-c90-20260311`
   - `bash planningops/scripts/test_validate_repo_boundaries_contract.sh`
   - `bash planningops/scripts/test_validate_script_roles_contract.sh`
   - `bash planningops/scripts/test_validate_wrapper_deprecation_contract.sh`
-- result: pass
+- result: pass and merged
 
 ## Blockers
 - no active GitHub auth, network, or branch-protection blocker remains for execution-repo delivery.
@@ -88,13 +92,12 @@ summary: C90 reconciliation evidence for B-track outputs is green; execution-rep
   - mitigation applied outside the repo: automation `cwds` now point to `/Users/minijb/rather-not-work-on`
 
 ## Next Action Queue
-1. push and open the `platform-planningops` closure PR for `B50` + `C90` evidence.
-2. update any residual PlanningOps issue/project fields for `#108` / `#109` if drift remains.
-3. merge the PlanningOps PR on green checks.
-4. resume selection from the next ready manifest item after `C90`.
+1. treat `C90` as closed and resume normal backlog selection.
+2. keep automation state compact so future runs do not re-open stale auth/network blocker conclusions.
+3. route post-`C90` PlanningOps local commits through a normal PR lifecycle instead of folding them into reconciliation history.
 
 ## Reconciliation Verdict
 - local dependency gates: `pass`
 - federated conformance gate: `pass`
-- remote governance sync gate: `pass` for execution repos
-- overall: `pass` once the accompanying PlanningOps closure PR merges
+- remote governance sync gate: `pass` for execution repos and PlanningOps
+- overall: `pass`
