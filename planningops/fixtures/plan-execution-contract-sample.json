@@ -12,6 +12,7 @@
         "component": "planningops",
         "workflow_state": "ready_contract",
         "loop_profile": "l1_contract_clarification",
+        "plan_lane": "m1_contract_freeze",
         "depends_on": [],
         "primary_output": "planningops/contracts/plan-execution-contract-v1.md",
         "required_checks": [
@@ -21,4 +22,3 @@
     ]
   }
 }
-

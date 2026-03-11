@@ -40,6 +40,11 @@ Each item in `items` must include:
   - `l3_implementation_tdd`
   - `l4_integration_reconcile`
   - `l5_recovery_replan`
+- `plan_lane` (enum):
+  - `m0_bootstrap`
+  - `m1_contract_freeze`
+  - `m2_sync_core`
+  - `m3_guardrails`
 - `depends_on` (array of integers, execution_order references)
 - `primary_output` (string, repo-relative path)
 
@@ -62,6 +67,7 @@ Compiler output must include issue body metadata keys:
 - `component`
 - `workflow_state`
 - `loop_profile`
+- `plan_lane`
 - `depends_on`
 - `primary_output`
 
@@ -70,6 +76,7 @@ Project field mapping:
 - `workflow_state` single-select uses the same canonical key domain
 - `loop_profile` single-select uses the same canonical key domain
 - `execution_order`, `target_repo`, `initiative` are mirrored directly
+- `plan_lane` single-select uses the same canonical key domain
 
 ## Compatibility Policy
 - `v1` supports legacy issue execution by requiring compiler output to preserve existing issue body metadata shape.
