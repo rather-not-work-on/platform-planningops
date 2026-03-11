@@ -1,5 +1,5 @@
 ---
-status: pending
+status: complete
 priority: p2
 issue_id: "036"
 tags: [code-review, reliability, planningops]
@@ -59,6 +59,8 @@ Evidence:
 
 ## Recommended Action
 
+Option 2 implemented: keep `state=all` ingestion but apply deterministic dedup by `{plan_item_id,target_repo}` with explicit winner reporting.
+
 
 ## Technical Details
 
@@ -74,9 +76,9 @@ Evidence:
 
 ## Acceptance Criteria
 
-- [ ] Manifest generation is deterministic even with historical duplicate keys.
-- [ ] Duplicate handling policy is explicit and covered by regression test.
-- [ ] Report clearly indicates selected winner when duplicates exist.
+- [x] Manifest generation is deterministic even with historical duplicate keys.
+- [x] Duplicate handling policy is explicit and covered by regression test.
+- [x] Report clearly indicates selected winner when duplicates exist.
 
 ## Work Log
 
@@ -90,6 +92,22 @@ Evidence:
 
 **Learnings:**
 - Current implementation works for now but can regress as issue history accumulates.
+
+### 2026-03-11 - Deterministic Dedup Added
+
+**By:** Codex
+
+**Actions:**
+- Added duplicate-resolution policy: open issues preferred, then latest `updated_at`, then highest issue number.
+- Kept all-state scan while selecting one winner per `{plan_item_id,target_repo}` key.
+- Added report payload `duplicate_group_count` and `duplicate_groups` including winner/losers.
+- Added contract regression covering open/closed duplicate history selection.
+- Ran:
+  - `bash planningops/scripts/test_build_program_manifest_contract.sh`
+  - `python3 -m py_compile planningops/scripts/build_program_manifest.py`
+
+**Learnings:**
+- This keeps historical observability while preserving manifest determinism and clear auditability of selected rows.
 
 ## Notes
 
