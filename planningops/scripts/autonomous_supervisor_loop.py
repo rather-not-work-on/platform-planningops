@@ -51,6 +51,11 @@ def parse_json_doc(raw: str):
 def extract_verdict_reason(loop_result: dict, rc: int):
     verdict = str(loop_result.get("last_verdict", "")).strip().lower()
     reason_code = str(loop_result.get("reason_code", "")).strip()
+    result_name = str(loop_result.get("result", "")).strip().lower()
+    if verdict not in {"pass", "fail", "inconclusive"} and result_name == "no_eligible_todo_issue":
+        verdict = "inconclusive"
+        if not reason_code:
+            reason_code = "no_eligible_todo_issue"
     if verdict not in {"pass", "fail", "inconclusive"}:
         verdict = "pass" if rc == 0 else "fail"
     if not reason_code:
@@ -181,6 +186,16 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "status": "review_required",
                 "headline": "Supervisor paused on experiment trigger.",
                 "operator_action": "review_experiment_trigger",
+            }
+        )
+        return report
+
+    if stop_reason == "replan_required":
+        report.update(
+            {
+                "status": "review_required",
+                "headline": "Supervisor stopped because backlog selection requires replanning.",
+                "operator_action": "regenerate_backlog_or_reconcile_project",
             }
         )
         return report
@@ -567,6 +582,16 @@ def main():
             stop_reason = "escalation_auto_pause"
             stop_details = {"cycle": cycle_index, "reason_code": reason_code}
             break
+        if verdict == "inconclusive" and reason_code in {
+            "no_eligible_todo_issue",
+            "no_candidate_project_items",
+            "closed_issue_project_drift",
+            "dependency_blocked",
+            "inventory_only_candidates_only",
+        }:
+            stop_reason = "replan_required"
+            stop_details = {"cycle": cycle_index, "reason_code": reason_code}
+            break
         if backlog_failed and not args.report_only_gates:
             stop_reason = "backlog_gate_fail"
             stop_details = {"cycle": cycle_index}
@@ -608,7 +633,7 @@ def main():
         "github_rate_limited",
     }:
         supervisor_verdict = "fail"
-    elif stop_reason in {"experiment_triggered", "sequence_exhausted"}:
+    elif stop_reason in {"experiment_triggered", "sequence_exhausted", "replan_required", "max_cycles_reached"}:
         supervisor_verdict = "inconclusive"
 
     summary = {

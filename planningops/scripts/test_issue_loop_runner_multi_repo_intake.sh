@@ -377,6 +377,43 @@ with tempfile.TemporaryDirectory() as td:
     assert reconcile_fail["status"] == "fail", reconcile_fail
     assert reconcile_fail["reason_code"] == "closed_issue_reconcile_failed", reconcile_fail
 
+    closed_only_attempts = [
+        {
+            "number": 301,
+            "issue_repo": "rather-not-work-on/platform-planningops",
+            "result": "issue_not_open",
+            "state": "CLOSED",
+        }
+    ]
+    closed_only_trace = mod.build_selection_trace(
+        mod.normalize_candidates(reconcile_items, {"ready-implementation"}),
+        None,
+        closed_only_attempts,
+        {"ready-implementation"},
+    )
+    closed_only_trace["closed_issue_reconcile"] = reconcile_check
+    no_eligible_closed = mod.build_no_eligible_result(
+        closed_only_trace,
+        mod.normalize_candidates(reconcile_items, {"ready-implementation"}),
+        closed_only_attempts,
+        reconcile_check,
+        True,
+    )
+    assert no_eligible_closed["result"] == "no_eligible_todo_issue", no_eligible_closed
+    assert no_eligible_closed["last_verdict"] == "inconclusive", no_eligible_closed
+    assert no_eligible_closed["reason_code"] == "closed_issue_project_drift", no_eligible_closed
+    assert no_eligible_closed["recommended_action"] == "rerun_apply_closed_issue_reconcile", no_eligible_closed
+
+    no_eligible_empty = mod.build_no_eligible_result(
+        {"candidate_count": 0},
+        [],
+        [],
+        {"issues_total": 0},
+        True,
+    )
+    assert no_eligible_empty["reason_code"] == "no_candidate_project_items", no_eligible_empty
+    assert no_eligible_empty["recommended_action"] == "retriage_backlog", no_eligible_empty
+
 with tempfile.TemporaryDirectory() as td:
     snapshot_path = Path(td) / "project-items-snapshot.json"
     project_item_calls = []

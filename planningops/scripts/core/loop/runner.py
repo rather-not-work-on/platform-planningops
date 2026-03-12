@@ -64,6 +64,7 @@ WATCHDOG_DIR = Path("planningops/artifacts/loop-runner/watchdog")
 ESCALATION_HISTORY_PATH = Path("planningops/artifacts/loop-runner/escalation-history.json")
 PROJECT_ITEMS_SNAPSHOT_PATH = Path("planningops/artifacts/loop-runner/project-items-snapshot.json")
 PROGRAM_MANIFEST_PATH = Path("planningops/artifacts/program/program-manifest.json")
+LAST_RUN_PATH = Path("planningops/artifacts/loop-runner/last-run.json")
 DEFAULT_ATTEMPT_BUDGET = {
     "max_attempts": 3,
     "max_duration_minutes": 30,
@@ -808,6 +809,56 @@ def evaluate_closed_issue_reconcile(requested_mode, run_mode, no_feedback, items
     return result
 
 
+def derive_no_eligible_reason(candidates, selection_attempts, closed_issue_reconcile):
+    if not candidates:
+        return {
+            "reason_code": "no_candidate_project_items",
+            "recommended_action": "retriage_backlog",
+        }
+
+    attempt_results = [str(attempt.get("result") or "").strip() for attempt in selection_attempts if attempt.get("result")]
+    if (
+        closed_issue_reconcile.get("issues_total", 0) > 0
+        and attempt_results
+        and all(result == "issue_not_open" for result in attempt_results)
+    ):
+        return {
+            "reason_code": "closed_issue_project_drift",
+            "recommended_action": "rerun_apply_closed_issue_reconcile",
+        }
+    if attempt_results and all(result == "dependency_blocked" for result in attempt_results):
+        return {
+            "reason_code": "dependency_blocked",
+            "recommended_action": "wait_for_dependencies",
+        }
+    if attempt_results and all(result == "inventory_only" for result in attempt_results):
+        return {
+            "reason_code": "inventory_only_candidates_only",
+            "recommended_action": "promote_executable_backlog",
+        }
+    return {
+        "reason_code": "no_eligible_todo_issue",
+        "recommended_action": "retriage_backlog",
+    }
+
+
+def build_no_eligible_result(selection_trace, candidates, selection_attempts, closed_issue_reconcile, no_feedback):
+    derived = derive_no_eligible_reason(candidates, selection_attempts, closed_issue_reconcile)
+    return {
+        "result": "no_eligible_todo_issue",
+        "reason_code": derived["reason_code"],
+        "recommended_action": derived["recommended_action"],
+        "last_verdict": "inconclusive",
+        "auto_paused": False,
+        "selection_trace": selection_trace,
+        "candidate_count": len(candidates),
+        "replenishment_candidates_path": None,
+        "replenishment_candidates_count": 0,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "no_feedback": no_feedback,
+    }
+
+
 def issue_is_closed(issue_num: int, repo: str):
     try:
         issue_doc = load_issue_doc(issue_num, repo)
@@ -1161,7 +1212,15 @@ def main():
     }
 
     if selected is None:
-        print(json.dumps({"result": "no_eligible_todo_issue", "selection_trace": selection_trace}, ensure_ascii=True))
+        no_eligible_result = build_no_eligible_result(
+            selection_trace,
+            candidates,
+            selection_attempts,
+            closed_issue_reconcile,
+            args.no_feedback,
+        )
+        save_json(LAST_RUN_PATH, no_eligible_result)
+        print(json.dumps(no_eligible_result, ensure_ascii=True, indent=2))
         return 2
 
     pec_preflight = evaluate_pec_preflight(
@@ -1911,8 +1970,7 @@ def main():
             adapter_artifact_dir=adapter_artifact_dir,
             transition_log=transition_log,
         )
-        out_path = Path("planningops/artifacts/loop-runner/last-run.json")
-        save_json(out_path, failure_result)
+        save_json(LAST_RUN_PATH, failure_result)
         print(json.dumps(failure_result, ensure_ascii=True, indent=2))
         return 1
 
@@ -2024,8 +2082,7 @@ def main():
         adapter_artifact_dir=adapter_artifact_dir,
         transition_log=transition_log,
     )
-    out_path = Path("planningops/artifacts/loop-runner/last-run.json")
-    save_json(out_path, result)
+    save_json(LAST_RUN_PATH, result)
     print(json.dumps(result, ensure_ascii=True, indent=2))
     return 0
 
