@@ -63,6 +63,7 @@ LOCK_DIR = Path("planningops/artifacts/loop-runner/locks")
 WATCHDOG_DIR = Path("planningops/artifacts/loop-runner/watchdog")
 ESCALATION_HISTORY_PATH = Path("planningops/artifacts/loop-runner/escalation-history.json")
 PROJECT_ITEMS_SNAPSHOT_PATH = Path("planningops/artifacts/loop-runner/project-items-snapshot.json")
+PROGRAM_MANIFEST_PATH = Path("planningops/artifacts/program/program-manifest.json")
 DEFAULT_ATTEMPT_BUDGET = {
     "max_attempts": 3,
     "max_duration_minutes": 30,
@@ -447,6 +448,102 @@ def save_project_items_snapshot(snapshot_path: Path, owner: str, project_num: in
     snapshot_path.write_text(json.dumps(snapshot_doc, ensure_ascii=True, indent=2), encoding="utf-8")
 
 
+def load_program_manifest_items(manifest_path: Path | None = None):
+    path = Path(manifest_path) if manifest_path else PROGRAM_MANIFEST_PATH
+    doc = load_json(path, {})
+    items = doc.get("items") if isinstance(doc, dict) else None
+    if not isinstance(items, list):
+        raise RuntimeError(f"invalid program manifest items: {path}")
+    return items
+
+
+def synthesize_project_items_from_manifest(manifest_path: Path | None = None):
+    manifest_items = load_program_manifest_items(manifest_path)
+    synthesized = []
+    for row in manifest_items:
+        if not isinstance(row, dict):
+            continue
+        issue_repo = (row.get("issue_repo") or row.get("target_repo") or "").strip()
+        issue_number = row.get("issue_number")
+        if not issue_repo or not isinstance(issue_number, int):
+            continue
+        workflow_state = str(row.get("workflow_state") or "").strip()
+        lifecycle_key = workflow_state.replace("-", "_")
+        status_token = WORKFLOW_TO_STATUS.get(lifecycle_key, "todo")
+        status = {
+            "todo": "Todo",
+            "in_progress": "In Progress",
+            "blocked": "Blocked",
+            "done": "Done",
+        }.get(status_token, "Todo")
+        synthesized.append(
+            {
+                "status": status,
+                "workflow_state": workflow_state,
+                "target_repo": row.get("target_repo") or issue_repo,
+                "execution_order": row.get("execution_order") or 0,
+                "component": row.get("component"),
+                "loop_profile": row.get("loop_profile"),
+                "initiative": row.get("track"),
+                "execution_kind": row.get("execution_kind") or EXECUTION_KIND_EXECUTABLE,
+                "content": {
+                    "type": "Issue",
+                    "number": issue_number,
+                    "repository": issue_repo,
+                },
+            }
+        )
+    if not synthesized:
+        raise RuntimeError("program manifest fallback has no issue items")
+    return synthesized
+
+
+def build_manifest_issue_doc_cache(manifest_path: Path | None = None):
+    manifest_items = load_program_manifest_items(manifest_path)
+    plan_to_issue = {}
+    for row in manifest_items:
+        if not isinstance(row, dict):
+            continue
+        plan_item_id = str(row.get("plan_item_id") or "").strip()
+        issue_repo = (row.get("issue_repo") or row.get("target_repo") or "").strip()
+        issue_number = row.get("issue_number")
+        if plan_item_id and issue_repo and isinstance(issue_number, int):
+            plan_to_issue[plan_item_id] = {"issue_repo": issue_repo, "issue_number": issue_number}
+
+    cache = {}
+    for row in manifest_items:
+        if not isinstance(row, dict):
+            continue
+        issue_repo = (row.get("issue_repo") or row.get("target_repo") or "").strip()
+        issue_number = row.get("issue_number")
+        if not issue_repo or not isinstance(issue_number, int):
+            continue
+        plan_item_id = str(row.get("plan_item_id") or "").strip()
+        depends_tokens = []
+        for dep_plan_item in row.get("depends_on") or []:
+            dep_info = plan_to_issue.get(str(dep_plan_item).strip())
+            if not dep_info:
+                continue
+            if dep_info.get("issue_repo") != issue_repo:
+                continue
+            depends_tokens.append(f"#{dep_info.get('issue_number')}")
+        body_lines = [
+            f"plan_item_id: {plan_item_id}" if plan_item_id else "",
+            f"target_repo: {row.get('target_repo') or issue_repo}",
+            f"component: {row.get('component') or ''}",
+            f"workflow_state: {row.get('workflow_state') or ''}",
+            f"loop_profile: {row.get('loop_profile') or ''}",
+            f"execution_order: {row.get('execution_order') or 0}",
+            f"depends_on: {', '.join(depends_tokens)}" if depends_tokens else "depends_on:",
+            f"execution_kind: {row.get('execution_kind') or EXECUTION_KIND_EXECUTABLE}",
+        ]
+        body = "\n".join(line for line in body_lines if line != "")
+        issue_state = str(row.get("issue_state") or "").strip().lower()
+        state = "OPEN" if issue_state == "open" else "CLOSED"
+        cache[f"{issue_repo}#{issue_number}"] = {"body": body, "state": state}
+    return cache
+
+
 def resolve_project_items_snapshot_mode(requested_mode: str, run_mode: str, no_feedback: bool):
     normalized = str(requested_mode or "auto").strip().lower()
     if normalized == "auto":
@@ -553,6 +650,32 @@ def load_project_items(
         )
         return snapshot
 
+    if normalized_mode == "auto":
+        if effective_snapshot_path.exists():
+            snapshot = load_project_items_snapshot(effective_snapshot_path)
+            snapshot["rate_limit_error"] = err
+            snapshot["rate_limit_guidance"] = build_rate_limit_guidance(
+                run_mode="dry-run",
+                snapshot_path=str(effective_snapshot_path),
+                fallback_used=True,
+                rate_limit_error=err,
+            )
+            return snapshot
+        manifest_items = synthesize_project_items_from_manifest(PROGRAM_MANIFEST_PATH)
+        return {
+            "items": manifest_items,
+            "source": "manifest",
+            "snapshot_path": str(PROGRAM_MANIFEST_PATH),
+            "rate_limit_fallback_used": True,
+            "rate_limit_error": err,
+            "rate_limit_guidance": build_rate_limit_guidance(
+                run_mode="dry-run",
+                snapshot_path=str(PROGRAM_MANIFEST_PATH),
+                fallback_used=True,
+                rate_limit_error=err,
+            ),
+        }
+
     raise RuntimeError(f"failed to list project items: {err}")
 
 
@@ -564,6 +687,14 @@ def load_issue_doc(issue_num: int, repo: str):
 
     rc, out, err = run(["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "body,state"])
     if rc != 0:
+        try:
+            fallback_cache = build_manifest_issue_doc_cache(PROGRAM_MANIFEST_PATH)
+            fallback_doc = fallback_cache.get(cache_key)
+            if fallback_doc is not None:
+                ISSUE_DOC_CACHE[cache_key] = fallback_doc
+                return fallback_doc
+        except Exception:  # noqa: BLE001
+            pass
         raise RuntimeError(f"failed to read issue {repo}#{issue_num}: {err}")
     doc = json.loads(out)
     ISSUE_DOC_CACHE[cache_key] = doc
