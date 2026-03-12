@@ -5,7 +5,7 @@ doc_type: quality
 domain: quality
 status: active
 date: 2026-03-11
-updated: 2026-03-11
+updated: 2026-03-13
 initiative: unified-personal-agent-platform
 memory_tier: L1
 tags:
@@ -86,6 +86,8 @@ The earlier local-only behavior was not caused by git permissions.
    - feature branch cleanup
    - issue/project field sync
 4. If all repos are clean and no open issue is ready, regenerate or re-triage backlog from `planningops` instead of inventing repo-local work.
+   - canonical command: `python3 planningops/scripts/core/backlog/materialize.py --contract-file <execution-contract.json>`
+   - dry-run expectation: the command must project local issues first, then run label backfill / manifest / issue-quality against that projected issue set instead of depending on pre-existing live GitHub issues
 5. Keep durable conclusions in canonical docs or workbench audits; keep automation memory short and current.
 
 ## Reflected Outcomes
@@ -102,3 +104,5 @@ The earlier local-only behavior was not caused by git permissions.
 - `gh api rate_limit`
 - `git ls-remote --heads origin`
 - `gh issue list --state open` across the five managed repos
+- `python3 planningops/scripts/core/backlog/materialize.py --contract-file <execution-contract.json>`
+- `python3 planningops/scripts/backfill_issue_labels.py --repo rather-not-work-on/platform-planningops --issues-file /tmp/projected-issues.json --write-updated-issues-file /tmp/projected-issues.json --output /tmp/issue-label-backfill-report.json --apply`

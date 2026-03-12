@@ -30,6 +30,7 @@ with tempfile.TemporaryDirectory() as td:
             "body": "\n".join(
                 [
                     "## Planning Context",
+                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`",
                     "- plan_item_id: `A00`",
                     "- target_repo: `rather-not-work-on/platform-planningops`",
                     "- component: `orchestrator`",
@@ -51,6 +52,7 @@ with tempfile.TemporaryDirectory() as td:
             "body": "\n".join(
                 [
                     "## Planning Context",
+                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`",
                     "- plan_item_id: `A10`",
                     "- target_repo: `rather-not-work-on/platform-planningops`",
                     "- component: `planningops`",
@@ -72,6 +74,7 @@ with tempfile.TemporaryDirectory() as td:
             "body": "\n".join(
                 [
                     "## Planning Context",
+                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`",
                     "- plan_item_id: `B10`",
                     "- target_repo: `rather-not-work-on/platform-contracts`",
                     "- component: `contracts`",
@@ -156,6 +159,56 @@ with tempfile.TemporaryDirectory() as td:
     assert dup_report["duplicate_group_count"] == 1, dup_report
     assert dup_report["duplicate_groups"][0]["winner"]["issue_number"] == 96, dup_report
     assert [row["issue_number"] for row in dup_report["duplicate_groups"][0]["losers"]] == [95, 80], dup_report
+
+    # Source-plan scoping should ignore unrelated wave items with colliding plan_item_id values.
+    scoped_issues = json.loads(json.dumps(base_issues))
+    scoped_issues.append(
+        {
+            "repo": "rather-not-work-on/platform-planningops",
+            "number": 163,
+            "state": "closed",
+            "updated_at": "2026-03-11T12:00:00Z",
+            "title": "old wave B10",
+            "url": "https://github.com/rather-not-work-on/platform-planningops/issues/163",
+            "body": "\n".join(
+                [
+                    "## Planning Context",
+                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-skeleton-wave3-build-baseline-issue-pack.md`",
+                    "- plan_item_id: `B10`",
+                    "- target_repo: `rather-not-work-on/platform-planningops`",
+                    "- component: `planningops`",
+                    "- workflow_state: `done`",
+                    "- loop_profile: `l4_integration_reconcile`",
+                    "- execution_order: `10`",
+                    "- depends_on: `-`",
+                    "- plan_lane: `M3 Guardrails`",
+                ]
+            ),
+        }
+    )
+    issues_path.write_text(json.dumps(scoped_issues, ensure_ascii=True, indent=2), encoding="utf-8")
+    rc_scoped, out_scoped, err_scoped = run(
+        [
+            "python3",
+            "planningops/scripts/build_program_manifest.py",
+            "--issues-file",
+            str(issues_path),
+            "--source-plan",
+            "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md",
+            "--scope-source-plan",
+            "--output",
+            str(output_path),
+            "--report-output",
+            str(report_path),
+            "--strict",
+        ]
+    )
+    assert rc_scoped == 0, (rc_scoped, out_scoped, err_scoped)
+    scoped_manifest = json.loads(output_path.read_text(encoding="utf-8"))
+    scoped_report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert scoped_report["verdict"] == "pass", scoped_report
+    assert scoped_report["filtered_out_count"] == 1, scoped_report
+    assert [row["issue_number"] for row in scoped_manifest["items"] if row["plan_item_id"] == "B10"] == [2], scoped_manifest
 
     # Invalid graph: dependency points to unknown key.
     bad = json.loads(json.dumps(base_issues))

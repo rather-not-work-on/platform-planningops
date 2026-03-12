@@ -26,6 +26,11 @@ def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def write_json(path: Path, doc):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, ensure_ascii=True, indent=2), encoding="utf-8")
+
+
 def fetch_open_issues(repo: str):
     rc, out, err = run(
         [
@@ -52,6 +57,8 @@ def label_names(issue: dict):
     for row in issue.get("labels", []):
         if isinstance(row, dict) and row.get("name"):
             names.append(row["name"])
+        elif isinstance(row, str) and row:
+            names.append(row)
     return names
 
 
@@ -125,11 +132,28 @@ def infer_type_label(issue: dict):
     return "type/hardening"
 
 
+def load_issues(path: Path):
+    doc = load_json(path)
+    if not isinstance(doc, list):
+        raise RuntimeError("issues-file must contain JSON array")
+    return doc
+
+
+def set_issue_labels(issue: dict, labels):
+    issue["labels"] = [{"name": label} for label in sorted(set(labels))]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Backfill required label taxonomy on open planning issues")
     parser.add_argument("--repo", default="rather-not-work-on/platform-planningops")
     parser.add_argument("--rules", default=str(DEFAULT_RULES))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
+    parser.add_argument("--issues-file", default=None, help="Optional local issues JSON array")
+    parser.add_argument(
+        "--write-updated-issues-file",
+        default=None,
+        help="Optional output path for local issues JSON after label application",
+    )
     parser.add_argument("--apply", action="store_true", help="Apply missing labels via gh issue edit")
     args = parser.parse_args()
 
@@ -139,7 +163,7 @@ def main():
     required_prefixes = rules.get("required_label_prefixes", [])
     default_priority = "p2"
 
-    issues = fetch_open_issues(args.repo)
+    issues = load_issues(Path(args.issues_file)) if args.issues_file else fetch_open_issues(args.repo)
     rows = []
     applied_count = 0
 
@@ -171,24 +195,29 @@ def main():
         error = ""
 
         if args.apply and to_add:
-            rc, out, err = run(
-                [
-                    "gh",
-                    "issue",
-                    "edit",
-                    str(issue.get("number")),
-                    "--repo",
-                    args.repo,
-                    "--add-label",
-                    ",".join(to_add),
-                ]
-            )
-            if rc == 0:
-                apply_status = "applied"
+            if args.issues_file:
+                set_issue_labels(issue, names + to_add)
+                apply_status = "applied_local"
                 applied_count += 1
             else:
-                apply_status = "error"
-                error = err or out
+                rc, out, err = run(
+                    [
+                        "gh",
+                        "issue",
+                        "edit",
+                        str(issue.get("number")),
+                        "--repo",
+                        args.repo,
+                        "--add-label",
+                        ",".join(to_add),
+                    ]
+                )
+                if rc == 0:
+                    apply_status = "applied"
+                    applied_count += 1
+                else:
+                    apply_status = "error"
+                    error = err or out
 
         rows.append(
             {
@@ -206,6 +235,8 @@ def main():
         "generated_at_utc": now_utc(),
         "repo": args.repo,
         "rules_path": str(Path(args.rules)),
+        "issues_file": args.issues_file,
+        "write_updated_issues_file": args.write_updated_issues_file,
         "mode": "apply" if args.apply else "dry-run",
         "issues_in_scope": len(rows),
         "issues_with_missing_labels": len([r for r in rows if r["planned_labels"]]),
@@ -214,8 +245,9 @@ def main():
     }
 
     out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding="utf-8")
+    write_json(out, report)
+    if args.issues_file and args.write_updated_issues_file:
+        write_json(Path(args.write_updated_issues_file), issues)
 
     print(f"report written: {out}")
     print(

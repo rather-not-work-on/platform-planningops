@@ -72,6 +72,8 @@ python3 planningops/scripts/issue_loop_runner.py --mode apply --closed-issue-rec
 python3 planningops/scripts/issue_loop_runner.py --mode dry-run --project-items-snapshot-fallback auto
 python3 planningops/scripts/issue_loop_runner.py --mode dry-run --pec-preflight-mode strict-pec --pec-contract-file planningops/fixtures/plan-execution-contract-sample.json --no-feedback
 python3 planningops/scripts/compile_plan_to_backlog.py --contract-file planningops/fixtures/plan-execution-contract-sample.json
+python3 planningops/scripts/core/backlog/materialize.py --contract-file planningops/fixtures/plan-execution-contract-sample.json
+python3 planningops/scripts/backfill_issue_labels.py --repo rather-not-work-on/platform-planningops --issues-file /tmp/projected-issues.json --write-updated-issues-file /tmp/projected-issues.json --output /tmp/issue-label-backfill-report.json --apply
 python3 planningops/scripts/build_meta_plan_graph.py --contract-file planningops/fixtures/meta-plan-graph-sample.json --strict
 python3 planningops/scripts/meta_plan_orchestrator.py --meta-graph-contract planningops/fixtures/meta-plan-graph-sample.json --mode dry-run --strict
 python3 planningops/scripts/validate_worker_task_pack.py --task-key issue-18 --issue-number 18 --mode dry-run --loop-profile "L3 Implementation-TDD" --strict
@@ -80,6 +82,8 @@ python3 planningops/scripts/backlog_stock_replenishment_guard.py --items-file pl
 python3 planningops/scripts/autonomous_supervisor_loop.py --mode dry-run --max-cycles 3 --items-file planningops/fixtures/backlog-stock-items-sample.json --offline --loop-result-sequence-file planningops/fixtures/supervisor-loop-sequence-sample.json --run-id demo-supervisor-sequence
 python3 planningops/scripts/supervisor_experiment_auto_executor.py --experiment-id demo-supervisor-exp --topic demo-cycle --options option-a,option-b --validation-pack-file planningops/config/supervisor-experiment-validation-pack.json
 bash planningops/scripts/test_compile_plan_to_backlog_contract.sh
+bash planningops/scripts/test_backfill_issue_labels_contract.sh
+bash planningops/scripts/test_backlog_materialization_contract.sh
 bash planningops/scripts/test_build_meta_plan_graph_contract.sh
 bash planningops/scripts/test_verify_plan_projection_contract.sh
 bash planningops/scripts/test_meta_plan_graph_schema_contract.sh

@@ -187,8 +187,14 @@ def dedupe_manifest_items(candidates):
 def build_manifest(source_rows, args):
     plan_item_re = re.compile(args.plan_item_regex)
     items = []
+    filtered_out_count = 0
     for row in source_rows:
-        metadata = parse_metadata(row["body"])
+        metadata = parse_metadata(row["body"], keys=["plan_item_id", "target_repo", "component", "workflow_state", "loop_profile", "execution_order", "depends_on", "plan_lane", "plan_doc", "plan_id"])
+        plan_doc = normalize_value(metadata.get("plan_doc"))
+        if args.scope_source_plan:
+            if not plan_doc or plan_doc != args.source_plan:
+                filtered_out_count += 1
+                continue
         plan_item_id = normalize_value(metadata.get("plan_item_id"))
         if not plan_item_id or not plan_item_re.search(plan_item_id):
             continue
@@ -219,12 +225,13 @@ def build_manifest(source_rows, args):
         "program_id": args.program_id,
         "initiative": args.initiative,
         "source_plan": args.source_plan,
+        "scope_source_plan": bool(args.scope_source_plan),
         "generated_at_utc": now_utc(),
         "selection_policy": "dedupe_by_plan_item_id_and_target_repo_open_first_then_latest_update",
         "item_count": len(items),
         "items": items,
     }
-    return manifest, duplicate_groups
+    return manifest, duplicate_groups, filtered_out_count
 
 
 def validate_manifest(manifest):
@@ -304,6 +311,7 @@ def main():
     parser.add_argument("--program-id", default="uap-po-ct-program", help="Program identifier")
     parser.add_argument("--initiative", default=DEFAULT_INITIATIVE, help="Initiative id")
     parser.add_argument("--source-plan", default=DEFAULT_SOURCE_PLAN, help="Primary source plan path")
+    parser.add_argument("--scope-source-plan", action="store_true", help="Include only issues whose plan_doc matches --source-plan")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Manifest output path")
     parser.add_argument("--report-output", default=str(DEFAULT_REPORT), help="Validation report output path")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero on validation failure")
@@ -322,9 +330,10 @@ def main():
 
     try:
         source_rows = load_source_issues(args)
-        manifest, duplicate_groups = build_manifest(source_rows, args)
+        manifest, duplicate_groups, filtered_out_count = build_manifest(source_rows, args)
         errors = validate_manifest(manifest)
         report["issues_scanned"] = len(source_rows)
+        report["filtered_out_count"] = filtered_out_count
         report["item_count"] = manifest["item_count"]
         report["duplicate_group_count"] = len(duplicate_groups)
         report["duplicate_groups"] = duplicate_groups

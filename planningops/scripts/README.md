@@ -8,6 +8,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `core/loop/runner.py`
   - `core/loop/checkpoint_lock.py`
   - `core/loop/selection.py`
+  - `core/backlog/materialize.py`
 - Federation entrypoints (canonical location):
   - `federation/federated_python_env.py`
   - `federation/adapter_registry.py`
@@ -75,6 +76,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `cross_repo_conformance_check.py`
   - `multi_repo_projection_report.py`
 - Backlog/bootstrap helpers:
+  - `core/backlog/materialize.py`
   - `bootstrap_two_track_backlog.py`
   - `compile_plan_to_backlog.py`
   - `build_program_manifest.py`
@@ -82,6 +84,8 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `planning_context.py`
   - `build_meta_plan_graph.py`
   - `test_planning_context_contract.sh`
+  - `test_backfill_issue_labels_contract.sh`
+  - `test_backlog_materialization_contract.sh`
   - `test_build_program_manifest_contract.sh`
   - `test_compile_plan_to_backlog_contract.sh`
   - `test_sync_project_fields_after_issue_create_contract.sh`
@@ -133,6 +137,8 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Commands must run from repo root with repo-relative paths.
 - New non-recurring scripts must be placed under `planningops/scripts/oneoff` with a root wrapper only if needed.
 - New recurring control-plane logic must move into `planningops/scripts/core/` and keep root wrappers thin while compatibility is required.
+- Recurring backlog regeneration should use `core/backlog/materialize.py` as the canonical orchestration entrypoint.
+- `core/backlog/materialize.py` dry-run must remain self-contained via projected issues, not pre-existing live GitHub state.
 - Federation mappings must live under `planningops/scripts/federation/`; root compatibility wrappers must be registered in `planningops/config/script-role-map.json` and `planningops/config/wrapper-deprecation-map.json`.
 - Backlog issue creation/update flows must satisfy `planningops/contracts/issue-quality-contract.md`.
 - Validators must ignore filesystem metadata files (`._*`, `.DS_Store`, `Thumbs.db`) to prevent false CI failures.
