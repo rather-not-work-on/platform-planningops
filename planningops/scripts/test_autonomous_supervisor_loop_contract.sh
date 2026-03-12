@@ -356,5 +356,209 @@ with tempfile.TemporaryDirectory() as td:
     assert no_eligible_operator["status"] == "review_required", no_eligible_operator
     assert no_eligible_operator["operator_action"] == "regenerate_backlog_or_reconcile_project", no_eligible_operator
 
+    materialize_success = td_path / "materialize-success.py"
+    materialize_success.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import argparse",
+                "import json",
+                "from pathlib import Path",
+                "parser = argparse.ArgumentParser()",
+                "parser.add_argument('--contract-file', required=True)",
+                "parser.add_argument('--output', required=True)",
+                "parser.add_argument('--projected-issues-output', default=None)",
+                "parser.add_argument('--apply', action='store_true')",
+                "args = parser.parse_args()",
+                "report = {'verdict': 'pass', 'contract_file': args.contract_file, 'mode': 'apply' if args.apply else 'dry-run'}",
+                "Path(args.output).write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding='utf-8')",
+                "if args.projected_issues_output:",
+                "    Path(args.projected_issues_output).write_text('[]', encoding='utf-8')",
+                "print(json.dumps(report, ensure_ascii=True))",
+                "raise SystemExit(0)",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    materialize_fail = td_path / "materialize-fail.py"
+    materialize_fail.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import argparse",
+                "import json",
+                "from pathlib import Path",
+                "parser = argparse.ArgumentParser()",
+                "parser.add_argument('--contract-file', required=True)",
+                "parser.add_argument('--output', required=True)",
+                "parser.add_argument('--projected-issues-output', default=None)",
+                "parser.add_argument('--apply', action='store_true')",
+                "args = parser.parse_args()",
+                "report = {'verdict': 'fail', 'contract_file': args.contract_file, 'mode': 'apply' if args.apply else 'dry-run'}",
+                "Path(args.output).write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding='utf-8')",
+                "if args.projected_issues_output:",
+                "    Path(args.projected_issues_output).write_text('[]', encoding='utf-8')",
+                "print(json.dumps(report, ensure_ascii=True))",
+                "raise SystemExit(1)",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    # 7) dry-run replanning can auto-materialize backlog and surface the materialized output for review.
+    out_replan_materialized = td_path / "supervisor-replan-materialized.json"
+    rc_replan_materialized, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(no_eligible_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_replan_materialized),
+            "--auto-materialize-backlog",
+            "--backlog-materializer-script",
+            str(materialize_success),
+            "--backlog-materialization-contract-file",
+            "planningops/fixtures/plan-execution-contract-sample.json",
+        ]
+    )
+    assert rc_replan_materialized == 1, rc_replan_materialized
+    replan_materialized_doc = json.loads(out_replan_materialized.read_text(encoding="utf-8"))
+    assert replan_materialized_doc["supervisor_verdict"] == "inconclusive", replan_materialized_doc
+    assert replan_materialized_doc["stop_reason"] == "replan_required", replan_materialized_doc
+    materialization = replan_materialized_doc["cycles"][0]["backlog_materialization"]
+    assert materialization["enabled"] is True, replan_materialized_doc
+    assert materialization["rc"] == 0, materialization
+    assert materialization["verdict"] == "pass", materialization
+    assert materialization["projected_issues_output"].endswith("backlog-projected-issues.json"), materialization
+    replan_materialized_operator = json.loads(
+        Path(replan_materialized_doc["operator_report_last_path"]).read_text(encoding="utf-8")
+    )
+    assert replan_materialized_operator["operator_action"] == "review_materialized_backlog", replan_materialized_operator
+
+    # 8) apply-mode replanning can materialize backlog and continue into the next cycle.
+    apply_replan_sequence = td_path / "apply-replan-sequence.json"
+    apply_replan_sequence.write_text(
+        json.dumps(
+            {
+                "cycles": [
+                    {
+                        "rc": 2,
+                        "loop_result": {
+                            "result": "no_eligible_todo_issue",
+                            "reason_code": "no_eligible_todo_issue",
+                            "recommended_action": "retriage_backlog",
+                            "last_verdict": "inconclusive",
+                            "auto_paused": False,
+                            "replenishment_candidates_count": 0,
+                            "selection_trace": {
+                                "selected": None,
+                                "project_items_source": "live",
+                            },
+                        },
+                    },
+                    {
+                        "rc": 0,
+                        "loop_result": {
+                            "selected_issue": 501,
+                            "last_verdict": "pass",
+                            "reason_code": "ok",
+                            "auto_paused": False,
+                            "replenishment_candidates_count": 0,
+                            "selection_trace": {"selected": {"uncertainty_level": "low", "simulation_required": False}},
+                            "final_loop_profile": "L3 Implementation-TDD",
+                        },
+                    },
+                ]
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    out_apply_materialized = td_path / "supervisor-apply-materialized.json"
+    rc_apply_materialized, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "apply",
+            "--max-cycles",
+            "2",
+            "--convergence-pass-streak",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(apply_replan_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_apply_materialized),
+            "--auto-materialize-backlog",
+            "--backlog-materializer-script",
+            str(materialize_success),
+            "--backlog-materialization-contract-file",
+            "planningops/fixtures/plan-execution-contract-sample.json",
+        ]
+    )
+    assert rc_apply_materialized == 0, rc_apply_materialized
+    apply_materialized_doc = json.loads(out_apply_materialized.read_text(encoding="utf-8"))
+    assert apply_materialized_doc["supervisor_verdict"] == "pass", apply_materialized_doc
+    assert apply_materialized_doc["stop_reason"] == "converged", apply_materialized_doc
+    assert apply_materialized_doc["executed_cycles"] == 2, apply_materialized_doc
+    assert apply_materialized_doc["cycles"][0]["backlog_materialization"]["enabled"] is True, apply_materialized_doc
+    assert apply_materialized_doc["cycles"][1]["last_verdict"] == "pass", apply_materialized_doc
+
+    # 9) materialization failure must become a dedicated supervisor failure.
+    out_materialize_fail = td_path / "supervisor-materialize-fail.json"
+    rc_materialize_fail, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(no_eligible_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_materialize_fail),
+            "--auto-materialize-backlog",
+            "--backlog-materializer-script",
+            str(materialize_fail),
+            "--backlog-materialization-contract-file",
+            "planningops/fixtures/plan-execution-contract-sample.json",
+        ]
+    )
+    assert rc_materialize_fail == 1, rc_materialize_fail
+    materialize_fail_doc = json.loads(out_materialize_fail.read_text(encoding="utf-8"))
+    assert materialize_fail_doc["supervisor_verdict"] == "fail", materialize_fail_doc
+    assert materialize_fail_doc["stop_reason"] == "replan_materialization_failed", materialize_fail_doc
+    materialize_fail_operator = json.loads(Path(materialize_fail_doc["operator_report_last_path"]).read_text(encoding="utf-8"))
+    assert materialize_fail_operator["status"] == "blocked", materialize_fail_operator
+    assert materialize_fail_operator["operator_action"] == "inspect_materialization_failure", materialize_fail_operator
+
 print("autonomous supervisor loop contract tests ok")
 PY
