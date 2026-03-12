@@ -117,5 +117,53 @@ with tempfile.TemporaryDirectory() as td:
     assert results[1]["name"] == "backfill_issue_labels", results
     assert results[1]["stderr"] == "label-backfill-failed", results[1]
 
+    violations = mod.collect_closed_match_violations(
+        {
+            "results": [
+                {
+                    "plan_item_id": "A60",
+                    "execution_order": 60,
+                    "closed_match_detected": True,
+                    "closed_match_issue_number": 901,
+                    "reused_closed_issue": False,
+                }
+            ]
+        }
+    )
+    assert violations == [{"plan_item_id": "A60", "execution_order": 60, "closed_match_issue_number": 901}], violations
+
+    preflight_args = SimpleNamespace(
+        contract_file=str(contract_path),
+        compile_config="planningops/config/project-field-ids.json",
+        blueprint_defaults_config="planningops/config/ready-implementation-blueprint-defaults.json",
+        compile_output=str(td_path / "compile-preflight.json"),
+        allow_reopen_closed=False,
+    )
+
+    def fake_preflight_run(cmd):
+        Path(preflight_args.compile_output).write_text(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "plan_item_id": "A60",
+                            "execution_order": 60,
+                            "closed_match_detected": True,
+                            "closed_match_issue_number": 901,
+                            "reused_closed_issue": False,
+                        }
+                    ]
+                },
+                ensure_ascii=True,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        return 0, "ok", ""
+
+    preflight = mod.run_apply_preflight(preflight_args, run_fn=fake_preflight_run)
+    assert preflight["rc"] == 0, preflight
+    assert preflight["closed_match_violations"] == violations, preflight
+
 print("backlog materialization contract ok")
 PY

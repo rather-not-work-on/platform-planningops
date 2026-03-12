@@ -198,6 +198,56 @@ def build_steps(args, execution_contract, projected_issues_file: str | None = No
     ]
 
 
+def collect_closed_match_violations(compile_report):
+    violations = []
+    for row in compile_report.get("results", []):
+        if not row.get("closed_match_detected"):
+            continue
+        if row.get("reused_closed_issue"):
+            continue
+        violations.append(
+            {
+                "plan_item_id": row.get("plan_item_id"),
+                "execution_order": row.get("execution_order"),
+                "closed_match_issue_number": row.get("closed_match_issue_number"),
+            }
+        )
+    return violations
+
+
+def run_apply_preflight(args, run_fn=run):
+    preflight_cmd = [
+        "python3",
+        "planningops/scripts/compile_plan_to_backlog.py",
+        "--contract-file",
+        args.contract_file,
+        "--config",
+        args.compile_config,
+        "--blueprint-defaults-config",
+        args.blueprint_defaults_config,
+        "--output",
+        args.compile_output,
+        "--detect-closed-match",
+    ]
+    if args.allow_reopen_closed:
+        preflight_cmd.append("--allow-reopen-closed")
+
+    rc, out, err = run_fn(preflight_cmd)
+    compile_report = {}
+    compile_output_path = Path(args.compile_output)
+    if compile_output_path.exists():
+        compile_report = json.loads(compile_output_path.read_text(encoding="utf-8"))
+    violations = collect_closed_match_violations(compile_report if isinstance(compile_report, dict) else {})
+    return {
+        "command": preflight_cmd,
+        "rc": rc,
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+        "compile_report": compile_report if isinstance(compile_report, dict) else {},
+        "closed_match_violations": violations,
+    }
+
+
 def execute_steps(steps, run_fn=run):
     results = []
     verdict = "pass"
@@ -276,6 +326,22 @@ def main():
             projected_issues_file = str(projected_issues_path)
             report["projected_issues_output"] = projected_issues_file
             report["projected_issue_count"] = len(projected_issues)
+        else:
+            preflight = run_apply_preflight(args)
+            report["apply_preflight"] = {
+                "command": preflight["command"],
+                "rc": preflight["rc"],
+                "stdout": preflight["stdout"],
+                "stderr": preflight["stderr"],
+                "closed_match_violation_count": len(preflight["closed_match_violations"]),
+                "closed_match_violations": preflight["closed_match_violations"],
+            }
+            if preflight["rc"] != 0:
+                raise RuntimeError("apply preflight failed before backlog materialization")
+            if preflight["closed_match_violations"]:
+                raise RuntimeError(
+                    "closed match detected for exhausted execution contract; rerun with --allow-reopen-closed or choose a new contract"
+                )
         steps = build_steps(args, execution_contract, projected_issues_file=projected_issues_file)
         report["step_count"] = len(steps)
         report["steps"], report["verdict"] = execute_steps(steps)

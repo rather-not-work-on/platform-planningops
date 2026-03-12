@@ -267,6 +267,23 @@ default_dry = mod.compile_item(
 assert default_dry["created_issue"] is True, default_dry
 assert default_dry["reused_closed_issue"] is False, default_dry
 
+detect_dry = mod.compile_item(
+    project={},
+    source_of_truth=fixture_doc["execution_contract"]["source_of_truth"],
+    plan_id=fixture_doc["execution_contract"]["plan_id"],
+    plan_revision=fixture_doc["execution_contract"]["plan_revision"],
+    item=item,
+    apply_mode=False,
+    open_issues=[],
+    closed_issues=[closed_issue],
+    allow_reopen_closed=False,
+    detect_closed_matches=True,
+    project_item_issue_index={},
+)
+assert detect_dry["created_issue"] is True, detect_dry
+assert detect_dry["closed_match_detected"] is True, detect_dry
+assert detect_dry["closed_match_issue_number"] == 901, detect_dry
+
 allow_dry = mod.compile_item(
     project={},
     source_of_truth=fixture_doc["execution_contract"]["source_of_truth"],

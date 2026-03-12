@@ -19,6 +19,7 @@ Provide one recurring control-plane command that materializes executable backlog
 - Dry-run mode must not require pre-existing live GitHub issues for the selected plan.
 - Apply mode may use live GitHub issues, but only through the existing helper scripts.
 - Apply mode must pass through issue creation/reopen behavior only via existing helper scripts.
+- Apply mode must preflight exact closed matches and fail before creating duplicate issues from an exhausted execution contract unless `--allow-reopen-closed` is explicit.
 - The runner must emit a deterministic JSON report under `planningops/artifacts/backlog/`.
 - Dry-run mode must emit a projected issues artifact under `planningops/artifacts/backlog/`.
 
