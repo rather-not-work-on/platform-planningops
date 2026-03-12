@@ -88,6 +88,7 @@ The earlier local-only behavior was not caused by git permissions.
 4. If all repos are clean and no open issue is ready, regenerate or re-triage backlog from `planningops` instead of inventing repo-local work.
    - canonical command: `python3 planningops/scripts/core/backlog/materialize.py --contract-file <execution-contract.json>`
    - dry-run expectation: the command must project local issues first, then run label backfill / manifest / issue-quality against that projected issue set instead of depending on pre-existing live GitHub issues
+   - apply expectation: the command must fail preflight when the selected execution contract only matches closed historical issues unless reopen is explicitly enabled
 5. Supervisor runs may opt into automatic backlog regeneration on replanning paths.
    - canonical command: `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --backlog-materialization-contract-file <execution-contract.json>`
    - dry-run expectation: materialization reports should be attached to the supervisor cycle and surfaced as review guidance rather than being treated as a quality failure

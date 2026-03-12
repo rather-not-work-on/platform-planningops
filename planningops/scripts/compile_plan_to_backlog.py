@@ -515,6 +515,7 @@ def compile_item(
     project_item_issue_index,
     blueprint_defaults_doc=None,
     execution_order_issue_index=None,
+    detect_closed_matches=False,
 ):
     desired_title = f"plan: [{item['execution_order']}] {item['title']}"
     desired_body = issue_body(
@@ -528,19 +529,24 @@ def compile_item(
     issue, dedup_strategy = find_issue_for_item(open_issues, plan_id, item["plan_item_id"], item["target_repo"])
     reused_closed_issue = False
     reopened_closed_issue = False
+    closed_match_detected = False
+    closed_match_issue_number = None
     dedup_match_state = "open" if issue else None
 
-    if issue is None and allow_reopen_closed:
+    if issue is None and (detect_closed_matches or allow_reopen_closed):
         closed_issue, dedup_strategy = find_issue_for_item(closed_issues, plan_id, item["plan_item_id"], item["target_repo"])
         if closed_issue:
-            issue = dict(closed_issue)
-            reused_closed_issue = True
-            dedup_match_state = "closed"
-            if apply_mode:
-                reopen_issue(CONTROL_REPO, issue["number"])
-                reopened_closed_issue = True
-                issue["state"] = "open"
-            open_issues.append(issue)
+            closed_match_detected = True
+            closed_match_issue_number = int(closed_issue["number"])
+            if allow_reopen_closed:
+                issue = dict(closed_issue)
+                reused_closed_issue = True
+                dedup_match_state = "closed"
+                if apply_mode:
+                    reopen_issue(CONTROL_REPO, issue["number"])
+                    reopened_closed_issue = True
+                    issue["state"] = "open"
+                open_issues.append(issue)
 
     created = False
     if issue:
@@ -588,6 +594,8 @@ def compile_item(
         "dedup_strategy": dedup_strategy,
         "reused_closed_issue": reused_closed_issue,
         "reopened_closed_issue": reopened_closed_issue,
+        "closed_match_detected": closed_match_detected,
+        "closed_match_issue_number": closed_match_issue_number,
         "metadata_sync_required": metadata_sync_required,
         "metadata_sync_action": metadata_sync_action,
         "field_updates": [],
@@ -648,6 +656,11 @@ def main():
     )
     parser.add_argument("--apply", action="store_true", help="Apply GitHub mutations (default dry-run)")
     parser.add_argument("--allow-reopen-closed", action="store_true", help="Allow closed dedup matches and reopen in apply mode")
+    parser.add_argument(
+        "--detect-closed-match",
+        action="store_true",
+        help="Scan closed issues and report exact matches even when reopen is disabled",
+    )
     parser.add_argument("--output", default="planningops/artifacts/validation/plan-compile-report.json", help="Output report path")
     args = parser.parse_args()
 
@@ -672,7 +685,7 @@ def main():
     project = load_project_config(Path(args.config))
     blueprint_defaults_doc = load_blueprint_defaults(Path(args.blueprint_defaults_config))
     open_issues = list_existing_issues(CONTROL_REPO, "open")
-    closed_issues = list_existing_issues(CONTROL_REPO, "closed") if args.allow_reopen_closed else []
+    closed_issues = list_existing_issues(CONTROL_REPO, "closed") if (args.allow_reopen_closed or args.detect_closed_match) else []
     project_item_issue_index = {}
     execution_order_issue_index = {}
 
@@ -703,6 +716,7 @@ def main():
                     project_item_issue_index,
                     blueprint_defaults_doc,
                     execution_order_issue_index,
+                    detect_closed_matches=(args.detect_closed_match or args.allow_reopen_closed),
                 )
             )
     except Exception as exc:
