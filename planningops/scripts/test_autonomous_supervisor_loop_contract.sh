@@ -293,5 +293,68 @@ with tempfile.TemporaryDirectory() as td:
     assert rate_limit_inbox["status"] == "blocked", rate_limit_inbox
     assert rate_limit_inbox["attachments"][0].endswith("-operator-summary.md"), rate_limit_inbox
 
+    # 6) no-eligible issue results must become replanning signals, not quality failures.
+    no_eligible_sequence = td_path / "no-eligible-sequence.json"
+    no_eligible_sequence.write_text(
+        json.dumps(
+            {
+                "cycles": [
+                    {
+                        "rc": 2,
+                        "loop_result": {
+                            "result": "no_eligible_todo_issue",
+                            "reason_code": "closed_issue_project_drift",
+                            "recommended_action": "rerun_apply_closed_issue_reconcile",
+                            "last_verdict": "inconclusive",
+                            "auto_paused": False,
+                            "replenishment_candidates_count": 0,
+                            "selection_trace": {
+                                "selected": None,
+                                "project_items_source": "live",
+                                "closed_issue_reconcile": {
+                                    "status": "pass",
+                                    "effective_mode": "check",
+                                    "issues_total": 3,
+                                },
+                            },
+                        },
+                    }
+                ]
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    out_no_eligible = td_path / "supervisor-no-eligible.json"
+    rc_no_eligible, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(no_eligible_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_no_eligible),
+        ]
+    )
+    assert rc_no_eligible == 1, rc_no_eligible
+    no_eligible_doc = json.loads(out_no_eligible.read_text(encoding="utf-8"))
+    assert no_eligible_doc["supervisor_verdict"] == "inconclusive", no_eligible_doc
+    assert no_eligible_doc["stop_reason"] == "replan_required", no_eligible_doc
+    assert no_eligible_doc["stop_details"]["reason_code"] == "closed_issue_project_drift", no_eligible_doc
+    no_eligible_operator = json.loads(Path(no_eligible_doc["operator_report_last_path"]).read_text(encoding="utf-8"))
+    assert no_eligible_operator["status"] == "review_required", no_eligible_operator
+    assert no_eligible_operator["operator_action"] == "regenerate_backlog_or_reconcile_project", no_eligible_operator
+
 print("autonomous supervisor loop contract tests ok")
 PY
