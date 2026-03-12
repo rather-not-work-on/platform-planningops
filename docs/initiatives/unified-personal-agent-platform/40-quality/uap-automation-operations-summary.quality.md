@@ -88,7 +88,10 @@ The earlier local-only behavior was not caused by git permissions.
 4. If all repos are clean and no open issue is ready, regenerate or re-triage backlog from `planningops` instead of inventing repo-local work.
    - canonical command: `python3 planningops/scripts/core/backlog/materialize.py --contract-file <execution-contract.json>`
    - dry-run expectation: the command must project local issues first, then run label backfill / manifest / issue-quality against that projected issue set instead of depending on pre-existing live GitHub issues
-5. Keep durable conclusions in canonical docs or workbench audits; keep automation memory short and current.
+5. Supervisor runs may opt into automatic backlog regeneration on replanning paths.
+   - canonical command: `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --backlog-materialization-contract-file <execution-contract.json>`
+   - dry-run expectation: materialization reports should be attached to the supervisor cycle and surfaced as review guidance rather than being treated as a quality failure
+6. Keep durable conclusions in canonical docs or workbench audits; keep automation memory short and current.
 
 ## Reflected Outcomes
 - execution-repo remote reconciliation completed for:
@@ -105,4 +108,5 @@ The earlier local-only behavior was not caused by git permissions.
 - `git ls-remote --heads origin`
 - `gh issue list --state open` across the five managed repos
 - `python3 planningops/scripts/core/backlog/materialize.py --contract-file <execution-contract.json>`
+- `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --backlog-materialization-contract-file <execution-contract.json>`
 - `python3 planningops/scripts/backfill_issue_labels.py --repo rather-not-work-on/platform-planningops --issues-file /tmp/projected-issues.json --write-updated-issues-file /tmp/projected-issues.json --output /tmp/issue-label-backfill-report.json --apply`

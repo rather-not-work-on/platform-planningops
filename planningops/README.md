@@ -80,6 +80,7 @@ python3 planningops/scripts/validate_worker_task_pack.py --task-key issue-18 --i
 python3 planningops/scripts/verify_plan_projection.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --snapshot-file planningops/fixtures/plan-projection-snapshot-sample.json --strict
 python3 planningops/scripts/backlog_stock_replenishment_guard.py --items-file planningops/fixtures/backlog-stock-items-sample.json --candidate-file planningops/fixtures/backlog-replenishment-candidates-sample.json
 python3 planningops/scripts/autonomous_supervisor_loop.py --mode dry-run --max-cycles 3 --items-file planningops/fixtures/backlog-stock-items-sample.json --offline --loop-result-sequence-file planningops/fixtures/supervisor-loop-sequence-sample.json --run-id demo-supervisor-sequence
+python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --max-cycles 3 --auto-materialize-backlog --backlog-materialization-contract-file planningops/fixtures/plan-execution-contract-sample.json
 python3 planningops/scripts/supervisor_experiment_auto_executor.py --experiment-id demo-supervisor-exp --topic demo-cycle --options option-a,option-b --validation-pack-file planningops/config/supervisor-experiment-validation-pack.json
 bash planningops/scripts/test_compile_plan_to_backlog_contract.sh
 bash planningops/scripts/test_backfill_issue_labels_contract.sh

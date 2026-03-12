@@ -64,6 +64,12 @@ Replan and replenishment are first-class outputs:
 - `replan_decision_path` (if present)
 - `replenishment_candidates_path`
 - `replenishment_candidates_count`
+- optional `backlog_materialization` result when `--auto-materialize-backlog` is enabled
+
+When auto materialization is enabled:
+1. `dry-run` may invoke `planningops/scripts/core/backlog/materialize.py` and attach its report as review evidence.
+2. `apply` may invoke backlog materialization and continue into the next cycle if materialization succeeds.
+3. materialization failure is terminal with stop reason `replan_materialization_failed`.
 
 ## Summary Artifact
 Run summary must include:

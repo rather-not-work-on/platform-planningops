@@ -191,11 +191,44 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
         return report
 
     if stop_reason == "replan_required":
+        materialization = stop_details.get("backlog_materialization") or {}
+        if materialization.get("enabled") and int(materialization.get("rc", 1)) == 0:
+            report.update(
+                {
+                    "status": "review_required",
+                    "headline": "Supervisor stopped after backlog materialization dry-run.",
+                    "operator_action": "review_materialized_backlog",
+                    "reason": "Backlog materialization succeeded, but no new live queue was consumed in this run.",
+                    "guidance": {
+                        **(report.get("guidance") or {}),
+                        "materialize_report_path": materialization.get("output_path"),
+                        "projected_issues_output": materialization.get("projected_issues_output"),
+                    },
+                }
+            )
+            return report
         report.update(
             {
                 "status": "review_required",
                 "headline": "Supervisor stopped because backlog selection requires replanning.",
                 "operator_action": "regenerate_backlog_or_reconcile_project",
+            }
+        )
+        return report
+
+    if stop_reason == "replan_materialization_failed":
+        materialization = stop_details.get("backlog_materialization") or {}
+        report.update(
+            {
+                "status": "blocked",
+                "headline": "Supervisor failed while materializing backlog on replanning.",
+                "operator_action": "inspect_materialization_failure",
+                "reason": materialization.get("stderr") or "Backlog materialization failed.",
+                "guidance": {
+                    **(report.get("guidance") or {}),
+                    "materialize_report_path": materialization.get("output_path"),
+                    "projected_issues_output": materialization.get("projected_issues_output"),
+                },
             }
         )
         return report
@@ -407,6 +440,39 @@ def run_experiment_auto_executor(args, run_id: str, cycle_index: int, loop_resul
     }
 
 
+def run_backlog_materializer(args, cycle_dir: Path):
+    if not args.auto_materialize_backlog or not args.backlog_materialization_contract_file:
+        return {"enabled": False}
+
+    report_path = cycle_dir / "backlog-materialize-report.json"
+    projected_issues_path = cycle_dir / "backlog-projected-issues.json"
+    cmd = [
+        sys.executable,
+        args.backlog_materializer_script,
+        "--contract-file",
+        args.backlog_materialization_contract_file,
+        "--output",
+        str(report_path),
+    ]
+    if args.mode == "apply":
+        cmd.append("--apply")
+    else:
+        cmd.extend(["--projected-issues-output", str(projected_issues_path)])
+
+    rc, out, err = run(cmd)
+    report = load_json(report_path, {})
+    return {
+        "enabled": True,
+        "rc": rc,
+        "command": cmd,
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+        "output_path": str(report_path),
+        "projected_issues_output": str(projected_issues_path) if args.mode != "apply" else None,
+        "report": report if isinstance(report, dict) else {},
+    }
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Autonomous plan-work-review-replan supervisor loop")
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="dry-run")
@@ -447,6 +513,12 @@ def parse_args():
     parser.add_argument("--experiment-artifacts-root", default="planningops/artifacts/experiments")
     parser.add_argument("--experiment-worktree-root", default="/tmp/planningops-supervisor-experiments")
     parser.add_argument("--keep-experiment-worktrees", action="store_true")
+    parser.add_argument("--auto-materialize-backlog", action="store_true")
+    parser.add_argument(
+        "--backlog-materializer-script",
+        default="planningops/scripts/core/backlog/materialize.py",
+    )
+    parser.add_argument("--backlog-materialization-contract-file", default=None)
     return parser.parse_args()
 
 
@@ -454,6 +526,9 @@ def main():
     args = parse_args()
     if args.max_cycles <= 0:
         print("max-cycles must be positive")
+        return 1
+    if args.auto_materialize_backlog and not args.backlog_materialization_contract_file:
+        print("backlog-materialization-contract-file is required when auto-materialize-backlog is enabled")
         return 1
 
     sequence_rows = None
@@ -495,6 +570,7 @@ def main():
         experiment = detect_experiment_trigger(loop_result)
         experiment_trigger_artifact = None
         experiment_executor = {"enabled": False}
+        backlog_materialization = {"enabled": False}
         if experiment["triggered"]:
             experiment_trigger_artifact = cycle_dir / "experiment-trigger.json"
             save_json(
@@ -547,6 +623,13 @@ def main():
                 "verdict": (experiment_executor.get("report") or {}).get("verdict"),
                 "selected_option": (experiment_executor.get("report") or {}).get("selected_option"),
             },
+            "backlog_materialization": {
+                "enabled": False,
+                "rc": None,
+                "output_path": None,
+                "projected_issues_output": None,
+                "verdict": None,
+            },
             "project_items_source": project_items_source,
             "project_items_rate_limit_fallback_used": project_items_rate_limit_fallback_used,
             "project_items_rate_limit_error": project_items_rate_limit_error,
@@ -589,8 +672,32 @@ def main():
             "dependency_blocked",
             "inventory_only_candidates_only",
         }:
+            backlog_materialization = run_backlog_materializer(args, cycle_dir)
+            cycle_record["backlog_materialization"] = {
+                "enabled": bool(backlog_materialization.get("enabled")),
+                "rc": backlog_materialization.get("rc"),
+                "output_path": backlog_materialization.get("output_path"),
+                "projected_issues_output": backlog_materialization.get("projected_issues_output"),
+                "verdict": (backlog_materialization.get("report") or {}).get("verdict"),
+            }
+            save_json(cycle_dir / "cycle-report.json", cycle_record)
+            if backlog_materialization.get("enabled") and int(backlog_materialization.get("rc", 1)) != 0:
+                stop_reason = "replan_materialization_failed"
+                stop_details = {
+                    "cycle": cycle_index,
+                    "reason_code": reason_code,
+                    "backlog_materialization": cycle_record["backlog_materialization"],
+                }
+                break
+            if backlog_materialization.get("enabled") and args.mode == "apply":
+                pass_streak = 0
+                continue
             stop_reason = "replan_required"
-            stop_details = {"cycle": cycle_index, "reason_code": reason_code}
+            stop_details = {
+                "cycle": cycle_index,
+                "reason_code": reason_code,
+                "backlog_materialization": cycle_record["backlog_materialization"],
+            }
             break
         if backlog_failed and not args.report_only_gates:
             stop_reason = "backlog_gate_fail"
@@ -631,6 +738,7 @@ def main():
         "backlog_gate_fail",
         "experiment_auto_executor_failed",
         "github_rate_limited",
+        "replan_materialization_failed",
     }:
         supervisor_verdict = "fail"
     elif stop_reason in {"experiment_triggered", "sequence_exhausted", "replan_required", "max_cycles_reached"}:
@@ -653,6 +761,7 @@ def main():
             "autonomous_run_policy": "planningops/contracts/autonomous-run-policy-contract.md",
             "worktree_experiment_protocol": "planningops/contracts/worktree-comparative-experiment-protocol.md",
             "backlog_replenishment": "planningops/contracts/backlog-stock-replenishment-contract.md",
+            "backlog_materialization": "planningops/contracts/backlog-materialization-contract.md",
         },
     }
 
