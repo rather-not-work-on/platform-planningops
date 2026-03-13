@@ -1,0 +1,80 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-goal-driven-autonomy-wave1",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "A80",
+        "execution_order": 80,
+        "title": "Freeze Monday operator channel adapter contract",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/contracts/operator-channel-adapter-contract.md"
+      },
+      {
+        "plan_item_id": "A81",
+        "execution_order": 81,
+        "title": "Freeze goal completion and terminal notification policy",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          80
+        ],
+        "primary_output": "planningops/contracts/goal-completion-contract.md"
+      },
+      {
+        "plan_item_id": "A82",
+        "execution_order": 82,
+        "title": "Project Monday channel adapter implementation pack",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          80
+        ],
+        "primary_output": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-monday-channel-adapter-wave1-issue-pack.md"
+      },
+      {
+        "plan_item_id": "A83",
+        "execution_order": 83,
+        "title": "Project goal completion notifier implementation pack",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          81
+        ],
+        "primary_output": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-completion-notifier-wave1-issue-pack.md"
+      },
+      {
+        "plan_item_id": "A84",
+        "execution_order": 84,
+        "title": "Review goal-driven autonomy wave 1 alignment",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          80,
+          81,
+          82,
+          83
+        ],
+        "primary_output": "planningops/artifacts/validation/goal-driven-autonomy-wave1-review.json"
+      }
+    ]
+  }
+}

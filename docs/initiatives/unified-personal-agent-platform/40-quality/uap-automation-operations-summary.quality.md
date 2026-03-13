@@ -14,10 +14,12 @@ tags:
   - planningops
   - supervisor
   - standup
-summary: Canonical operating summary for active Codex automations, their role boundaries, the resolved local-only failure mode, and current execution rules.
+summary: Canonical operating summary for active Codex automations, their role boundaries, active-goal driven execution rules, and the resolved local-only failure mode.
 related_docs:
   - ../README.md
   - ./uap-planningops-tradeoff-decision-framework.quality.md
+  - ../../../../planningops/contracts/active-goal-registry-contract.md
+  - ../../../../planningops/contracts/operator-channel-adapter-contract.md
   - ../../../workbench/unified-personal-agent-platform/audits/federated-reconciliation-report-20260311.md
   - ../../../archive/README.md
 ---
@@ -93,6 +95,13 @@ The earlier local-only behavior was not caused by git permissions.
    - canonical command: `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --backlog-materialization-contract-file <execution-contract.json>`
    - dry-run expectation: materialization reports should be attached to the supervisor cycle and surfaced as review guidance rather than being treated as a quality failure
 6. Keep durable conclusions in canonical docs or workbench audits; keep automation memory short and current.
+7. Prefer the active goal registry over hard-coded execution contract paths whenever goal-driven autonomy is enabled.
+   - canonical file: `planningops/config/active-goal-registry.json`
+   - canonical command: `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --active-goal-registry planningops/config/active-goal-registry.json`
+8. Operator messaging stays out of planningops runtime code.
+   - primary operator channel: `Slack skill -> monday-owned CLI/MCP adapter -> Slack API`
+   - terminal completion channel: `monday-owned CLI/MCP adapter -> email provider`
+   - planningops owns only the policy, goal state, and delivery evidence requirements
 
 ## Reflected Outcomes
 - execution-repo remote reconciliation completed for:
@@ -110,4 +119,6 @@ The earlier local-only behavior was not caused by git permissions.
 - `gh issue list --state open` across the five managed repos
 - `python3 planningops/scripts/core/backlog/materialize.py --contract-file <execution-contract.json>`
 - `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --backlog-materialization-contract-file <execution-contract.json>`
+- `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --active-goal-registry planningops/config/active-goal-registry.json`
+- `python3 planningops/scripts/validate_active_goal_registry.py --registry planningops/config/active-goal-registry.json --strict`
 - `python3 planningops/scripts/backfill_issue_labels.py --repo rather-not-work-on/platform-planningops --issues-file /tmp/projected-issues.json --write-updated-issues-file /tmp/projected-issues.json --output /tmp/issue-label-backfill-report.json --apply`

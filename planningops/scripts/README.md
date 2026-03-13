@@ -9,6 +9,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `core/loop/checkpoint_lock.py`
   - `core/loop/selection.py`
   - `core/backlog/materialize.py`
+  - `core/goals/resolve_active_goal.py`
 - Federation entrypoints (canonical location):
   - `federation/federated_python_env.py`
   - `federation/adapter_registry.py`
@@ -46,6 +47,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_contracts.py`
   - `validate_ontology_entity_map.py`
   - `validate_memory_tier_rules.py`
+  - `validate_active_goal_registry.py`
   - `validate_node_workspace_policy.py`
   - `validate_worker_task_pack.py`
   - `validate_blueprint_pack.py`
@@ -84,6 +86,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `planning_context.py`
   - `build_meta_plan_graph.py`
   - `test_planning_context_contract.sh`
+  - `test_active_goal_registry_contract.sh`
   - `test_backfill_issue_labels_contract.sh`
   - `test_backlog_materialization_contract.sh`
   - `test_build_program_manifest_contract.sh`
