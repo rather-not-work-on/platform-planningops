@@ -39,6 +39,7 @@ Provide one canonical machine-readable pointer to the current active goal so aut
 ## Usage Rules
 - Supervisor/materialization automation must prefer the active goal registry over hard-coded contract paths when both are available.
 - If the registry has no active goal, automation must stop with a review-required outcome instead of inventing a goal.
+- Registry state changes must follow `planningops/contracts/goal-lifecycle-transition-contract.md`.
 
 ## Validation
 - `planningops/scripts/validate_active_goal_registry.py`
