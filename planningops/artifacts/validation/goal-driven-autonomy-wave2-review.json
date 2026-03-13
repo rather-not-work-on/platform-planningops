@@ -1,0 +1,114 @@
+{
+  "generated_at_utc": "2026-03-14T02:04:40Z",
+  "wave_id": "uap-goal-driven-autonomy-wave2",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "active_goal_key": "uap-goal-driven-autonomy-wave2",
+  "execution_contract_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json",
+  "branch_context": {
+    "repo": "rather-not-work-on/platform-planningops",
+    "branch": "plan/b93-monday-skill-bridge-wave1-issue-pack",
+    "head_commit": "05b8e76",
+    "head_subject": "plan: add monday skill bridge wave1 issue pack"
+  },
+  "item_checks": [
+    {
+      "plan_item_id": "B90",
+      "primary_output": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/goal-lifecycle-transition-contract.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "B91",
+      "primary_output": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/core/goals/transition_goal_state.py",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "B92",
+      "primary_output": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/autonomous_supervisor_loop.py",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "plan_item_id": "B93",
+      "primary_output": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-13-monday-skill-bridge-wave1-issue-pack.md",
+      "exists": true,
+      "verdict": "pass"
+    }
+  ],
+  "contract_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/goal-lifecycle-transition-contract.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/active-goal-registry-contract.md",
+      "exists": true,
+      "verdict": "pass"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/operator-channel-adapter-contract.md",
+      "exists": true,
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "command": "bash planningops/scripts/test_transition_goal_state_contract.sh",
+      "result": "pass",
+      "evidence": "goal lifecycle transition contract ok"
+    },
+    {
+      "command": "bash planningops/scripts/test_active_goal_registry_contract.sh",
+      "result": "pass",
+      "evidence": "active goal registry contract ok"
+    },
+    {
+      "command": "bash planningops/scripts/test_autonomous_supervisor_loop_contract.sh",
+      "result": "pass",
+      "evidence": "autonomous supervisor loop contract tests ok"
+    },
+    {
+      "command": "python3 planningops/scripts/validate_active_goal_registry.py --strict --registry planningops/config/active-goal-registry.json --output planningops/artifacts/validation/active-goal-registry-report.json",
+      "result": "pass",
+      "evidence_ref": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/active-goal-registry-report.json"
+    }
+  ],
+  "remote_health_checks": [
+    {
+      "check": "gh auth status -h github.com",
+      "result": "fail",
+      "message": "Token invalid for account JJBINY"
+    },
+    {
+      "check": "curl -I --max-time 15 https://api.github.com",
+      "result": "fail",
+      "message": "Could not resolve host: api.github.com"
+    },
+    {
+      "check": "gh api rate_limit",
+      "result": "fail",
+      "message": "error connecting to api.github.com"
+    }
+  ],
+  "remote_blockers": [
+    {
+      "kind": "github_auth",
+      "severity": "hard",
+      "blocking": [
+        "push",
+        "pr_create",
+        "issue_sync",
+        "project_field_sync",
+        "check_watch",
+        "merge"
+      ],
+      "message": "Remote GitHub operations blocked by invalid gh token and DNS failure."
+    }
+  ],
+  "check_count": 14,
+  "failure_count": 0,
+  "blocker_count": 1,
+  "verdict": "pass"
+}
