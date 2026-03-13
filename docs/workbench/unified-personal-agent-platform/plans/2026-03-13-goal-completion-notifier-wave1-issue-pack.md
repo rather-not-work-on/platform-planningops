@@ -41,7 +41,7 @@ The rule for this wave is strict:
 | --- | --- | --- | --- | --- | --- |
 | `AH10` | 10 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `packages/messaging-adapter/src/goal_completion_notifier.ts` |
 | `AH20` | 20 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `scripts/send_goal_completion_notification.py` |
-| `AH30` | 30 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `docs/runbook/goal-completion-notifier.md` |
+| `AH30` | 30 | `rather-not-work-on/monday` | `runtime` | `ready_contract` | `docs/runbook/goal-completion-notifier.md` |
 | `AH40` | 40 | `rather-not-work-on/platform-planningops` | `planningops` | `review_gate` | `planningops/artifacts/validation/goal-completion-notifier-wave1-review.json` |
 
 ## Decomposition Rules

@@ -43,7 +43,7 @@ The rule for this wave is strict:
 | `AG10` | 10 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `packages/contract-bindings/src/operator_channels.ts` |
 | `AG20` | 20 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `packages/messaging-adapter/src/operator_channel_adapter.ts` |
 | `AG30` | 30 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `scripts/send_operator_message.py` |
-| `AG40` | 40 | `rather-not-work-on/monday` | `runtime` | `ready_implementation` | `docs/runbook/operator-channel-adapter.md` |
+| `AG40` | 40 | `rather-not-work-on/monday` | `runtime` | `ready_contract` | `docs/runbook/operator-channel-adapter.md` |
 | `AG50` | 50 | `rather-not-work-on/platform-planningops` | `planningops` | `review_gate` | `planningops/artifacts/validation/monday-channel-adapter-wave1-review.json` |
 
 ## Decomposition Rules
