@@ -422,7 +422,7 @@ with tempfile.TemporaryDirectory() as td:
                 "parser.add_argument('--projected-issues-output', default=None)",
                 "parser.add_argument('--apply', action='store_true')",
                 "args = parser.parse_args()",
-                "expected = 'docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json'",
+                "expected = 'docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json'",
                 "report = {'verdict': 'pass' if args.contract_file == expected else 'fail', 'contract_file': args.contract_file}",
                 "Path(args.output).write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding='utf-8')",
                 "if report['verdict'] != 'pass':",
@@ -615,9 +615,9 @@ with tempfile.TemporaryDirectory() as td:
     )
     assert rc_registry_resolved == 1, rc_registry_resolved
     registry_resolved_doc = json.loads(out_registry_resolved.read_text(encoding="utf-8"))
-    assert registry_resolved_doc["resolved_active_goal"]["goal_key"] == "uap-goal-driven-autonomy-wave1", registry_resolved_doc
+    assert registry_resolved_doc["resolved_active_goal"]["goal_key"] == "uap-goal-driven-autonomy-wave2", registry_resolved_doc
     assert registry_resolved_doc["resolved_active_goal"]["execution_contract_file"].endswith(
-        "2026-03-13-goal-driven-autonomy-wave1.execution-contract.json"
+        "2026-03-13-goal-driven-autonomy-wave2.execution-contract.json"
     ), registry_resolved_doc
 
 print("autonomous supervisor loop contract tests ok")
