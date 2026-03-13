@@ -19,6 +19,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `autonomous-supervisor-loop-contract.md`: multi-cycle plan-work-review-replan orchestration contract
 - `goal-brief-contract.md`: outcome-level objective brief required before a goal becomes active
 - `active-goal-registry-contract.md`: canonical active goal pointer and execution-contract resolution rules
+- `goal-lifecycle-transition-contract.md`: allowed active-goal state transitions and promotion rules
 - `goal-completion-contract.md`: machine-checkable achieved-state and terminal notification policy
 - `operator-channel-adapter-contract.md`: monday-owned Slack/email channel adapter boundary and evidence rules
 - `supervisor-experiment-auto-executor-contract.md`: trigger-to-worktree comparative execution and decision contract

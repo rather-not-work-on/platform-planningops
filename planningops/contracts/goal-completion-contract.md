@@ -15,6 +15,7 @@ Define when an active goal is complete enough to stop autonomous execution and e
   - required verification artifacts report `verdict=pass`,
   - the operator channel has received a completion summary,
   - terminal notification has been recorded once.
+- The `active -> achieved` state change must be validated under `planningops/contracts/goal-lifecycle-transition-contract.md`.
 
 ## Notification Rules
 - Terminal notification is required only on transition to `achieved`.

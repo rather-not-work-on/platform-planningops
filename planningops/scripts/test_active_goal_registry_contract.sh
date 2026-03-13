@@ -16,7 +16,7 @@ python3 planningops/scripts/validate_active_goal_registry.py \
   --strict >/dev/null
 
 resolved_contract="$(python3 planningops/scripts/core/goals/resolve_active_goal.py --registry "$valid_registry" --field execution_contract_file)"
-[ "$resolved_contract" = "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json" ]
+[ "$resolved_contract" = "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json" ]
 
 cat >"$invalid_registry" <<'JSON'
 {
