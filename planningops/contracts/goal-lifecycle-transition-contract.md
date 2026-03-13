@@ -66,4 +66,4 @@ Transitions outside this list are invalid and must fail closed.
 ## Validation Targets
 - `planningops/scripts/validate_active_goal_registry.py`
 - `planningops/scripts/core/goals/resolve_active_goal.py`
-- `planningops/scripts/core/goals/transition_goal_state.py` (follow-up)
+- `planningops/scripts/core/goals/transition_goal_state.py`
