@@ -36,7 +36,7 @@
         "title": "Document monday goal completion notifier runbook",
         "target_repo": "rather-not-work-on/monday",
         "component": "runtime",
-        "workflow_state": "ready_implementation",
+        "workflow_state": "ready_contract",
         "loop_profile": "l1_contract_clarification",
         "plan_lane": "m3_guardrails",
         "depends_on": [
