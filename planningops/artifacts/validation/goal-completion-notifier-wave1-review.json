@@ -1,0 +1,72 @@
+{
+  "generated_at_utc": "2026-03-13T13:15:00+00:00",
+  "wave_id": "uap-goal-completion-notifier-wave1",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-completion-notifier-wave1-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 291,
+      "state": "CLOSED",
+      "title": "plan: [10] Add monday goal completion notifier baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/291",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 294,
+      "state": "CLOSED",
+      "title": "plan: [20] Expose monday CLI entrypoint for goal completion notification",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/294",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 295,
+      "state": "CLOSED",
+      "title": "plan: [30] Document monday goal completion notifier runbook",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/295",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/messaging-adapter/src/goal_completion_notifier.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/send_goal_completion_notification.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/docs/runbook/goal-completion-notifier.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/config/goal-completion-notifier-runbook-contract.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "contract_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/goal-completion-contract.md",
+      "exists": true,
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 8,
+  "failure_count": 0,
+  "verdict": "pass"
+}

@@ -1,0 +1,81 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-goal-driven-autonomy-wave2",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "B90",
+        "execution_order": 90,
+        "title": "Freeze goal lifecycle transition contract",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "planningops/contracts/goal-lifecycle-transition-contract.md"
+      },
+      {
+        "plan_item_id": "B91",
+        "execution_order": 91,
+        "title": "Implement active-goal registry transition script",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          90
+        ],
+        "primary_output": "planningops/scripts/core/goals/transition_goal_state.py"
+      },
+      {
+        "plan_item_id": "B92",
+        "execution_order": 92,
+        "title": "Wire supervisor goal promotion path",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          90,
+          91
+        ],
+        "primary_output": "planningops/scripts/autonomous_supervisor_loop.py"
+      },
+      {
+        "plan_item_id": "B93",
+        "execution_order": 93,
+        "title": "Project Monday skill bridge wave1 issue pack",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          90
+        ],
+        "primary_output": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-monday-skill-bridge-wave1-issue-pack.md"
+      },
+      {
+        "plan_item_id": "B94",
+        "execution_order": 94,
+        "title": "Review goal-driven autonomy wave 2 alignment",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          90,
+          91,
+          92,
+          93
+        ],
+        "primary_output": "planningops/artifacts/validation/goal-driven-autonomy-wave2-review.json"
+      }
+    ]
+  }
+}

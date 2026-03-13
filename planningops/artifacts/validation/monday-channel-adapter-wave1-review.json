@@ -1,0 +1,80 @@
+{
+  "generated_at_utc": "2026-03-13T13:15:00+00:00",
+  "wave_id": "uap-monday-channel-adapter-wave1",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-13-monday-channel-adapter-wave1-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 292,
+      "state": "CLOSED",
+      "title": "plan: [10] Add monday typed operator channel contract bindings",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/292",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 293,
+      "state": "CLOSED",
+      "title": "plan: [20] Add monday operator channel adapter baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/293",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 296,
+      "state": "CLOSED",
+      "title": "plan: [30] Expose monday CLI entrypoint for operator messages",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/296",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 298,
+      "state": "CLOSED",
+      "title": "plan: [40] Document monday operator channel runbook and skill boundary",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/298",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/contract-bindings/src/operator_channels.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/packages/messaging-adapter/src/operator_channel_adapter.ts",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/send_operator_message.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/docs/runbook/operator-channel-adapter.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "contract_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/operator-channel-adapter-contract.md",
+      "exists": true,
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 9,
+  "failure_count": 0,
+  "verdict": "pass"
+}
