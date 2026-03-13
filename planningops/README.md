@@ -28,6 +28,8 @@ Module-level navigation:
   - External contract term: `Executor`
   - Internal implementation term: `Worker`
 - Per-task runtime/provider policy is allowed and resolved by task key.
+- Goal-driven autonomy is resolved through `planningops/config/active-goal-registry.json`.
+- PlanningOps chooses the active goal and execution contract; `monday` owns operator-facing channel delivery.
 
 ## Design-First Policy
 - Implementation starts only after blueprint refs are defined:
@@ -64,6 +66,11 @@ Example task keys:
   3. Move selected tasks by changing `runtime_profile` (`local` -> `oracle_cloud`).
   4. Verify loop artifacts still satisfy the same gate evidence paths.
 
+## Goal-Driven Operator Channels
+- Primary operator path: `Slack skill -> monday-owned CLI or MCP adapter -> Slack API`
+- Terminal completion path: `monday-owned CLI or MCP adapter -> email provider`
+- PlanningOps never embeds raw Slack HTTP calls or mail-provider credentials.
+
 ## Commands
 ```bash
 python3 planningops/scripts/ralph_loop_local.py --issue-number 18 --mode dry-run
@@ -81,10 +88,13 @@ python3 planningops/scripts/verify_plan_projection.py --contract-file planningop
 python3 planningops/scripts/backlog_stock_replenishment_guard.py --items-file planningops/fixtures/backlog-stock-items-sample.json --candidate-file planningops/fixtures/backlog-replenishment-candidates-sample.json
 python3 planningops/scripts/autonomous_supervisor_loop.py --mode dry-run --max-cycles 3 --items-file planningops/fixtures/backlog-stock-items-sample.json --offline --loop-result-sequence-file planningops/fixtures/supervisor-loop-sequence-sample.json --run-id demo-supervisor-sequence
 python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --max-cycles 3 --auto-materialize-backlog --backlog-materialization-contract-file planningops/fixtures/plan-execution-contract-sample.json
+python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --max-cycles 3 --auto-materialize-backlog --active-goal-registry planningops/config/active-goal-registry.json
 python3 planningops/scripts/supervisor_experiment_auto_executor.py --experiment-id demo-supervisor-exp --topic demo-cycle --options option-a,option-b --validation-pack-file planningops/config/supervisor-experiment-validation-pack.json
+python3 planningops/scripts/validate_active_goal_registry.py --registry planningops/config/active-goal-registry.json --strict
 bash planningops/scripts/test_compile_plan_to_backlog_contract.sh
 bash planningops/scripts/test_backfill_issue_labels_contract.sh
 bash planningops/scripts/test_backlog_materialization_contract.sh
+bash planningops/scripts/test_active_goal_registry_contract.sh
 bash planningops/scripts/test_build_meta_plan_graph_contract.sh
 bash planningops/scripts/test_verify_plan_projection_contract.sh
 bash planningops/scripts/test_meta_plan_graph_schema_contract.sh

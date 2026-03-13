@@ -11,8 +11,12 @@ import sys
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
+GOALS_CORE_DIR = SCRIPT_DIR / "core" / "goals"
+if str(GOALS_CORE_DIR) not in sys.path:
+    sys.path.insert(0, str(GOALS_CORE_DIR))
 
 from artifact_sink import ArtifactSink
+from resolve_active_goal import build_resolved_payload, load_json as load_goal_json, resolve_active_goal, validate_registry
 
 
 ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
@@ -36,6 +40,22 @@ def load_json(path: Path, default):
 
 def save_json(path: Path, data):
     ARTIFACT_SINK.write_json(path, data)
+
+
+def resolve_materialization_contract_from_goal(args):
+    if args.backlog_materialization_contract_file:
+        return args.backlog_materialization_contract_file, None
+    if not args.active_goal_registry:
+        return None, None
+
+    repo_root = Path(__file__).resolve().parents[2]
+    registry_path = repo_root / args.active_goal_registry
+    doc = load_goal_json(registry_path)
+    errors = validate_registry(doc, repo_root=repo_root)
+    if errors:
+        raise RuntimeError(f"active goal registry invalid: {errors}")
+    goal = build_resolved_payload(resolve_active_goal(doc, goal_key=args.active_goal_key))
+    return str(goal["execution_contract_file"]), goal
 
 
 def parse_json_doc(raw: str):
@@ -519,6 +539,8 @@ def parse_args():
         default="planningops/scripts/core/backlog/materialize.py",
     )
     parser.add_argument("--backlog-materialization-contract-file", default=None)
+    parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
+    parser.add_argument("--active-goal-key", default=None)
     return parser.parse_args()
 
 
@@ -527,9 +549,17 @@ def main():
     if args.max_cycles <= 0:
         print("max-cycles must be positive")
         return 1
-    if args.auto_materialize_backlog and not args.backlog_materialization_contract_file:
-        print("backlog-materialization-contract-file is required when auto-materialize-backlog is enabled")
-        return 1
+    resolved_active_goal = None
+    if args.auto_materialize_backlog:
+        try:
+            resolved_contract_file, resolved_active_goal = resolve_materialization_contract_from_goal(args)
+        except Exception as exc:  # noqa: BLE001
+            print(str(exc))
+            return 1
+        if not resolved_contract_file:
+            print("backlog-materialization-contract-file or active-goal-registry is required when auto-materialize-backlog is enabled")
+            return 1
+        args.backlog_materialization_contract_file = resolved_contract_file
 
     sequence_rows = None
     if args.loop_result_sequence_file:
@@ -762,8 +792,19 @@ def main():
             "worktree_experiment_protocol": "planningops/contracts/worktree-comparative-experiment-protocol.md",
             "backlog_replenishment": "planningops/contracts/backlog-stock-replenishment-contract.md",
             "backlog_materialization": "planningops/contracts/backlog-materialization-contract.md",
+            "active_goal_registry": "planningops/contracts/active-goal-registry-contract.md",
+            "goal_completion": "planningops/contracts/goal-completion-contract.md",
+            "operator_channel_adapter": "planningops/contracts/operator-channel-adapter-contract.md",
         },
     }
+    if resolved_active_goal:
+        summary["resolved_active_goal"] = {
+            "goal_key": resolved_active_goal.get("goal_key"),
+            "title": resolved_active_goal.get("title"),
+            "execution_contract_file": resolved_active_goal.get("execution_contract_file"),
+            "primary_operator_channel": resolved_active_goal.get("primary_operator_channel"),
+            "terminal_notification_channel": resolved_active_goal.get("terminal_notification_channel"),
+        }
 
     output_path = Path(args.output)
     operator_report_path = run_dir / "operator-report.json"

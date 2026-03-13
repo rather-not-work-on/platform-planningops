@@ -1,0 +1,65 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-goal-completion-notifier-wave1",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-completion-notifier-wave1-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "AH10",
+        "execution_order": 10,
+        "title": "Add monday goal completion notifier baseline",
+        "target_repo": "rather-not-work-on/monday",
+        "component": "runtime",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [],
+        "primary_output": "packages/messaging-adapter/src/goal_completion_notifier.ts"
+      },
+      {
+        "plan_item_id": "AH20",
+        "execution_order": 20,
+        "title": "Expose monday CLI entrypoint for goal completion notification",
+        "target_repo": "rather-not-work-on/monday",
+        "component": "runtime",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "scripts/send_goal_completion_notification.py"
+      },
+      {
+        "plan_item_id": "AH30",
+        "execution_order": 30,
+        "title": "Document monday goal completion notifier runbook",
+        "target_repo": "rather-not-work-on/monday",
+        "component": "runtime",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l1_contract_clarification",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "docs/runbook/goal-completion-notifier.md"
+      },
+      {
+        "plan_item_id": "AH40",
+        "execution_order": 40,
+        "title": "Review goal completion notifier wave1 alignment",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20,
+          30
+        ],
+        "primary_output": "planningops/artifacts/validation/goal-completion-notifier-wave1-review.json"
+      }
+    ]
+  }
+}

@@ -408,6 +408,32 @@ with tempfile.TemporaryDirectory() as td:
         encoding="utf-8",
     )
 
+    materialize_expect_contract = td_path / "materialize-expect-contract.py"
+    materialize_expect_contract.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import argparse",
+                "import json",
+                "from pathlib import Path",
+                "parser = argparse.ArgumentParser()",
+                "parser.add_argument('--contract-file', required=True)",
+                "parser.add_argument('--output', required=True)",
+                "parser.add_argument('--projected-issues-output', default=None)",
+                "parser.add_argument('--apply', action='store_true')",
+                "args = parser.parse_args()",
+                "expected = 'docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json'",
+                "report = {'verdict': 'pass' if args.contract_file == expected else 'fail', 'contract_file': args.contract_file}",
+                "Path(args.output).write_text(json.dumps(report, ensure_ascii=True, indent=2), encoding='utf-8')",
+                "if report['verdict'] != 'pass':",
+                "    raise SystemExit(1)",
+                "raise SystemExit(0)",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
     # 7) dry-run replanning can auto-materialize backlog and surface the materialized output for review.
     out_replan_materialized = td_path / "supervisor-replan-materialized.json"
     rc_replan_materialized, _, _ = run_supervisor(
@@ -559,6 +585,40 @@ with tempfile.TemporaryDirectory() as td:
     materialize_fail_operator = json.loads(Path(materialize_fail_doc["operator_report_last_path"]).read_text(encoding="utf-8"))
     assert materialize_fail_operator["status"] == "blocked", materialize_fail_operator
     assert materialize_fail_operator["operator_action"] == "inspect_materialization_failure", materialize_fail_operator
+
+    # 10) active goal registry can supply backlog materialization contract automatically.
+    out_registry_resolved = td_path / "supervisor-registry-resolved.json"
+    rc_registry_resolved, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(no_eligible_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_registry_resolved),
+            "--auto-materialize-backlog",
+            "--backlog-materializer-script",
+            str(materialize_expect_contract),
+            "--active-goal-registry",
+            "planningops/config/active-goal-registry.json",
+        ]
+    )
+    assert rc_registry_resolved == 1, rc_registry_resolved
+    registry_resolved_doc = json.loads(out_registry_resolved.read_text(encoding="utf-8"))
+    assert registry_resolved_doc["resolved_active_goal"]["goal_key"] == "uap-goal-driven-autonomy-wave1", registry_resolved_doc
+    assert registry_resolved_doc["resolved_active_goal"]["execution_contract_file"].endswith(
+        "2026-03-13-goal-driven-autonomy-wave1.execution-contract.json"
+    ), registry_resolved_doc
 
 print("autonomous supervisor loop contract tests ok")
 PY
