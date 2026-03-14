@@ -1,0 +1,124 @@
+{
+  "generated_at_utc": "2026-03-14T10:22:12.663410+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave13",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave13-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 418,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze scheduler-native worker-outcome selection contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/418",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 419,
+      "state": "CLOSED",
+      "title": "plan: [20] Add monday scheduler-native worker-outcome selector",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/419",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 420,
+      "state": "CLOSED",
+      "title": "plan: [30] Remove scheduled worker-outcome bridge input from planningops orchestration",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/420",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/scheduler-native-worker-outcome-selection-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/select_scheduled_worker_outcome.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/select_scheduled_worker_outcome.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday scheduler-native worker-outcome selection"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/runtime_queue_store.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday queue persistence or scheduler runtime state"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_scheduled_reflection_delivery_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must not host planningops scheduled reflection-delivery orchestration"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave13",
+      "actual": "uap-goal-driven-autonomy-wave13",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave12_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave13_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_workbench",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_scheduler_native_worker_outcome_selection_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_scheduled_reflection_delivery_cycle_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_scheduled_reflection_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_select_scheduled_worker_outcome",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_scheduled_queue_cycle_store",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 18,
+  "failure_count": 0,
+  "verdict": "pass"
+}
