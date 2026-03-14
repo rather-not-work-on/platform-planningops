@@ -154,9 +154,9 @@ def parse_args():
     )
     parser.add_argument("--queue", required=True, help="Queue seed file for the monday scheduled queue cycle")
     parser.add_argument(
-        "--worker-outcome-json",
-        default=None,
-        help="Optional bridge input forwarded to monday so the scheduled report can emit a worker-outcome handoff",
+        "--worker-outcome-root",
+        default="runtime-artifacts/worker-outcome",
+        help="monday-owned worker outcome root used for scheduler-native selection",
     )
     parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
     parser.add_argument("--queue-db", default=None)
@@ -318,15 +318,14 @@ def main() -> int:
         "--transition-log",
         str(transition_log_path),
     ]
-    if args.worker_outcome_json:
-        scheduled_command.extend(
-            [
-                "--worker-outcome-json",
-                args.worker_outcome_json,
-                "--worker-outcome-handoff-output",
-                str(scheduled_handoff_output),
-            ]
-        )
+    scheduled_command.extend(
+        [
+            "--worker-outcome-root",
+            args.worker_outcome_root,
+            "--worker-outcome-handoff-output",
+            str(scheduled_handoff_output),
+        ]
+    )
     if args.queue_db:
         scheduled_command.extend(["--queue-db", str(resolve_output_path(planningops_repo, args.queue_db, Path(args.queue_db)))])
 

@@ -34,6 +34,7 @@ required_fragments = [
     "planningops/contracts/autonomous-scheduler-queue-control-plane-contract.md",
     "planningops/contracts/reflection-cycle-orchestration-contract.md",
     "planningops/contracts/reflection-delivery-cycle-contract.md",
+    "`--worker-outcome-root`",
     "`scheduled_cycle_report_ref`",
     "`worker_outcome_ref`",
     "`worker_outcome_handoff_ref`",
@@ -44,6 +45,7 @@ required_fragments = [
     "`reflection_cycle`",
     "`delivery_cycle`",
     "queue row mutation or lease heartbeat logic",
+    "must not supply a canonical worker outcome file path",
     "must not require `--worker-outcome-json` for the primary path",
 ]
 for fragment in required_fragments:

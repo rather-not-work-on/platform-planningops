@@ -14,6 +14,9 @@ if [[ ! -f "$MONDAY_REPO/scripts/run_scheduled_queue_cycle.py" ]]; then
   exit 0
 fi
 
+WORKER_OUTCOME_ROOT="$TMP_DIR/monday-runtime-artifacts/worker-outcome"
+mkdir -p "$WORKER_OUTCOME_ROOT"
+
 python3 - "$TMP_DIR/registry.json" <<'PY'
 import json
 import sys
@@ -58,7 +61,7 @@ cat >"$TMP_DIR/queue.json" <<'JSON'
 }
 JSON
 
-cat >"$TMP_DIR/outcome-retry.json" <<'JSON'
+cat >"$WORKER_OUTCOME_ROOT/outcome-retry.json" <<'JSON'
 {
   "transition_id": "wave11-outcome-continue",
   "queue_item_id": "queue-wave11-001",
@@ -76,7 +79,7 @@ cat >"$TMP_DIR/outcome-retry.json" <<'JSON'
 }
 JSON
 
-cat >"$TMP_DIR/outcome-dead-letter.json" <<'JSON'
+cat >"$WORKER_OUTCOME_ROOT/outcome-dead-letter.json" <<'JSON'
 {
   "transition_id": "wave11-outcome-replan",
   "queue_item_id": "queue-wave11-001",
@@ -94,7 +97,7 @@ cat >"$TMP_DIR/outcome-dead-letter.json" <<'JSON'
 }
 JSON
 
-cat >"$TMP_DIR/outcome-dead-letter-apply.json" <<'JSON'
+cat >"$WORKER_OUTCOME_ROOT/outcome-dead-letter-apply.json" <<'JSON'
 {
   "transition_id": "wave11-outcome-replan-apply",
   "queue_item_id": "queue-wave11-001",
@@ -115,7 +118,7 @@ JSON
 python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
-  --worker-outcome-json "$TMP_DIR/outcome-retry.json" \
+  --worker-outcome-root "$WORKER_OUTCOME_ROOT" \
   --idempotency "$TMP_DIR/continue-idempotency.json" \
   --transition-log "$TMP_DIR/continue-transition-log.ndjson" \
   --scheduled-output "$TMP_DIR/continue-scheduled-cycle-report.json" \
@@ -128,7 +131,7 @@ python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
 python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
-  --worker-outcome-json "$TMP_DIR/outcome-dead-letter.json" \
+  --worker-outcome-root "$WORKER_OUTCOME_ROOT" \
   --idempotency "$TMP_DIR/replan-idempotency.json" \
   --transition-log "$TMP_DIR/replan-transition-log.ndjson" \
   --scheduled-output "$TMP_DIR/replan-scheduled-cycle-report.json" \
@@ -143,7 +146,7 @@ python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
 if python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
-  --worker-outcome-json "$TMP_DIR/outcome-dead-letter-apply.json" \
+  --worker-outcome-root "$WORKER_OUTCOME_ROOT" \
   --idempotency "$TMP_DIR/replan-apply-idempotency.json" \
   --transition-log "$TMP_DIR/replan-apply-transition-log.ndjson" \
   --scheduled-output "$TMP_DIR/replan-apply-scheduled-cycle-report.json" \
