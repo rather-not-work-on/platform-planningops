@@ -1,0 +1,120 @@
+{
+  "generated_at_utc": "2026-03-14T08:42:18.922542+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave9",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave9-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 372,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze reflection cycle orchestration contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/372",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 373,
+      "state": "CLOSED",
+      "title": "plan: [20] Run worker outcome reflection cycle through planningops orchestration",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/373",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 374,
+      "state": "CLOSED",
+      "title": "plan: [30] Verify the end-to-end worker outcome reflection cycle",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/374",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/reflection-cycle-orchestration-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_worker_outcome_reflection_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_worker_outcome_reflection_cycle.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_reflection_decision_update.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain reflection delivery owner; planningops must not host monday delivery wrappers"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/record_queue_worker_outcome.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain queue outcome recording owner; planningops must not mutate runtime queue state"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/core/goals/evaluate_worker_outcome_reflection.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain reflection evaluation owner; monday must not host control-plane evaluators"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave9",
+      "actual": "uap-goal-driven-autonomy-wave9",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave8_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave9_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_workbench",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_cycle_orchestration_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_worker_outcome_reflection_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_validate_repo_boundaries_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_validate_script_roles_contract",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 17,
+  "failure_count": 0,
+  "verdict": "pass"
+}
