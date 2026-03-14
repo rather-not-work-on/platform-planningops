@@ -15,8 +15,7 @@
       "const": 1
     },
     "active_goal_key": {
-      "type": "string",
-      "minLength": 1
+      "type": "string"
     },
     "goals": {
       "type": "array",
@@ -72,6 +71,10 @@
               "type": "string",
               "minLength": 1
             }
+          },
+          "next_goal_key": {
+            "type": "string",
+            "minLength": 1
           },
           "operator_channels": {
             "type": "object",

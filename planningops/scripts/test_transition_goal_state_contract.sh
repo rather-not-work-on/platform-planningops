@@ -128,4 +128,27 @@ assert report["verdict"] == "fail", report
 assert "activate_next_goal_key required when transitioning the current active goal away from active" in report["errors"], report
 PY
 
+python3 planningops/scripts/core/goals/transition_goal_state.py \
+  --registry "$registry" \
+  --goal-key goal-b \
+  --to-status achieved \
+  --reason "goal_completed_without_successor" \
+  --evidence-ref "planningops/artifacts/validation/goal-driven-autonomy-wave2-review.json" \
+  --mode apply \
+  --output "$report" >/dev/null
+
+python3 - <<'PY' "$report" "$registry"
+import json
+import sys
+from pathlib import Path
+
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+registry = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+assert report["verdict"] == "pass", report
+assert report["goal_transition_kind"] == "terminal_completion", report
+assert registry["active_goal_key"] == "", registry
+goals = {item["goal_key"]: item for item in registry["goals"]}
+assert goals["goal-b"]["status"] == "achieved", goals
+PY
+
 echo "goal lifecycle transition contract ok"
