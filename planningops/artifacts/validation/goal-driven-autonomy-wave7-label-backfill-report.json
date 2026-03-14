@@ -1,0 +1,69 @@
+{
+  "generated_at_utc": "2026-03-14T07:39:46.739604+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 4,
+  "issues_with_missing_labels": 0,
+  "issues_applied": 0,
+  "rows": [
+    {
+      "number": 355,
+      "title": "plan: [40] Review goal-driven autonomy wave 7 reflection integration alignment",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/355",
+      "existing_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "planned_labels": [],
+      "apply_status": "skipped",
+      "error": ""
+    },
+    {
+      "number": 354,
+      "title": "plan: [30] Evaluate worker outcome reflection into planningops decisions",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/354",
+      "existing_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "planned_labels": [],
+      "apply_status": "skipped",
+      "error": ""
+    },
+    {
+      "number": 353,
+      "title": "plan: [20] Export monday worker outcome reflection packets",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/353",
+      "existing_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "planned_labels": [],
+      "apply_status": "skipped",
+      "error": ""
+    },
+    {
+      "number": 352,
+      "title": "plan: [10] Freeze planningops worker outcome reflection contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/352",
+      "existing_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "planned_labels": [],
+      "apply_status": "skipped",
+      "error": ""
+    }
+  ]
+}
