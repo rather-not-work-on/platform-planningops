@@ -43,6 +43,7 @@ jobs:
           bash planningops/scripts/test_apply_worker_outcome_reflection.sh
           bash planningops/scripts/test_worker_outcome_reflection_cycle.sh
           bash planningops/scripts/test_reflection_delivery_cycle.sh
+          bash planningops/scripts/test_scheduled_reflection_delivery_cycle.sh
           bash planningops/scripts/test_supervisor_experiment_auto_executor_contract.sh
           python3 planningops/scripts/validate_worker_task_pack.py \
             --runtime-profile-file planningops/config/runtime-profiles.json \
@@ -83,6 +84,7 @@ jobs:
                   "test_apply_worker_outcome_reflection",
                   "test_worker_outcome_reflection_cycle",
                   "test_reflection_delivery_cycle",
+                  "test_scheduled_reflection_delivery_cycle",
                   "validate_worker_task_pack_ci_report",
               ],
               "artifacts": {

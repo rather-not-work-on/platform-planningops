@@ -146,6 +146,7 @@ def parse_args():
     )
     parser.add_argument("--queue", required=True, help="Queue seed file for the monday scheduled queue cycle")
     parser.add_argument("--worker-outcome-json", required=True, help="Worker outcome artifact to feed into reflection")
+    parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
     parser.add_argument("--queue-db", default=None)
     parser.add_argument("--idempotency", default=None)
     parser.add_argument("--transition-log", default=None)
@@ -406,6 +407,8 @@ def main() -> int:
         str(worker_outcome_path),
         "--source-outcome-ref",
         worker_outcome_ref,
+        "--active-goal-registry",
+        args.active_goal_registry,
         "--mode",
         args.mode,
         "--run-id",
