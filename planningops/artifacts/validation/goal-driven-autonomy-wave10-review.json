@@ -1,0 +1,120 @@
+{
+  "generated_at_utc": "2026-03-14T09:05:16.301721+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave10",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave10-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 383,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze reflection delivery cycle contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/383",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 384,
+      "state": "CLOSED",
+      "title": "plan: [20] Run reflection delivery cycle through planningops orchestration",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/384",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 385,
+      "state": "CLOSED",
+      "title": "plan: [30] Verify the end-to-end reflection delivery cycle",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/385",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/reflection-delivery-cycle-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_reflection_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_reflection_delivery_cycle.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_operator_message.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain operator delivery owner; planningops must not host monday transport entrypoints"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_goal_completion_notification.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain goal completion delivery owner; planningops must not host mail delivery wrappers"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/core/goals/apply_worker_outcome_reflection.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain reflection action owner; monday must not host control-plane action appliers"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave10",
+      "actual": "uap-goal-driven-autonomy-wave10",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave9_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave10_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_workbench",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_delivery_cycle_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_validate_repo_boundaries_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_validate_script_roles_contract",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 17,
+  "failure_count": 0,
+  "verdict": "pass"
+}
