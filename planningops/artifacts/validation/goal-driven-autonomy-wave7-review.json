@@ -1,0 +1,138 @@
+{
+  "generated_at_utc": "2026-03-14T07:51:33.902856+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave7",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave7-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 352,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze planningops worker outcome reflection contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/352",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 353,
+      "state": "CLOSED",
+      "title": "plan: [20] Export monday worker outcome reflection packets",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/353",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 354,
+      "state": "CLOSED",
+      "title": "plan: [30] Evaluate worker outcome reflection into planningops decisions",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/354",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/worker-outcome-reflection-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/export_worker_outcome_reflection_packet.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_evaluate_worker_outcome_reflection.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/test_export_worker_outcome_reflection_packet.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/export_worker_outcome_reflection_packet.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain reflection packet export owner; planningops must not host runtime export entrypoints"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/core/goals/evaluate_worker_outcome_reflection.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain reflection evaluator owner; monday must not host control-plane decision evaluators"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/runtime_queue_store.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain queue persistence owner; planningops must not host SQLite queue helpers"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave7",
+      "actual": "uap-goal-driven-autonomy-wave7",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave6_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave7_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_all",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_worker_outcome_reflection_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_evaluate_worker_outcome_reflection",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_export_worker_outcome_reflection_packet",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_record_queue_worker_outcome",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/typecheck",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 20,
+  "failure_count": 0,
+  "verdict": "pass"
+}
