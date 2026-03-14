@@ -1,0 +1,155 @@
+{
+  "generated_at_utc": "2026-03-14T04:49:24.724691+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave3",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave3-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 315,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze supervisor to monday operator handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/315",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 316,
+      "state": "CLOSED",
+      "title": "plan: [20] Implement monday supervisor status update CLI",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/316",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 317,
+      "state": "CLOSED",
+      "title": "plan: [30] Implement monday supervisor goal completion CLI",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/317",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 318,
+      "state": "CLOSED",
+      "title": "plan: [40] Document planningops to monday supervisor handoff runbook",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/318",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/supervisor-operator-handoff-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/send_supervisor_status_update.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/send_supervisor_goal_completion.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/docs/runbook/planningops-supervisor-handoff.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_operator_message.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain control tower only; delivery entrypoints belong in monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_goal_completion_notification.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain control tower only; delivery entrypoints belong in monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_supervisor_status_update.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain control tower only; delivery entrypoints belong in monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_supervisor_goal_completion.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain control tower only; delivery entrypoints belong in monday"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave3",
+      "actual": "uap-goal-driven-autonomy-wave3",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave2_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave3_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave4_status",
+      "expected": "draft",
+      "actual": "draft",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/test_active_goal_registry_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_autonomous_supervisor_loop_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_supervisor_operator_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/uap_docs_workbench",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_supervisor_status_update_cli",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_supervisor_goal_completion_cli",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_runtime_guardrails",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 23,
+  "failure_count": 0,
+  "verdict": "pass"
+}
