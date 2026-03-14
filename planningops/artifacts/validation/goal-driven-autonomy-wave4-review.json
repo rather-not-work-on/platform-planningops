@@ -1,0 +1,149 @@
+{
+  "generated_at_utc": "2026-03-14T06:51:29.123862+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave4",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave4-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 322,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze autonomous scheduler and queue control-plane contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/322",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 323,
+      "state": "CLOSED",
+      "title": "plan: [20] Freeze shared runtime scheduler queue schemas",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/323",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 324,
+      "state": "CLOSED",
+      "title": "plan: [30] Define monday local-first scheduler queue runtime topology",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/324",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 325,
+      "state": "CLOSED",
+      "title": "plan: [40] Implement monday scheduled queue cycle CLI baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/325",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/autonomous-scheduler-queue-control-plane-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts/schemas/runtime-scheduler-queue-item.schema.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-contracts"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/docs/adr/adr-0002-local-first-scheduler-queue-runtime.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_scheduled_queue_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/run_scheduled_queue_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain scheduler runtime owner; planningops must not host the queue cycle entrypoint"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/scheduler_queue.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain scheduler runtime owner; planningops must not host queue persistence helpers"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave4",
+      "actual": "uap-goal-driven-autonomy-wave4",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave3_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave4_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_workbench",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_active_goal_registry_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_autonomous_scheduler_queue_control_plane_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "platform-contracts/validate_contracts",
+      "verdict": "pass"
+    },
+    {
+      "name": "platform-contracts/test_validate_contracts_strict",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_scheduler_queue_runtime_adr",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_scheduled_queue_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_runtime_guardrails",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_module_readmes",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/typecheck",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 23,
+  "failure_count": 0,
+  "verdict": "pass"
+}
