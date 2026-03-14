@@ -161,4 +161,76 @@ assert report["verdict"] == "pass", report
 assert report["resolved_goal"] is None, report
 PY
 
+cat >"$valid_registry" <<'JSON'
+{
+  "registry_version": 1,
+  "active_goal_key": "goal-b",
+  "goals": [
+    {
+      "goal_key": "goal-a",
+      "title": "Goal A",
+      "status": "achieved",
+      "owner_repo": "rather-not-work-on/platform-planningops",
+      "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1-goal-brief.md",
+      "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json",
+      "completion_contract_refs": [
+        "planningops/contracts/goal-completion-contract.md"
+      ],
+      "next_goal_key": "goal-b",
+      "operator_channels": {
+        "primary_operator_channel": {
+          "kind": "slack_skill_cli",
+          "execution_repo": "rather-not-work-on/monday",
+          "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+        },
+        "terminal_notification_channel": {
+          "kind": "email_cli",
+          "execution_repo": "rather-not-work-on/monday",
+          "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+        }
+      }
+    },
+    {
+      "goal_key": "goal-b",
+      "title": "Goal B",
+      "status": "active",
+      "owner_repo": "rather-not-work-on/platform-planningops",
+      "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2-goal-brief.md",
+      "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json",
+      "completion_contract_refs": [
+        "planningops/contracts/goal-completion-contract.md",
+        "planningops/contracts/active-goal-registry-contract.md"
+      ],
+      "operator_channels": {
+        "primary_operator_channel": {
+          "kind": "slack_skill_cli",
+          "execution_repo": "rather-not-work-on/monday",
+          "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+        },
+        "terminal_notification_channel": {
+          "kind": "email_cli",
+          "execution_repo": "rather-not-work-on/monday",
+          "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+        }
+      }
+    }
+  ]
+}
+JSON
+
+python3 planningops/scripts/validate_active_goal_registry.py \
+  --registry "$valid_registry" \
+  --output "$report_path" \
+  --strict >/dev/null
+
+python3 - <<'PY' "$report_path"
+import json
+import sys
+from pathlib import Path
+
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert report["verdict"] == "pass", report
+assert report["resolved_goal"]["goal_key"] == "goal-b", report
+PY
+
 echo "active goal registry contract ok"

@@ -1,0 +1,83 @@
+{
+  "generated_at_utc": "2026-03-14T04:55:21.710955+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 5,
+  "issues_with_missing_labels": 5,
+  "issues_applied": 5,
+  "rows": [
+    {
+      "number": 326,
+      "title": "plan: [50] Review goal-driven autonomy wave 4 scheduler queue alignment",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/326",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 325,
+      "title": "plan: [40] Implement monday scheduled queue cycle CLI baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/325",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 324,
+      "title": "plan: [30] Define monday local-first scheduler queue runtime topology",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/324",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 323,
+      "title": "plan: [20] Freeze shared runtime scheduler queue schemas",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/323",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/contracts",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 322,
+      "title": "plan: [10] Freeze autonomous scheduler and queue control-plane contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/322",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}

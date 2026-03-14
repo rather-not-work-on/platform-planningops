@@ -119,8 +119,9 @@ def validate_registry(doc, repo_root: Path):
         if goal_key == next_goal_key:
             errors.append(f"{path}.next_goal_key must differ from goal_key")
             continue
+        source_status = goal_statuses.get(goal_key)
         next_status = goal_statuses.get(next_goal_key)
-        if next_status in {"achieved", "archived"}:
+        if source_status in {"active", "blocked"} and next_status in {"achieved", "archived"}:
             errors.append(f"{path}.next_goal_key not promotable: {next_goal_key}:{next_status}")
     return errors
 

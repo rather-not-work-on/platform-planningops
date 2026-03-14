@@ -318,9 +318,7 @@ def find_issue_for_item(issues, plan_id: str, plan_item_id: str, target_repo: st
         return exact_matches[0], "identity_exact"
 
     if len(legacy_matches) > 1:
-        raise RuntimeError(
-            f"multiple legacy issues matched identity (plan_item_id={plan_item_id}, target_repo={target_repo})"
-        )
+        return None, "identity_legacy_ambiguous_ignored"
     if legacy_matches:
         return legacy_matches[0], "identity_legacy_no_plan_id"
 

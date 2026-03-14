@@ -1,0 +1,27 @@
+{
+  "generated_at_utc": "2026-03-14T04:55:21.782365+00:00",
+  "program_id": "uap-po-ct-program",
+  "initiative": "unified-personal-agent-platform",
+  "source_plan": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave4-issue-pack.md",
+  "repos": [
+    "rather-not-work-on/platform-planningops",
+    "rather-not-work-on/platform-contracts",
+    "rather-not-work-on/platform-provider-gateway",
+    "rather-not-work-on/platform-observability-gateway",
+    "rather-not-work-on/monday"
+  ],
+  "issues_file": null,
+  "verdict": "pass",
+  "errors": [],
+  "issues_scanned": 257,
+  "filtered_out_count": 252,
+  "item_count": 5,
+  "duplicate_group_count": 0,
+  "duplicate_groups": [],
+  "track_summary": {
+    "control_plane": 0,
+    "federated_runtime": 0,
+    "reconciliation": 0,
+    "unknown": 5
+  }
+}
