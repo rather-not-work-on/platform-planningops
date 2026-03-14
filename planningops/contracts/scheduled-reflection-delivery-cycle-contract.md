@@ -12,6 +12,7 @@ This contract exists so:
 
 ## Canonical Boundary
 - monday scheduled runtime entrypoint: `monday/scripts/run_scheduled_queue_cycle.py`
+- scheduled worker-outcome handoff contract: `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
 - monday reflection exporter: `monday/scripts/export_worker_outcome_reflection_packet.py`
 - planningops reflection-cycle runner: `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
 - planningops delivery-cycle runner: `planningops/scripts/federation/run_reflection_delivery_cycle.py`
@@ -106,7 +107,8 @@ Each stage report must include:
 
 ## Deterministic Orchestration Rules
 - the runner must call the monday scheduled queue entrypoint instead of dequeuing work directly in `planningops`
-- the runner must derive `worker_outcome_ref` from monday scheduled queue evidence instead of reconstructing worker outcome paths inline
+- the runner must resolve `worker_outcome_handoff_ref` from monday scheduled queue evidence under `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
+- the runner must derive `worker_outcome_ref` from the resolved handoff artifact instead of reconstructing worker outcome paths inline
 - the runner must call the planningops reflection-cycle runner instead of re-implementing reflection export, evaluation, or action mapping inline
 - the runner must call the planningops delivery-cycle runner instead of re-implementing monday delivery invocation inline
 - the runner must preserve `goal_transition_report_path` from the reflection action artifact through the delivery cycle and aggregate report
@@ -143,6 +145,7 @@ Each stage report must include:
 
 ## Validation
 - `planningops/scripts/test_scheduled_reflection_delivery_cycle_contract.sh`
+- `planningops/scripts/test_scheduled_worker_outcome_handoff_contract.sh`
 - `monday/scripts/run_scheduled_queue_cycle.py`
 - `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
 - `planningops/scripts/federation/run_reflection_delivery_cycle.py`
