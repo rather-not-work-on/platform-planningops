@@ -59,6 +59,7 @@
         "run_local_runtime_stack_smoke.py",
         "run_worker_outcome_reflection_cycle.py",
         "run_reflection_delivery_cycle.py",
+        "run_scheduled_reflection_delivery_cycle.py",
         "run_local_oracle_rehearsal.py",
         "run_wave14_oracle_rehearsal.py",
         "federated_ci_matrix_local.sh"
@@ -72,6 +73,7 @@
         "run_local_runtime_stack_smoke.py": "federation/run_local_runtime_stack_smoke.py",
         "run_worker_outcome_reflection_cycle.py": "federation/run_worker_outcome_reflection_cycle.py",
         "run_reflection_delivery_cycle.py": "federation/run_reflection_delivery_cycle.py",
+        "run_scheduled_reflection_delivery_cycle.py": "federation/run_scheduled_reflection_delivery_cycle.py",
         "run_local_oracle_rehearsal.py": "federation/run_local_oracle_rehearsal.py",
         "run_wave14_oracle_rehearsal.py": "federation/run_wave14_oracle_rehearsal.py",
         "federated_ci_matrix_local.sh": "federation/federated_ci_matrix_local.sh"
@@ -84,6 +86,7 @@
         "multi_repo_projection",
         "reflection_cycle",
         "reflection_delivery_cycle",
+        "scheduled_reflection_delivery_cycle",
         "runtime_stack_smoke",
         "repo_execution_adapters",
         "oracle_rehearsal",
