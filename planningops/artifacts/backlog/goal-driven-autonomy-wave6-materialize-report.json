@@ -1,0 +1,116 @@
+{
+  "generated_at_utc": "2026-03-14T07:19:33.035615+00:00",
+  "mode": "apply",
+  "contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6.execution-contract.json",
+  "repo": "rather-not-work-on/platform-planningops",
+  "initiative": "unified-personal-agent-platform",
+  "steps": [
+    {
+      "name": "compile_plan_to_backlog",
+      "command": [
+        "python3",
+        "planningops/scripts/compile_plan_to_backlog.py",
+        "--contract-file",
+        "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6.execution-contract.json",
+        "--config",
+        "planningops/config/project-field-ids.json",
+        "--blueprint-defaults-config",
+        "planningops/config/ready-implementation-blueprint-defaults.json",
+        "--output",
+        "planningops/artifacts/backlog/goal-driven-autonomy-wave6-compile-report.json",
+        "--apply"
+      ],
+      "output_path": "planningops/artifacts/backlog/goal-driven-autonomy-wave6-compile-report.json",
+      "rc": 0,
+      "stdout": "ata_sync_action\": \"none\",\n      \"field_updates\": [\n        \"initiative\",\n        \"target_repo\",\n        \"execution_order\",\n        \"status\",\n        \"component\",\n        \"workflow_state\",\n        \"loop_profile\",\n        \"plan_lane\"\n      ]\n    },\n    {\n      \"plan_item_id\": \"F30\",\n      \"execution_order\": 30,\n      \"issue_number\": 345,\n      \"issue_url\": \"https://github.com/rather-not-work-on/platform-planningops/issues/345\",\n      \"created_issue\": true,\n      \"dedup_match_state\": null,\n      \"dedup_strategy\": null,\n      \"reused_closed_issue\": false,\n      \"reopened_closed_issue\": false,\n      \"closed_match_detected\": false,\n      \"closed_match_issue_number\": null,\n      \"metadata_sync_required\": false,\n      \"metadata_sync_action\": \"none\",\n      \"field_updates\": [\n        \"initiative\",\n        \"target_repo\",\n        \"execution_order\",\n        \"status\",\n        \"component\",\n        \"workflow_state\",\n        \"loop_profile\",\n        \"plan_lane\"\n      ]\n    },\n    {\n      \"plan_item_id\": \"F40\",\n      \"execution_order\": 40,\n      \"issue_number\": 346,\n      \"issue_url\": \"https://github.com/rather-not-work-on/platform-planningops/issues/346\",\n      \"created_issue\": true,\n      \"dedup_match_state\": null,\n      \"dedup_strategy\": null,\n      \"reused_closed_issue\": false,\n      \"reopened_closed_issue\": false,\n      \"closed_match_detected\": false,\n      \"closed_match_issue_number\": null,\n      \"metadata_sync_required\": false,\n      \"metadata_sync_action\": \"none\",\n      \"field_updates\": [\n        \"initiative\",\n        \"target_repo\",\n        \"execution_order\",\n        \"status\",\n        \"component\",\n        \"workflow_state\",\n        \"loop_profile\",\n        \"plan_lane\"\n      ]\n    }\n  ],\n  \"plan_id\": \"uap-goal-driven-autonomy-wave6\",\n  \"plan_revision\": 1,\n  \"source_of_truth\": \"docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6-issue-pack.md\",\n  \"items_total\": 4,\n  \"open_issues_scanned\": 1,\n  \"closed_issues_scanned\": 0,\n  \"verdict\": \"pass\"\n}",
+      "stderr": "",
+      "verdict": "pass"
+    },
+    {
+      "name": "backfill_issue_labels",
+      "command": [
+        "python3",
+        "planningops/scripts/backfill_issue_labels.py",
+        "--output",
+        "planningops/artifacts/validation/goal-driven-autonomy-wave6-label-backfill-report.json",
+        "--repo",
+        "rather-not-work-on/platform-planningops",
+        "--apply"
+      ],
+      "output_path": "planningops/artifacts/validation/goal-driven-autonomy-wave6-label-backfill-report.json",
+      "rc": 0,
+      "stdout": "report written: planningops/artifacts/validation/goal-driven-autonomy-wave6-label-backfill-report.json\nmode=apply issues_in_scope=4 missing=4 applied=4",
+      "stderr": "",
+      "verdict": "pass"
+    },
+    {
+      "name": "build_program_manifest",
+      "command": [
+        "python3",
+        "planningops/scripts/build_program_manifest.py",
+        "--plan-item-regex",
+        "^(?:F10|F20|F30|F40)$",
+        "--initiative",
+        "unified-personal-agent-platform",
+        "--source-plan",
+        "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6-issue-pack.md",
+        "--scope-source-plan",
+        "--output",
+        "planningops/artifacts/program/goal-driven-autonomy-wave6-program-manifest.json",
+        "--report-output",
+        "planningops/artifacts/validation/goal-driven-autonomy-wave6-program-manifest-report.json",
+        "--strict",
+        "--repos",
+        "rather-not-work-on/platform-planningops,rather-not-work-on/platform-contracts,rather-not-work-on/monday"
+      ],
+      "output_path": "planningops/artifacts/validation/goal-driven-autonomy-wave6-program-manifest-report.json",
+      "rc": 0,
+      "stdout": "{\n  \"generated_at_utc\": \"2026-03-14T07:20:25.978290+00:00\",\n  \"program_id\": \"uap-po-ct-program\",\n  \"initiative\": \"unified-personal-agent-platform\",\n  \"source_plan\": \"docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6-issue-pack.md\",\n  \"repos\": [\n    \"rather-not-work-on/platform-planningops\",\n    \"rather-not-work-on/platform-contracts\",\n    \"rather-not-work-on/monday\"\n  ],\n  \"issues_file\": null,\n  \"verdict\": \"pass\",\n  \"errors\": [],\n  \"issues_scanned\": 260,\n  \"filtered_out_count\": 256,\n  \"item_count\": 4,\n  \"duplicate_group_count\": 0,\n  \"duplicate_groups\": [],\n  \"track_summary\": {\n    \"control_plane\": 0,\n    \"federated_runtime\": 0,\n    \"reconciliation\": 0,\n    \"unknown\": 4\n  }\n}",
+      "stderr": "",
+      "verdict": "pass"
+    },
+    {
+      "name": "validate_issue_quality",
+      "command": [
+        "python3",
+        "planningops/scripts/validate_issue_quality.py",
+        "--output",
+        "planningops/artifacts/validation/goal-driven-autonomy-wave6-issue-quality-report.json",
+        "--strict",
+        "--repo",
+        "rather-not-work-on/platform-planningops"
+      ],
+      "output_path": "planningops/artifacts/validation/goal-driven-autonomy-wave6-issue-quality-report.json",
+      "rc": 0,
+      "stdout": "report written: planningops/artifacts/validation/goal-driven-autonomy-wave6-issue-quality-report.json\nissues_in_scope=4 violation_count=0 verdict=pass",
+      "stderr": "",
+      "verdict": "pass"
+    }
+  ],
+  "plan_id": "uap-goal-driven-autonomy-wave6",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6-issue-pack.md",
+  "items_total": 4,
+  "apply_preflight": {
+    "command": [
+      "python3",
+      "planningops/scripts/compile_plan_to_backlog.py",
+      "--contract-file",
+      "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6.execution-contract.json",
+      "--config",
+      "planningops/config/project-field-ids.json",
+      "--blueprint-defaults-config",
+      "planningops/config/ready-implementation-blueprint-defaults.json",
+      "--output",
+      "planningops/artifacts/backlog/goal-driven-autonomy-wave6-compile-report.json",
+      "--detect-closed-match"
+    ],
+    "rc": 0,
+    "stdout": "lane(m2_sync_core)\"\n      ]\n    },\n    {\n      \"plan_item_id\": \"F30\",\n      \"execution_order\": 30,\n      \"issue_number\": null,\n      \"issue_url\": \"https://github.com/rather-not-work-on/platform-planningops/issues/DRY-RUN-30\",\n      \"created_issue\": true,\n      \"dedup_match_state\": null,\n      \"dedup_strategy\": null,\n      \"reused_closed_issue\": false,\n      \"reopened_closed_issue\": false,\n      \"closed_match_detected\": false,\n      \"closed_match_issue_number\": null,\n      \"metadata_sync_required\": false,\n      \"metadata_sync_action\": \"none\",\n      \"field_updates\": [\n        \"initiative(text)\",\n        \"target_repo(text)\",\n        \"execution_order(number)\",\n        \"status(todo)\",\n        \"component(runtime)\",\n        \"workflow_state(ready_implementation)\",\n        \"loop_profile(l3_implementation_tdd)\",\n        \"plan_lane(m2_sync_core)\"\n      ]\n    },\n    {\n      \"plan_item_id\": \"F40\",\n      \"execution_order\": 40,\n      \"issue_number\": null,\n      \"issue_url\": \"https://github.com/rather-not-work-on/platform-planningops/issues/DRY-RUN-40\",\n      \"created_issue\": true,\n      \"dedup_match_state\": null,\n      \"dedup_strategy\": null,\n      \"reused_closed_issue\": false,\n      \"reopened_closed_issue\": false,\n      \"closed_match_detected\": false,\n      \"closed_match_issue_number\": null,\n      \"metadata_sync_required\": false,\n      \"metadata_sync_action\": \"none\",\n      \"field_updates\": [\n        \"initiative(text)\",\n        \"target_repo(text)\",\n        \"execution_order(number)\",\n        \"status(in_progress)\",\n        \"component(planningops)\",\n        \"workflow_state(review_gate)\",\n        \"loop_profile(l4_integration_reconcile)\",\n        \"plan_lane(m3_guardrails)\"\n      ]\n    }\n  ],\n  \"plan_id\": \"uap-goal-driven-autonomy-wave6\",\n  \"plan_revision\": 1,\n  \"source_of_truth\": \"docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6-issue-pack.md\",\n  \"items_total\": 4,\n  \"open_issues_scanned\": 1,\n  \"closed_issues_scanned\": 243,\n  \"verdict\": \"pass\"\n}",
+    "stderr": "",
+    "closed_match_violation_count": 0,
+    "closed_match_violations": []
+  },
+  "step_count": 4,
+  "verdict": "pass"
+}
