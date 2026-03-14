@@ -83,35 +83,23 @@
   "remote_health_checks": [
     {
       "check": "gh auth status -h github.com",
-      "result": "fail",
-      "message": "Token invalid for account JJBINY"
+      "result": "pass",
+      "message": "GitHub auth healthy for account JJBINY"
     },
     {
-      "check": "curl -I --max-time 10 https://api.github.com",
-      "result": "fail",
-      "message": "Could not resolve host: api.github.com"
+      "check": "curl -I https://api.github.com",
+      "result": "pass",
+      "message": "GitHub API reachable"
     },
     {
       "check": "gh api rate_limit",
-      "result": "fail",
-      "message": "error connecting to api.github.com"
+      "result": "pass",
+      "message": "GitHub API rate limit healthy"
     }
   ],
-  "remote_blockers": [
-    {
-      "kind": "github_auth_and_dns",
-      "severity": "hard",
-      "blocking": [
-        "issue_sync",
-        "project_field_sync",
-        "pr_create_or_update",
-        "merge"
-      ],
-      "message": "Remote GitHub operations remain blocked this run by invalid gh token and DNS resolution failure."
-    }
-  ],
+  "remote_blockers": [],
   "check_count": 14,
   "failure_count": 0,
-  "blocker_count": 1,
+  "blocker_count": 0,
   "verdict": "pass"
 }
