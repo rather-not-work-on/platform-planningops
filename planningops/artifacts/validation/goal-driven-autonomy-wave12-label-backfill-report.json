@@ -1,0 +1,83 @@
+{
+  "generated_at_utc": "2026-03-14T09:41:43.996526+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 5,
+  "issues_with_missing_labels": 4,
+  "issues_applied": 4,
+  "rows": [
+    {
+      "number": 410,
+      "title": "plan: [40] Review goal-driven autonomy wave 12 scheduled worker-outcome handoff",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/410",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 409,
+      "title": "plan: [30] Consume scheduled worker-outcome handoff in planningops orchestration",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/409",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 408,
+      "title": "plan: [20] Emit scheduled worker-outcome handoff from monday queue evidence",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/408",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 407,
+      "title": "plan: [10] Freeze scheduled worker-outcome handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/407",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 406,
+      "title": "plan: [50] Promote wave12 and materialize live backlog",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/406",
+      "existing_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "planned_labels": [],
+      "apply_status": "skipped",
+      "error": ""
+    }
+  ]
+}
