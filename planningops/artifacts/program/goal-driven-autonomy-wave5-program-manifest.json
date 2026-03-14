@@ -1,0 +1,11 @@
+{
+  "manifest_version": 1,
+  "program_id": "uap-goal-driven-autonomy-wave5",
+  "initiative": "unified-personal-agent-platform",
+  "source_plan": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave5-issue-pack.md",
+  "scope_source_plan": true,
+  "generated_at_utc": "2026-03-14T07:00:18.170125+00:00",
+  "selection_policy": "dedupe_by_plan_item_id_and_target_repo_open_first_then_latest_update",
+  "item_count": 0,
+  "items": []
+}
