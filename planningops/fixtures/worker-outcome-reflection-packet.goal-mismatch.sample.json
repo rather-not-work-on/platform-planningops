@@ -1,0 +1,34 @@
+{
+  "packet_version": 1,
+  "exported_at_utc": "2026-03-14T08:31:05Z",
+  "source_repo": "rather-not-work-on/monday",
+  "source_contract_ref": "platform-contracts/schemas/runtime-queue-worker-outcome.schema.json",
+  "reflection_contract_ref": "planningops/contracts/worker-outcome-reflection-contract.md",
+  "source_outcome_ref": "runtime-artifacts/worker-outcome/wave6-run-003.json",
+  "worker_outcome": {
+    "transition_id": "wave6-outcome-003",
+    "queue_item_id": "queue-wave6-001",
+    "goal_key": "uap-goal-driven-autonomy-wave6",
+    "schedule_key": "local-tick-5m",
+    "lease_owner": "monday-local-worker",
+    "worker_run_id": "wave6-run-003",
+    "state_from": "leased",
+    "state_to": "dead_letter",
+    "transition_reason": "worker.retry_exhausted",
+    "occurred_at_utc": "2026-03-14T08:30:00Z",
+    "attempt_count": 2,
+    "retry_budget_remaining": 0,
+    "dead_letter_reason": "retry_budget_exhausted"
+  },
+  "reflection_hints": {
+    "outcome_class": "dead_letter",
+    "completion_candidate": false,
+    "retry_exhausted": true,
+    "dead_letter": true,
+    "operator_attention_recommended": true,
+    "allowed_decisions": [
+      "replan_required",
+      "operator_notify"
+    ]
+  }
+}
