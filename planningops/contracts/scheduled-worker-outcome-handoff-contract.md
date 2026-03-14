@@ -10,6 +10,8 @@ This contract exists so:
 
 ## Canonical Boundary
 - monday scheduled runtime entrypoint: `monday/scripts/run_scheduled_queue_cycle.py`
+- monday scheduler-native selector: `monday/scripts/select_scheduled_worker_outcome.py`
+- scheduler-native selection contract: `planningops/contracts/scheduler-native-worker-outcome-selection-contract.md`
 - monday queue worker outcome schema: `platform-contracts/schemas/runtime-queue-worker-outcome.schema.json`
 - monday reflection exporter: `monday/scripts/export_worker_outcome_reflection_packet.py`
 - planningops scheduled orchestrator: `planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py`
@@ -73,6 +75,7 @@ Integration rules:
 
 Consumer rules:
 - planningops must not require an explicit `--worker-outcome-json` input once the handoff path is available
+- monday must derive `source_worker_outcome_ref` from the scheduler-native selector for the primary path instead of a planningops bridge input
 - planningops may load `source_worker_outcome_ref` from the handoff artifact only after the handoff contract passes validation
 - planningops must fail closed if the handoff artifact points to a worker outcome from a different `scheduled_run_id`, `goal_key`, or `queue_item_id`
 - planningops may preserve `source_worker_outcome_ref` into reflection-cycle evidence, but it must not rewrite monday runtime paths into new control-plane-local paths
@@ -111,8 +114,10 @@ Consumer rules:
 - planningops must not silently fall back to a manually supplied worker outcome path when the handoff contract is in scope
 
 ## Validation
+- `planningops/scripts/test_scheduler_native_worker_outcome_selection_contract.sh`
 - `planningops/scripts/test_scheduled_worker_outcome_handoff_contract.sh`
 - `planningops/contracts/scheduled-reflection-delivery-cycle-contract.md`
 - `monday/scripts/run_scheduled_queue_cycle.py`
+- `monday/scripts/select_scheduled_worker_outcome.py`
 - `monday/scripts/export_worker_outcome_reflection_packet.py`
 - `planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py`

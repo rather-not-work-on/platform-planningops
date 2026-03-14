@@ -25,6 +25,7 @@ for section in required_sections:
 
 required_fragments = [
     "monday/scripts/run_scheduled_queue_cycle.py",
+    "planningops/contracts/scheduler-native-worker-outcome-selection-contract.md",
     "planningops/contracts/scheduled-worker-outcome-handoff-contract.md",
     "monday/scripts/export_worker_outcome_reflection_packet.py",
     "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py",
@@ -43,6 +44,7 @@ required_fragments = [
     "`reflection_cycle`",
     "`delivery_cycle`",
     "queue row mutation or lease heartbeat logic",
+    "must not require `--worker-outcome-json` for the primary path",
 ]
 for fragment in required_fragments:
     assert fragment in text, fragment
