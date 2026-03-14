@@ -25,6 +25,7 @@ for section in required_sections:
 
 required_fragments = [
     "monday/scripts/run_scheduled_queue_cycle.py",
+    "planningops/contracts/scheduled-worker-outcome-handoff-contract.md",
     "monday/scripts/export_worker_outcome_reflection_packet.py",
     "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py",
     "planningops/scripts/federation/run_reflection_delivery_cycle.py",
@@ -34,6 +35,7 @@ required_fragments = [
     "planningops/contracts/reflection-delivery-cycle-contract.md",
     "`scheduled_cycle_report_ref`",
     "`worker_outcome_ref`",
+    "`worker_outcome_handoff_ref`",
     "`reflection_cycle_report_ref`",
     "`delivery_cycle_report_ref`",
     "`goal_transition_report_path`",

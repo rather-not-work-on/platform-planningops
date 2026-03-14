@@ -110,6 +110,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_supervisor_operator_handoff_contract.sh`
   - `test_supervisor_experiment_auto_executor_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
+  - `test_scheduled_worker_outcome_handoff_contract.sh`
   - `test_worker_executor_contract.sh`
   - `test_validate_blueprint_pack_contract.sh`
   - `test_validate_runtime_workspace_build_contract.sh`
