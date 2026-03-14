@@ -1,0 +1,95 @@
+{
+  "mode": "apply",
+  "project_owner": "rather-not-work-on",
+  "project_number": 2,
+  "project_id": "PVT_kwDOD8NujM4BQYNE",
+  "plan_item_regex": "^[A-Z][0-9]{2}$",
+  "issue_state": "open",
+  "issues_total": 4,
+  "updated_count": 4,
+  "error_count": 0,
+  "results": [
+    {
+      "plan_item_id": "H10",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 363,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/363",
+      "issue_state": "open",
+      "component": "planningops",
+      "workflow_state": "ready_contract",
+      "plan_lane": "m1_contract_freeze",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "H20",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 364,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/364",
+      "issue_state": "open",
+      "component": "planningops",
+      "workflow_state": "ready_implementation",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "H30",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 365,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/365",
+      "issue_state": "open",
+      "component": "runtime",
+      "workflow_state": "ready_implementation",
+      "plan_lane": "m2_sync_core",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    },
+    {
+      "plan_item_id": "H40",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 366,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/366",
+      "issue_state": "open",
+      "component": "planningops",
+      "workflow_state": "review_gate",
+      "plan_lane": "m3_guardrails",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "execution_order",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane",
+        "loop_profile"
+      ]
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}
