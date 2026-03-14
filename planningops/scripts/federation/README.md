@@ -12,6 +12,7 @@ Keep cross-repository execution entrypoints isolated from the planningops core l
 - `run_issue_driven_mission_smoke.py`: planningops-owned bridge from GitHub issue context into monday local runtime smoke
 - `run_issue_driven_runtime_stack_smoke.py`: planningops-owned aggregate runner that links an issue-driven monday mission smoke with provider and observability repo-owned smoke evidence
 - `run_local_runtime_stack_smoke.py`: planningops-owned federated local smoke runner over repo-owned monday/provider/o11y entrypoints
+- `run_worker_outcome_reflection_cycle.py`: planningops-owned runner that chains monday worker outcome export into planningops reflection evaluation and action application
 - `run_local_oracle_rehearsal.py`: local-first vs oracle_cloud rehearsal harness
 - `run_wave14_oracle_rehearsal.py`: wave-owned rehearsal runner that compares wave13 local vs oracle_cloud smoke outputs without changing the default local profile
 - `validate_execution_wave_readiness.py`: readiness validator for plan waves that must verify prerequisite outputs and closed issues before projecting the next issue pack
