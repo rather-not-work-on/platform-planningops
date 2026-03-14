@@ -65,7 +65,7 @@ cat >"$TMP_DIR/outcome-retry.json" <<'JSON'
   "goal_key": "uap-goal-driven-autonomy-wave11",
   "schedule_key": "local-tick-5m",
   "lease_owner": "monday-local-worker",
-  "worker_run_id": "wave11-run-continue",
+  "worker_run_id": "test-scheduled-reflection-delivery-continue-scheduled",
   "state_from": "leased",
   "state_to": "retry_wait",
   "transition_reason": "worker.retryable_failure",
@@ -83,7 +83,7 @@ cat >"$TMP_DIR/outcome-dead-letter.json" <<'JSON'
   "goal_key": "uap-goal-driven-autonomy-wave11",
   "schedule_key": "local-tick-5m",
   "lease_owner": "monday-local-worker",
-  "worker_run_id": "wave11-run-replan",
+  "worker_run_id": "test-scheduled-reflection-delivery-replan-scheduled",
   "state_from": "leased",
   "state_to": "dead_letter",
   "transition_reason": "worker.retry_exhausted",
@@ -94,10 +94,32 @@ cat >"$TMP_DIR/outcome-dead-letter.json" <<'JSON'
 }
 JSON
 
+cat >"$TMP_DIR/outcome-dead-letter-apply.json" <<'JSON'
+{
+  "transition_id": "wave11-outcome-replan-apply",
+  "queue_item_id": "queue-wave11-001",
+  "goal_key": "uap-goal-driven-autonomy-wave11",
+  "schedule_key": "local-tick-5m",
+  "lease_owner": "monday-local-worker",
+  "worker_run_id": "test-scheduled-reflection-delivery-replan-apply-scheduled",
+  "state_from": "leased",
+  "state_to": "dead_letter",
+  "transition_reason": "worker.retry_exhausted",
+  "occurred_at_utc": "2026-03-14T09:06:00Z",
+  "attempt_count": 2,
+  "retry_budget_remaining": 0,
+  "dead_letter_reason": "retry_budget_exhausted"
+}
+JSON
+
 python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
   --worker-outcome-json "$TMP_DIR/outcome-retry.json" \
+  --idempotency "$TMP_DIR/continue-idempotency.json" \
+  --transition-log "$TMP_DIR/continue-transition-log.ndjson" \
+  --scheduled-output "$TMP_DIR/continue-scheduled-cycle-report.json" \
+  --scheduled-handoff-output "$TMP_DIR/continue-worker-outcome-handoff.json" \
   --active-goal-registry "$TMP_DIR/registry.json" \
   --goal-key uap-goal-driven-autonomy-wave11 \
   --run-id "test-scheduled-reflection-delivery-continue" \
@@ -107,6 +129,10 @@ python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
   --worker-outcome-json "$TMP_DIR/outcome-dead-letter.json" \
+  --idempotency "$TMP_DIR/replan-idempotency.json" \
+  --transition-log "$TMP_DIR/replan-transition-log.ndjson" \
+  --scheduled-output "$TMP_DIR/replan-scheduled-cycle-report.json" \
+  --scheduled-handoff-output "$TMP_DIR/replan-worker-outcome-handoff.json" \
   --active-goal-registry "$TMP_DIR/registry.json" \
   --goal-key uap-goal-driven-autonomy-wave11 \
   --delivery-target "slack://monday/wave11" \
@@ -117,7 +143,11 @@ python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
 if python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
-  --worker-outcome-json "$TMP_DIR/outcome-dead-letter.json" \
+  --worker-outcome-json "$TMP_DIR/outcome-dead-letter-apply.json" \
+  --idempotency "$TMP_DIR/replan-apply-idempotency.json" \
+  --transition-log "$TMP_DIR/replan-apply-transition-log.ndjson" \
+  --scheduled-output "$TMP_DIR/replan-apply-scheduled-cycle-report.json" \
+  --scheduled-handoff-output "$TMP_DIR/replan-apply-worker-outcome-handoff.json" \
   --active-goal-registry "$TMP_DIR/registry.json" \
   --goal-key uap-goal-driven-autonomy-wave11 \
   --delivery-target "slack://monday/wave11" \
@@ -151,6 +181,13 @@ for report in [continue_report, replan_report]:
         "delivery_cycle",
     ], report
     assert all(row["verdict"] == "pass" for row in report["stage_reports"]), report
+    scheduled_report = json.loads(Path(report["scheduled_cycle_report_ref"]).read_text(encoding="utf-8"))
+    assert scheduled_report["handoff_required"] is True, scheduled_report
+    assert scheduled_report["worker_outcome_handoff_ref"].endswith("worker-outcome-handoff.json"), scheduled_report
+    assert (
+        scheduled_report["worker_outcome_handoff_contract_ref"]
+        == "planningops/contracts/scheduled-worker-outcome-handoff-contract.md"
+    ), scheduled_report
 
 assert continue_report["reflection_decision"] == "continue", continue_report
 assert continue_report["action_kind"] == "record_continue", continue_report
