@@ -264,6 +264,7 @@ jobs:
           bash planningops/scripts/test_escalation_gate.sh
           bash planningops/scripts/test_backlog_stock_replenishment_contract.sh
           bash planningops/scripts/test_autonomous_supervisor_loop_contract.sh
+          bash planningops/scripts/test_supervisor_operator_handoff_contract.sh
           bash planningops/scripts/test_supervisor_experiment_auto_executor_contract.sh
 
   federated-summary:
