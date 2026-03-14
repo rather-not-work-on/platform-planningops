@@ -1,0 +1,69 @@
+{
+  "generated_at_utc": "2026-03-14T07:20:25.934617+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 4,
+  "issues_with_missing_labels": 4,
+  "issues_applied": 4,
+  "rows": [
+    {
+      "number": 346,
+      "title": "plan: [40] Review goal-driven autonomy wave 6 worker outcome lifecycle alignment",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/346",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 345,
+      "title": "plan: [30] Verify monday worker outcome retry and dead-letter lifecycle",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/345",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 344,
+      "title": "plan: [20] Implement monday worker outcome transition baseline",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/344",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 343,
+      "title": "plan: [10] Freeze shared queue worker outcome schema",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/343",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/contracts",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}
