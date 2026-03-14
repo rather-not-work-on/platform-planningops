@@ -2,10 +2,17 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+WORKSPACE_ROOT="$(cd "$ROOT_DIR/.." && pwd)"
+MONDAY_REPO="$WORKSPACE_ROOT/monday"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 cd "$ROOT_DIR"
+
+if [[ ! -f "$MONDAY_REPO/scripts/export_worker_outcome_reflection_packet.py" ]]; then
+  echo "worker outcome reflection cycle test skipped: sibling monday repo unavailable"
+  exit 0
+fi
 
 python3 - "$TMP_DIR/registry.json" <<'PY'
 import json
