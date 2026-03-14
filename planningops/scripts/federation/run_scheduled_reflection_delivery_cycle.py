@@ -444,6 +444,21 @@ def main() -> int:
             report_path=report_output,
         )
 
+    if not reflection_output.exists():
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="reflection_cycle",
+            errors=["reflection cycle report missing"],
+            report_path=report_output,
+        )
+
     reflection_report = load_json(reflection_output)
     action_ref = str(reflection_report.get("reflection_action_ref") or action_ref)
 
@@ -487,6 +502,21 @@ def main() -> int:
             stage_reports=stage_reports,
             failure_stage="delivery_cycle",
             errors=errors,
+            report_path=report_output,
+        )
+
+    if not delivery_output.exists():
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="delivery_cycle",
+            errors=["delivery cycle report missing"],
             report_path=report_output,
         )
 
