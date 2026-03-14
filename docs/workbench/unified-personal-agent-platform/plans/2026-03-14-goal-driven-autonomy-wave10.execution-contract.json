@@ -1,0 +1,66 @@
+{
+  "execution_contract": {
+    "plan_id": "uap-goal-driven-autonomy-wave10",
+    "plan_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave10-issue-pack.md",
+    "items": [
+      {
+        "plan_item_id": "J10",
+        "execution_order": 10,
+        "title": "Freeze reflection delivery cycle contract",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "plan_lane": "m1_contract_freeze",
+        "depends_on": [],
+        "primary_output": "planningops/contracts/reflection-delivery-cycle-contract.md"
+      },
+      {
+        "plan_item_id": "J20",
+        "execution_order": 20,
+        "title": "Run reflection delivery cycle through planningops orchestration",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m2_sync_core",
+        "depends_on": [
+          10
+        ],
+        "primary_output": "planningops/scripts/federation/run_reflection_delivery_cycle.py"
+      },
+      {
+        "plan_item_id": "J30",
+        "execution_order": 30,
+        "title": "Verify the end-to-end reflection delivery cycle",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "plan_lane": "m2_sync_core",
+        "depends_on": [
+          10,
+          20
+        ],
+        "primary_output": "planningops/scripts/test_reflection_delivery_cycle.sh"
+      },
+      {
+        "plan_item_id": "J40",
+        "execution_order": 40,
+        "title": "Review goal-driven autonomy wave 10 reflection delivery cycle",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "review_gate",
+        "loop_profile": "l4_integration_reconcile",
+        "plan_lane": "m3_guardrails",
+        "depends_on": [
+          10,
+          20,
+          30
+        ],
+        "primary_output": "planningops/artifacts/validation/goal-driven-autonomy-wave10-review.json"
+      }
+    ]
+  }
+}
