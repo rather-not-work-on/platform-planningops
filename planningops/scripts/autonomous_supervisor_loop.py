@@ -188,6 +188,43 @@ def derive_rate_limit_guidance(loop_result: dict, project_items_source, fallback
     return None
 
 
+def derive_message_class_hint(stop_reason: str, status: str, needs_human_attention: bool):
+    if stop_reason == "goal_completed":
+        return "goal_completed"
+    if status == "blocked":
+        return "blocked_report"
+    if needs_human_attention:
+        return "decision_request"
+    return "status_update"
+
+
+def decorate_operator_handoff(report: dict, summary: dict, stop_reason: str):
+    resolved_active_goal = summary.get("resolved_active_goal") or {}
+    goal_key = str(resolved_active_goal.get("goal_key") or "").strip()
+    primary_operator_channel = resolved_active_goal.get("primary_operator_channel")
+    terminal_notification_channel = resolved_active_goal.get("terminal_notification_channel")
+    guidance = report.get("guidance") or {}
+
+    if goal_key:
+        report["goal_key"] = goal_key
+    if primary_operator_channel:
+        report["primary_operator_channel"] = primary_operator_channel
+    if terminal_notification_channel:
+        report["terminal_notification_channel"] = terminal_notification_channel
+    report["message_class_hint"] = derive_message_class_hint(
+        stop_reason,
+        str(report.get("status") or ""),
+        bool(report.get("needs_human_attention")),
+    )
+    report["handoff_contract_ref"] = "planningops/contracts/supervisor-operator-handoff-contract.md"
+
+    goal_transition_report_path = guidance.get("goal_transition_report_path")
+    if goal_transition_report_path:
+        report["goal_transition_report_path"] = goal_transition_report_path
+
+    return report
+
+
 def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
     cycles = summary.get("cycles") or []
     last_cycle = cycles[-1] if cycles else {}
@@ -228,7 +265,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "reason": "No cooldown or retry guidance required.",
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "converged_with_snapshot_fallback":
         report.update(
@@ -239,7 +276,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "needs_human_attention": False,
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "github_rate_limited":
         report.update(
@@ -250,7 +287,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "needs_human_attention": False,
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "experiment_triggered":
         report.update(
@@ -260,7 +297,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "operator_action": "review_experiment_trigger",
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "replan_required":
         materialization = stop_details.get("backlog_materialization") or {}
@@ -278,7 +315,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                     },
                 }
             )
-            return report
+            return decorate_operator_handoff(report, summary, stop_reason)
         report.update(
             {
                 "status": "review_required",
@@ -286,7 +323,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "operator_action": "regenerate_backlog_or_reconcile_project",
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "goal_promotion_ready":
         transition = stop_details.get("goal_transition") or {}
@@ -303,7 +340,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "goal_completion_ready":
         transition = stop_details.get("goal_transition") or {}
@@ -320,7 +357,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "goal_completed":
         transition = stop_details.get("goal_transition") or {}
@@ -338,7 +375,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "goal_transition_failed":
         transition = stop_details.get("goal_transition") or {}
@@ -354,7 +391,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "replan_materialization_failed":
         materialization = stop_details.get("backlog_materialization") or {}
@@ -371,7 +408,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason in {"quality_gate_fail", "backlog_gate_fail", "escalation_auto_pause", "experiment_auto_executor_failed"}:
         report.update(
@@ -381,9 +418,9 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "operator_action": "inspect_failure_and_replan",
             }
         )
-        return report
+        return decorate_operator_handoff(report, summary, stop_reason)
 
-    return report
+    return decorate_operator_handoff(report, summary, stop_reason)
 
 
 def build_operator_summary_markdown(operator_report: dict):
@@ -431,7 +468,7 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
     if reason:
         lines.extend(["", "Reason:", reason])
 
-    return {
+    payload = {
         "generated_at_utc": now_utc(),
         "title": f"[{str(operator_report.get('status') or 'unknown').upper()}] {operator_report.get('headline')}",
         "status": operator_report.get("status"),
@@ -443,6 +480,23 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
         "attachments": attachments,
         "body_markdown": "\n".join(lines) + "\n",
     }
+    goal_key = operator_report.get("goal_key")
+    if goal_key:
+        payload["goal_key"] = goal_key
+    message_class_hint = operator_report.get("message_class_hint")
+    if message_class_hint:
+        payload["message_class_hint"] = message_class_hint
+    payload["handoff_contract_ref"] = operator_report.get(
+        "handoff_contract_ref",
+        "planningops/contracts/supervisor-operator-handoff-contract.md",
+    )
+    if operator_report.get("primary_operator_channel"):
+        payload["primary_operator_channel"] = operator_report.get("primary_operator_channel")
+    if operator_report.get("terminal_notification_channel"):
+        payload["terminal_notification_channel"] = operator_report.get("terminal_notification_channel")
+    if operator_report.get("goal_transition_report_path"):
+        payload["goal_transition_report_path"] = operator_report.get("goal_transition_report_path")
+    return payload
 
 
 def build_issue_runner_command(args):
@@ -670,12 +724,19 @@ def main():
         print("max-cycles must be positive")
         return 1
     resolved_active_goal = None
-    if args.auto_materialize_backlog:
+    resolved_contract_file = args.backlog_materialization_contract_file
+    if args.active_goal_registry:
         try:
-            resolved_contract_file, resolved_active_goal = resolve_materialization_contract_from_goal(args)
+            goal_contract_file, goal_payload = resolve_materialization_contract_from_goal(args)
+            if goal_payload is not None:
+                resolved_active_goal = goal_payload
+            if goal_contract_file:
+                resolved_contract_file = goal_contract_file
         except Exception as exc:  # noqa: BLE001
-            print(str(exc))
-            return 1
+            if args.auto_materialize_backlog:
+                print(str(exc))
+                return 1
+    if args.auto_materialize_backlog:
         if not resolved_contract_file and resolved_active_goal is not None:
             print("backlog-materialization-contract-file or active-goal-registry is required when auto-materialize-backlog is enabled")
             return 1

@@ -32,6 +32,7 @@ jobs:
           bash planningops/scripts/test_loop_checkpoint_resume.sh
           bash planningops/scripts/test_backlog_stock_replenishment_contract.sh
           bash planningops/scripts/test_autonomous_supervisor_loop_contract.sh
+          bash planningops/scripts/test_supervisor_operator_handoff_contract.sh
           bash planningops/scripts/test_supervisor_experiment_auto_executor_contract.sh
           python3 planningops/scripts/validate_worker_task_pack.py \
             --runtime-profile-file planningops/config/runtime-profiles.json \
@@ -60,6 +61,7 @@ jobs:
                   "test_loop_checkpoint_resume",
                   "test_backlog_stock_replenishment_contract",
                   "test_autonomous_supervisor_loop_contract",
+                  "test_supervisor_operator_handoff_contract",
                   "test_supervisor_experiment_auto_executor_contract",
                   "validate_worker_task_pack_ci_report",
               ],

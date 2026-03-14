@@ -107,6 +107,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_verify_loop_run_hard_gate_contract.sh`
   - `test_backlog_stock_replenishment_contract.sh`
   - `test_autonomous_supervisor_loop_contract.sh`
+  - `test_supervisor_operator_handoff_contract.sh`
   - `test_supervisor_experiment_auto_executor_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_worker_executor_contract.sh`
