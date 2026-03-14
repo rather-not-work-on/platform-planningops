@@ -54,6 +54,7 @@ def build_report(
         "evidence_refs": args.evidence_ref,
         "active_goal_key_before": before_doc.get("active_goal_key"),
         "active_goal_key_after": None if proposed_doc is None else proposed_doc.get("active_goal_key"),
+        "goal_transition_kind": "promotion" if args.activate_next_goal_key else "terminal_completion",
         "verdict": "pass" if not errors else "fail",
         "error_count": len(errors),
         "errors": errors,
@@ -113,7 +114,7 @@ def main() -> int:
                 errors.append(f"next_goal_not_promotable: {args.activate_next_goal_key}:{next_status}")
             if args.activate_next_goal_key == args.goal_key:
                 errors.append("activate_next_goal_key must differ from goal_key")
-        elif from_status == "active" and to_status != "active":
+        elif from_status == "active" and to_status != "active" and to_status != "achieved":
             errors.append("activate_next_goal_key required when transitioning the current active goal away from active")
 
         if from_status != "active" and to_status in {"blocked", "achieved"}:

@@ -37,7 +37,8 @@ def main():
     doc = load_json(registry_path)
     errors = validate_registry(doc, repo_root=repo_root)
     resolved = None
-    if not errors:
+    active_goal_key = str(doc.get("active_goal_key") or "").strip()
+    if not errors and active_goal_key:
         resolved = build_resolved_payload(resolve_active_goal(doc))
 
     report = {

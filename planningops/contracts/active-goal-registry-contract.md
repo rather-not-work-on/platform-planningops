@@ -19,12 +19,15 @@ Provide one canonical machine-readable pointer to the current active goal so aut
 - `goal_brief_ref`
 - `execution_contract_file`
 - `completion_contract_refs`
+- `next_goal_key` (optional)
 - `operator_channels`
 
 ## Status Rules
 - Allowed statuses: `draft`, `active`, `blocked`, `achieved`, `archived`
-- Exactly one goal may be `active`
-- `active_goal_key` must match the unique `active` goal
+- At most one goal may be `active`
+- If one goal is active, `active_goal_key` must match that goal
+- If no goal is active, `active_goal_key` must be the empty string
+- `next_goal_key`, when present, must reference a different non-terminal goal entry
 
 ## Reference Rules
 - `goal_brief_ref` must resolve to an existing repo-relative file
@@ -40,6 +43,7 @@ Provide one canonical machine-readable pointer to the current active goal so aut
 - Supervisor/materialization automation must prefer the active goal registry over hard-coded contract paths when both are available.
 - If the registry has no active goal, automation must stop with a review-required outcome instead of inventing a goal.
 - Registry state changes must follow `planningops/contracts/goal-lifecycle-transition-contract.md`.
+- An achieved goal may keep `next_goal_key` as historical evidence of which successor was promoted next.
 
 ## Validation
 - `planningops/scripts/validate_active_goal_registry.py`

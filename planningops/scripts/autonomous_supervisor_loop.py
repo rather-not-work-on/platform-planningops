@@ -20,6 +20,12 @@ from resolve_active_goal import build_resolved_payload, load_json as load_goal_j
 
 
 ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
+GOAL_EXHAUSTION_REASON_CODES = {
+    "no_eligible_todo_issue",
+    "no_candidate_project_items",
+    "closed_issue_project_drift",
+    "inventory_only_candidates_only",
+}
 
 
 def now_utc():
@@ -43,9 +49,9 @@ def save_json(path: Path, data):
 
 
 def resolve_materialization_contract_from_goal(args):
-    if args.backlog_materialization_contract_file:
-        return args.backlog_materialization_contract_file, None
     if not args.active_goal_registry:
+        if args.backlog_materialization_contract_file:
+            return args.backlog_materialization_contract_file, None
         return None, None
 
     repo_root = Path(__file__).resolve().parents[2]
@@ -54,8 +60,54 @@ def resolve_materialization_contract_from_goal(args):
     errors = validate_registry(doc, repo_root=repo_root)
     if errors:
         raise RuntimeError(f"active goal registry invalid: {errors}")
-    goal = build_resolved_payload(resolve_active_goal(doc, goal_key=args.active_goal_key))
+    try:
+        goal = build_resolved_payload(resolve_active_goal(doc, goal_key=args.active_goal_key))
+    except RuntimeError as exc:
+        if "no active goal configured" in str(exc):
+            if args.backlog_materialization_contract_file:
+                return args.backlog_materialization_contract_file, None
+            return None, None
+        raise
     return str(goal["execution_contract_file"]), goal
+
+
+def run_goal_transition(args, cycle_dir: Path, active_goal: dict, evidence_refs: list[str]):
+    report_path = cycle_dir / "goal-transition-report.json"
+    next_goal_key = str(active_goal.get("next_goal_key") or "").strip() or None
+    cmd = [
+        sys.executable,
+        "planningops/scripts/core/goals/transition_goal_state.py",
+        "--registry",
+        args.active_goal_registry,
+        "--goal-key",
+        str(active_goal.get("goal_key")),
+        "--to-status",
+        "achieved",
+        "--reason",
+        "supervisor_detected_goal_exhaustion",
+        "--mode",
+        args.mode,
+        "--output",
+        str(report_path),
+    ]
+    if next_goal_key:
+        cmd.extend(["--activate-next-goal-key", next_goal_key])
+    for evidence_ref in evidence_refs:
+        if evidence_ref:
+            cmd.extend(["--evidence-ref", evidence_ref])
+
+    rc, out, err = run(cmd)
+    report = load_json(report_path, {})
+    return {
+        "enabled": True,
+        "rc": rc,
+        "command": cmd,
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+        "output_path": str(report_path),
+        "report": report if isinstance(report, dict) else {},
+        "next_goal_key": next_goal_key,
+    }
 
 
 def parse_json_doc(raw: str):
@@ -232,6 +284,74 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "status": "review_required",
                 "headline": "Supervisor stopped because backlog selection requires replanning.",
                 "operator_action": "regenerate_backlog_or_reconcile_project",
+            }
+        )
+        return report
+
+    if stop_reason == "goal_promotion_ready":
+        transition = stop_details.get("goal_transition") or {}
+        report.update(
+            {
+                "status": "review_required",
+                "headline": "Supervisor found a promotable successor goal.",
+                "operator_action": "review_goal_promotion",
+                "reason": "Active goal is exhausted and the next goal can be promoted deterministically.",
+                "guidance": {
+                    **(report.get("guidance") or {}),
+                    "goal_transition_report_path": transition.get("output_path"),
+                    "next_goal_key": transition.get("next_goal_key"),
+                },
+            }
+        )
+        return report
+
+    if stop_reason == "goal_completion_ready":
+        transition = stop_details.get("goal_transition") or {}
+        report.update(
+            {
+                "status": "review_required",
+                "headline": "Supervisor found an active goal ready for terminal completion.",
+                "operator_action": "review_goal_completion",
+                "reason": "Active goal is exhausted and no successor goal is currently registered.",
+                "guidance": {
+                    **(report.get("guidance") or {}),
+                    "goal_transition_report_path": transition.get("output_path"),
+                    "completed_goal_key": transition.get("goal_key"),
+                },
+            }
+        )
+        return report
+
+    if stop_reason == "goal_completed":
+        transition = stop_details.get("goal_transition") or {}
+        report.update(
+            {
+                "status": "ok",
+                "headline": "Supervisor completed the active goal and stopped cleanly.",
+                "operator_action": "notify_goal_completion",
+                "needs_human_attention": False,
+                "reason": "No successor goal is registered; emit terminal notification and wait for the next goal brief.",
+                "guidance": {
+                    **(report.get("guidance") or {}),
+                    "goal_transition_report_path": transition.get("output_path"),
+                    "completed_goal_key": transition.get("goal_key"),
+                },
+            }
+        )
+        return report
+
+    if stop_reason == "goal_transition_failed":
+        transition = stop_details.get("goal_transition") or {}
+        report.update(
+            {
+                "status": "blocked",
+                "headline": "Supervisor failed while transitioning the active goal.",
+                "operator_action": "inspect_goal_transition_failure",
+                "reason": transition.get("stderr") or "Goal transition failed.",
+                "guidance": {
+                    **(report.get("guidance") or {}),
+                    "goal_transition_report_path": transition.get("output_path"),
+                },
             }
         )
         return report
@@ -556,7 +676,7 @@ def main():
         except Exception as exc:  # noqa: BLE001
             print(str(exc))
             return 1
-        if not resolved_contract_file:
+        if not resolved_contract_file and resolved_active_goal is not None:
             print("backlog-materialization-contract-file or active-goal-registry is required when auto-materialize-backlog is enabled")
             return 1
         args.backlog_materialization_contract_file = resolved_contract_file
@@ -601,6 +721,7 @@ def main():
         experiment_trigger_artifact = None
         experiment_executor = {"enabled": False}
         backlog_materialization = {"enabled": False}
+        goal_transition = {"enabled": False}
         if experiment["triggered"]:
             experiment_trigger_artifact = cycle_dir / "experiment-trigger.json"
             save_json(
@@ -660,6 +781,14 @@ def main():
                 "projected_issues_output": None,
                 "verdict": None,
             },
+            "goal_transition": {
+                "enabled": False,
+                "rc": None,
+                "output_path": None,
+                "verdict": None,
+                "goal_key": None,
+                "next_goal_key": None,
+            },
             "project_items_source": project_items_source,
             "project_items_rate_limit_fallback_used": project_items_rate_limit_fallback_used,
             "project_items_rate_limit_error": project_items_rate_limit_error,
@@ -694,6 +823,88 @@ def main():
         if auto_paused:
             stop_reason = "escalation_auto_pause"
             stop_details = {"cycle": cycle_index, "reason_code": reason_code}
+            break
+        if (
+            verdict == "inconclusive"
+            and reason_code in GOAL_EXHAUSTION_REASON_CODES
+            and resolved_active_goal
+            and int(cycle_record["replenishment_candidates_count"]) == 0
+        ):
+            goal_transition = run_goal_transition(
+                args,
+                cycle_dir,
+                resolved_active_goal,
+                [
+                    "planningops/artifacts/loop-runner/last-run.json",
+                    cycle_record["backlog_gate"]["report_path"],
+                ],
+            )
+            cycle_record["goal_transition"] = {
+                "enabled": True,
+                "rc": goal_transition.get("rc"),
+                "output_path": goal_transition.get("output_path"),
+                "verdict": (goal_transition.get("report") or {}).get("verdict"),
+                "goal_key": (goal_transition.get("report") or {}).get("goal_key"),
+                "next_goal_key": goal_transition.get("next_goal_key"),
+            }
+            save_json(cycle_dir / "cycle-report.json", cycle_record)
+            if int(goal_transition.get("rc", 1)) != 0:
+                stop_reason = "goal_transition_failed"
+                stop_details = {
+                    "cycle": cycle_index,
+                    "reason_code": reason_code,
+                    "goal_transition": cycle_record["goal_transition"],
+                }
+                break
+            if goal_transition.get("next_goal_key"):
+                if args.mode == "apply":
+                    args.active_goal_key = goal_transition.get("next_goal_key")
+                    if args.auto_materialize_backlog:
+                        resolved_contract_file, resolved_active_goal = resolve_materialization_contract_from_goal(args)
+                        args.backlog_materialization_contract_file = resolved_contract_file
+                        backlog_materialization = run_backlog_materializer(args, cycle_dir)
+                        cycle_record["backlog_materialization"] = {
+                            "enabled": bool(backlog_materialization.get("enabled")),
+                            "rc": backlog_materialization.get("rc"),
+                            "output_path": backlog_materialization.get("output_path"),
+                            "projected_issues_output": backlog_materialization.get("projected_issues_output"),
+                            "verdict": (backlog_materialization.get("report") or {}).get("verdict"),
+                        }
+                        save_json(cycle_dir / "cycle-report.json", cycle_record)
+                        if backlog_materialization.get("enabled") and int(backlog_materialization.get("rc", 1)) != 0:
+                            stop_reason = "replan_materialization_failed"
+                            stop_details = {
+                                "cycle": cycle_index,
+                                "reason_code": reason_code,
+                                "backlog_materialization": cycle_record["backlog_materialization"],
+                                "goal_transition": cycle_record["goal_transition"],
+                            }
+                            break
+                    pass_streak = 0
+                    continue
+                stop_reason = "goal_promotion_ready"
+                stop_details = {
+                    "cycle": cycle_index,
+                    "reason_code": reason_code,
+                    "goal_transition": cycle_record["goal_transition"],
+                }
+                break
+            if args.mode == "apply":
+                resolved_active_goal = None
+                args.active_goal_key = None
+                stop_reason = "goal_completed"
+                stop_details = {
+                    "cycle": cycle_index,
+                    "reason_code": reason_code,
+                    "goal_transition": cycle_record["goal_transition"],
+                }
+                break
+            stop_reason = "goal_completion_ready"
+            stop_details = {
+                "cycle": cycle_index,
+                "reason_code": reason_code,
+                "goal_transition": cycle_record["goal_transition"],
+            }
             break
         if verdict == "inconclusive" and reason_code in {
             "no_eligible_todo_issue",
@@ -769,9 +980,17 @@ def main():
         "experiment_auto_executor_failed",
         "github_rate_limited",
         "replan_materialization_failed",
+        "goal_transition_failed",
     }:
         supervisor_verdict = "fail"
-    elif stop_reason in {"experiment_triggered", "sequence_exhausted", "replan_required", "max_cycles_reached"}:
+    elif stop_reason in {
+        "experiment_triggered",
+        "sequence_exhausted",
+        "replan_required",
+        "max_cycles_reached",
+        "goal_promotion_ready",
+        "goal_completion_ready",
+    }:
         supervisor_verdict = "inconclusive"
 
     summary = {
@@ -793,6 +1012,7 @@ def main():
             "backlog_replenishment": "planningops/contracts/backlog-stock-replenishment-contract.md",
             "backlog_materialization": "planningops/contracts/backlog-materialization-contract.md",
             "active_goal_registry": "planningops/contracts/active-goal-registry-contract.md",
+            "goal_lifecycle_transition": "planningops/contracts/goal-lifecycle-transition-contract.md",
             "goal_completion": "planningops/contracts/goal-completion-contract.md",
             "operator_channel_adapter": "planningops/contracts/operator-channel-adapter-contract.md",
         },

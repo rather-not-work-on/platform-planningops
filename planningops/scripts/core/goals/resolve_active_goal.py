@@ -31,6 +31,8 @@ def validate_registry(doc, repo_root: Path):
     active_goal_key = str(doc.get("active_goal_key") or "").strip()
     goal_keys = set()
     active_goals = []
+    goal_statuses = {}
+    deferred_successors = []
     for index, goal in enumerate(goals):
         path = f"goals[{index}]"
         if not isinstance(goal, dict):
@@ -60,6 +62,11 @@ def validate_registry(doc, repo_root: Path):
             errors.append(f"{path}.status invalid: {status}")
         if status == "active":
             active_goals.append(goal_key)
+        if goal_key:
+            goal_statuses[goal_key] = status
+        next_goal_key = str(goal.get("next_goal_key") or "").strip()
+        if next_goal_key:
+            deferred_successors.append((path, goal_key, next_goal_key))
         for ref_key in ["goal_brief_ref", "execution_contract_file"]:
             ref = str(goal.get(ref_key) or "").strip()
             if ref and not (repo_root / ref).exists():
@@ -97,18 +104,32 @@ def validate_registry(doc, repo_root: Path):
                     f"{path}.operator_channels.{channel_key}.adapter_contract_ref invalid: {adapter_contract_ref}"
                 )
 
-    if len(active_goals) != 1:
-        errors.append("exactly one active goal is required")
+    if len(active_goals) > 1:
+        errors.append("at most one active goal is allowed")
     if active_goal_key and active_goal_key not in goal_keys:
         errors.append(f"active_goal_key not found: {active_goal_key}")
     if len(active_goals) == 1 and active_goal_key != active_goals[0]:
         errors.append("active_goal_key must match the unique active goal")
+    if len(active_goals) == 0 and active_goal_key:
+        errors.append("active_goal_key must be empty when no goal is active")
+    for path, goal_key, next_goal_key in deferred_successors:
+        if next_goal_key not in goal_keys:
+            errors.append(f"{path}.next_goal_key not found: {next_goal_key}")
+            continue
+        if goal_key == next_goal_key:
+            errors.append(f"{path}.next_goal_key must differ from goal_key")
+            continue
+        next_status = goal_statuses.get(next_goal_key)
+        if next_status in {"achieved", "archived"}:
+            errors.append(f"{path}.next_goal_key not promotable: {next_goal_key}:{next_status}")
     return errors
 
 
 def resolve_active_goal(doc, goal_key: str | None = None):
     goals = doc["goals"]
     desired_key = str(goal_key or doc["active_goal_key"]).strip()
+    if not desired_key:
+        raise RuntimeError("no active goal configured")
     for goal in goals:
         if str(goal.get("goal_key") or "").strip() == desired_key:
             return goal
