@@ -1,0 +1,142 @@
+{
+  "generated_at_utc": "2026-03-14T08:16:09.384643+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave8",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave8-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 363,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze reflection action handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/363",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 364,
+      "state": "CLOSED",
+      "title": "plan: [20] Apply worker outcome reflection decisions into control-plane actions",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/364",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 365,
+      "state": "CLOSED",
+      "title": "plan: [30] Send monday reflection decision updates through operator channels",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/365",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/reflection-action-handoff-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/core/goals/apply_worker_outcome_reflection.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_apply_worker_outcome_reflection.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/send_reflection_decision_update.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/test_send_reflection_decision_update.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_reflection_decision_update.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain reflection decision delivery owner; planningops must not host monday delivery wrappers"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/core/goals/apply_worker_outcome_reflection.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must remain reflection action applier owner; monday must not host control-plane appliers"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/core/goals/export_worker_outcome_reflection_packet.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must remain reflection packet export owner; planningops must not host runtime reflection exporters"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave8",
+      "actual": "uap-goal-driven-autonomy-wave8",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave7_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave8_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_all",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_action_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_apply_worker_outcome_reflection",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_send_reflection_decision_update",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_operator_channel_delivery_cli",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_supervisor_goal_completion_cli",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/py_compile_send_reflection_decision_update",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 21,
+  "failure_count": 0,
+  "verdict": "pass"
+}
