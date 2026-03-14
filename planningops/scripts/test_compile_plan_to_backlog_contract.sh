@@ -207,6 +207,42 @@ try:
 except RuntimeError as exc:
     assert "multiple open issues matched identity" in str(exc), exc
 
+# 4-3) Ambiguous legacy rows without plan_id should not block new exact-plan issue creation.
+ambiguous_legacy = [
+    {
+        "number": 810,
+        "title": "legacy d10 a",
+        "body": "\n".join(
+            [
+                "- plan_item_id: `sample-001`",
+                "- target_repo: `rather-not-work-on/platform-planningops`",
+            ]
+        ),
+        "url": "https://github.com/rather-not-work-on/platform-planningops/issues/810",
+        "state": "closed",
+    },
+    {
+        "number": 811,
+        "title": "legacy d10 b",
+        "body": "\n".join(
+            [
+                "- plan_item_id: `sample-001`",
+                "- target_repo: `rather-not-work-on/platform-planningops`",
+            ]
+        ),
+        "url": "https://github.com/rather-not-work-on/platform-planningops/issues/811",
+        "state": "closed",
+    },
+]
+legacy_match, legacy_strategy = mod.find_issue_for_item(
+    ambiguous_legacy,
+    "sample-pec-plan",
+    "sample-001",
+    "rather-not-work-on/platform-planningops",
+)
+assert legacy_match is None, legacy_match
+assert legacy_strategy == "identity_legacy_ambiguous_ignored", legacy_strategy
+
 # 5) Dry-run compile should create deterministic DRY-RUN issue projection when unmatched.
 dry_result = mod.compile_item(
     project={},
