@@ -38,6 +38,32 @@
         "planningops/contracts/operator-channel-adapter-contract.md",
         "planningops/contracts/active-goal-registry-contract.md"
       ],
+      "next_goal_key": "uap-goal-driven-autonomy-wave3",
+      "operator_channels": {
+        "primary_operator_channel": {
+          "kind": "slack_skill_cli",
+          "execution_repo": "rather-not-work-on/monday",
+          "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+        },
+        "terminal_notification_channel": {
+          "kind": "email_cli",
+          "execution_repo": "rather-not-work-on/monday",
+          "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+        }
+      }
+    },
+    {
+      "goal_key": "uap-goal-driven-autonomy-wave3",
+      "title": "Goal-driven autonomy through supervisor to monday operator handoff",
+      "status": "draft",
+      "owner_repo": "rather-not-work-on/platform-planningops",
+      "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave3-goal-brief.md",
+      "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave3.execution-contract.json",
+      "completion_contract_refs": [
+        "planningops/contracts/goal-completion-contract.md",
+        "planningops/contracts/operator-channel-adapter-contract.md",
+        "planningops/contracts/active-goal-registry-contract.md"
+      ],
       "operator_channels": {
         "primary_operator_channel": {
           "kind": "slack_skill_cli",
