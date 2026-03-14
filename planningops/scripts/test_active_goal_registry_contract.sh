@@ -16,7 +16,18 @@ python3 planningops/scripts/validate_active_goal_registry.py \
   --strict >/dev/null
 
 resolved_contract="$(python3 planningops/scripts/core/goals/resolve_active_goal.py --registry "$valid_registry" --field execution_contract_file)"
-[ "$resolved_contract" = "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json" ]
+expected_contract="$(python3 - <<'PY' "$valid_registry"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+active_goal_key = str(doc.get("active_goal_key") or "").strip()
+active_goal = next(goal for goal in doc["goals"] if str(goal.get("goal_key") or "").strip() == active_goal_key)
+print(active_goal["execution_contract_file"])
+PY
+)"
+[ "$resolved_contract" = "$expected_contract" ]
 
 cat >"$invalid_registry" <<'JSON'
 {
