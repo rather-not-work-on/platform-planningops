@@ -23,6 +23,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `goal-completion-contract.md`: machine-checkable achieved-state and terminal notification policy
 - `operator-channel-adapter-contract.md`: monday-owned Slack/email channel adapter boundary and evidence rules
 - `supervisor-operator-handoff-contract.md`: canonical supervisor artifact to monday CLI handoff boundary
+- `autonomous-scheduler-queue-control-plane-contract.md`: policy boundary between planningops control plane and monday scheduler/queue runtime
 - `supervisor-experiment-auto-executor-contract.md`: trigger-to-worktree comparative execution and decision contract
 - `worker-task-pack-contract.md`: worker execution bundle and render safety contract
 - `checkpoint-resume-contract.md`: checkpoint and resume behavior

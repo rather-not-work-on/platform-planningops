@@ -219,6 +219,7 @@ jobs:
           bash planningops/scripts/test_memory_archive_contract.sh
           bash planningops/scripts/test_memory_rehydrate_contract.sh
           bash planningops/scripts/test_inventory_issue_lifecycle_contract.sh
+          bash planningops/scripts/test_autonomous_scheduler_queue_control_plane_contract.sh
           python3 planningops/scripts/memory_compactor.py \
             --mode check \
             --root . \
