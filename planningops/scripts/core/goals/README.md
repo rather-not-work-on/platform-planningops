@@ -8,6 +8,10 @@ Hold recurring goal-resolution logic for the control plane.
   - Canonical entrypoint for resolving the active goal registry into a concrete execution contract and channel policy payload.
 - `transition_goal_state.py`
   - Deterministic active-goal lifecycle mutator for dry-run/apply state transitions and successor promotion.
+- `evaluate_worker_outcome_reflection.py`
+  - Deterministic evaluator that turns monday worker outcome reflection packets into planningops reflection decisions.
+- `apply_worker_outcome_reflection.py`
+  - Deterministic applier that converts reflection decisions into action handoff artifacts and optional goal-transition evidence.
 
 ## Rules
 - Goal resolution must be deterministic and file-backed.
