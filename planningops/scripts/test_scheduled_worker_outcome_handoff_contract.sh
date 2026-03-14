@@ -25,6 +25,8 @@ for section in required_sections:
 
 required_fragments = [
     "monday/scripts/run_scheduled_queue_cycle.py",
+    "monday/scripts/select_scheduled_worker_outcome.py",
+    "planningops/contracts/scheduler-native-worker-outcome-selection-contract.md",
     "platform-contracts/schemas/runtime-queue-worker-outcome.schema.json",
     "monday/scripts/export_worker_outcome_reflection_packet.py",
     "planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py",
@@ -36,6 +38,7 @@ required_fragments = [
     "`source_worker_outcome_ref`",
     "`scheduled_run_id`",
     "must not require an explicit `--worker-outcome-json` input",
+    "derive `source_worker_outcome_ref` from the scheduler-native selector",
     "queue lease heartbeat logic",
 ]
 for fragment in required_fragments:

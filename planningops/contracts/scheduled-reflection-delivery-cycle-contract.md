@@ -12,6 +12,7 @@ This contract exists so:
 
 ## Canonical Boundary
 - monday scheduled runtime entrypoint: `monday/scripts/run_scheduled_queue_cycle.py`
+- scheduler-native selection contract: `planningops/contracts/scheduler-native-worker-outcome-selection-contract.md`
 - scheduled worker-outcome handoff contract: `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
 - monday reflection exporter: `monday/scripts/export_worker_outcome_reflection_packet.py`
 - planningops reflection-cycle runner: `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
@@ -54,11 +55,13 @@ Optional execution inputs may include:
 - `--delivery-target`
 - `--channel-kind`
 - `--thread-ref`
+- `--worker-outcome-json` only as an explicit legacy compatibility path while scheduler-native selection is being wired
 
 Input rules:
 - the runner must invoke `monday/scripts/run_scheduled_queue_cycle.py` instead of recreating queue dequeue logic in `planningops`
 - when `--goal-key` is supplied, it must be forwarded consistently through the scheduled run, reflection cycle, and delivery cycle
 - `planningops` may forward operator-channel hints such as `delivery-target`, `channel-kind`, and `thread-ref`, but must not derive concrete transport recipients on its own
+- the primary path must resolve the worker outcome through monday scheduler-native selection and monday-emitted handoff evidence rather than a control-plane-owned worker-outcome file path
 
 ## Required Outputs
 Every successful run must emit:
@@ -107,6 +110,7 @@ Each stage report must include:
 
 ## Deterministic Orchestration Rules
 - the runner must call the monday scheduled queue entrypoint instead of dequeuing work directly in `planningops`
+- the runner must treat `planningops/contracts/scheduler-native-worker-outcome-selection-contract.md` as the canonical source of worker-outcome selection ownership
 - the runner must resolve `worker_outcome_handoff_ref` from monday scheduled queue evidence under `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
 - the runner must derive `worker_outcome_ref` from the resolved handoff artifact instead of reconstructing worker outcome paths inline
 - the runner must call the planningops reflection-cycle runner instead of re-implementing reflection export, evaluation, or action mapping inline
@@ -114,6 +118,7 @@ Each stage report must include:
 - the runner must preserve `goal_transition_report_path` from the reflection action artifact through the delivery cycle and aggregate report
 - `delivery_required = false` must still produce a successful aggregate report with `delivery_skipped = true`
 - identical `dry-run` inputs must produce the same stage structure and verdicts apart from timestamps
+- once scheduler-native selection is available, the runner must not require `--worker-outcome-json` for the primary path
 
 ## Ownership Boundary
 ### PlanningOps owns
@@ -144,6 +149,7 @@ Each stage report must include:
 - the runner must not silently downgrade scheduled, reflection, or delivery failures into `delivery_skipped`
 
 ## Validation
+- `planningops/scripts/test_scheduler_native_worker_outcome_selection_contract.sh`
 - `planningops/scripts/test_scheduled_reflection_delivery_cycle_contract.sh`
 - `planningops/scripts/test_scheduled_worker_outcome_handoff_contract.sh`
 - `monday/scripts/run_scheduled_queue_cycle.py`
