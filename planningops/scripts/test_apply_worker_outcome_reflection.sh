@@ -23,6 +23,8 @@ for goal in doc["goals"]:
         goal["status"] = "draft"
     elif key == "uap-goal-driven-autonomy-wave6":
         goal["status"] = "achieved"
+    elif goal.get("status") == "active":
+        goal["status"] = "draft"
 Path(sys.argv[1]).write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 Path(sys.argv[2]).write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 PY
