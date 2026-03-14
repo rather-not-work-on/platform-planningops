@@ -1,0 +1,69 @@
+{
+  "generated_at_utc": "2026-03-14T07:59:01.803927+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 4,
+  "issues_with_missing_labels": 4,
+  "issues_applied": 4,
+  "rows": [
+    {
+      "number": 366,
+      "title": "plan: [40] Review goal-driven autonomy wave 8 reflection action alignment",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/366",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 365,
+      "title": "plan: [30] Send monday reflection decision updates through operator channels",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/365",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 364,
+      "title": "plan: [20] Apply worker outcome reflection decisions into control-plane actions",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/364",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 363,
+      "title": "plan: [10] Freeze reflection action handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/363",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}

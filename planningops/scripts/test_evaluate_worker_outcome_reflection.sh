@@ -9,14 +9,17 @@ cd "$ROOT_DIR"
 
 python3 planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py \
   --packet-json planningops/fixtures/worker-outcome-reflection-packet.completed.sample.json \
+  --goal-key uap-goal-driven-autonomy-wave7 \
   --output "$TMP_DIR/completed-eval.json" >/dev/null
 
 python3 planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py \
   --packet-json planningops/fixtures/worker-outcome-reflection-packet.retry.sample.json \
+  --goal-key uap-goal-driven-autonomy-wave7 \
   --output "$TMP_DIR/retry-eval.json" >/dev/null
 
 python3 planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py \
   --packet-json planningops/fixtures/worker-outcome-reflection-packet.dead-letter.sample.json \
+  --goal-key uap-goal-driven-autonomy-wave7 \
   --output "$TMP_DIR/dead-letter-eval.json" >/dev/null
 
 python3 planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py \
