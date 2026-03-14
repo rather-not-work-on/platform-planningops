@@ -1,0 +1,282 @@
+{
+  "generated_at_utc": "2026-03-14T08:48:13.176888+00:00",
+  "registry": "planningops/config/active-goal-registry.json",
+  "mode": "apply",
+  "goal_key": "uap-goal-driven-autonomy-wave9",
+  "from_status": "active",
+  "to_status": "achieved",
+  "activate_next_goal_key": "uap-goal-driven-autonomy-wave10",
+  "transition_reason": "wave9_complete_promote_wave10",
+  "evidence_refs": [
+    "planningops/artifacts/validation/goal-driven-autonomy-wave9-review.json"
+  ],
+  "active_goal_key_before": "uap-goal-driven-autonomy-wave9",
+  "active_goal_key_after": "uap-goal-driven-autonomy-wave10",
+  "goal_transition_kind": "promotion",
+  "verdict": "pass",
+  "error_count": 0,
+  "errors": [],
+  "proposed_registry": {
+    "registry_version": 1,
+    "active_goal_key": "uap-goal-driven-autonomy-wave10",
+    "goals": [
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave1",
+        "title": "Goal-driven autonomy through Monday operator channels",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md"
+        ],
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave2",
+        "title": "Goal-driven autonomy through automatic goal promotion",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave3",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave3",
+        "title": "Goal-driven autonomy through supervisor to monday operator handoff",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave3-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave3.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave4",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave4",
+        "title": "Goal-driven autonomy through monday-owned scheduler and queue runtime",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave4-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave4.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave5",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave5",
+        "title": "Goal-driven autonomy through monday durable local queue runtime",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave5-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave5.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave6",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave6",
+        "title": "Goal-driven autonomy through monday worker outcome lifecycle",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave6.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave7",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave7",
+        "title": "Goal-driven autonomy through worker outcome reflection integration",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave7-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave7.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave8",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave8",
+        "title": "Goal-driven autonomy through reflection-driven supervisor actions",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave8-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave8.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave9",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave9",
+        "title": "Goal-driven autonomy through reflection cycle orchestration",
+        "status": "achieved",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave9-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave9.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "next_goal_key": "uap-goal-driven-autonomy-wave10",
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      },
+      {
+        "goal_key": "uap-goal-driven-autonomy-wave10",
+        "title": "Goal-driven autonomy through reflection delivery cycle orchestration",
+        "status": "active",
+        "owner_repo": "rather-not-work-on/platform-planningops",
+        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave10-goal-brief.md",
+        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave10.execution-contract.json",
+        "completion_contract_refs": [
+          "planningops/contracts/goal-completion-contract.md",
+          "planningops/contracts/operator-channel-adapter-contract.md",
+          "planningops/contracts/active-goal-registry-contract.md"
+        ],
+        "operator_channels": {
+          "primary_operator_channel": {
+            "kind": "slack_skill_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          },
+          "terminal_notification_channel": {
+            "kind": "email_cli",
+            "execution_repo": "rather-not-work-on/monday",
+            "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
+          }
+        }
+      }
+    ]
+  }
+}

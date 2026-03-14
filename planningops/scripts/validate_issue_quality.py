@@ -133,40 +133,47 @@ def validate_issue(issue: dict, rules: dict):
 
 
 def fetch_open_issues(repo: str):
-    rc, out, err = run([
-        "gh",
-        "issue",
-        "list",
-        "--repo",
-        repo,
-        "--state",
-        "open",
-        "--limit",
-        "200",
-        "--json",
-        "number,title,body,url,labels",
-    ])
-    if rc != 0:
-        raise RuntimeError(f"failed to fetch issues: {err}")
-    return json.loads(out)
+    page = 1
+    issues = []
+    while True:
+        rc, out, err = run(["gh", "api", f"repos/{repo}/issues?state=open&per_page=100&page={page}"])
+        if rc != 0:
+            raise RuntimeError(f"failed to fetch issues: {err or out}")
+        batch = json.loads(out)
+        if not batch:
+            break
+        for issue in batch:
+            if issue.get("pull_request"):
+                continue
+            issues.append(
+                {
+                    "number": issue.get("number"),
+                    "title": issue.get("title", ""),
+                    "body": issue.get("body") or "",
+                    "url": issue.get("html_url"),
+                    "labels": issue.get("labels") or [],
+                    "state": issue.get("state", "").upper(),
+                }
+            )
+        if len(batch) < 100:
+            break
+        page += 1
+    return issues
 
 
 def fetch_issue(repo: str, issue_number: int):
-    rc, out, err = run(
-        [
-            "gh",
-            "issue",
-            "view",
-            str(issue_number),
-            "--repo",
-            repo,
-            "--json",
-            "number,title,body,url,labels",
-        ]
-    )
+    rc, out, err = run(["gh", "api", f"repos/{repo}/issues/{issue_number}"])
     if rc != 0:
-        raise RuntimeError(f"failed to fetch issue #{issue_number}: {err}")
-    return json.loads(out)
+        raise RuntimeError(f"failed to fetch issue #{issue_number}: {err or out}")
+    issue = json.loads(out)
+    return {
+        "number": issue.get("number"),
+        "title": issue.get("title", ""),
+        "body": issue.get("body") or "",
+        "url": issue.get("html_url"),
+        "labels": issue.get("labels") or [],
+        "state": issue.get("state", "").upper(),
+    }
 
 
 def main():
