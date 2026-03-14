@@ -47,6 +47,7 @@ Optional execution inputs may include:
 - `--workspace-root`
 - `--monday-repo-dir`
 - `--monday-python`
+- `--worker-outcome-root`
 - `--queue-db`
 - `--queue-seed-file`
 - `--transition-log`
@@ -55,12 +56,12 @@ Optional execution inputs may include:
 - `--delivery-target`
 - `--channel-kind`
 - `--thread-ref`
-- `--worker-outcome-json` only as an explicit legacy compatibility path while scheduler-native selection is being wired
 
 Input rules:
 - the runner must invoke `monday/scripts/run_scheduled_queue_cycle.py` instead of recreating queue dequeue logic in `planningops`
 - when `--goal-key` is supplied, it must be forwarded consistently through the scheduled run, reflection cycle, and delivery cycle
 - `planningops` may forward operator-channel hints such as `delivery-target`, `channel-kind`, and `thread-ref`, but must not derive concrete transport recipients on its own
+- `planningops` may pass only a monday-owned worker outcome root hint and must not supply a canonical worker outcome file path for the primary path
 - the primary path must resolve the worker outcome through monday scheduler-native selection and monday-emitted handoff evidence rather than a control-plane-owned worker-outcome file path
 
 ## Required Outputs
