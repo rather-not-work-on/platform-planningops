@@ -1,0 +1,33 @@
+{
+  "packet_version": 1,
+  "exported_at_utc": "2026-03-14T08:10:05Z",
+  "source_repo": "rather-not-work-on/monday",
+  "source_contract_ref": "platform-contracts/schemas/runtime-queue-worker-outcome.schema.json",
+  "reflection_contract_ref": "planningops/contracts/worker-outcome-reflection-contract.md",
+  "source_outcome_ref": "runtime-artifacts/worker-outcome/wave7-run-002.json",
+  "worker_outcome": {
+    "transition_id": "wave7-outcome-002",
+    "queue_item_id": "queue-wave7-001",
+    "goal_key": "uap-goal-driven-autonomy-wave7",
+    "schedule_key": "local-tick-5m",
+    "lease_owner": "monday-local-worker",
+    "worker_run_id": "wave7-run-002",
+    "state_from": "leased",
+    "state_to": "retry_wait",
+    "transition_reason": "worker.retryable_failure",
+    "occurred_at_utc": "2026-03-14T08:10:00Z",
+    "attempt_count": 1,
+    "retry_budget_remaining": 1,
+    "retry_after_utc": "2099-03-14T08:20:00Z"
+  },
+  "reflection_hints": {
+    "outcome_class": "retry_wait",
+    "completion_candidate": false,
+    "retry_exhausted": false,
+    "dead_letter": false,
+    "operator_attention_recommended": false,
+    "allowed_decisions": [
+      "continue"
+    ]
+  }
+}
