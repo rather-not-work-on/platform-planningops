@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-14T09:41:35.249282+00:00",
+  "generated_at_utc": "2026-03-14T10:03:38.766263+00:00",
   "registry": "planningops/config/active-goal-registry.json",
   "verdict": "pass",
   "error_count": 0,
@@ -29,6 +29,7 @@
         "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
       }
     },
+    "next_goal_key": "uap-goal-driven-autonomy-wave13",
     "primary_operator_channel": {
       "kind": "slack_skill_cli",
       "execution_repo": "rather-not-work-on/monday",
