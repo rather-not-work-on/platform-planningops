@@ -22,6 +22,7 @@ from federated_python_env import (  # noqa: E402
 
 
 RUNNER_CONTRACT_REF = "planningops/contracts/scheduled-reflection-delivery-cycle-contract.md"
+HANDOFF_CONTRACT_REF = "planningops/contracts/scheduled-worker-outcome-handoff-contract.md"
 MONDAY_SCHEDULED_ENTRYPOINT = "monday/scripts/run_scheduled_queue_cycle.py"
 REFLECTION_RUNNER = "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py"
 DELIVERY_RUNNER = "planningops/scripts/federation/run_reflection_delivery_cycle.py"
@@ -108,6 +109,13 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def require_string(doc: dict, key: str) -> str:
+    value = doc.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{key} must be a non-empty string")
+    return value.strip()
+
+
 def write_report(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
@@ -145,7 +153,11 @@ def parse_args():
         help="monday scheduled queue script path relative to the monday repo",
     )
     parser.add_argument("--queue", required=True, help="Queue seed file for the monday scheduled queue cycle")
-    parser.add_argument("--worker-outcome-json", required=True, help="Worker outcome artifact to feed into reflection")
+    parser.add_argument(
+        "--worker-outcome-json",
+        default=None,
+        help="Optional bridge input forwarded to monday so the scheduled report can emit a worker-outcome handoff",
+    )
     parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
     parser.add_argument("--queue-db", default=None)
     parser.add_argument("--idempotency", default=None)
@@ -160,6 +172,7 @@ def parse_args():
         default=f"scheduled-reflection-delivery-cycle-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
     )
     parser.add_argument("--scheduled-output", default=None)
+    parser.add_argument("--scheduled-handoff-output", default=None)
     parser.add_argument("--packet-output", default=None)
     parser.add_argument("--evaluation-output", default=None)
     parser.add_argument("--action-output", default=None)
@@ -241,12 +254,14 @@ def main() -> int:
     python_bin = args.monday_python or bootstrap_info["preferred_python"]
 
     queue_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, args.queue)
-    worker_outcome_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, args.worker_outcome_json)
 
     report_dir = (
         planningops_repo / "planningops" / "artifacts" / "validation" / "scheduled-reflection-delivery-cycle" / args.run_id
     )
     scheduled_output = resolve_output_path(planningops_repo, args.scheduled_output, report_dir / "scheduled-cycle-report.json")
+    scheduled_handoff_output = resolve_output_path(
+        planningops_repo, args.scheduled_handoff_output, report_dir / "worker-outcome-handoff.json"
+    )
     packet_output = resolve_output_path(planningops_repo, args.packet_output, report_dir / "reflection-packet.json")
     evaluation_output = resolve_output_path(
         planningops_repo, args.evaluation_output, report_dir / "reflection-evaluation.json"
@@ -266,7 +281,7 @@ def main() -> int:
     )
 
     stage_reports: list[dict] = []
-    worker_outcome_ref = normalize_cross_repo_path(planningops_repo, monday_repo, worker_outcome_path)
+    worker_outcome_ref = "-"
     scheduled_report_ref = normalize_repo_path(planningops_repo, scheduled_output)
     reflection_report_ref = normalize_repo_path(planningops_repo, reflection_output)
     delivery_report_ref = normalize_repo_path(planningops_repo, delivery_output)
@@ -303,6 +318,15 @@ def main() -> int:
         "--transition-log",
         str(transition_log_path),
     ]
+    if args.worker_outcome_json:
+        scheduled_command.extend(
+            [
+                "--worker-outcome-json",
+                args.worker_outcome_json,
+                "--worker-outcome-handoff-output",
+                str(scheduled_handoff_output),
+            ]
+        )
     if args.queue_db:
         scheduled_command.extend(["--queue-db", str(resolve_output_path(planningops_repo, args.queue_db, Path(args.queue_db)))])
 
@@ -373,10 +397,10 @@ def main() -> int:
             report_path=report_output,
         )
 
-    worker_outcome = load_json(worker_outcome_path)
-    expected_queue_item_id = str(dequeued[0].get("card_id") or "")
-    actual_queue_item_id = str(worker_outcome.get("queue_item_id") or "")
-    if not expected_queue_item_id or actual_queue_item_id != expected_queue_item_id:
+    handoff_required = bool(scheduled_report.get("handoff_required"))
+    handoff_ref_value = str(scheduled_report.get("worker_outcome_handoff_ref") or "-")
+    handoff_contract_ref = str(scheduled_report.get("worker_outcome_handoff_contract_ref") or "")
+    if not handoff_required or handoff_ref_value == "-":
         return failure_report(
             args=args,
             goal_key=goal_key,
@@ -386,14 +410,132 @@ def main() -> int:
             reflection_action_ref=action_ref,
             delivery_cycle_report_ref=delivery_report_ref,
             stage_reports=stage_reports,
-            failure_stage="load_worker_outcome",
+            failure_stage="resolve_worker_outcome_handoff",
             errors=[
-                "worker outcome queue_item_id must match the scheduled dequeued queue item",
+                "scheduled cycle report did not emit a required worker outcome handoff",
+                f"handoff_required={handoff_required}",
+                f"worker_outcome_handoff_ref={handoff_ref_value}",
+            ],
+            report_path=report_output,
+        )
+
+    if handoff_contract_ref != HANDOFF_CONTRACT_REF:
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_worker_outcome_handoff",
+            errors=[
+                "scheduled cycle report emitted an unexpected handoff contract ref",
+                f"expected={HANDOFF_CONTRACT_REF}",
+                f"actual={handoff_contract_ref or '-'}",
+            ],
+            report_path=report_output,
+        )
+
+    handoff_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, handoff_ref_value)
+    if not handoff_path.exists():
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_worker_outcome_handoff",
+            errors=[f"worker outcome handoff file missing: {handoff_ref_value}"],
+            report_path=report_output,
+        )
+
+    handoff = load_json(handoff_path)
+    try:
+        resolved_handoff_contract_ref = require_string(handoff, "handoff_contract_ref")
+        source_worker_outcome_ref = require_string(handoff, "source_worker_outcome_ref")
+        expected_queue_item_id = str(dequeued[0].get("card_id") or "")
+        actual_queue_item_id = require_string(handoff, "queue_item_id")
+        scheduled_run_id = require_string(handoff, "scheduled_run_id")
+    except ValueError as exc:
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_worker_outcome_handoff",
+            errors=[str(exc)],
+            report_path=report_output,
+        )
+
+    if resolved_handoff_contract_ref != HANDOFF_CONTRACT_REF:
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_worker_outcome_handoff",
+            errors=[
+                "handoff artifact contract ref mismatch",
+                f"expected={HANDOFF_CONTRACT_REF}",
+                f"actual={resolved_handoff_contract_ref}",
+            ],
+            report_path=report_output,
+        )
+
+    if actual_queue_item_id != expected_queue_item_id:
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_worker_outcome_handoff",
+            errors=[
+                "handoff queue_item_id must match the scheduled dequeued queue item",
                 f"expected={expected_queue_item_id or '-'} actual={actual_queue_item_id or '-'}",
             ],
             report_path=report_output,
         )
 
+    expected_scheduled_run_id = f"{args.run_id}-scheduled"
+    if scheduled_run_id != expected_scheduled_run_id:
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_worker_outcome_handoff",
+            errors=[
+                "handoff scheduled_run_id must match the monday scheduled run",
+                f"expected={expected_scheduled_run_id}",
+                f"actual={scheduled_run_id}",
+            ],
+            report_path=report_output,
+        )
+
+    worker_outcome_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, source_worker_outcome_ref)
+    worker_outcome = load_json(worker_outcome_path)
+    worker_outcome_ref = source_worker_outcome_ref
     goal_key = args.goal_key or str(worker_outcome.get("goal_key") or goal_key)
 
     reflection_command = [
