@@ -1,0 +1,120 @@
+{
+  "generated_at_utc": "2026-03-14T09:30:58.539028+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave11",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-14-goal-driven-autonomy-wave11-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 394,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze scheduled reflection delivery cycle contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/394",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 395,
+      "state": "CLOSED",
+      "title": "plan: [20] Run scheduled reflection delivery cycle through planningops orchestration",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/395",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 396,
+      "state": "CLOSED",
+      "title": "plan: [30] Verify the end-to-end scheduled reflection delivery cycle",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/396",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/scheduled-reflection-delivery-cycle-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/test_scheduled_reflection_delivery_cycle.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/runtime_queue_store.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday queue persistence or scheduler runtime state"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_reflection_decision_update.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not host monday delivery entrypoints or transport execution"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/core/goals/evaluate_worker_outcome_reflection.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must not host planningops control-plane reflection evaluators"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave11",
+      "actual": "uap-goal-driven-autonomy-wave11",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave10_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave11_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_workbench",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_scheduled_reflection_delivery_cycle_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_scheduled_reflection_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_validate_repo_boundaries_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_validate_script_roles_contract",
+      "verdict": "pass"
+    }
+  ],
+  "check_count": 17,
+  "failure_count": 0,
+  "verdict": "pass"
+}
