@@ -1,0 +1,33 @@
+{
+  "mode": "apply",
+  "project_owner": "rather-not-work-on",
+  "project_number": 2,
+  "project_id": "PVT_kwDOD8NujM4BQYNE",
+  "plan_item_regex": "^[A-Z][0-9]{2}$",
+  "issue_state": "open",
+  "issues_total": 1,
+  "updated_count": 1,
+  "error_count": 0,
+  "results": [
+    {
+      "plan_item_id": "",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 360,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/360",
+      "issue_state": "open",
+      "component": "planningops",
+      "workflow_state": "ready_contract",
+      "plan_lane": "m1_contract_freeze",
+      "field_updates": [
+        "initiative",
+        "target_repo",
+        "status",
+        "component",
+        "workflow_state",
+        "plan_lane"
+      ]
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}
