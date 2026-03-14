@@ -49,38 +49,41 @@
       "loop/checkpoint_lock.py",
       "loop/selection.py"
     ],
-    "federation_entrypoints": [
-      "adapter_registry.py",
-      "cross_repo_conformance_check.py",
-      "github_sync_adapter.py",
-      "multi_repo_projection_report.py",
-      "run_issue_driven_mission_smoke.py",
-      "run_issue_driven_runtime_stack_smoke.py",
-      "run_local_runtime_stack_smoke.py",
-      "run_local_oracle_rehearsal.py",
-      "run_wave14_oracle_rehearsal.py",
-      "federated_ci_matrix_local.sh"
-    ],
+      "federation_entrypoints": [
+        "adapter_registry.py",
+        "cross_repo_conformance_check.py",
+        "github_sync_adapter.py",
+        "multi_repo_projection_report.py",
+        "run_issue_driven_mission_smoke.py",
+        "run_issue_driven_runtime_stack_smoke.py",
+        "run_local_runtime_stack_smoke.py",
+        "run_worker_outcome_reflection_cycle.py",
+        "run_local_oracle_rehearsal.py",
+        "run_wave14_oracle_rehearsal.py",
+        "federated_ci_matrix_local.sh"
+      ],
     "root_wrappers": {
       "repo_execution_adapters.py": "federation/adapter_registry.py",
       "cross_repo_conformance_check.py": "federation/cross_repo_conformance_check.py",
       "github_sync_adapter.py": "federation/github_sync_adapter.py",
       "issue_loop_runner.py": "core/loop/runner.py",
-      "multi_repo_projection_report.py": "federation/multi_repo_projection_report.py",
-      "run_local_runtime_stack_smoke.py": "federation/run_local_runtime_stack_smoke.py",
-      "run_local_oracle_rehearsal.py": "federation/run_local_oracle_rehearsal.py",
-      "run_wave14_oracle_rehearsal.py": "federation/run_wave14_oracle_rehearsal.py",
-      "federated_ci_matrix_local.sh": "federation/federated_ci_matrix_local.sh"
-    },
-    "must_live_in_federation_patterns": [
-      "cross_repo",
-      "issue_driven_mission_smoke",
-      "issue_driven_runtime_stack_smoke",
-      "github_sync_adapter",
-      "multi_repo_projection",
-      "runtime_stack_smoke",
-      "repo_execution_adapters",
-      "oracle_rehearsal",
+        "multi_repo_projection_report.py": "federation/multi_repo_projection_report.py",
+        "run_local_runtime_stack_smoke.py": "federation/run_local_runtime_stack_smoke.py",
+        "run_worker_outcome_reflection_cycle.py": "federation/run_worker_outcome_reflection_cycle.py",
+        "run_local_oracle_rehearsal.py": "federation/run_local_oracle_rehearsal.py",
+        "run_wave14_oracle_rehearsal.py": "federation/run_wave14_oracle_rehearsal.py",
+        "federated_ci_matrix_local.sh": "federation/federated_ci_matrix_local.sh"
+      },
+      "must_live_in_federation_patterns": [
+        "cross_repo",
+        "issue_driven_mission_smoke",
+        "issue_driven_runtime_stack_smoke",
+        "github_sync_adapter",
+        "multi_repo_projection",
+        "reflection_cycle",
+        "runtime_stack_smoke",
+        "repo_execution_adapters",
+        "oracle_rehearsal",
       "federated_ci_matrix"
     ]
   }
