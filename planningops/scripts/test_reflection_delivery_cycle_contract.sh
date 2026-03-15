@@ -27,7 +27,7 @@ for section in required_sections:
 required_fragments = [
     "planningops/scripts/core/goals/apply_worker_outcome_reflection.py",
     "planningops/scripts/federation/run_reflection_delivery_cycle.py",
-    "monday/scripts/send_reflection_decision_update.py",
+    "monday/scripts/run_operator_message_delivery_cycle.py",
     "planningops/contracts/reflection-action-handoff-contract.md",
     "planningops/contracts/operator-channel-adapter-contract.md",
     "planningops/contracts/local-operator-target-resolution-contract.md",

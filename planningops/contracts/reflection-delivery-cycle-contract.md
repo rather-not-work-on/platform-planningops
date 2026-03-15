@@ -13,8 +13,9 @@ This contract exists so:
 ## Canonical Boundary
 - reflection action producer: `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
 - delivery-cycle runner: `planningops/scripts/federation/run_reflection_delivery_cycle.py`
-- monday delivery entrypoint: `monday/scripts/send_reflection_decision_update.py`
+- monday delivery entrypoint: `monday/scripts/run_operator_message_delivery_cycle.py`
 - action handoff contract: `planningops/contracts/reflection-action-handoff-contract.md`
+- local delivery-cycle orchestration contract: `planningops/contracts/local-delivery-cycle-orchestration-contract.md`
 - operator channel adapter contract: `planningops/contracts/operator-channel-adapter-contract.md`
 - local target resolution contract: `planningops/contracts/local-operator-target-resolution-contract.md`
 - supervisor handoff contract: `planningops/contracts/supervisor-operator-handoff-contract.md`
@@ -59,17 +60,18 @@ Input rules:
 
 ## Delivery Invocation
 The delivery-cycle runner must invoke only:
-- `monday/scripts/send_reflection_decision_update.py`
+- `monday/scripts/run_operator_message_delivery_cycle.py`
 
 The runner must not call:
 - `monday/scripts/send_operator_message.py`
 - `monday/scripts/send_goal_completion_notification.py`
-directly from `planningops`
+- `monday/scripts/send_reflection_decision_update.py`
+directly from `planningops` on the primary local path
 
 The monday entrypoint remains responsible for:
-- choosing the correct delivery delegate
-- translating the action artifact into the final payload
+- translating the reflection action into the final operator payload
 - emitting delivery evidence
+- emitting delivery-cycle evidence under the monday runtime-artifacts boundary
 
 ## Required Outputs
 Every delivery-cycle run must emit one aggregate report that includes:
@@ -103,7 +105,7 @@ When `delivery_required = false`, the report must still include:
 - `monday_delivery_report_ref = -`
 
 When `delivery_required = true`, the report must include:
-- `monday_delivery_entrypoint = monday/scripts/send_reflection_decision_update.py`
+- `monday_delivery_entrypoint = monday/scripts/run_operator_message_delivery_cycle.py`
 - `monday_delivery_report_ref`
 - a projected `delivery_verdict` copied from monday delivery evidence
 - a projected `delivery_target_resolution_mode` copied from monday delivery evidence
@@ -136,9 +138,9 @@ Each stage report must include:
 
 ## Deterministic Orchestration Rules
 - the runner must fail closed if the action artifact does not reference `planningops/contracts/reflection-action-handoff-contract.md`
-- the runner must call the monday delivery entrypoint instead of recreating payload logic inside `planningops`
+- the runner must call the monday delivery entrypoint instead of invoking lower-level monday delivery CLIs from `planningops`
 - `reflection_decision = continue` must not force delivery execution; the cycle may end with `delivery_skipped = true`
-- `message_class_hint = goal_completed` must still flow through `monday/scripts/send_reflection_decision_update.py`
+- `message_class_hint = goal_completed` must fail closed in this runner because goal-completion delivery belongs to `monday/scripts/run_goal_completion_delivery_cycle.py`
 - `goal_transition_report_path` must be preserved from the action artifact into the aggregate report
 - `planningops` may orchestrate the monday CLI, but transport behavior and delivery verdict semantics remain monday-owned
 - the aggregate report must preserve monday-owned local target resolution evidence without promoting concrete `deliveryTarget` values into planningops-owned fields
@@ -152,8 +154,8 @@ Each stage report must include:
 - validation that the action artifact and monday delivery evidence are wired together correctly
 
 ### Monday owns
-- delivery payload construction
-- status versus completion delegate selection
+- reflection-action-to-payload translation for operator-message classes
+- local delivery-cycle execution
 - Slack/email adapter execution
 - transport-facing delivery evidence
 
@@ -176,4 +178,4 @@ Each stage report must include:
 - `planningops/scripts/federation/run_reflection_delivery_cycle.py`
 - `planningops/scripts/test_reflection_delivery_cycle.sh`
 - `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
-- `monday/scripts/send_reflection_decision_update.py`
+- `monday/scripts/run_operator_message_delivery_cycle.py`

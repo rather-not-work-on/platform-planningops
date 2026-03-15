@@ -25,7 +25,7 @@ for section in required_sections:
 required_fragments = [
     "planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py",
     "planningops/scripts/core/goals/apply_worker_outcome_reflection.py",
-    "monday/scripts/send_reflection_decision_update.py",
+    "monday/scripts/run_operator_message_delivery_cycle.py",
     "`record_continue`",
     "`trigger_replan_review`",
     "`prepare_goal_completion`",

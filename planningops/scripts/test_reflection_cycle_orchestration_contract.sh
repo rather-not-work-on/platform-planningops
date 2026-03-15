@@ -28,7 +28,7 @@ required_fragments = [
     "planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py",
     "planningops/scripts/core/goals/apply_worker_outcome_reflection.py",
     "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py",
-    "monday/scripts/send_reflection_decision_update.py",
+    "monday/scripts/run_operator_message_delivery_cycle.py",
     "`generated_at_utc`",
     "`reflection_packet_ref`",
     "`reflection_evaluation_ref`",
