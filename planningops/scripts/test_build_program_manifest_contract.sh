@@ -210,6 +210,79 @@ with tempfile.TemporaryDirectory() as td:
     assert scoped_report["filtered_out_count"] == 1, scoped_report
     assert [row["issue_number"] for row in scoped_manifest["items"] if row["plan_item_id"] == "B10"] == [2], scoped_manifest
 
+    # Later wave IDs should be included by default and classified by target repo.
+    later_wave_issues = [
+        {
+            "repo": "rather-not-work-on/platform-planningops",
+            "number": 440,
+            "state": "open",
+            "updated_at": "2026-03-15T04:30:00Z",
+            "title": "plan: [10] Freeze monday local operator target resolution contract",
+            "url": "https://github.com/rather-not-work-on/platform-planningops/issues/440",
+            "body": "\n".join(
+                [
+                    "## Planning Context",
+                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave15-issue-pack.md`",
+                    "- plan_item_id: `O10`",
+                    "- target_repo: `rather-not-work-on/platform-planningops`",
+                    "- component: `planningops`",
+                    "- workflow_state: `ready_contract`",
+                    "- loop_profile: `l1_contract_clarification`",
+                    "- execution_order: `10`",
+                    "- depends_on: `-`",
+                    "- plan_lane: `m1_contract_freeze`",
+                ]
+            ),
+        },
+        {
+            "repo": "rather-not-work-on/platform-planningops",
+            "number": 441,
+            "state": "open",
+            "updated_at": "2026-03-15T04:31:00Z",
+            "title": "plan: [20] Add monday local outbox resolver for operator and terminal delivery",
+            "url": "https://github.com/rather-not-work-on/platform-planningops/issues/441",
+            "body": "\n".join(
+                [
+                    "## Planning Context",
+                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave15-issue-pack.md`",
+                    "- plan_item_id: `O20`",
+                    "- target_repo: `rather-not-work-on/monday`",
+                    "- component: `runtime`",
+                    "- workflow_state: `ready_implementation`",
+                    "- loop_profile: `l3_implementation_tdd`",
+                    "- execution_order: `20`",
+                    "- depends_on: `O10 (rather-not-work-on/platform-planningops#440)`",
+                    "- plan_lane: `m2_sync_core`",
+                ]
+            ),
+        },
+    ]
+    issues_path.write_text(json.dumps(later_wave_issues, ensure_ascii=True, indent=2), encoding="utf-8")
+    rc_later, out_later, err_later = run(
+        [
+            "python3",
+            "planningops/scripts/build_program_manifest.py",
+            "--issues-file",
+            str(issues_path),
+            "--source-plan",
+            "docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave15-issue-pack.md",
+            "--scope-source-plan",
+            "--output",
+            str(output_path),
+            "--report-output",
+            str(report_path),
+            "--strict",
+        ]
+    )
+    assert rc_later == 0, (rc_later, out_later, err_later)
+    later_manifest = json.loads(output_path.read_text(encoding="utf-8"))
+    later_report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert later_report["verdict"] == "pass", later_report
+    assert [row["plan_item_id"] for row in later_manifest["items"]] == ["O10", "O20"], later_manifest
+    assert later_manifest["items"][0]["track"] == "control_plane", later_manifest
+    assert later_manifest["items"][1]["track"] == "federated_runtime", later_manifest
+    assert later_manifest["items"][1]["depends_on"] == ["O10"], later_manifest
+
     # Invalid graph: dependency points to unknown key.
     bad = json.loads(json.dumps(base_issues))
     bad[2]["body"] = bad[2]["body"].replace("A10 (rather-not-work-on/platform-planningops#95)", "A99")
