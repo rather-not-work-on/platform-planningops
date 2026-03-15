@@ -7,6 +7,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: reference
 summary: Plan to align path semantics and command context across docs, scripts, and onboarding entries.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 source_brainstorm: docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-uap-doc-topology-canonicalization-brainstorm.md
 source_review_todos:
   - todos/001-complete-p2-path-rule-semantics-mismatch.md

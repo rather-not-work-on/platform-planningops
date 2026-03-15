@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures local-equivalent execution logs for the required CI chain validate-contracts to dry-run and artifact generation for issue #12.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: PlanningOps CI Chain Validate-Contracts to Dry-Run

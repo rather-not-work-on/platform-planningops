@@ -2,6 +2,7 @@
 title: UAP Workbench Hub
 type: hub
 date: 2026-02-28
+updated: 2026-03-15
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active

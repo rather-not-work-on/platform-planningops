@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures issue #23 evidence for dry-run/apply/reconcile simulation flow and verification payload consistency.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: End-to-End Simulation and Gate Evidence Bundle

@@ -4,6 +4,7 @@ priority: p2
 issue_id: "001"
 tags: [code-review, docs, governance, quality]
 dependencies: []
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # Path Rule Semantics Mismatch (Initiative-root vs File-relative)

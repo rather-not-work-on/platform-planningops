@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Validates transition-log schema, fail verdict behavior, replanning trigger detection, and project-update payload generation for issue #10.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Loop Verifier and Transition Log Check

@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Evaluates topology options and selects canonical-vs-workbench separation as the operating model.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 topic: doc-topology-permanence-separation
 ---
 

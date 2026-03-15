@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures issue #22 evidence for multi-repo parser/sync fan-out, projection key collision checks, repo-level drift reporting, and deterministic convergence.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Multi-Repo Parser and Sync Fan-out

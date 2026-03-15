@@ -4,6 +4,7 @@ priority: p3
 issue_id: "005"
 tags: [code-review, docs, planning]
 dependencies: []
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # Legacy Execution Plan Still Shows Old Local Command Style

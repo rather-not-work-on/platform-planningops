@@ -4,6 +4,7 @@ priority: p1
 issue_id: "006"
 tags: [code-review, docs, governance, ci]
 dependencies: []
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # Legacy Path Regression Guard Missing

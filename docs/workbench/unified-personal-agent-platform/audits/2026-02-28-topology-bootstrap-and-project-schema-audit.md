@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Records issue #14 and #15 completion evidence for cross-repo topology bootstrap and GitHub Project field schema guard validation.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Topology Bootstrap and Project Schema Guard

@@ -4,6 +4,7 @@ priority: p2
 issue_id: "002"
 tags: [code-review, docs, automation, onboarding]
 dependencies: []
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # Command Path Contract Mismatch in Runbook Examples

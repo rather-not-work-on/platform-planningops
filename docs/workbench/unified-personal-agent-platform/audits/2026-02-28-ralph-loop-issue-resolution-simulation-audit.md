@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Simulates end-to-end behavior of the Ralph Loop issue-resolution UX across issue intake, execution, verification, and GitHub project feedback updates.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Ralph Loop Issue Resolution Loop Simulation
