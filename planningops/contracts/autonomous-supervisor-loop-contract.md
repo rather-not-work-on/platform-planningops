@@ -19,6 +19,8 @@ Operator summary artifact:
 - `planningops/artifacts/supervisor/<run-id>/operator-summary.md`
 Inbox payload artifact:
 - `planningops/artifacts/supervisor/<run-id>/inbox-payload.json`
+Optional goal-completion delivery artifact:
+- `planningops/artifacts/supervisor/<run-id>/goal-completion-delivery-report.json`
 
 ## Required Decisions Per Cycle
 1. `last_verdict` and `reason_code`
@@ -84,6 +86,8 @@ Output:
 - `planningops/artifacts/supervisor/last-run-operator-report.json`
 - `planningops/artifacts/supervisor/last-run-operator-summary.md`
 - `planningops/artifacts/supervisor/last-run-inbox-payload.json`
+- when `stop_reason=goal_completed` and monday delivery is available:
+  - `planningops/artifacts/supervisor/last-run-goal-completion-delivery-report.json`
 
 ## Testability Mapping
 - implementation:

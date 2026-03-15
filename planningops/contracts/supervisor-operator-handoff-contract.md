@@ -67,6 +67,7 @@ Optional fields:
 - `primary_operator_channel`
 - `terminal_notification_channel`
 - `goal_transition_report_path`
+- `goal_completion_delivery_report_path`
 
 ### `operator-summary.md`
 Human-readable attachment for the operator surface.
@@ -137,6 +138,7 @@ When `message_class_hint=goal_completed`:
   - `operator-summary.md`
   - the referenced `goal-transition-report.json`
 - monday must use `terminal_notification_channel`, not `primary_operator_channel`, for terminal delivery
+- when planningops invokes monday-owned terminal delivery, `operator-report.json` may also include `goal_completion_delivery_report_path`
 
 ## Status/Decision Handoff Rule
 
