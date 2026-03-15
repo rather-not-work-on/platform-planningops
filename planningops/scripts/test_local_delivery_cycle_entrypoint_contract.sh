@@ -31,7 +31,7 @@ required_fragments = [
     "`execution_packet_ref`",
     "`ack_checkpoint_ref`",
     "`dispatch_receipt_ref`",
-    "`cycle_status` must be one of `recorded`, `already_recorded`, `blocked`, or `no_ready_dispatch_packet`",
+    "`cycle_status` must be one of `recorded`, `already_recorded`, `dry_run`, `blocked`, or `no_ready_dispatch_packet`",
     "must run delivery CLI -> dispatch packet export -> dispatch cycle in-order",
     "must remain under the monday repo `runtime-artifacts/` boundary",
     "aggregate delivery cycle report emission",

@@ -23,7 +23,7 @@ from federated_python_env import (
 
 RUNNER_CONTRACT_REF = "planningops/contracts/reflection-delivery-cycle-contract.md"
 ACTION_CONTRACT_REF = "planningops/contracts/reflection-action-handoff-contract.md"
-MONDAY_DELIVERY_ENTRYPOINT = "monday/scripts/send_reflection_decision_update.py"
+MONDAY_DELIVERY_ENTRYPOINT = "monday/scripts/run_operator_message_delivery_cycle.py"
 
 REQUIRED_ACTION_FIELDS = [
     "active_goal_key",
@@ -105,6 +105,13 @@ def normalize_repo_path(repo_root: Path, path: Path) -> str:
         return str(path.resolve())
 
 
+def normalize_workspace_path(workspace_root: Path, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(workspace_root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -112,6 +119,17 @@ def load_json(path: Path) -> dict:
 def write_report(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+
+
+def parse_json_doc(raw: str) -> dict | None:
+    text = (raw or "").strip()
+    if not text:
+        return None
+    try:
+        doc = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return doc if isinstance(doc, dict) else None
 
 
 def run_cmd(command: list[str], cwd: Path, env: dict[str, str]) -> tuple[int, str, str]:
@@ -145,7 +163,7 @@ def parse_args():
     )
     parser.add_argument(
         "--monday-delivery-script",
-        default="scripts/send_reflection_decision_update.py",
+        default="scripts/run_operator_message_delivery_cycle.py",
         help="monday delivery script path relative to the monday repo",
     )
     parser.add_argument("--action-file", required=True, help="Reflection action artifact path")
@@ -196,22 +214,33 @@ def base_report_fields(action_ref: str, action: dict | None) -> dict:
     }
 
 
-def extract_delivery_summary(delivery_report: dict) -> dict:
-    delegate_report = delivery_report.get("delegate_report") or {}
-    nested_report = (delegate_report.get("delivery_report") or delivery_report.get("delivery_report") or {})
-    outbox_message_ref = (
-        delegate_report.get("outbox_message_ref")
-        or delivery_report.get("outbox_message_ref")
-        or nested_report.get("outboxMessageRef")
-        or "-"
-    )
+def extract_delivery_summary(delivery_cycle_report: dict, monday_repo: Path) -> dict:
+    delivery_report_ref = str(delivery_cycle_report.get("delivery_report_ref") or "-")
+    nested_report: dict = {}
+    if delivery_report_ref != "-":
+        delivery_report_path = (monday_repo / delivery_report_ref).resolve()
+        if delivery_report_path.exists():
+            loaded = load_json(delivery_report_path)
+            if isinstance(loaded, dict):
+                nested_report = loaded.get("delivery_report") or loaded
+    outbox_message_ref = nested_report.get("outboxMessageRef") or nested_report.get("outbox_message_ref") or "-"
     return {
-        "delivery_verdict": str(nested_report.get("deliveryVerdict") or "-"),
+        "delivery_verdict": str(delivery_cycle_report.get("delivery_verdict") or nested_report.get("deliveryVerdict") or "-"),
         "delivery_target_resolution_mode": str(nested_report.get("targetResolutionMode") or "-"),
         "delivery_target_profile_ref": str(nested_report.get("targetProfileRef") or "-"),
         "delivery_transport_kind": str(nested_report.get("transportKind") or "-"),
         "delivery_outbox_message_ref": str(outbox_message_ref or "-"),
     }
+
+
+def resolve_monday_output(raw_path: str | None, run_id: str, monday_repo: Path) -> tuple[str, Path]:
+    default_rel = Path("runtime-artifacts") / "messaging" / "delivery-cycles" / f"reflection-delivery-cycle-{run_id}.json"
+    if raw_path is None:
+        return str(default_rel), (monday_repo / default_rel).resolve()
+    output_path = Path(raw_path)
+    if output_path.is_absolute():
+        return str(output_path), output_path.resolve()
+    return str(output_path), (monday_repo / output_path).resolve()
 
 
 def failure_report(
@@ -287,7 +316,6 @@ def main() -> int:
     python_bin = args.monday_python or bootstrap_info["preferred_python"]
 
     report_dir = planningops_repo / "planningops" / "artifacts" / "validation" / "reflection-delivery-cycle" / args.run_id
-    delivery_output = resolve_output_path(planningops_repo, args.delivery_output, report_dir / "delivery-report.json")
     report_output = resolve_output_path(planningops_repo, args.output, report_dir / "cycle-report.json")
 
     stage_reports: list[dict] = []
@@ -348,15 +376,17 @@ def main() -> int:
             report_path=report_output,
         )
 
+    monday_output_arg, monday_output_path = resolve_monday_output(args.delivery_output, args.run_id, monday_repo)
+
     command = [
         python_bin,
         args.monday_delivery_script,
-        "--action-file",
+        "--reflection-action-file",
         str(action_path),
         "--mode",
         args.mode,
         "--output",
-        str(delivery_output),
+        monday_output_arg,
     ]
     if args.delivery_target:
         command.extend(["--delivery-target", args.delivery_target])
@@ -368,9 +398,15 @@ def main() -> int:
         command.extend(["--profiles-config", args.monday_profiles_config])
 
     rc, out, err = run_cmd(command, monday_repo, env)
+    parsed_stdout_report = parse_json_doc(out)
+    delivery_output = monday_output_path
+    if not delivery_output.exists() and parsed_stdout_report:
+        reported_ref = str(parsed_stdout_report.get("report_ref") or "").strip()
+        if reported_ref:
+            delivery_output = (monday_repo / reported_ref).resolve()
     stage_reports.append(build_stage_report("delivery_execution", command, monday_repo, rc, out, err, delivery_output))
 
-    delivery_report_ref = normalize_repo_path(planningops_repo, delivery_output)
+    delivery_report_ref = normalize_workspace_path(workspace_root, delivery_output)
     if not delivery_output.exists():
         return failure_report(
             args=args,
@@ -384,7 +420,7 @@ def main() -> int:
         )
 
     delivery_report = load_json(delivery_output)
-    delivery_summary = extract_delivery_summary(delivery_report)
+    delivery_summary = extract_delivery_summary(delivery_report, monday_repo)
     errors = list(delivery_report.get("errors") or [])
     if rc != 0:
         errors = errors or ["monday delivery entrypoint returned non-zero"]

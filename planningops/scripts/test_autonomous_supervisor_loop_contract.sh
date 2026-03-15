@@ -3,6 +3,7 @@ set -euo pipefail
 
 python3 - <<'PY'
 import json
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -16,7 +17,8 @@ def run_supervisor(args):
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
     artifacts_root = td_path / "supervisor-artifacts"
-    monday_goal_completion_script = Path.cwd().parent / "monday" / "scripts" / "send_supervisor_goal_completion.py"
+    monday_goal_completion_script = Path.cwd().parent / "monday" / "scripts" / "run_goal_completion_delivery_cycle.py"
+    monday_runtime_test_root = Path.cwd().parent / "monday" / "runtime-artifacts" / f"test-supervisor-{td_path.name}"
 
     # 1) continue-on-experiment should allow multi-cycle run and converge.
     out_converged = td_path / "supervisor-converged.json"
@@ -853,7 +855,7 @@ with tempfile.TemporaryDirectory() as td:
                     "email_cli": {
                         "channel_kind": "email_cli",
                         "transport_kind": "local_outbox",
-                        "outbox_root": str(td_path / "local-outbox"),
+                        "outbox_root": str(monday_runtime_test_root / "local-outbox"),
                         "default_target_name": "terminal-completion",
                         "supports_threads": False,
                     }
@@ -916,9 +918,10 @@ with tempfile.TemporaryDirectory() as td:
         assert delivery["delivery_target_resolution_mode"] == "local_profile", delivery
         assert delivery["delivery_target_profile_ref"].endswith("local-operator-channel-profiles.json#/profiles/email_cli"), delivery
         assert delivery["delivery_outbox_message_ref"].endswith(".json"), delivery
-        assert Path(delivery["delivery_outbox_message_ref"]).exists(), delivery
-        assert goal_completed_operator["goal_completion_delivery_report_path"].endswith("goal-completion-delivery-report.json"), goal_completed_operator
-        assert any(str(attachment).endswith("goal-completion-delivery-report.json") for attachment in goal_completed_inbox["attachments"]), goal_completed_inbox
+        delivery_outbox_path = monday_goal_completion_script.parent.parent / delivery["delivery_outbox_message_ref"]
+        assert delivery_outbox_path.exists(), delivery
+        assert goal_completed_operator["goal_completion_delivery_report_path"].startswith("monday/runtime-artifacts/messaging/delivery-cycles/"), goal_completed_operator
+        assert any(str(attachment).startswith("monday/runtime-artifacts/messaging/delivery-cycles/") for attachment in goal_completed_inbox["attachments"]), goal_completed_inbox
     else:
         delivery = goal_completed_doc["goal_completion_delivery"]
         assert delivery["enabled"] is False, delivery
@@ -926,6 +929,7 @@ with tempfile.TemporaryDirectory() as td:
     terminal_registry_doc = json.loads(terminal_registry.read_text(encoding="utf-8"))
     assert terminal_registry_doc["active_goal_key"] == "", terminal_registry_doc
     assert terminal_registry_doc["goals"][0]["status"] == "achieved", terminal_registry_doc
+    shutil.rmtree(monday_runtime_test_root, ignore_errors=True)
 
 print("autonomous supervisor loop contract tests ok")
 PY

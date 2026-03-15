@@ -13,7 +13,7 @@ This contract exists so:
 - control-plane evaluator: `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - control-plane applier: `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
 - orchestration runner: `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
-- downstream monday consumer: `monday/scripts/send_reflection_decision_update.py`
+- downstream monday consumer: `monday/scripts/run_operator_message_delivery_cycle.py`
 
 ## Cycle Scope
 The reflection cycle covered by this contract is:
@@ -115,3 +115,4 @@ Optional cycle report fields may include:
 - `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
 - `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
+- `planningops/scripts/federation/run_reflection_delivery_cycle.py`

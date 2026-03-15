@@ -57,17 +57,25 @@ def resolve_component_repo(workspace_root: Path, repo_dir: str) -> Path:
     return (workspace_root / path).resolve()
 
 
-def extract_delivery_summary(delivery_report: dict) -> dict:
-    delegate_report = delivery_report.get("delegate_report") or {}
-    nested_report = (delegate_report.get("delivery_report") or delivery_report.get("delivery_report") or {})
-    outbox_message_ref = (
-        delegate_report.get("outbox_message_ref")
-        or delivery_report.get("outbox_message_ref")
-        or nested_report.get("outboxMessageRef")
-        or "-"
-    )
+def normalize_workspace_path(workspace_root: Path, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(workspace_root.resolve()))
+    except ValueError:
+        return str(path.resolve())
+
+
+def extract_delivery_summary(delivery_cycle_report: dict, monday_repo: Path) -> dict:
+    delivery_report_ref = str(delivery_cycle_report.get("delivery_report_ref") or "-")
+    nested_report = {}
+    if delivery_report_ref != "-":
+        delivery_report_path = (monday_repo / delivery_report_ref).resolve()
+        if delivery_report_path.exists():
+            loaded = load_json(delivery_report_path, {})
+            if isinstance(loaded, dict):
+                nested_report = loaded.get("delivery_report") or loaded
+    outbox_message_ref = nested_report.get("outboxMessageRef") or nested_report.get("outbox_message_ref") or "-"
     return {
-        "delivery_verdict": str(nested_report.get("deliveryVerdict") or "-"),
+        "delivery_verdict": str(delivery_cycle_report.get("delivery_verdict") or nested_report.get("deliveryVerdict") or "-"),
         "delivery_target_resolution_mode": str(nested_report.get("targetResolutionMode") or "-"),
         "delivery_target_profile_ref": str(nested_report.get("targetProfileRef") or "-"),
         "delivery_transport_kind": str(nested_report.get("transportKind") or "-"),
@@ -84,7 +92,8 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
     workspace_root = resolve_workspace_root(planningops_repo, args.workspace_root)
     monday_repo = resolve_component_repo(workspace_root, args.monday_repo_dir)
     monday_script = monday_repo / args.monday_supervisor_goal_completion_script
-    delivery_output = run_dir / "goal-completion-delivery-report.json"
+    monday_output_rel = Path("runtime-artifacts") / "messaging" / "delivery-cycles" / f"supervisor-goal-completion-{run_dir.name}.json"
+    delivery_output = (monday_repo / monday_output_rel).resolve()
 
     if not monday_script.exists():
         return {
@@ -104,14 +113,19 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
         "--mode",
         args.mode,
         "--output",
-        str(delivery_output),
+        str(monday_output_rel),
     ]
     if args.monday_profiles_config:
         command.extend(["--profiles-config", args.monday_profiles_config])
 
     rc, out, err = run(command, cwd=monday_repo)
+    parsed_stdout_report = parse_json_doc(out)
+    if not delivery_output.exists() and isinstance(parsed_stdout_report, dict):
+        reported_ref = str(parsed_stdout_report.get("report_ref") or "").strip()
+        if reported_ref:
+            delivery_output = (monday_repo / reported_ref).resolve()
     report = load_json(delivery_output, {})
-    summary = extract_delivery_summary(report if isinstance(report, dict) else {})
+    summary = extract_delivery_summary(report if isinstance(report, dict) else {}, monday_repo)
     errors = list(report.get("errors") or []) if isinstance(report, dict) else []
     verdict = "pass" if rc == 0 and isinstance(report, dict) and report.get("verdict") == "pass" else "fail"
     if verdict == "fail" and not errors:
@@ -124,7 +138,7 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
         "cwd": str(monday_repo),
         "stdout": out[-2000:],
         "stderr": err[-2000:],
-        "output_path": str(delivery_output),
+        "output_path": normalize_workspace_path(workspace_root, delivery_output),
         "report": report if isinstance(report, dict) else {},
         "errors": errors,
         "verdict": verdict,
@@ -852,7 +866,7 @@ def parse_args():
     parser.add_argument("--monday-profiles-config", default=None)
     parser.add_argument(
         "--monday-supervisor-goal-completion-script",
-        default="scripts/send_supervisor_goal_completion.py",
+        default="scripts/run_goal_completion_delivery_cycle.py",
     )
     return parser.parse_args()
 
@@ -1247,7 +1261,7 @@ def main():
     if stop_reason == "goal_completed":
         last_goal_completion_delivery_path = output_path.with_name(f"{output_path.stem}-goal-completion-delivery-report.json")
         goal_completion_delivery = run_goal_completion_delivery(args, run_dir, operator_report_path, operator_summary_path)
-        summary["goal_completion_delivery_path"] = str(run_dir / "goal-completion-delivery-report.json")
+        summary["goal_completion_delivery_path"] = str(goal_completion_delivery.get("output_path") or "-")
         summary["goal_completion_delivery_last_path"] = str(last_goal_completion_delivery_path)
         summary["goal_completion_delivery"] = goal_completion_delivery
         if goal_completion_delivery.get("enabled") and isinstance(goal_completion_delivery.get("report"), dict) and goal_completion_delivery["report"]:

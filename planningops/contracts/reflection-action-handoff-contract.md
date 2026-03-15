@@ -11,7 +11,7 @@ This contract exists so:
 ## Canonical Boundary
 - reflection evaluator: `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - action applier: `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
-- monday delivery entrypoint: `monday/scripts/send_reflection_decision_update.py`
+- monday operator delivery entrypoint: `monday/scripts/run_operator_message_delivery_cycle.py`
 - operator channel policy: `planningops/contracts/operator-channel-adapter-contract.md`
 - goal completion policy: `planningops/contracts/goal-completion-contract.md`
 
@@ -119,7 +119,8 @@ PlanningOps may emit only these `operator_channel_role` values:
 - control-plane evidence and handoff summaries
 
 ### Monday owns
-- translating action artifacts into concrete delivery payloads
+- translating action artifacts into concrete operator delivery payloads
+- local delivery-cycle execution for operator-message classes
 - resolving concrete delivery targets from local config or skill context
 - invoking Slack/email transport through CLI or MCP adapters
 - returning delivery evidence
@@ -143,4 +144,4 @@ PlanningOps may emit only these `operator_channel_role` values:
 - `planningops/scripts/test_reflection_action_handoff_contract.sh`
 - `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
-- `monday/scripts/send_reflection_decision_update.py`
+- `monday/scripts/run_operator_message_delivery_cycle.py`

@@ -54,7 +54,7 @@ Every monday local delivery cycle entrypoint report must include:
 - `verdict`
 
 Aggregate report rules:
-- `cycle_status` must be one of `recorded`, `already_recorded`, `blocked`, or `no_ready_dispatch_packet`
+- `cycle_status` must be one of `recorded`, `already_recorded`, `dry_run`, `blocked`, or `no_ready_dispatch_packet`
 - `verdict` must be `pass` or `fail`
 - `source_payload_ref` may point outside `runtime-artifacts/` only when the caller supplied an explicit payload file
 - every other `*_ref` field must point to monday-owned runtime artifacts
@@ -62,7 +62,9 @@ Aggregate report rules:
 
 ## Deterministic Entrypoint Rules
 - monday must derive the aggregate report only from the payload, monday-owned config, and monday-owned runtime artifacts
+- monday may accept high-level reflection-action or supervisor-handoff inputs and translate them into canonical payloads before the delivery CLI stage
 - monday must run delivery CLI -> dispatch packet export -> dispatch cycle in-order for apply-mode local delivery
+- monday must stop after delivery evidence and emit `cycle_status = dry_run` when dry-run mode is requested
 - monday must not require `planningops` to provide explicit dispatch packet paths on the primary local autonomous path
 - monday must return the already-recorded state deterministically when receipt or acknowledgement checkpoints already exist
 - monday must fail closed if local delivery did not produce `delivered_local_outbox`
