@@ -83,6 +83,19 @@ contains_pattern() {
   grep -Eq -- "$pattern" "$file"
 }
 
+has_frontmatter() {
+  local file="$1"
+  python3 - "$file" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+with path.open("r", encoding="utf-8-sig", newline="") as handle:
+    first_line = handle.readline().rstrip("\r\n")
+raise SystemExit(0 if first_line == "---" else 1)
+PY
+}
+
 ensure_valid_profile() {
   local profile="$1"
   if ! contains_value "$profile" "${ALLOWED_PROFILE[@]}"; then
@@ -374,7 +387,7 @@ check_canonical_docs() {
   seen_doc_ids_file="$(mktemp)"
 
   while IFS= read -r file; do
-    if [[ "$(head -n 1 "$file")" != "---" ]]; then
+    if ! has_frontmatter "$file"; then
       echo "[ERR] frontmatter missing: $file"
       errors=$((errors + 1))
       continue
@@ -451,7 +464,7 @@ check_workbench_docs() {
   local errors=0
 
   while IFS= read -r file; do
-    if [[ "$(head -n 1 "$file")" != "---" ]]; then
+    if ! has_frontmatter "$file"; then
       echo "[ERR] frontmatter missing: $file"
       errors=$((errors + 1))
       continue
