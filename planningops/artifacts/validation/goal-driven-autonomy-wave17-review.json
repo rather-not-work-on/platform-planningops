@@ -1,0 +1,167 @@
+{
+  "generated_at_utc": "2026-03-15T05:35:30Z",
+  "wave_id": "uap-goal-driven-autonomy-wave17",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave17-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 460,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze monday local dispatch cycle handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/460",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 461,
+      "state": "CLOSED",
+      "title": "plan: [20] Export monday local dispatch execution packet",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/461",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 462,
+      "state": "CLOSED",
+      "title": "plan: [30] Run monday local dispatch cycle",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/462",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/local-dispatch-cycle-handoff-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/export_local_dispatch_execution_packet.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_local_dispatch_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/local_outbox_dispatch_common.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/export_local_dispatch_execution_packet.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday local dispatch execution packet export logic"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/run_local_dispatch_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday local dispatch selection, acknowledgement, or receipt mutation"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/messaging/dispatch-execution-packets",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not become the storage owner for monday execution packets or dispatch receipts"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/planningops/scripts/federation/run_reflection_delivery_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must not host planningops reflection-delivery orchestration"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave17",
+      "actual": "uap-goal-driven-autonomy-wave17",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave16_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave17_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_all",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_local_dispatch_cycle_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/validate_active_goal_registry",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/validate_issue_quality_wave17",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_export_local_dispatch_execution_packet",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_local_dispatch_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_operator_channel_delivery_cli",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_module_readmes",
+      "verdict": "pass"
+    }
+  ],
+  "behavior_checks": [
+    {
+      "name": "ready_dispatch_packet_exports_deterministic_execution_packet",
+      "verdict": "pass",
+      "message": "monday turns one ready local outbox dispatch packet into one deterministic execution packet without planningops mutating runtime delivery state"
+    },
+    {
+      "name": "local_dispatch_cycle_records_receipt_and_ack",
+      "verdict": "pass",
+      "message": "monday selects one ready dispatch packet, records a local dispatch receipt, and converges an acknowledgement checkpoint under monday-owned runtime-artifacts"
+    },
+    {
+      "name": "repeated_dispatch_cycle_is_idempotent",
+      "verdict": "pass",
+      "message": "re-running the local dispatch cycle on the same packet returns already_dispatched and already_recorded instead of duplicating runtime state"
+    },
+    {
+      "name": "planningops_remains_transport_agnostic",
+      "verdict": "pass",
+      "message": "planningops owns contract and review evidence only while monday owns dispatch packet selection, execution packet emission, acknowledgement, and receipt mutation"
+    }
+  ],
+  "check_count": 19,
+  "failure_count": 0,
+  "verdict": "pass"
+}
