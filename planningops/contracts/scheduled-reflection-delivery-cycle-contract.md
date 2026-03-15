@@ -11,6 +11,8 @@ This contract exists so:
 - later queue and scheduler evolution can reuse one auditable stage boundary instead of re-stitching runtime, reflection, and delivery steps ad hoc
 
 ## Canonical Boundary
+- monday queue admission entrypoint: `monday/scripts/admit_scheduled_queue_packet.py`
+- queue admission handoff contract: `planningops/contracts/scheduled-queue-admission-handoff-contract.md`
 - monday scheduled runtime entrypoint: `monday/scripts/run_scheduled_queue_cycle.py`
 - scheduler-native selection contract: `planningops/contracts/scheduler-native-worker-outcome-selection-contract.md`
 - scheduled worker-outcome handoff contract: `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
@@ -26,11 +28,12 @@ This contract exists so:
 The scheduled reflection-delivery cycle starts when `planningops` invokes the monday-owned scheduled queue entrypoint.
 
 The cycle includes:
-1. invoking one monday scheduled queue cycle
-2. loading one monday worker outcome artifact from that scheduled run
-3. running the planningops-owned reflection cycle over that worker outcome
-4. running the planningops-owned delivery cycle over the emitted reflection action artifact
-5. writing one planningops-owned aggregate scheduled cycle report
+1. invoking one monday queue admission step
+2. invoking one monday scheduled queue cycle against monday-owned queue-store state
+3. loading one monday worker outcome artifact from that scheduled run
+4. running the planningops-owned reflection cycle over that worker outcome
+5. running the planningops-owned delivery cycle over the emitted reflection action artifact
+6. writing one planningops-owned aggregate scheduled cycle report
 
 The cycle does not include:
 - planningops-owned queue lease mutation
@@ -41,12 +44,14 @@ The cycle does not include:
 ## Required Inputs
 Every scheduled reflection-delivery run must accept:
 - `--mode` with `dry-run` or `apply`
+- `--queue`
 - `--output`
 
 Optional execution inputs may include:
 - `--workspace-root`
 - `--monday-repo-dir`
 - `--monday-python`
+- `--monday-admission-script`
 - `--worker-outcome-root`
 - `--queue-db`
 - `--queue-seed-file`
@@ -58,14 +63,18 @@ Optional execution inputs may include:
 - `--thread-ref`
 
 Input rules:
+- the runner must accept a planningops-owned queue seed input but translate it into a queue admission packet before monday scheduled execution starts
+- the runner must invoke `monday/scripts/admit_scheduled_queue_packet.py` before `monday/scripts/run_scheduled_queue_cycle.py`
 - the runner must invoke `monday/scripts/run_scheduled_queue_cycle.py` instead of recreating queue dequeue logic in `planningops`
 - when `--goal-key` is supplied, it must be forwarded consistently through the scheduled run, reflection cycle, and delivery cycle
 - `planningops` may forward operator-channel hints such as `delivery-target`, `channel-kind`, and `thread-ref`, but must not derive concrete transport recipients on its own
 - `planningops` may pass only a monday-owned worker outcome root hint and must not supply a canonical worker outcome file path for the primary path
 - the primary path must resolve the worker outcome through monday scheduler-native selection and monday-emitted handoff evidence rather than a control-plane-owned worker-outcome file path
+- the primary path must not forward a direct `--queue` seed input into monday scheduled execution once queue admission is in scope
 
 ## Required Outputs
 Every successful run must emit:
+- one monday queue admission report
 - one monday scheduled queue evidence report
 - one planningops reflection-cycle report
 - one planningops delivery-cycle report
@@ -75,6 +84,7 @@ The aggregate scheduled cycle report must include:
 - `generated_at_utc`
 - `mode`
 - `goal_key`
+- `queue_admission_report_ref`
 - `scheduled_cycle_report_ref`
 - `worker_outcome_ref`
 - `reflection_cycle_report_ref`
@@ -94,6 +104,7 @@ The aggregate scheduled cycle report must include:
 
 ## Stage Reports
 `stage_reports` must contain at least:
+- `queue_admission`
 - `scheduled_queue_cycle`
 - `reflection_cycle`
 - `delivery_cycle`
@@ -111,6 +122,8 @@ Each stage report must include:
 
 ## Deterministic Orchestration Rules
 - the runner must call the monday scheduled queue entrypoint instead of dequeuing work directly in `planningops`
+- the runner must call monday queue admission before monday scheduled execution on the primary path
+- the runner must persist one queue admission packet and one queue admission report per control-plane run
 - the runner must treat `planningops/contracts/scheduler-native-worker-outcome-selection-contract.md` as the canonical source of worker-outcome selection ownership
 - the runner must resolve `worker_outcome_handoff_ref` from monday scheduled queue evidence under `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
 - the runner must derive `worker_outcome_ref` from the resolved handoff artifact instead of reconstructing worker outcome paths inline
@@ -124,11 +137,13 @@ Each stage report must include:
 ## Ownership Boundary
 ### PlanningOps owns
 - scheduled-cycle orchestration
+- queue admission packet emission
 - aggregate scheduled cycle evidence
 - path normalization across scheduled, reflection, and delivery stages
 - verification that monday scheduler evidence, reflection evidence, and delivery evidence are wired together correctly
 
 ### Monday owns
+- queue admission execution
 - queue persistence
 - dequeue, lease, retry, and dead-letter mutation
 - scheduled queue execution evidence
@@ -143,6 +158,7 @@ Each stage report must include:
 
 ## Failure Rules
 - missing monday scheduled entrypoint or missing scheduled evidence must fail the cycle
+- missing monday admission entrypoint or missing queue admission evidence must fail the cycle
 - the runner must fail if monday scheduled queue evidence does not resolve exactly one worker outcome artifact for the current cycle
 - reflection-cycle failure must fail the aggregate cycle before delivery starts
 - delivery-cycle failure must fail the aggregate cycle even if scheduled and reflection stages passed
@@ -151,8 +167,10 @@ Each stage report must include:
 
 ## Validation
 - `planningops/scripts/test_scheduler_native_worker_outcome_selection_contract.sh`
+- `planningops/scripts/test_scheduled_queue_admission_handoff_contract.sh`
 - `planningops/scripts/test_scheduled_reflection_delivery_cycle_contract.sh`
 - `planningops/scripts/test_scheduled_worker_outcome_handoff_contract.sh`
+- `monday/scripts/admit_scheduled_queue_packet.py`
 - `monday/scripts/run_scheduled_queue_cycle.py`
 - `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
 - `planningops/scripts/federation/run_reflection_delivery_cycle.py`

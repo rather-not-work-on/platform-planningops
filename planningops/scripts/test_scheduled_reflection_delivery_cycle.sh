@@ -118,6 +118,7 @@ JSON
 python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
+  --queue-db "$TMP_DIR/continue-runtime-queue.sqlite3" \
   --worker-outcome-root "$WORKER_OUTCOME_ROOT" \
   --idempotency "$TMP_DIR/continue-idempotency.json" \
   --transition-log "$TMP_DIR/continue-transition-log.ndjson" \
@@ -131,6 +132,7 @@ python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
 python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
+  --queue-db "$TMP_DIR/replan-runtime-queue.sqlite3" \
   --worker-outcome-root "$WORKER_OUTCOME_ROOT" \
   --idempotency "$TMP_DIR/replan-idempotency.json" \
   --transition-log "$TMP_DIR/replan-transition-log.ndjson" \
@@ -146,6 +148,7 @@ python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
 if python3 planningops/scripts/run_scheduled_reflection_delivery_cycle.py \
   --workspace-root .. \
   --queue "$TMP_DIR/queue.json" \
+  --queue-db "$TMP_DIR/replan-apply-runtime-queue.sqlite3" \
   --worker-outcome-root "$WORKER_OUTCOME_ROOT" \
   --idempotency "$TMP_DIR/replan-apply-idempotency.json" \
   --transition-log "$TMP_DIR/replan-apply-transition-log.ndjson" \
@@ -174,11 +177,13 @@ replan_apply_report = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
 for report in [continue_report, replan_report]:
     assert report["verdict"] == "pass", report
     assert report["goal_key"] == "uap-goal-driven-autonomy-wave11", report
+    assert report["queue_admission_report_ref"].endswith("queue-admission-report.json"), report
     assert report["scheduled_cycle_report_ref"].endswith("scheduled-cycle-report.json"), report
     assert report["reflection_cycle_report_ref"].endswith("reflection-cycle-report.json"), report
     assert report["delivery_cycle_report_ref"].endswith("delivery-cycle-report.json"), report
     assert report["worker_outcome_ref"].endswith(".json"), report
     assert [row["stage"] for row in report["stage_reports"]] == [
+        "queue_admission",
         "scheduled_queue_cycle",
         "reflection_cycle",
         "delivery_cycle",
@@ -208,9 +213,17 @@ assert replan_report["goal_transition_required"] is False, replan_report
 assert replan_apply_report["verdict"] == "fail", replan_apply_report
 assert replan_apply_report["failure_stage"] == "delivery_cycle", replan_apply_report
 assert replan_apply_report["error_count"] >= 1, replan_apply_report
-assert replan_apply_report["stage_reports"][0]["stage"] == "scheduled_queue_cycle", replan_apply_report
-assert replan_apply_report["stage_reports"][1]["stage"] == "reflection_cycle", replan_apply_report
-assert replan_apply_report["stage_reports"][2]["stage"] == "delivery_cycle", replan_apply_report
+assert replan_apply_report["queue_admission_report_ref"].endswith("queue-admission-report.json"), replan_apply_report
+assert [row["stage"] for row in replan_apply_report["stage_reports"]] == [
+    "queue_admission",
+    "scheduled_queue_cycle",
+    "reflection_cycle",
+    "delivery_cycle",
+], replan_apply_report
+assert replan_apply_report["stage_reports"][0]["verdict"] == "pass", replan_apply_report
+assert replan_apply_report["stage_reports"][1]["verdict"] == "pass", replan_apply_report
+assert replan_apply_report["stage_reports"][2]["verdict"] == "pass", replan_apply_report
+assert replan_apply_report["stage_reports"][3]["verdict"] == "fail", replan_apply_report
 
 print("scheduled reflection delivery cycle test passed")
 PY

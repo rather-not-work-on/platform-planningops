@@ -22,7 +22,9 @@ from federated_python_env import (  # noqa: E402
 
 
 RUNNER_CONTRACT_REF = "planningops/contracts/scheduled-reflection-delivery-cycle-contract.md"
+ADMISSION_CONTRACT_REF = "planningops/contracts/scheduled-queue-admission-handoff-contract.md"
 HANDOFF_CONTRACT_REF = "planningops/contracts/scheduled-worker-outcome-handoff-contract.md"
+MONDAY_ADMISSION_ENTRYPOINT = "monday/scripts/admit_scheduled_queue_packet.py"
 MONDAY_SCHEDULED_ENTRYPOINT = "monday/scripts/run_scheduled_queue_cycle.py"
 REFLECTION_RUNNER = "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py"
 DELIVERY_RUNNER = "planningops/scripts/federation/run_reflection_delivery_cycle.py"
@@ -121,6 +123,13 @@ def write_report(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 
 
+def derive_single_queue_value(queue_doc: dict, key: str) -> str:
+    values = {str(item.get(key) or "").strip() for item in queue_doc.get("queue_items", []) if str(item.get(key) or "").strip()}
+    if len(values) != 1:
+        raise ValueError(f"queue seed must provide exactly one {key}; got {sorted(values)}")
+    return next(iter(values))
+
+
 def run_cmd(command: list[str], cwd: Path, env: dict[str, str]) -> tuple[int, str, str]:
     completed = subprocess.run(command, cwd=str(cwd), capture_output=True, text=True, env=env)
     return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
@@ -148,6 +157,11 @@ def parse_args():
     parser.add_argument("--monday-repo-dir", default="monday", help="monday repo directory relative to workspace root")
     parser.add_argument("--monday-python", default=None, help="Optional Python interpreter override for monday leaf scripts")
     parser.add_argument(
+        "--monday-admission-script",
+        default="scripts/admit_scheduled_queue_packet.py",
+        help="monday queue admission script path relative to the monday repo",
+    )
+    parser.add_argument(
         "--monday-scheduled-script",
         default="scripts/run_scheduled_queue_cycle.py",
         help="monday scheduled queue script path relative to the monday repo",
@@ -173,6 +187,8 @@ def parse_args():
     )
     parser.add_argument("--scheduled-output", default=None)
     parser.add_argument("--scheduled-handoff-output", default=None)
+    parser.add_argument("--admission-packet-output", default=None)
+    parser.add_argument("--admission-output", default=None)
     parser.add_argument("--packet-output", default=None)
     parser.add_argument("--evaluation-output", default=None)
     parser.add_argument("--action-output", default=None)
@@ -198,6 +214,7 @@ def failure_report(
     *,
     args,
     goal_key: str,
+    queue_admission_report_ref: str,
     scheduled_cycle_report_ref: str,
     worker_outcome_ref: str,
     reflection_cycle_report_ref: str,
@@ -212,6 +229,7 @@ def failure_report(
         "generated_at_utc": now_utc(),
         "mode": args.mode,
         "goal_key": goal_key,
+        "queue_admission_report_ref": queue_admission_report_ref,
         "scheduled_cycle_report_ref": scheduled_cycle_report_ref,
         "worker_outcome_ref": worker_outcome_ref,
         "reflection_cycle_report_ref": reflection_cycle_report_ref,
@@ -254,13 +272,24 @@ def main() -> int:
     python_bin = args.monday_python or bootstrap_info["preferred_python"]
 
     queue_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, args.queue)
+    queue_doc = load_json(queue_path)
+    queue_items = queue_doc.get("queue_items", [])
+    if not isinstance(queue_items, list) or not queue_items:
+        raise SystemExit("queue seed must provide a non-empty queue_items list")
 
     report_dir = (
         planningops_repo / "planningops" / "artifacts" / "validation" / "scheduled-reflection-delivery-cycle" / args.run_id
     )
+    queue_db_path = resolve_output_path(planningops_repo, args.queue_db, report_dir / "runtime-queue.sqlite3")
     scheduled_output = resolve_output_path(planningops_repo, args.scheduled_output, report_dir / "scheduled-cycle-report.json")
     scheduled_handoff_output = resolve_output_path(
         planningops_repo, args.scheduled_handoff_output, report_dir / "worker-outcome-handoff.json"
+    )
+    admission_packet_output = resolve_output_path(
+        planningops_repo, args.admission_packet_output, report_dir / "queue-admission-packet.json"
+    )
+    admission_output = resolve_output_path(
+        planningops_repo, args.admission_output, report_dir / "queue-admission-report.json"
     )
     packet_output = resolve_output_path(planningops_repo, args.packet_output, report_dir / "reflection-packet.json")
     evaluation_output = resolve_output_path(
@@ -282,17 +311,35 @@ def main() -> int:
 
     stage_reports: list[dict] = []
     worker_outcome_ref = "-"
+    queue_admission_report_ref = normalize_repo_path(planningops_repo, admission_output)
     scheduled_report_ref = normalize_repo_path(planningops_repo, scheduled_output)
     reflection_report_ref = normalize_repo_path(planningops_repo, reflection_output)
     delivery_report_ref = normalize_repo_path(planningops_repo, delivery_output)
     action_ref = normalize_repo_path(planningops_repo, action_output)
     goal_key = args.goal_key or "-"
 
+    monday_admission_script = monday_repo / args.monday_admission_script
+    if not monday_admission_script.exists():
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="resolve_monday_queue_admission_entrypoint",
+            errors=[f"monday admission script not found: {args.monday_admission_script}"],
+            report_path=report_output,
+        )
     monday_script = monday_repo / args.monday_scheduled_script
     if not monday_script.exists():
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -304,11 +351,76 @@ def main() -> int:
             report_path=report_output,
         )
 
+    derived_goal_key = derive_single_queue_value(queue_doc, "goal_key")
+    derived_schedule_key = derive_single_queue_value(queue_doc, "schedule_key")
+    if args.goal_key and args.goal_key != derived_goal_key:
+        return failure_report(
+            args=args,
+            goal_key=args.goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="build_queue_admission_packet",
+            errors=[f"queue seed goal_key mismatch: expected {args.goal_key}, got {derived_goal_key}"],
+            report_path=report_output,
+        )
+    goal_key = args.goal_key or derived_goal_key
+
+    admission_packet = {
+        "admission_version": 1,
+        "generated_at_utc": now_utc(),
+        "admission_contract_ref": ADMISSION_CONTRACT_REF,
+        "source_repo": "rather-not-work-on/platform-planningops",
+        "goal_key": goal_key,
+        "schedule_key": derived_schedule_key,
+        "queue_seed_ref": normalize_repo_path(planningops_repo, queue_path),
+        "seed_format": "runtime_scheduler_queue_items_json",
+        "seed_item_count": len(queue_items),
+        "verdict": "pass",
+    }
+    write_report(admission_packet_output, admission_packet)
+
+    admission_command = [
+        python_bin,
+        args.monday_admission_script,
+        "--packet",
+        str(admission_packet_output),
+        "--planningops-repo-dir",
+        str(planningops_repo),
+        "--queue-db",
+        str(queue_db_path),
+        "--replace-existing",
+        "--output",
+        str(admission_output),
+    ]
+    rc, out, err = run_cmd(admission_command, monday_repo, env)
+    stage_reports.append(build_stage_report("queue_admission", admission_command, monday_repo, rc, out, err, admission_output))
+    if rc != 0:
+        errors = ["queue_admission_failed"]
+        if admission_output.exists():
+            errors.extend(load_json(admission_output).get("errors") or [])
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
+            scheduled_cycle_report_ref=scheduled_report_ref,
+            worker_outcome_ref=worker_outcome_ref,
+            reflection_cycle_report_ref=reflection_report_ref,
+            reflection_action_ref=action_ref,
+            delivery_cycle_report_ref=delivery_report_ref,
+            stage_reports=stage_reports,
+            failure_stage="queue_admission",
+            errors=errors,
+            report_path=report_output,
+        )
+
     scheduled_command = [
         python_bin,
         args.monday_scheduled_script,
-        "--queue",
-        str(queue_path),
         "--run-id",
         f"{args.run_id}-scheduled",
         "--idempotency",
@@ -326,8 +438,7 @@ def main() -> int:
             str(scheduled_handoff_output),
         ]
     )
-    if args.queue_db:
-        scheduled_command.extend(["--queue-db", str(resolve_output_path(planningops_repo, args.queue_db, Path(args.queue_db)))])
+    scheduled_command.extend(["--queue-db", str(queue_db_path)])
 
     rc, out, err = run_cmd(scheduled_command, monday_repo, env)
     stage_reports.append(build_stage_report("scheduled_queue_cycle", scheduled_command, monday_repo, rc, out, err, scheduled_output))
@@ -338,6 +449,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -353,6 +465,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -369,6 +482,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -385,6 +499,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -403,6 +518,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -422,6 +538,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -442,6 +559,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -464,6 +582,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -479,6 +598,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -498,6 +618,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -517,6 +638,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -577,6 +699,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -592,6 +715,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -638,6 +762,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -653,6 +778,7 @@ def main() -> int:
         return failure_report(
             args=args,
             goal_key=goal_key,
+            queue_admission_report_ref=queue_admission_report_ref,
             scheduled_cycle_report_ref=scheduled_report_ref,
             worker_outcome_ref=worker_outcome_ref,
             reflection_cycle_report_ref=reflection_report_ref,
@@ -669,6 +795,7 @@ def main() -> int:
         "generated_at_utc": now_utc(),
         "mode": args.mode,
         "goal_key": reflection_report.get("goal_key") or goal_key,
+        "queue_admission_report_ref": queue_admission_report_ref,
         "scheduled_cycle_report_ref": scheduled_report_ref,
         "worker_outcome_ref": worker_outcome_ref,
         "reflection_cycle_report_ref": reflection_report_ref,
