@@ -29,7 +29,7 @@ DEFAULT_REPOS = [
     "rather-not-work-on/platform-observability-gateway",
     "rather-not-work-on/monday",
 ]
-DEFAULT_PLAN_ITEM_REGEX = r"^[ABC][0-9]{2}$"
+DEFAULT_PLAN_ITEM_REGEX = r"^[A-Z][0-9]{2}$"
 
 
 def now_utc():
@@ -41,13 +41,17 @@ def run(cmd):
     return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
 
 
-def classify_track(plan_item_id: str):
+def classify_track(plan_item_id: str, target_repo: str):
     if plan_item_id.startswith("A"):
         return "control_plane"
     if plan_item_id.startswith("B"):
         return "federated_runtime"
     if plan_item_id.startswith("C"):
         return "reconciliation"
+    if target_repo == "rather-not-work-on/platform-planningops":
+        return "control_plane"
+    if target_repo.startswith("rather-not-work-on/"):
+        return "federated_runtime"
     return "unknown"
 
 
@@ -200,11 +204,12 @@ def build_manifest(source_rows, args):
             continue
 
         execution_order = parse_execution_order(metadata.get("execution_order"))
+        target_repo = normalize_value(metadata.get("target_repo")) or row["repo"]
         item = {
             "plan_item_id": plan_item_id,
-            "track": classify_track(plan_item_id),
+            "track": classify_track(plan_item_id, target_repo),
             "execution_order": execution_order,
-            "target_repo": normalize_value(metadata.get("target_repo")) or row["repo"],
+            "target_repo": target_repo,
             "issue_repo": row["repo"],
             "issue_number": int(row["number"]),
             "issue_url": row["url"],

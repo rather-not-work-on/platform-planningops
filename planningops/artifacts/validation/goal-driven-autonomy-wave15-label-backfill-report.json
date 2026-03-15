@@ -1,0 +1,83 @@
+{
+  "generated_at_utc": "2026-03-15T04:28:28.414117+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 5,
+  "issues_with_missing_labels": 5,
+  "issues_applied": 5,
+  "rows": [
+    {
+      "number": 444,
+      "title": "plan: [50] Review goal-driven autonomy wave 15 local operator outbox delivery",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/444",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 443,
+      "title": "plan: [40] Route supervisor completion delivery through monday local target resolution",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/443",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 442,
+      "title": "plan: [30] Route planningops reflection delivery through monday local target resolution",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/442",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 441,
+      "title": "plan: [20] Add monday local outbox resolver for operator and terminal delivery",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/441",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 440,
+      "title": "plan: [10] Freeze monday local operator target resolution contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/440",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    }
+  ]
+}
