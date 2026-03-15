@@ -1,0 +1,192 @@
+{
+  "generated_at_utc": "2026-03-15T06:24:37.655173+00:00",
+  "wave_id": "uap-goal-driven-autonomy-wave19",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave19-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 477,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze monday local delivery-cycle orchestration contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/477",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 478,
+      "state": "CLOSED",
+      "title": "plan: [20] Delegate reflection delivery through monday operator delivery cycle entrypoint",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/478",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 479,
+      "state": "CLOSED",
+      "title": "plan: [30] Delegate supervisor goal completion through monday goal-completion delivery cycle entrypoint",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/479",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/local-delivery-cycle-orchestration-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_reflection_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/autonomous_supervisor_loop.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_operator_message_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_goal_completion_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_reflection_delivery_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "reflection delivery runner must not call the legacy monday reflection wrapper on the primary local path"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/autonomous_supervisor_loop.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "autonomous supervisor must not call the legacy monday supervisor goal-completion wrapper on the primary local path"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/messaging/delivery-cycles",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not become the storage owner for monday local delivery-cycle runtime artifacts"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave19",
+      "actual": "uap-goal-driven-autonomy-wave19",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave18_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave19_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_all",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_delivery_cycle_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_action_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_cycle_orchestration_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_local_delivery_cycle_entrypoint_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_autonomous_supervisor_loop_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_supervisor_operator_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/typecheck",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_module_readmes",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_operator_message_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_goal_completion_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_send_reflection_decision_update",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_supervisor_goal_completion_cli",
+      "verdict": "pass"
+    }
+  ],
+  "behavior_checks": [
+    {
+      "name": "reflection_delivery_uses_monday_operator_cycle_entrypoint",
+      "verdict": "pass",
+      "message": "planningops reflection delivery now calls monday run_operator_message_delivery_cycle.py and projects monday runtime-artifact evidence into one aggregate control-plane report"
+    },
+    {
+      "name": "goal_completion_uses_monday_goal_completion_cycle_entrypoint",
+      "verdict": "pass",
+      "message": "autonomous supervisor goal completion now calls monday run_goal_completion_delivery_cycle.py and references monday-owned runtime artifacts instead of a planningops-owned report path"
+    },
+    {
+      "name": "monday_entrypoints_accept_high_level_handoffs",
+      "verdict": "pass",
+      "message": "monday local delivery-cycle entrypoints accept reflection-action and supervisor handoff inputs directly, so planningops no longer owns payload translation on the primary local path"
+    },
+    {
+      "name": "dry_run_delivery_cycle_is_explicit",
+      "verdict": "pass",
+      "message": "monday local delivery-cycle entrypoints now emit cycle_status=dry_run with verdict=pass, letting planningops keep deterministic dry-run orchestration without treating dry-run as a transport failure"
+    }
+  ],
+  "check_count": 32,
+  "failure_count": 0,
+  "verdict": "pass"
+}
