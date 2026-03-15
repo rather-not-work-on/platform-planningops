@@ -26,6 +26,7 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `autonomous-scheduler-queue-control-plane-contract.md`: policy boundary between planningops control plane and monday scheduler/queue runtime
 - `reflection-cycle-orchestration-contract.md`: end-to-end worker-outcome packet -> evaluation -> action orchestration boundary
 - `reflection-delivery-cycle-contract.md`: action artifact -> monday delivery -> aggregate delivery evidence orchestration boundary
+- `scheduled-delivery-cycle-handoff-contract.md`: monday scheduled queue item -> monday local delivery-cycle entrypoint handoff boundary
 - `scheduled-reflection-delivery-cycle-contract.md`: scheduled monday queue cycle -> reflection cycle -> delivery cycle orchestration boundary
 - `supervisor-experiment-auto-executor-contract.md`: trigger-to-worktree comparative execution and decision contract
 - `worker-task-pack-contract.md`: worker execution bundle and render safety contract
