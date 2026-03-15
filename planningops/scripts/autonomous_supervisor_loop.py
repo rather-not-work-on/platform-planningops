@@ -32,9 +32,104 @@ def now_utc():
     return datetime.now(timezone.utc).isoformat()
 
 
-def run(args):
-    cp = subprocess.run(args, capture_output=True, text=True)
+def run(args, cwd: Path | None = None):
+    cp = subprocess.run(args, capture_output=True, text=True, cwd=str(cwd) if cwd else None)
     return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
+
+
+def resolve_repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def resolve_workspace_root(planningops_repo: Path, raw_workspace_root: str) -> Path:
+    candidate = (planningops_repo / raw_workspace_root).resolve()
+    if (candidate / "monday").exists():
+        return candidate
+    if (planningops_repo.parent / "monday").exists():
+        return planningops_repo.parent
+    return candidate
+
+
+def resolve_component_repo(workspace_root: Path, repo_dir: str) -> Path:
+    path = Path(repo_dir)
+    if path.is_absolute():
+        return path
+    return (workspace_root / path).resolve()
+
+
+def extract_delivery_summary(delivery_report: dict) -> dict:
+    delegate_report = delivery_report.get("delegate_report") or {}
+    nested_report = (delegate_report.get("delivery_report") or delivery_report.get("delivery_report") or {})
+    outbox_message_ref = (
+        delegate_report.get("outbox_message_ref")
+        or delivery_report.get("outbox_message_ref")
+        or nested_report.get("outboxMessageRef")
+        or "-"
+    )
+    return {
+        "delivery_verdict": str(nested_report.get("deliveryVerdict") or "-"),
+        "delivery_target_resolution_mode": str(nested_report.get("targetResolutionMode") or "-"),
+        "delivery_target_profile_ref": str(nested_report.get("targetProfileRef") or "-"),
+        "delivery_transport_kind": str(nested_report.get("transportKind") or "-"),
+        "delivery_outbox_message_ref": str(outbox_message_ref or "-"),
+    }
+
+
+def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path, operator_summary_path: Path):
+    operator_report = load_json(operator_report_path, {})
+    if str(operator_report.get("message_class_hint") or "") != "goal_completed":
+        return {"enabled": False}
+
+    planningops_repo = resolve_repo_root()
+    workspace_root = resolve_workspace_root(planningops_repo, args.workspace_root)
+    monday_repo = resolve_component_repo(workspace_root, args.monday_repo_dir)
+    monday_script = monday_repo / args.monday_supervisor_goal_completion_script
+    delivery_output = run_dir / "goal-completion-delivery-report.json"
+
+    if not monday_script.exists():
+        return {
+            "enabled": False,
+            "skip_reason": "monday_repo_unavailable",
+            "output_path": str(delivery_output),
+            "verdict": "skipped",
+        }
+
+    command = [
+        args.monday_python or sys.executable,
+        args.monday_supervisor_goal_completion_script,
+        "--operator-report-file",
+        str(operator_report_path),
+        "--operator-summary-file",
+        str(operator_summary_path),
+        "--mode",
+        args.mode,
+        "--output",
+        str(delivery_output),
+    ]
+    if args.monday_profiles_config:
+        command.extend(["--profiles-config", args.monday_profiles_config])
+
+    rc, out, err = run(command, cwd=monday_repo)
+    report = load_json(delivery_output, {})
+    summary = extract_delivery_summary(report if isinstance(report, dict) else {})
+    errors = list(report.get("errors") or []) if isinstance(report, dict) else []
+    verdict = "pass" if rc == 0 and isinstance(report, dict) and report.get("verdict") == "pass" else "fail"
+    if verdict == "fail" and not errors:
+        errors = ["monday supervisor goal completion delivery failed"]
+
+    return {
+        "enabled": True,
+        "rc": rc,
+        "command": command,
+        "cwd": str(monday_repo),
+        "stdout": out[-2000:],
+        "stderr": err[-2000:],
+        "output_path": str(delivery_output),
+        "report": report if isinstance(report, dict) else {},
+        "errors": errors,
+        "verdict": verdict,
+        **summary,
+    }
 
 
 def load_json(path: Path, default):
@@ -230,6 +325,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
     last_cycle = cycles[-1] if cycles else {}
     stop_reason = str(summary.get("stop_reason") or "")
     stop_details = summary.get("stop_details") or {}
+    goal_completion_delivery = summary.get("goal_completion_delivery") or {}
     guidance = stop_details.get("rate_limit_guidance") or last_cycle.get("rate_limit_guidance") or {}
     cycle_number = stop_details.get("cycle") or last_cycle.get("cycle")
     cycle_report_path = None
@@ -372,9 +468,41 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                     **(report.get("guidance") or {}),
                     "goal_transition_report_path": transition.get("output_path"),
                     "completed_goal_key": transition.get("goal_key"),
+                    "goal_completion_delivery_report_path": goal_completion_delivery.get("output_path"),
+                    "goal_completion_delivery_verdict": goal_completion_delivery.get("delivery_verdict"),
+                    "goal_completion_delivery_target_resolution_mode": goal_completion_delivery.get("delivery_target_resolution_mode"),
+                    "goal_completion_delivery_target_profile_ref": goal_completion_delivery.get("delivery_target_profile_ref"),
+                    "goal_completion_delivery_outbox_message_ref": goal_completion_delivery.get("delivery_outbox_message_ref"),
                 },
             }
         )
+        if goal_completion_delivery.get("output_path"):
+            report["goal_completion_delivery_report_path"] = goal_completion_delivery.get("output_path")
+        return decorate_operator_handoff(report, summary, stop_reason)
+
+    if stop_reason == "goal_completion_delivery_failed":
+        transition = stop_details.get("goal_transition") or {}
+        report.update(
+            {
+                "status": "blocked",
+                "headline": "Supervisor completed the active goal but terminal delivery failed.",
+                "operator_action": "inspect_goal_completion_delivery",
+                "needs_human_attention": True,
+                "reason": (goal_completion_delivery.get("errors") or ["Goal completion delivery failed."])[0],
+                "guidance": {
+                    **(report.get("guidance") or {}),
+                    "goal_transition_report_path": transition.get("output_path"),
+                    "completed_goal_key": transition.get("goal_key"),
+                    "goal_completion_delivery_report_path": goal_completion_delivery.get("output_path"),
+                    "goal_completion_delivery_verdict": goal_completion_delivery.get("delivery_verdict"),
+                    "goal_completion_delivery_target_resolution_mode": goal_completion_delivery.get("delivery_target_resolution_mode"),
+                    "goal_completion_delivery_target_profile_ref": goal_completion_delivery.get("delivery_target_profile_ref"),
+                    "goal_completion_delivery_outbox_message_ref": goal_completion_delivery.get("delivery_outbox_message_ref"),
+                },
+            }
+        )
+        if goal_completion_delivery.get("output_path"):
+            report["goal_completion_delivery_report_path"] = goal_completion_delivery.get("output_path")
         return decorate_operator_handoff(report, summary, stop_reason)
 
     if stop_reason == "goal_transition_failed":
@@ -453,6 +581,9 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
     cycle_report_path = operator_report.get("cycle_report_path")
     if cycle_report_path:
         attachments.append(str(cycle_report_path))
+    goal_completion_delivery_report_path = operator_report.get("goal_completion_delivery_report_path")
+    if goal_completion_delivery_report_path:
+        attachments.append(str(goal_completion_delivery_report_path))
 
     lines = [
         f"Status: {operator_report.get('status')}",
@@ -715,6 +846,14 @@ def parse_args():
     parser.add_argument("--backlog-materialization-contract-file", default=None)
     parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
     parser.add_argument("--active-goal-key", default=None)
+    parser.add_argument("--workspace-root", default="..")
+    parser.add_argument("--monday-repo-dir", default="monday")
+    parser.add_argument("--monday-python", default=None)
+    parser.add_argument("--monday-profiles-config", default=None)
+    parser.add_argument(
+        "--monday-supervisor-goal-completion-script",
+        default="scripts/send_supervisor_goal_completion.py",
+    )
     return parser.parse_args()
 
 
@@ -951,7 +1090,6 @@ def main():
                 }
                 break
             if args.mode == "apply":
-                resolved_active_goal = None
                 args.active_goal_key = None
                 stop_reason = "goal_completed"
                 stop_details = {
@@ -1100,17 +1238,42 @@ def main():
     summary["operator_summary_last_path"] = str(last_operator_summary_path)
     summary["inbox_payload_path"] = str(inbox_payload_path)
     summary["inbox_payload_last_path"] = str(last_inbox_payload_path)
-    save_json(output_path, summary)
-    save_json(run_dir / "summary.json", summary)
     operator_report = build_operator_report(summary, output_path, run_dir)
     save_json(operator_report_path, operator_report)
     save_json(last_operator_report_path, operator_report)
     operator_summary = build_operator_summary_markdown(operator_report)
     operator_summary_path.write_text(operator_summary, encoding="utf-8")
     last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
+    if stop_reason == "goal_completed":
+        last_goal_completion_delivery_path = output_path.with_name(f"{output_path.stem}-goal-completion-delivery-report.json")
+        goal_completion_delivery = run_goal_completion_delivery(args, run_dir, operator_report_path, operator_summary_path)
+        summary["goal_completion_delivery_path"] = str(run_dir / "goal-completion-delivery-report.json")
+        summary["goal_completion_delivery_last_path"] = str(last_goal_completion_delivery_path)
+        summary["goal_completion_delivery"] = goal_completion_delivery
+        if goal_completion_delivery.get("enabled") and isinstance(goal_completion_delivery.get("report"), dict) and goal_completion_delivery["report"]:
+            save_json(last_goal_completion_delivery_path, goal_completion_delivery["report"])
+        if goal_completion_delivery.get("enabled") and goal_completion_delivery.get("verdict") != "pass":
+            stop_reason = "goal_completion_delivery_failed"
+            supervisor_verdict = "fail"
+            stop_details = {
+                "previous_stop_reason": "goal_completed",
+                "goal_transition": stop_details.get("goal_transition") or {},
+                "goal_completion_delivery": goal_completion_delivery,
+            }
+            summary["supervisor_verdict"] = supervisor_verdict
+            summary["stop_reason"] = stop_reason
+            summary["stop_details"] = stop_details
+        operator_report = build_operator_report(summary, output_path, run_dir)
+        save_json(operator_report_path, operator_report)
+        save_json(last_operator_report_path, operator_report)
+        operator_summary = build_operator_summary_markdown(operator_report)
+        operator_summary_path.write_text(operator_summary, encoding="utf-8")
+        last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
     inbox_payload = build_inbox_payload(operator_report, last_operator_summary_path)
     save_json(inbox_payload_path, inbox_payload)
     save_json(last_inbox_payload_path, inbox_payload)
+    save_json(output_path, summary)
+    save_json(run_dir / "summary.json", summary)
     print(json.dumps(summary, ensure_ascii=True, indent=2))
     return 0 if supervisor_verdict == "pass" else 1
 

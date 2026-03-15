@@ -16,6 +16,7 @@ def run_supervisor(args):
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
     artifacts_root = td_path / "supervisor-artifacts"
+    monday_goal_completion_script = Path.cwd().parent / "monday" / "scripts" / "send_supervisor_goal_completion.py"
 
     # 1) continue-on-experiment should allow multi-cycle run and converge.
     out_converged = td_path / "supervisor-converged.json"
@@ -843,34 +844,62 @@ with tempfile.TemporaryDirectory() as td:
         ),
         encoding="utf-8",
     )
+    terminal_profiles_config = td_path / "local-operator-channel-profiles.json"
+    terminal_profiles_config.write_text(
+        json.dumps(
+            {
+                "config_version": 1,
+                "profiles": {
+                    "email_cli": {
+                        "channel_kind": "email_cli",
+                        "transport_kind": "local_outbox",
+                        "outbox_root": str(td_path / "local-outbox"),
+                        "default_target_name": "terminal-completion",
+                        "supports_threads": False,
+                    }
+                },
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
     # 13) apply-mode completion without successor should stop cleanly and leave no active goal.
     out_goal_completed = td_path / "supervisor-goal-completed.json"
-    rc_goal_completed, _, _ = run_supervisor(
-        [
-            "python3",
-            "planningops/scripts/autonomous_supervisor_loop.py",
-            "--mode",
-            "apply",
-            "--max-cycles",
-            "1",
-            "--continue-on-experiment",
-            "--loop-result-sequence-file",
-            str(no_eligible_sequence),
-            "--items-file",
-            "planningops/fixtures/backlog-stock-items-sample.json",
-            "--offline",
-            "--artifacts-root",
-            str(artifacts_root),
-            "--output",
-            str(out_goal_completed),
-            "--auto-materialize-backlog",
-            "--backlog-materializer-script",
-            str(materialize_expect_contract),
-            "--active-goal-registry",
-            str(terminal_registry),
-        ]
-    )
+    goal_completed_cmd = [
+        "python3",
+        "planningops/scripts/autonomous_supervisor_loop.py",
+        "--mode",
+        "apply",
+        "--max-cycles",
+        "1",
+        "--continue-on-experiment",
+        "--loop-result-sequence-file",
+        str(no_eligible_sequence),
+        "--items-file",
+        "planningops/fixtures/backlog-stock-items-sample.json",
+        "--offline",
+        "--artifacts-root",
+        str(artifacts_root),
+        "--output",
+        str(out_goal_completed),
+        "--auto-materialize-backlog",
+        "--backlog-materializer-script",
+        str(materialize_expect_contract),
+        "--active-goal-registry",
+        str(terminal_registry),
+    ]
+    if monday_goal_completion_script.exists():
+        goal_completed_cmd.extend(
+            [
+                "--workspace-root",
+                str(Path.cwd().parent),
+                "--monday-profiles-config",
+                str(terminal_profiles_config),
+            ]
+        )
+    rc_goal_completed, _, _ = run_supervisor(goal_completed_cmd)
     assert rc_goal_completed == 0, rc_goal_completed
     goal_completed_doc = json.loads(out_goal_completed.read_text(encoding="utf-8"))
     assert goal_completed_doc["supervisor_verdict"] == "pass", goal_completed_doc
@@ -878,6 +907,22 @@ with tempfile.TemporaryDirectory() as td:
     goal_completed_operator = json.loads(Path(goal_completed_doc["operator_report_last_path"]).read_text(encoding="utf-8"))
     assert goal_completed_operator["status"] == "ok", goal_completed_operator
     assert goal_completed_operator["operator_action"] == "notify_goal_completion", goal_completed_operator
+    goal_completed_inbox = json.loads(Path(goal_completed_doc["inbox_payload_last_path"]).read_text(encoding="utf-8"))
+    if monday_goal_completion_script.exists():
+        delivery = goal_completed_doc["goal_completion_delivery"]
+        assert delivery["enabled"] is True, delivery
+        assert delivery["verdict"] == "pass", delivery
+        assert delivery["delivery_verdict"] == "delivered_local_outbox", delivery
+        assert delivery["delivery_target_resolution_mode"] == "local_profile", delivery
+        assert delivery["delivery_target_profile_ref"].endswith("local-operator-channel-profiles.json#/profiles/email_cli"), delivery
+        assert delivery["delivery_outbox_message_ref"].endswith(".json"), delivery
+        assert Path(delivery["delivery_outbox_message_ref"]).exists(), delivery
+        assert goal_completed_operator["goal_completion_delivery_report_path"].endswith("goal-completion-delivery-report.json"), goal_completed_operator
+        assert any(str(attachment).endswith("goal-completion-delivery-report.json") for attachment in goal_completed_inbox["attachments"]), goal_completed_inbox
+    else:
+        delivery = goal_completed_doc["goal_completion_delivery"]
+        assert delivery["enabled"] is False, delivery
+        assert delivery["skip_reason"] == "monday_repo_unavailable", delivery
     terminal_registry_doc = json.loads(terminal_registry.read_text(encoding="utf-8"))
     assert terminal_registry_doc["active_goal_key"] == "", terminal_registry_doc
     assert terminal_registry_doc["goals"][0]["status"] == "achieved", terminal_registry_doc
