@@ -163,7 +163,7 @@ PlanningOps must not set:
 - concrete email recipients
 - transport credentials
 
-Monday resolves delivery targets from local configuration, skill context, or operator-specified arguments.
+Monday resolves delivery targets from local configuration, skill context, or operator-specified arguments under `planningops/contracts/local-operator-target-resolution-contract.md`.
 
 ## Validation
 - implementation: `planningops/scripts/autonomous_supervisor_loop.py`

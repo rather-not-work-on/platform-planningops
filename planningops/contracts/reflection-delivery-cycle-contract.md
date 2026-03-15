@@ -16,6 +16,7 @@ This contract exists so:
 - monday delivery entrypoint: `monday/scripts/send_reflection_decision_update.py`
 - action handoff contract: `planningops/contracts/reflection-action-handoff-contract.md`
 - operator channel adapter contract: `planningops/contracts/operator-channel-adapter-contract.md`
+- local target resolution contract: `planningops/contracts/local-operator-target-resolution-contract.md`
 - supervisor handoff contract: `planningops/contracts/supervisor-operator-handoff-contract.md`
 
 ## Cycle Scope
@@ -50,6 +51,7 @@ Optional execution inputs may include:
 Input rules:
 - `--action-file` must point to a `verdict=pass` artifact governed by `planningops/contracts/reflection-action-handoff-contract.md`
 - `planningops` may forward a concrete `delivery-target` only when it is supplied externally; it must not resolve the target from control-plane policy
+- when no explicit `delivery-target` is supplied, monday may resolve a local target under `planningops/contracts/local-operator-target-resolution-contract.md`
 - `planningops` may forward `channel-kind` and `thread-ref` hints, but must not derive concrete Slack channel IDs or email recipients on its own
 
 ## Delivery Invocation
@@ -151,7 +153,7 @@ Each stage report must include:
 
 ## Failure Rules
 - missing monday entrypoint or missing action artifact must fail the cycle
-- `delivery_required = true` with missing `delivery-target` must fail when monday rejects the invocation
+- `delivery_required = true` with missing `delivery-target` must fail only when monday cannot resolve a valid local target under `planningops/contracts/local-operator-target-resolution-contract.md`
 - the runner must fail if monday returns non-zero or emits a non-pass delivery report in `dry-run`
 - the runner must fail if the monday delivery report cannot be loaded
 - the runner must fail if aggregate evidence would drop `goal_transition_report_path` for a goal-completion action
