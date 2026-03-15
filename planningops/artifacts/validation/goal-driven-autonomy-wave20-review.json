@@ -1,0 +1,179 @@
+{
+  "generated_at_utc": "2026-03-15T06:49:42Z",
+  "wave_id": "uap-goal-driven-autonomy-wave20",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 488,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze monday scheduled delivery-cycle handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/488",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 489,
+      "state": "CLOSED",
+      "title": "plan: [20] Define monday scheduler delivery-cycle work items",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/489",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 490,
+      "state": "CLOSED",
+      "title": "plan: [30] Execute scheduled delivery work items through monday queue cycle",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/490",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/scheduled-delivery-cycle-handoff-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/scheduler_delivery_cycle_work_items.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_scheduled_queue_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/contracts/runtime-scheduler-evidence.schema.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/config/runtime-reason-taxonomy.json",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/test_run_scheduled_queue_cycle_delivery_work_items.sh",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/scheduler_delivery_cycle_work_items.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday scheduler delivery work-item selection logic"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/run_scheduled_queue_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday queue dequeue, delivery-cycle execution, or acknowledgement mutation"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/scheduler-cycle",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not become the storage owner for monday scheduler delivery-cycle runtime artifacts"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave20",
+      "actual": "uap-goal-driven-autonomy-wave20",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave19_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave20_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_all",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/validate_active_goal_registry",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_scheduled_delivery_cycle_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_scheduler_delivery_cycle_work_items",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_scheduled_queue_cycle_delivery_work_items",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_operator_message_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_run_goal_completion_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/typecheck",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_module_readmes",
+      "verdict": "pass"
+    }
+  ],
+  "behavior_checks": [
+    {
+      "name": "scheduler_selects_monday_delivery_entrypoint_from_work_item",
+      "verdict": "pass",
+      "message": "monday now resolves a queue-native scheduled delivery work item into exactly one delivery-cycle entrypoint based on delivery_work_item_kind and message_class without changing the queue item schema."
+    },
+    {
+      "name": "scheduled_queue_cycle_emits_delivery_cycle_evidence",
+      "verdict": "pass",
+      "message": "monday scheduled queue execution records delivery_cycle_required, selected_delivery_entrypoint, and delivery_cycle_report_ref so planningops can review recurring delivery execution without reconstructing monday runtime state."
+    },
+    {
+      "name": "delivery_cycle_failures_are_taxonomized",
+      "verdict": "pass",
+      "message": "runtime scheduler evidence and reason taxonomy now classify queue-native delivery-cycle failures under delivery_cycle_failed instead of silently collapsing them into generic scheduler results."
+    },
+    {
+      "name": "delivery_cycle_cli_respects_payload_dry_run",
+      "verdict": "pass",
+      "message": "monday delivery-cycle CLIs no longer force apply mode when the payload requests dry_run, which keeps scheduler-driven rehearsals deterministic and prevents false blocked results."
+    }
+  ],
+  "check_count": 28,
+  "failure_count": 0,
+  "verdict": "pass"
+}
