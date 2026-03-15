@@ -1,0 +1,83 @@
+{
+  "generated_at_utc": "2026-03-15T03:58:31.899653+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": null,
+  "write_updated_issues_file": null,
+  "mode": "apply",
+  "issues_in_scope": 5,
+  "issues_with_missing_labels": 4,
+  "issues_applied": 4,
+  "rows": [
+    {
+      "number": 432,
+      "title": "plan: [40] Review goal-driven autonomy wave 14 queue admission handoff",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/432",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 431,
+      "title": "plan: [30] Route planningops scheduled orchestration through monday queue admission",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/431",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 430,
+      "title": "plan: [20] Add monday queue admission CLI and store-only scheduled cycle path",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/430",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/runtime",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 429,
+      "title": "plan: [10] Freeze scheduled queue admission handoff contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/429",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied",
+      "error": ""
+    },
+    {
+      "number": 428,
+      "title": "plan: [50] Promote wave14 and materialize live backlog",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/428",
+      "existing_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "planned_labels": [],
+      "apply_status": "skipped",
+      "error": ""
+    }
+  ]
+}
