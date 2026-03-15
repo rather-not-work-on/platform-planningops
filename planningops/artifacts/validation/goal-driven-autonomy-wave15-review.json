@@ -1,0 +1,170 @@
+{
+  "generated_at_utc": "2026-03-15T05:00:00Z",
+  "wave_id": "uap-goal-driven-autonomy-wave15",
+  "spec": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave15-issue-pack.md",
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "issue_checks": [
+    {
+      "number": 440,
+      "state": "CLOSED",
+      "title": "plan: [10] Freeze monday local operator target resolution contract",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/440",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 441,
+      "state": "CLOSED",
+      "title": "plan: [20] Add monday local outbox resolver for operator and terminal delivery",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/441",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 442,
+      "state": "CLOSED",
+      "title": "plan: [30] Route planningops reflection delivery through monday local target resolution",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/442",
+      "verdict": "pass",
+      "message": ""
+    },
+    {
+      "number": 443,
+      "state": "CLOSED",
+      "title": "plan: [40] Route supervisor completion delivery through monday local target resolution",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/443",
+      "verdict": "pass",
+      "message": ""
+    }
+  ],
+  "file_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/contracts/local-operator-target-resolution-contract.md",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_reflection_delivery_cycle.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/autonomous_supervisor_loop.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/platform-planningops"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/operator_channel_local_outbox.py",
+      "exists": true,
+      "missing_markers": [],
+      "verdict": "pass",
+      "repo": "rather-not-work-on/monday"
+    }
+  ],
+  "boundary_checks": [
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/local-operator-channel-profiles.json",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday local operator target profile config"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/operator_channel_local_outbox.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own monday local outbox delivery execution"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/send_goal_completion_notification.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "planningops must not own transport-facing goal completion delivery CLIs"
+    },
+    {
+      "path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/run_reflection_delivery_cycle.py",
+      "exists": false,
+      "verdict": "pass",
+      "message": "monday must not host planningops reflection delivery orchestration"
+    }
+  ],
+  "registry_checks": [
+    {
+      "name": "active_goal_key",
+      "expected": "uap-goal-driven-autonomy-wave15",
+      "actual": "uap-goal-driven-autonomy-wave15",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave14_status",
+      "expected": "achieved",
+      "actual": "achieved",
+      "verdict": "pass"
+    },
+    {
+      "name": "wave15_status",
+      "expected": "active",
+      "actual": "active",
+      "verdict": "pass"
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "planningops/uap_docs_all",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_delivery_cycle_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_reflection_delivery_cycle",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_autonomous_supervisor_loop_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "planningops/test_supervisor_operator_handoff_contract",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_operator_channel_delivery_cli",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_send_reflection_decision_update",
+      "verdict": "pass"
+    },
+    {
+      "name": "monday/test_supervisor_goal_completion_cli",
+      "verdict": "pass"
+    }
+  ],
+  "behavior_checks": [
+    {
+      "name": "reflection_apply_without_explicit_target",
+      "verdict": "pass",
+      "message": "planningops reflection delivery apply-mode succeeds through monday local profile resolution and local outbox delivery"
+    },
+    {
+      "name": "supervisor_goal_completion_apply_without_explicit_target",
+      "verdict": "pass",
+      "message": "planningops supervisor apply-mode persists monday terminal delivery evidence without caller-supplied recipient arguments"
+    },
+    {
+      "name": "explicit_external_target_still_blocked",
+      "verdict": "pass",
+      "message": "explicit external apply-mode targets remain blocked so unsupported Slack/email transport is not faked"
+    }
+  ],
+  "check_count": 22,
+  "failure_count": 0,
+  "verdict": "pass"
+}
