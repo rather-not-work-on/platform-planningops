@@ -30,14 +30,20 @@ required_fragments = [
     "monday/scripts/send_reflection_decision_update.py",
     "planningops/contracts/reflection-action-handoff-contract.md",
     "planningops/contracts/operator-channel-adapter-contract.md",
+    "planningops/contracts/local-operator-target-resolution-contract.md",
     "`reflection_action_ref`",
     "`monday_delivery_report_ref`",
     "`delivery_verdict`",
+    "`delivery_target_resolution_mode`",
+    "`delivery_target_profile_ref`",
+    "`delivery_transport_kind`",
+    "`delivery_outbox_message_ref`",
     "`goal_transition_report_path`",
     "`delivery_skipped = true`",
     "`dry-run` or `apply`",
     "must not call:",
     "concrete Slack or email transport execution",
+    "must work without a caller-supplied concrete `delivery-target`",
 ]
 for fragment in required_fragments:
     assert fragment in text, fragment
