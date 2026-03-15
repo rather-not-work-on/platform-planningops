@@ -14,6 +14,28 @@ if [[ ! -f "$MONDAY_REPO/scripts/send_reflection_decision_update.py" ]]; then
   exit 0
 fi
 
+cat >"$TMP_DIR/local-operator-channel-profiles.json" <<JSON
+{
+  "config_version": "1",
+  "profiles": {
+    "slack_skill_cli": {
+      "channel_kind": "slack_skill_cli",
+      "transport_kind": "local_outbox",
+      "outbox_root": "$TMP_DIR/local-outbox",
+      "default_target_name": "primary-operator-thread",
+      "supports_threads": true
+    },
+    "email_cli": {
+      "channel_kind": "email_cli",
+      "transport_kind": "local_outbox",
+      "outbox_root": "$TMP_DIR/local-outbox",
+      "default_target_name": "terminal-completion",
+      "supports_threads": false
+    }
+  }
+}
+JSON
+
 cat >"$TMP_DIR/continue-action.json" <<'JSON'
 {
   "handoff_contract_ref": "planningops/contracts/reflection-action-handoff-contract.md",
@@ -110,22 +132,40 @@ python3 planningops/scripts/run_reflection_delivery_cycle.py \
 python3 planningops/scripts/run_reflection_delivery_cycle.py \
   --workspace-root .. \
   --action-file "$TMP_DIR/replan-action.json" \
-  --delivery-target "slack://monday/thread-wave10" \
   --thread-ref "thread-wave10" \
+  --monday-profiles-config "$TMP_DIR/local-operator-channel-profiles.json" \
   --run-id "test-reflection-delivery-replan" \
   --output "$TMP_DIR/replan-report.json" >/dev/null
 
 python3 planningops/scripts/run_reflection_delivery_cycle.py \
   --workspace-root .. \
   --action-file "$TMP_DIR/goal-completed-action.json" \
-  --delivery-target "mailto:operator@example.com" \
+  --monday-profiles-config "$TMP_DIR/local-operator-channel-profiles.json" \
   --run-id "test-reflection-delivery-complete" \
   --output "$TMP_DIR/goal-completed-report.json" >/dev/null
+
+python3 planningops/scripts/run_reflection_delivery_cycle.py \
+  --workspace-root .. \
+  --action-file "$TMP_DIR/replan-action.json" \
+  --thread-ref "thread-wave10" \
+  --monday-profiles-config "$TMP_DIR/local-operator-channel-profiles.json" \
+  --mode apply \
+  --run-id "test-reflection-delivery-replan-apply-local" \
+  --output "$TMP_DIR/replan-apply-local-report.json" >/dev/null
+
+python3 planningops/scripts/run_reflection_delivery_cycle.py \
+  --workspace-root .. \
+  --action-file "$TMP_DIR/goal-completed-action.json" \
+  --monday-profiles-config "$TMP_DIR/local-operator-channel-profiles.json" \
+  --mode apply \
+  --run-id "test-reflection-delivery-complete-apply-local" \
+  --output "$TMP_DIR/goal-completed-apply-local-report.json" >/dev/null
 
 if python3 planningops/scripts/run_reflection_delivery_cycle.py \
   --workspace-root .. \
   --action-file "$TMP_DIR/replan-action.json" \
   --delivery-target "slack://monday/thread-wave10" \
+  --monday-profiles-config "$TMP_DIR/local-operator-channel-profiles.json" \
   --mode apply \
   --run-id "test-reflection-delivery-replan-apply" \
   --output "$TMP_DIR/replan-apply-report.json" >/dev/null; then
@@ -133,7 +173,7 @@ if python3 planningops/scripts/run_reflection_delivery_cycle.py \
   exit 1
 fi
 
-python3 - "$TMP_DIR/continue-report.json" "$TMP_DIR/replan-report.json" "$TMP_DIR/goal-completed-report.json" "$TMP_DIR/replan-apply-report.json" <<'PY'
+python3 - "$TMP_DIR/continue-report.json" "$TMP_DIR/replan-report.json" "$TMP_DIR/goal-completed-report.json" "$TMP_DIR/replan-apply-local-report.json" "$TMP_DIR/goal-completed-apply-local-report.json" "$TMP_DIR/replan-apply-report.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -141,7 +181,9 @@ from pathlib import Path
 continue_report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 replan_report = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 goal_completed_report = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
-replan_apply_report = json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))
+replan_apply_local_report = json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))
+goal_completed_apply_local_report = json.loads(Path(sys.argv[5]).read_text(encoding="utf-8"))
+replan_apply_report = json.loads(Path(sys.argv[6]).read_text(encoding="utf-8"))
 
 assert continue_report["verdict"] == "pass", continue_report
 assert continue_report["delivery_required"] is False, continue_report
@@ -154,17 +196,36 @@ assert replan_report["delivery_required"] is True, replan_report
 assert replan_report["delivery_skipped"] is False, replan_report
 assert replan_report["monday_delivery_entrypoint"] == "monday/scripts/send_reflection_decision_update.py", replan_report
 assert replan_report["delivery_verdict"] == "dry_run", replan_report
+assert replan_report["delivery_target_resolution_mode"] == "local_profile", replan_report
+assert replan_report["delivery_target_profile_ref"].endswith("local-operator-channel-profiles.json#/profiles/slack_skill_cli"), replan_report
+assert replan_report["delivery_transport_kind"] == "local_outbox", replan_report
+assert replan_report["delivery_outbox_message_ref"] == "-", replan_report
 assert replan_report["stage_reports"][0]["stage"] == "delivery_execution", replan_report
 assert replan_report["stage_reports"][0]["verdict"] == "pass", replan_report
 
 assert goal_completed_report["verdict"] == "pass", goal_completed_report
 assert goal_completed_report["message_class_hint"] == "goal_completed", goal_completed_report
 assert goal_completed_report["delivery_verdict"] == "dry_run", goal_completed_report
+assert goal_completed_report["delivery_target_resolution_mode"] == "local_profile", goal_completed_report
+assert goal_completed_report["delivery_target_profile_ref"].endswith("local-operator-channel-profiles.json#/profiles/email_cli"), goal_completed_report
+assert goal_completed_report["delivery_transport_kind"] == "local_outbox", goal_completed_report
 assert goal_completed_report["goal_transition_report_path"].endswith("goal-transition-report.json"), goal_completed_report
+
+assert replan_apply_local_report["verdict"] == "pass", replan_apply_local_report
+assert replan_apply_local_report["delivery_verdict"] == "delivered_local_outbox", replan_apply_local_report
+assert replan_apply_local_report["delivery_target_resolution_mode"] == "local_profile", replan_apply_local_report
+assert replan_apply_local_report["delivery_outbox_message_ref"].endswith(".json"), replan_apply_local_report
+
+assert goal_completed_apply_local_report["verdict"] == "pass", goal_completed_apply_local_report
+assert goal_completed_apply_local_report["delivery_verdict"] == "delivered_local_outbox", goal_completed_apply_local_report
+assert goal_completed_apply_local_report["delivery_target_resolution_mode"] == "local_profile", goal_completed_apply_local_report
+assert goal_completed_apply_local_report["delivery_outbox_message_ref"].endswith(".json"), goal_completed_apply_local_report
 
 assert replan_apply_report["verdict"] == "fail", replan_apply_report
 assert replan_apply_report["delivery_skipped"] is False, replan_apply_report
 assert replan_apply_report["delivery_verdict"] == "blocked", replan_apply_report
+assert replan_apply_report["delivery_target_resolution_mode"] == "explicit_argument", replan_apply_report
+assert replan_apply_report["delivery_target_profile_ref"] == "-", replan_apply_report
 assert replan_apply_report["failure_stage"] == "delivery_execution", replan_apply_report
 assert replan_apply_report["error_count"] >= 1, replan_apply_report
 

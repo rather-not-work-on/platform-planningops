@@ -139,6 +139,11 @@ def parse_args():
     parser.add_argument("--monday-repo-dir", default="monday", help="monday repo directory relative to workspace root")
     parser.add_argument("--monday-python", default=None, help="Optional Python interpreter override for monday leaf scripts")
     parser.add_argument(
+        "--monday-profiles-config",
+        default=None,
+        help="Optional monday local operator profile config override passed through to monday delivery CLIs",
+    )
+    parser.add_argument(
         "--monday-delivery-script",
         default="scripts/send_reflection_decision_update.py",
         help="monday delivery script path relative to the monday repo",
@@ -182,8 +187,30 @@ def base_report_fields(action_ref: str, action: dict | None) -> dict:
         "monday_delivery_entrypoint": "-",
         "monday_delivery_report_ref": "-",
         "delivery_verdict": "-",
+        "delivery_target_resolution_mode": "-",
+        "delivery_target_profile_ref": "-",
+        "delivery_transport_kind": "-",
+        "delivery_outbox_message_ref": "-",
         "goal_transition_report_path": str(action.get("goal_transition_report_path") or "-"),
         "runner_contract_ref": RUNNER_CONTRACT_REF,
+    }
+
+
+def extract_delivery_summary(delivery_report: dict) -> dict:
+    delegate_report = delivery_report.get("delegate_report") or {}
+    nested_report = (delegate_report.get("delivery_report") or delivery_report.get("delivery_report") or {})
+    outbox_message_ref = (
+        delegate_report.get("outbox_message_ref")
+        or delivery_report.get("outbox_message_ref")
+        or nested_report.get("outboxMessageRef")
+        or "-"
+    )
+    return {
+        "delivery_verdict": str(nested_report.get("deliveryVerdict") or "-"),
+        "delivery_target_resolution_mode": str(nested_report.get("targetResolutionMode") or "-"),
+        "delivery_target_profile_ref": str(nested_report.get("targetProfileRef") or "-"),
+        "delivery_transport_kind": str(nested_report.get("transportKind") or "-"),
+        "delivery_outbox_message_ref": str(outbox_message_ref or "-"),
     }
 
 
@@ -198,6 +225,10 @@ def failure_report(
     report_path: Path,
     monday_delivery_report_ref: str = "-",
     delivery_verdict: str = "-",
+    delivery_target_resolution_mode: str = "-",
+    delivery_target_profile_ref: str = "-",
+    delivery_transport_kind: str = "-",
+    delivery_outbox_message_ref: str = "-",
 ) -> int:
     payload = {
         "generated_at_utc": now_utc(),
@@ -206,6 +237,10 @@ def failure_report(
         "delivery_skipped": False,
         "monday_delivery_report_ref": monday_delivery_report_ref,
         "delivery_verdict": delivery_verdict,
+        "delivery_target_resolution_mode": delivery_target_resolution_mode,
+        "delivery_target_profile_ref": delivery_target_profile_ref,
+        "delivery_transport_kind": delivery_transport_kind,
+        "delivery_outbox_message_ref": delivery_outbox_message_ref,
         "stage_reports": stage_reports,
         "failure_stage": failure_stage,
         "error_count": len(errors),
@@ -329,6 +364,8 @@ def main() -> int:
         command.extend(["--channel-kind", args.channel_kind])
     if args.thread_ref:
         command.extend(["--thread-ref", args.thread_ref])
+    if args.monday_profiles_config:
+        command.extend(["--profiles-config", args.monday_profiles_config])
 
     rc, out, err = run_cmd(command, monday_repo, env)
     stage_reports.append(build_stage_report("delivery_execution", command, monday_repo, rc, out, err, delivery_output))
@@ -347,11 +384,7 @@ def main() -> int:
         )
 
     delivery_report = load_json(delivery_output)
-    delivery_verdict = str(
-        ((delivery_report.get("delegate_report") or {}).get("delivery_report") or {}).get("deliveryVerdict")
-        or ((delivery_report.get("delivery_report") or {}).get("deliveryVerdict"))
-        or "-"
-    )
+    delivery_summary = extract_delivery_summary(delivery_report)
     errors = list(delivery_report.get("errors") or [])
     if rc != 0:
         errors = errors or ["monday delivery entrypoint returned non-zero"]
@@ -364,7 +397,7 @@ def main() -> int:
             errors=errors,
             report_path=report_output,
             monday_delivery_report_ref=delivery_report_ref,
-            delivery_verdict=delivery_verdict,
+            **delivery_summary,
         )
     if delivery_report.get("verdict") != "pass":
         return failure_report(
@@ -376,7 +409,7 @@ def main() -> int:
             errors=errors or ["monday delivery report verdict must be pass"],
             report_path=report_output,
             monday_delivery_report_ref=delivery_report_ref,
-            delivery_verdict=delivery_verdict,
+            **delivery_summary,
         )
 
     payload = {
@@ -386,7 +419,7 @@ def main() -> int:
         "delivery_skipped": False,
         "monday_delivery_entrypoint": MONDAY_DELIVERY_ENTRYPOINT,
         "monday_delivery_report_ref": delivery_report_ref,
-        "delivery_verdict": delivery_verdict,
+        **delivery_summary,
         "stage_reports": stage_reports,
         "error_count": 0,
         "errors": [],
@@ -394,7 +427,7 @@ def main() -> int:
     }
     write_report(report_output, payload)
     print(f"report written: {report_output}")
-    print(f"verdict=pass delivery_verdict={delivery_verdict}")
+    print(f"verdict=pass delivery_verdict={delivery_summary['delivery_verdict']}")
     return 0
 
 

@@ -47,12 +47,15 @@ Optional execution inputs may include:
 - `--workspace-root`
 - `--monday-repo-dir`
 - `--monday-python`
+- `--monday-profiles-config`
 
 Input rules:
 - `--action-file` must point to a `verdict=pass` artifact governed by `planningops/contracts/reflection-action-handoff-contract.md`
+- the primary local autonomous path must work without a caller-supplied concrete `delivery-target`
 - `planningops` may forward a concrete `delivery-target` only when it is supplied externally; it must not resolve the target from control-plane policy
 - when no explicit `delivery-target` is supplied, monday may resolve a local target under `planningops/contracts/local-operator-target-resolution-contract.md`
 - `planningops` may forward `channel-kind` and `thread-ref` hints, but must not derive concrete Slack channel IDs or email recipients on its own
+- `planningops` may forward a monday-owned local profile config hint only for deterministic testing or local environment selection; it must not author recipient policy inside that config
 
 ## Delivery Invocation
 The delivery-cycle runner must invoke only:
@@ -82,6 +85,10 @@ Every delivery-cycle run must emit one aggregate report that includes:
 - `monday_delivery_entrypoint`
 - `monday_delivery_report_ref`
 - `delivery_verdict`
+- `delivery_target_resolution_mode`
+- `delivery_target_profile_ref`
+- `delivery_transport_kind`
+- `delivery_outbox_message_ref`
 - `goal_transition_report_path`
 - `runner_contract_ref`
 - `stage_reports`
@@ -99,6 +106,10 @@ When `delivery_required = true`, the report must include:
 - `monday_delivery_entrypoint = monday/scripts/send_reflection_decision_update.py`
 - `monday_delivery_report_ref`
 - a projected `delivery_verdict` copied from monday delivery evidence
+- a projected `delivery_target_resolution_mode` copied from monday delivery evidence
+- a projected `delivery_target_profile_ref` copied from monday delivery evidence when monday resolved a local profile
+- a projected `delivery_transport_kind` copied from monday delivery evidence
+- a projected `delivery_outbox_message_ref` copied from monday delivery evidence when apply mode wrote a local outbox artifact
 
 ## Cycle Report
 The aggregate cycle report is the planningops-owned evidence layer for this stage.
@@ -106,7 +117,7 @@ The aggregate cycle report is the planningops-owned evidence layer for this stag
 The report must:
 - stay repo-root relative when pointing at artifacts
 - preserve the action artifact path and the monday delivery report path
-- summarize only the orchestration outcome, not raw transport internals
+- summarize local target-resolution and outbox routing without copying concrete recipients or raw transport payloads
 - remain deterministic for the same action artifact plus delivery arguments
 
 `stage_reports` must contain at least:
@@ -130,6 +141,7 @@ Each stage report must include:
 - `message_class_hint = goal_completed` must still flow through `monday/scripts/send_reflection_decision_update.py`
 - `goal_transition_report_path` must be preserved from the action artifact into the aggregate report
 - `planningops` may orchestrate the monday CLI, but transport behavior and delivery verdict semantics remain monday-owned
+- the aggregate report must preserve monday-owned local target resolution evidence without promoting concrete `deliveryTarget` values into planningops-owned fields
 - identical `dry-run` inputs must produce the same aggregate verdict and stage structure apart from timestamps
 
 ## Ownership Boundary
