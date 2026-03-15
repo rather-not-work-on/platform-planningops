@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-15T06:03:10.276389+00:00",
+  "generated_at_utc": "2026-03-15T06:30:22.111215+00:00",
   "registry": "planningops/config/active-goal-registry.json",
   "verdict": "pass",
   "error_count": 0,
@@ -38,6 +38,7 @@
       "kind": "email_cli",
       "execution_repo": "rather-not-work-on/monday",
       "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md"
-    }
+    },
+    "next_goal_key": "uap-goal-driven-autonomy-wave20"
   }
 }

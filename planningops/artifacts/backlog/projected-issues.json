@@ -1,0 +1,94 @@
+[
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 10,
+    "state": "open",
+    "updated_at": "2026-03-15T06:30:22.695272+00:00",
+    "title": "plan: [10] Freeze monday scheduled delivery-cycle handoff contract",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/10",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- plan_id: `uap-goal-driven-autonomy-wave20`\n- plan_revision: `1`\n- plan_item_id: `T10`\n- execution_order: `10`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- workflow_state: `ready_contract`\n- loop_profile: `l1_contract_clarification`\n- plan_lane: `m1_contract_freeze`\n- depends_on: `-`\n- primary_output: `planningops/contracts/scheduled-delivery-cycle-handoff-contract.md`\n\n## Problem Statement\n- Resolve this plan item with deterministic artifacts and contract-aligned updates.\n\n## Interfaces & Dependencies\n- target_repo: `rather-not-work-on/platform-planningops`\n- depends_on: `-`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- `planningops/contracts/scheduled-delivery-cycle-handoff-contract.md`\n\n## Acceptance Criteria\n- [ ] Required artifact created and linked under Evidence.\n- [ ] Contract/path references are updated and validated.\n\n## Definition of Done\n- [ ] Required artifact created\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence",
+    "labels": [
+      {
+        "name": "area/planningops"
+      },
+      {
+        "name": "p2"
+      },
+      {
+        "name": "task"
+      },
+      {
+        "name": "type/governance"
+      }
+    ]
+  },
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 20,
+    "state": "open",
+    "updated_at": "2026-03-15T06:30:22.695272+00:00",
+    "title": "plan: [20] Define monday scheduler delivery-cycle work items",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/20",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- plan_id: `uap-goal-driven-autonomy-wave20`\n- plan_revision: `1`\n- plan_item_id: `T20`\n- execution_order: `20`\n- target_repo: `rather-not-work-on/monday`\n- component: `runtime`\n- workflow_state: `ready_implementation`\n- loop_profile: `l3_implementation_tdd`\n- plan_lane: `m2_sync_core`\n- depends_on: `T10`\n- primary_output: `monday/scripts/scheduler_delivery_cycle_work_items.py`\n\n## Problem Statement\n- Resolve this plan item with deterministic artifacts and contract-aligned updates.\n\n## Interfaces & Dependencies\n- target_repo: `rather-not-work-on/monday`\n- depends_on: `T10`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- `monday/scripts/scheduler_delivery_cycle_work_items.py`\n\n## Acceptance Criteria\n- [ ] Required artifact created and linked under Evidence.\n- [ ] Contract/path references are updated and validated.\n\n## Definition of Done\n- [ ] Required artifact created\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence\n\n## Implementation Blueprint Refs\ninterface_contract_refs: docs/initiatives/unified-personal-agent-platform/20-repos/monday/20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md\npackage_topology_ref: docs/initiatives/unified-personal-agent-platform/20-repos/monday/README.md\ndependency_manifest_ref: planningops/config/runtime-profiles.json\nfile_plan_ref: docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md\n",
+    "labels": [
+      {
+        "name": "area/runtime"
+      },
+      {
+        "name": "p2"
+      },
+      {
+        "name": "task"
+      },
+      {
+        "name": "type/hardening"
+      }
+    ]
+  },
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 30,
+    "state": "open",
+    "updated_at": "2026-03-15T06:30:22.695272+00:00",
+    "title": "plan: [30] Execute scheduled delivery work items through monday queue cycle",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/30",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- plan_id: `uap-goal-driven-autonomy-wave20`\n- plan_revision: `1`\n- plan_item_id: `T30`\n- execution_order: `30`\n- target_repo: `rather-not-work-on/monday`\n- component: `runtime`\n- workflow_state: `ready_implementation`\n- loop_profile: `l3_implementation_tdd`\n- plan_lane: `m2_sync_core`\n- depends_on: `T10,T20`\n- primary_output: `monday/scripts/run_scheduled_queue_cycle.py`\n\n## Problem Statement\n- Resolve this plan item with deterministic artifacts and contract-aligned updates.\n\n## Interfaces & Dependencies\n- target_repo: `rather-not-work-on/monday`\n- depends_on: `T10,T20`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- `monday/scripts/run_scheduled_queue_cycle.py`\n\n## Acceptance Criteria\n- [ ] Required artifact created and linked under Evidence.\n- [ ] Contract/path references are updated and validated.\n\n## Definition of Done\n- [ ] Required artifact created\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence\n\n## Implementation Blueprint Refs\ninterface_contract_refs: docs/initiatives/unified-personal-agent-platform/20-repos/monday/20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md\npackage_topology_ref: docs/initiatives/unified-personal-agent-platform/20-repos/monday/README.md\ndependency_manifest_ref: planningops/config/runtime-profiles.json\nfile_plan_ref: docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md\n",
+    "labels": [
+      {
+        "name": "area/runtime"
+      },
+      {
+        "name": "p2"
+      },
+      {
+        "name": "task"
+      },
+      {
+        "name": "type/hardening"
+      }
+    ]
+  },
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 40,
+    "state": "open",
+    "updated_at": "2026-03-15T06:30:22.695272+00:00",
+    "title": "plan: [40] Review goal-driven autonomy wave 20 scheduled delivery queue execution",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/40",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- plan_id: `uap-goal-driven-autonomy-wave20`\n- plan_revision: `1`\n- plan_item_id: `T40`\n- execution_order: `40`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- workflow_state: `review_gate`\n- loop_profile: `l4_integration_reconcile`\n- plan_lane: `m3_guardrails`\n- depends_on: `T10,T20,T30`\n- primary_output: `planningops/artifacts/validation/goal-driven-autonomy-wave20-review.json`\n\n## Problem Statement\n- Resolve this plan item with deterministic artifacts and contract-aligned updates.\n\n## Interfaces & Dependencies\n- target_repo: `rather-not-work-on/platform-planningops`\n- depends_on: `T10,T20,T30`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md`\n- `planningops/artifacts/validation/goal-driven-autonomy-wave20-review.json`\n\n## Acceptance Criteria\n- [ ] Required artifact created and linked under Evidence.\n- [ ] Contract/path references are updated and validated.\n\n## Definition of Done\n- [ ] Required artifact created\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence",
+    "labels": [
+      {
+        "name": "area/planningops"
+      },
+      {
+        "name": "p2"
+      },
+      {
+        "name": "task"
+      },
+      {
+        "name": "type/governance"
+      }
+    ]
+  }
+]

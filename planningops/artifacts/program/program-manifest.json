@@ -2,418 +2,83 @@
   "manifest_version": 1,
   "program_id": "uap-po-ct-program",
   "initiative": "unified-personal-agent-platform",
-  "source_plan": "docs/workbench/unified-personal-agent-platform/plans/2026-03-05-plan-meta-backlog-atomic-decomposition-and-federated-delivery-plan.md",
-  "generated_at_utc": "2026-03-05T14:23:23.777545+00:00",
-  "item_count": 24,
+  "source_plan": "docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave20-issue-pack.md",
+  "scope_source_plan": true,
+  "generated_at_utc": "2026-03-15T06:30:23.292890+00:00",
+  "selection_policy": "dedupe_by_plan_item_id_and_target_repo_open_first_then_latest_update",
+  "item_count": 4,
   "items": [
     {
-      "plan_item_id": "A00",
+      "plan_item_id": "T10",
       "track": "control_plane",
-      "execution_order": 1000,
+      "execution_order": 10,
       "target_repo": "rather-not-work-on/platform-planningops",
       "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 94,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/94",
-      "issue_state": "closed",
-      "component": "orchestrator",
-      "workflow_state": "done",
+      "issue_number": 10,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/10",
+      "issue_state": "open",
+      "issue_updated_at": "2026-03-15T06:30:22.695272+00:00",
+      "component": "planningops",
+      "workflow_state": "ready_contract",
       "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M0 Bootstrap",
+      "plan_lane": "m1_contract_freeze",
       "depends_on": []
     },
     {
-      "plan_item_id": "A10",
-      "track": "control_plane",
-      "execution_order": 1010,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 95,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/95",
-      "issue_state": "open",
-      "component": "planningops",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M0 Bootstrap",
-      "depends_on": [
-        "A00"
-      ]
-    },
-    {
-      "plan_item_id": "A11",
-      "track": "control_plane",
-      "execution_order": 1020,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 96,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/96",
-      "issue_state": "open",
-      "component": "planningops",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l2_simulation",
-      "plan_lane": "M0 Bootstrap",
-      "depends_on": [
-        "A10"
-      ]
-    },
-    {
-      "plan_item_id": "A20",
-      "track": "control_plane",
-      "execution_order": 1100,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 97,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/97",
-      "issue_state": "open",
-      "component": "planningops",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l3_implementation_tdd",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A10"
-      ]
-    },
-    {
-      "plan_item_id": "A21",
-      "track": "control_plane",
-      "execution_order": 1110,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 98,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/98",
-      "issue_state": "open",
-      "component": "planningops",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l3_implementation_tdd",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A20"
-      ]
-    },
-    {
-      "plan_item_id": "A22",
-      "track": "control_plane",
-      "execution_order": 1120,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 99,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/99",
-      "issue_state": "open",
-      "component": "planningops",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A21"
-      ]
-    },
-    {
-      "plan_item_id": "A30",
-      "track": "control_plane",
-      "execution_order": 1200,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 100,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/100",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "A22"
-      ]
-    },
-    {
-      "plan_item_id": "A31",
-      "track": "control_plane",
-      "execution_order": 1210,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 101,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/101",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l3_implementation_tdd",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "A30"
-      ]
-    },
-    {
-      "plan_item_id": "A32",
-      "track": "control_plane",
-      "execution_order": 1220,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 102,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/102",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "A31"
-      ]
-    },
-    {
-      "plan_item_id": "A40",
-      "track": "control_plane",
-      "execution_order": 1300,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 103,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/103",
-      "issue_state": "open",
-      "component": "planningops",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A10"
-      ]
-    },
-    {
-      "plan_item_id": "A41",
-      "track": "control_plane",
-      "execution_order": 1310,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 104,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/104",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l3_implementation_tdd",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "A40"
-      ]
-    },
-    {
-      "plan_item_id": "A42",
-      "track": "control_plane",
-      "execution_order": 1320,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 105,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/105",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l3_implementation_tdd",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "A41"
-      ]
-    },
-    {
-      "plan_item_id": "A43",
-      "track": "control_plane",
-      "execution_order": 1330,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 106,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/106",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "A42"
-      ]
-    },
-    {
-      "plan_item_id": "A44",
-      "track": "control_plane",
-      "execution_order": 1340,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 107,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/107",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M3 Guardrails",
-      "depends_on": [
-        "A43"
-      ]
-    },
-    {
-      "plan_item_id": "B10",
+      "plan_item_id": "T20",
       "track": "federated_runtime",
-      "execution_order": 2100,
-      "target_repo": "rather-not-work-on/platform-contracts",
-      "issue_repo": "rather-not-work-on/platform-contracts",
-      "issue_number": 2,
-      "issue_url": "https://github.com/rather-not-work-on/platform-contracts/issues/2",
-      "issue_state": "open",
-      "component": "contracts",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A10"
-      ]
-    },
-    {
-      "plan_item_id": "B11",
-      "track": "federated_runtime",
-      "execution_order": 2110,
-      "target_repo": "rather-not-work-on/platform-contracts",
-      "issue_repo": "rather-not-work-on/platform-contracts",
-      "issue_number": 3,
-      "issue_url": "https://github.com/rather-not-work-on/platform-contracts/issues/3",
-      "issue_state": "open",
-      "component": "contracts",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "B10"
-      ]
-    },
-    {
-      "plan_item_id": "B20",
-      "track": "federated_runtime",
-      "execution_order": 2200,
-      "target_repo": "rather-not-work-on/platform-provider-gateway",
-      "issue_repo": "rather-not-work-on/platform-provider-gateway",
-      "issue_number": 2,
-      "issue_url": "https://github.com/rather-not-work-on/platform-provider-gateway/issues/2",
-      "issue_state": "open",
-      "component": "provider-gateway",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A10"
-      ]
-    },
-    {
-      "plan_item_id": "B21",
-      "track": "federated_runtime",
-      "execution_order": 2210,
-      "target_repo": "rather-not-work-on/platform-provider-gateway",
-      "issue_repo": "rather-not-work-on/platform-provider-gateway",
-      "issue_number": 3,
-      "issue_url": "https://github.com/rather-not-work-on/platform-provider-gateway/issues/3",
-      "issue_state": "open",
-      "component": "provider-gateway",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "B20"
-      ]
-    },
-    {
-      "plan_item_id": "B30",
-      "track": "federated_runtime",
-      "execution_order": 2300,
-      "target_repo": "rather-not-work-on/platform-observability-gateway",
-      "issue_repo": "rather-not-work-on/platform-observability-gateway",
-      "issue_number": 2,
-      "issue_url": "https://github.com/rather-not-work-on/platform-observability-gateway/issues/2",
-      "issue_state": "open",
-      "component": "observability-gateway",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M1 Contract Freeze",
-      "depends_on": [
-        "A10"
-      ]
-    },
-    {
-      "plan_item_id": "B31",
-      "track": "federated_runtime",
-      "execution_order": 2310,
-      "target_repo": "rather-not-work-on/platform-observability-gateway",
-      "issue_repo": "rather-not-work-on/platform-observability-gateway",
-      "issue_number": 3,
-      "issue_url": "https://github.com/rather-not-work-on/platform-observability-gateway/issues/3",
-      "issue_state": "open",
-      "component": "observability-gateway",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M2 Sync Core",
-      "depends_on": [
-        "B30"
-      ]
-    },
-    {
-      "plan_item_id": "B40",
-      "track": "federated_runtime",
-      "execution_order": 2400,
+      "execution_order": 20,
       "target_repo": "rather-not-work-on/monday",
-      "issue_repo": "rather-not-work-on/monday",
-      "issue_number": 3,
-      "issue_url": "https://github.com/rather-not-work-on/monday/issues/3",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 20,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/20",
       "issue_state": "open",
+      "issue_updated_at": "2026-03-15T06:30:22.695272+00:00",
       "component": "runtime",
-      "workflow_state": "ready-contract",
-      "loop_profile": "l1_contract_clarification",
-      "plan_lane": "M1 Contract Freeze",
+      "workflow_state": "ready_implementation",
+      "loop_profile": "l3_implementation_tdd",
+      "plan_lane": "m2_sync_core",
       "depends_on": [
-        "A10"
+        "T10"
       ]
     },
     {
-      "plan_item_id": "B41",
+      "plan_item_id": "T30",
       "track": "federated_runtime",
-      "execution_order": 2410,
+      "execution_order": 30,
       "target_repo": "rather-not-work-on/monday",
-      "issue_repo": "rather-not-work-on/monday",
-      "issue_number": 4,
-      "issue_url": "https://github.com/rather-not-work-on/monday/issues/4",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 30,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/30",
       "issue_state": "open",
+      "issue_updated_at": "2026-03-15T06:30:22.695272+00:00",
       "component": "runtime",
-      "workflow_state": "ready-implementation",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M2 Sync Core",
+      "workflow_state": "ready_implementation",
+      "loop_profile": "l3_implementation_tdd",
+      "plan_lane": "m2_sync_core",
       "depends_on": [
-        "B40"
+        "T10",
+        "T20"
       ]
     },
     {
-      "plan_item_id": "B50",
-      "track": "federated_runtime",
-      "execution_order": 2500,
+      "plan_item_id": "T40",
+      "track": "control_plane",
+      "execution_order": 40,
       "target_repo": "rather-not-work-on/platform-planningops",
       "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 108,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/108",
+      "issue_number": 40,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/40",
       "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "ready-implementation",
+      "issue_updated_at": "2026-03-15T06:30:22.695272+00:00",
+      "component": "planningops",
+      "workflow_state": "review_gate",
       "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M3 Guardrails",
+      "plan_lane": "m3_guardrails",
       "depends_on": [
-        "B11",
-        "B21",
-        "B31",
-        "B41"
-      ]
-    },
-    {
-      "plan_item_id": "C90",
-      "track": "reconciliation",
-      "execution_order": 3000,
-      "target_repo": "rather-not-work-on/platform-planningops",
-      "issue_repo": "rather-not-work-on/platform-planningops",
-      "issue_number": 109,
-      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/109",
-      "issue_state": "open",
-      "component": "orchestrator",
-      "workflow_state": "review-gate",
-      "loop_profile": "l4_integration_reconcile",
-      "plan_lane": "M3 Guardrails",
-      "depends_on": [
-        "A44",
-        "B50"
+        "T10",
+        "T20",
+        "T30"
       ]
     }
   ]
