@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures parser->diff->dry-run execution logs, determinism check, and failure-case validation for issue #4.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Parser Diff Dry-Run Pipeline Baseline

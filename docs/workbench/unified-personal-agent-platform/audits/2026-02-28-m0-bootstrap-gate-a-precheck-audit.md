@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Records Gate A pre-check execution log and M0 checkpoint evidence format for issue #2 bootstrap completion.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: M0 Bootstrap Gate A Pre-check

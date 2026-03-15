@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures issue #17 evidence for semver policy, compatibility CI, and failure-scenario fixtures in platform-contracts.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Platform Contracts SemVer CI and Compatibility Policy

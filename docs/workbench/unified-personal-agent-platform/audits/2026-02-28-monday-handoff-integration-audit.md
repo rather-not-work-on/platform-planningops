@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures issue #20 evidence for Executor/Worker naming ADR and handoff field mapping smoke validation in monday runtime.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Monday Executor-Worker Handoff Integration

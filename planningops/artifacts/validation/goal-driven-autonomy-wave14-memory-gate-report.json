@@ -1,0 +1,16 @@
+{
+  "generated_at_utc": "2026-03-15T04:04:04.846805+00:00",
+  "mode": "check",
+  "root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops",
+  "rules_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/memory-tier-rules.json",
+  "as_of": "2026-03-15",
+  "record_count": 349,
+  "l0_record_count": 166,
+  "trigger_count": 0,
+  "error_count": 0,
+  "stale_l0_uncompacted": [],
+  "topic_compaction_required": [],
+  "missing_archive_linkage": [],
+  "errors": [],
+  "verdict": "pass"
+}

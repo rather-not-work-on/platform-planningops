@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Captures issue #16 bootstrap evidence for the new platform-contracts repository, including C1~C8 schema seed and validation results.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Platform Contracts Bootstrap (C1~C8)

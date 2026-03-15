@@ -7,6 +7,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Execution plan for separating canonical initiative docs from initiative-scoped workbench artifacts.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 source_brainstorm: docs/workbench/unified-personal-agent-platform/brainstorms/2026-02-28-doc-topology-permanence-separation-brainstorm.md
 ---
 

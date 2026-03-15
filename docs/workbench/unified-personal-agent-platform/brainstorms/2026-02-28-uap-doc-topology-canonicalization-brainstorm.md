@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: reference
 summary: Defines Core 7 canonicalization strategy and path/term consistency decisions.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 topic: uap-doc-topology-canonicalization
 ---
 

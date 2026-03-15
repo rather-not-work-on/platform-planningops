@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Documents pilot repositories, project metadata catalog location, and DRI ownership mapping for M0 bootstrap.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # plan: Bootstrap Pilot Metadata and DRI Assignment

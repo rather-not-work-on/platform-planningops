@@ -6,6 +6,7 @@ initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
 summary: Validates local harness single-loop execution with dry-run/apply branching, failure logging, and report artifacts for issue #9.
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # audit: Ralph Loop Local Harness Baseline

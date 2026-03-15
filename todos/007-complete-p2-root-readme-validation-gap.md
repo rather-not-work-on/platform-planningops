@@ -4,6 +4,7 @@ priority: p2
 issue_id: "007"
 tags: [code-review, docs, quality, ci]
 dependencies: []
+compacted_into: docs/initiatives/unified-personal-agent-platform/40-quality/uap-bootstrap-memory-compaction-summary.quality.md
 ---
 
 # Root README Validation Gap
