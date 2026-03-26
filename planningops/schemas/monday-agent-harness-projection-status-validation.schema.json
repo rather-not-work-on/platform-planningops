@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MONDAY Agent Harness Projection Status Validation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status_path",
+    "bundle_path",
+    "validation_report_path",
+    "schema_path",
+    "validation_schema_path",
+    "output_path",
+    "generated_at_utc",
+    "verdict",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "status_generated_at_utc",
+    "status_output_path",
+    "status_validation_output_path",
+    "status_mission_id",
+    "status_run_id",
+    "status_session_id",
+    "status_ready",
+    "projection_status_verdict",
+    "projection_validation_verdict",
+    "projection_validation_state",
+    "status_validation_verdict",
+    "status_validation_state",
+    "status_next_step"
+  ],
+  "properties": {
+    "status_path": { "type": "string", "minLength": 1 },
+    "bundle_path": { "type": "string", "minLength": 1 },
+    "validation_report_path": { "type": "string", "minLength": 1 },
+    "schema_path": { "type": "string", "minLength": 1 },
+    "validation_schema_path": { "type": "string", "minLength": 1 },
+    "output_path": { "type": "string", "minLength": 1 },
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "error_count": { "type": "integer", "minimum": 0 },
+    "warning_count": { "type": "integer", "minimum": 0 },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "status_generated_at_utc": { "type": ["string", "null"] },
+    "status_output_path": { "type": ["string", "null"] },
+    "status_validation_output_path": { "type": ["string", "null"] },
+    "status_mission_id": { "type": ["string", "null"] },
+    "status_run_id": { "type": ["string", "null"] },
+    "status_session_id": { "type": ["string", "null"] },
+    "status_ready": { "type": "boolean" },
+    "projection_status_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "projection_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "projection_validation_state": {
+      "type": "string",
+      "enum": ["fresh", "stale", "missing"]
+    },
+    "status_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "missing", "unknown"]
+    },
+    "status_validation_state": {
+      "type": "string",
+      "enum": ["fresh", "stale", "missing"]
+    },
+    "status_next_step": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MONDAY Agent Harness Projection Status Bundle Validation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status_bundle_path",
+    "schema_path",
+    "output_path",
+    "generated_at_utc",
+    "verdict",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "projection_bundle_path",
+    "projection_validation_report_path",
+    "status_path",
+    "status_validation_path",
+    "mission_id",
+    "run_id",
+    "session_id",
+    "bundle_ready",
+    "bundle_next_step",
+    "projection_validation_verdict",
+    "projection_validation_state",
+    "status_sidecar_validation_verdict",
+    "resolved_status_bundle_path"
+  ],
+  "properties": {
+    "status_bundle_path": { "type": "string", "minLength": 1 },
+    "schema_path": { "type": "string", "minLength": 1 },
+    "output_path": { "type": "string", "minLength": 1 },
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "error_count": { "type": "integer", "minimum": 0 },
+    "warning_count": { "type": "integer", "minimum": 0 },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "projection_bundle_path": { "type": "string", "minLength": 1 },
+    "projection_validation_report_path": { "type": "string", "minLength": 1 },
+    "status_path": { "type": "string", "minLength": 1 },
+    "status_validation_path": { "type": "string", "minLength": 1 },
+    "mission_id": { "type": ["string", "null"] },
+    "run_id": { "type": ["string", "null"] },
+    "session_id": { "type": ["string", "null"] },
+    "bundle_ready": { "type": "boolean" },
+    "bundle_next_step": { "type": "string", "minLength": 1 },
+    "projection_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "missing", "unknown"]
+    },
+    "projection_validation_state": {
+      "type": "string",
+      "enum": ["fresh", "stale", "missing"]
+    },
+    "status_sidecar_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "resolved_status_bundle_path": { "type": "string", "minLength": 1 }
+  }
+}

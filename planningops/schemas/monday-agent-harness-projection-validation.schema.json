@@ -1,0 +1,234 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MONDAY Agent Harness Projection Validation Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "projection_root",
+    "monday_root",
+    "completion_summary_path",
+    "readiness_projection_path",
+    "verification_projection_path",
+    "operator_handoff_summary_path",
+    "schema_path",
+    "validation_schema_path",
+    "mission_id",
+    "run_id",
+    "session_id",
+    "evidence_bundle_path",
+    "evidence_bundle_exists",
+    "final_status",
+    "readiness_status",
+    "ready",
+    "verification_verdict",
+    "handoff_status",
+    "next_required_actor",
+    "recommended_next_step",
+    "next_step",
+    "blocking_conditions",
+    "failed_checks",
+    "repair_attempts",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "verdict"
+  ],
+  "properties": {
+    "bundle_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projection_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "monday_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "completion_summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_projection_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verification_projection_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation_schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mission_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "session_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_bundle_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_bundle_exists": {
+      "type": "boolean"
+    },
+    "final_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "succeeded",
+        "blocked",
+        null
+      ]
+    },
+    "readiness_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "ready",
+        "blocked",
+        "not_ready",
+        null
+      ]
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "verification_verdict": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "pass",
+        "repairable_fail",
+        "blocked_fail",
+        null
+      ]
+    },
+    "handoff_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "not_required",
+        "required",
+        null
+      ]
+    },
+    "next_required_actor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "none",
+        "user",
+        "operator",
+        "orchestrator",
+        "planner",
+        "designer",
+        "executor",
+        "verifier",
+        "repairer",
+        "operator_advisor",
+        null
+      ]
+    },
+    "recommended_next_step": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "next_step": {
+      "type": "string",
+      "minLength": 1
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "repair_attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  }
+}

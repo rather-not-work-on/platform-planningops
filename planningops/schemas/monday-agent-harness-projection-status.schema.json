@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MONDAY Agent Harness Projection Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "output_path",
+    "status_validation_output_path",
+    "bundle_path",
+    "validation_report_path",
+    "bundle_present",
+    "validation_present",
+    "projection_root",
+    "monday_root",
+    "mission_id",
+    "run_id",
+    "session_id",
+    "final_status",
+    "readiness_status",
+    "verification_verdict",
+    "handoff_status",
+    "next_required_actor",
+    "recommended_next_step",
+    "ready",
+    "validation_verdict",
+    "validation_state",
+    "next_step"
+  ],
+  "properties": {
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "output_path": { "type": "string", "minLength": 1 },
+    "status_validation_output_path": { "type": ["string", "null"] },
+    "bundle_path": { "type": "string", "minLength": 1 },
+    "validation_report_path": { "type": "string", "minLength": 1 },
+    "bundle_present": { "type": "boolean" },
+    "validation_present": { "type": "boolean" },
+    "projection_root": { "type": ["string", "null"] },
+    "monday_root": { "type": ["string", "null"] },
+    "mission_id": { "type": ["string", "null"] },
+    "run_id": { "type": ["string", "null"] },
+    "session_id": { "type": ["string", "null"] },
+    "final_status": {
+      "type": ["string", "null"],
+      "enum": ["succeeded", "blocked", null]
+    },
+    "readiness_status": {
+      "type": ["string", "null"],
+      "enum": ["ready", "blocked", "not_ready", null]
+    },
+    "verification_verdict": {
+      "type": ["string", "null"],
+      "enum": ["pass", "repairable_fail", "blocked_fail", null]
+    },
+    "handoff_status": {
+      "type": ["string", "null"],
+      "enum": ["not_required", "required", null]
+    },
+    "next_required_actor": {
+      "type": ["string", "null"],
+      "enum": [
+        "none",
+        "user",
+        "operator",
+        "orchestrator",
+        "planner",
+        "designer",
+        "executor",
+        "verifier",
+        "repairer",
+        "operator_advisor",
+        null
+      ]
+    },
+    "recommended_next_step": { "type": ["string", "null"] },
+    "ready": { "type": "boolean" },
+    "validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "missing", "unknown"]
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["fresh", "stale", "missing"]
+    },
+    "next_step": { "type": "string", "minLength": 1 }
+  }
+}

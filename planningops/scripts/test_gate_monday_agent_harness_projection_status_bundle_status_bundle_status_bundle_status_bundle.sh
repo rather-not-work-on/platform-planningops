@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+TMP_DIR="$(mktemp -d)"
+MONDAY_DIR="${TMP_DIR}/monday"
+PROJECTION_ROOT="${MONDAY_DIR}/runtime-artifacts/agent-harness"
+BASE_REPORT="${TMP_DIR}/projection-validation.json"
+BASE_BUNDLE="${TMP_DIR}/projection-bundle.json"
+BASE_STATUS="${TMP_DIR}/projection-status.json"
+BASE_STATUS_VALIDATION="${TMP_DIR}/projection-status-validation.json"
+STATUS_BUNDLE="${TMP_DIR}/projection-status-bundle.json"
+STATUS_BUNDLE_VALIDATION="${TMP_DIR}/projection-status-bundle-validation.json"
+STATUS_BUNDLE_STATUS="${TMP_DIR}/projection-status-bundle-status.json"
+STATUS_BUNDLE_STATUS_VALIDATION="${TMP_DIR}/projection-status-bundle-status-validation.json"
+RESOLVED_BUNDLE="${TMP_DIR}/projection-status-bundle-status-bundle.json"
+RESOLVED_BUNDLE_VALIDATION="${TMP_DIR}/projection-status-bundle-status-bundle-validation.json"
+RESOLVED_BUNDLE_STATUS="${TMP_DIR}/projection-status-bundle-status-bundle-status.json"
+RESOLVED_BUNDLE_STATUS_VALIDATION="${TMP_DIR}/projection-status-bundle-status-bundle-status-validation.json"
+NEXT_BUNDLE="${TMP_DIR}/projection-status-bundle-status-bundle-status-bundle.json"
+NEXT_BUNDLE_VALIDATION="${TMP_DIR}/projection-status-bundle-status-bundle-status-bundle-validation.json"
+NEXT_STATUS="${TMP_DIR}/projection-status-bundle-status-bundle-status-bundle-status.json"
+NEXT_STATUS_VALIDATION="${TMP_DIR}/projection-status-bundle-status-bundle-status-bundle-status-validation.json"
+OUTER_BUNDLE="${TMP_DIR}/projection-status-bundle-status-bundle-status-bundle-status-bundle.json"
+OUTER_BUNDLE_VALIDATION="${TMP_DIR}/projection-status-bundle-status-bundle-status-bundle-status-bundle-validation.json"
+BROKEN_BUNDLE="${TMP_DIR}/broken-status-bundle-status-bundle-status-bundle-status-bundle.json"
+trap 'rm -rf "${TMP_DIR}"' EXIT
+
+mkdir -p "${PROJECTION_ROOT}"
+EVIDENCE="${PROJECTION_ROOT}/execution-evidence-bundle.json"
+printf '{}\n' >"${EVIDENCE}"
+
+cat >"${PROJECTION_ROOT}/completion-summary.json" <<JSON
+{"missionId":"mh60-mission","runId":"mh60-run","sessionId":"mh60-session","finalPhase":"publish_evidence","finalStatus":"succeeded","verificationVerdict":"pass","completedAtUtc":"2026-03-23T14:40:00Z","evidenceBundlePath":"${EVIDENCE}"}
+JSON
+cat >"${PROJECTION_ROOT}/readiness-projection.json" <<JSON
+{"missionId":"mh60-mission","runId":"mh60-run","sessionId":"mh60-session","readinessStatus":"ready","reason":"verification_passed","verificationVerdict":"pass","blockingConditions":[],"requiredEvidenceRefs":["${EVIDENCE}"],"generatedAtUtc":"2026-03-23T14:40:01Z","evidenceBundlePath":"${EVIDENCE}"}
+JSON
+cat >"${PROJECTION_ROOT}/verification-projection.json" <<JSON
+{"missionId":"mh60-mission","runId":"mh60-run","sessionId":"mh60-session","verificationVerdict":"pass","verificationReportRefs":["${EVIDENCE}"],"failedChecks":[],"repairAttempts":0,"generatedAtUtc":"2026-03-23T14:40:02Z","evidenceBundlePath":"${EVIDENCE}"}
+JSON
+cat >"${PROJECTION_ROOT}/operator-handoff-summary.json" <<JSON
+{"missionId":"mh60-mission","runId":"mh60-run","sessionId":"mh60-session","finalStatus":"succeeded","verificationVerdict":"pass","handoffStatus":"not_required","handoffReason":"none","nextRequiredActor":"none","recommendedNextStep":"none","blockingQuestionSet":[],"generatedAtUtc":"2026-03-23T14:40:03Z","evidenceBundlePath":"${EVIDENCE}"}
+JSON
+
+python3 "${ROOT_DIR}/planningops/scripts/doctor_monday_agent_harness_projection.py" \
+  --monday-root "${MONDAY_DIR}" \
+  --projection-root "${PROJECTION_ROOT}" \
+  --bundle-output "${BASE_BUNDLE}" \
+  --output "${BASE_REPORT}" \
+  --status-output "${BASE_STATUS}" \
+  --status-validation-output "${BASE_STATUS_VALIDATION}" \
+  --require-pass >/dev/null
+
+python3 "${ROOT_DIR}/planningops/scripts/doctor_monday_agent_harness_projection_status_bundle.py" \
+  --artifact-file "${BASE_STATUS}" \
+  --bundle-output "${STATUS_BUNDLE}" \
+  --bundle-validation-output "${STATUS_BUNDLE_VALIDATION}" \
+  --status-output "${STATUS_BUNDLE_STATUS}" \
+  --status-validation-output "${STATUS_BUNDLE_STATUS_VALIDATION}" >/dev/null
+
+python3 "${ROOT_DIR}/planningops/scripts/doctor_monday_agent_harness_projection_status_bundle_status_bundle.py" \
+  --artifact-file "${STATUS_BUNDLE_STATUS}" \
+  --bundle-output "${RESOLVED_BUNDLE}" \
+  --bundle-validation-output "${RESOLVED_BUNDLE_VALIDATION}" \
+  --status-output "${RESOLVED_BUNDLE_STATUS}" \
+  --status-validation-output "${RESOLVED_BUNDLE_STATUS_VALIDATION}" >/dev/null
+
+python3 "${ROOT_DIR}/planningops/scripts/doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.py" \
+  --artifact-file "${RESOLVED_BUNDLE_STATUS}" \
+  --bundle-output "${NEXT_BUNDLE}" \
+  --bundle-validation-output "${NEXT_BUNDLE_VALIDATION}" \
+  --status-output "${NEXT_STATUS}" \
+  --status-validation-output "${NEXT_STATUS_VALIDATION}" >/dev/null
+
+bash "${ROOT_DIR}/planningops/scripts/gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle.sh" \
+  --artifact-file "${NEXT_STATUS}" \
+  --bundle-output "${OUTER_BUNDLE}" \
+  --bundle-validation-output "${OUTER_BUNDLE_VALIDATION}" >/dev/null
+
+python3 - <<'PY' "${OUTER_BUNDLE}" "${BROKEN_BUNDLE}"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+doc["status_verdict"] = "fail"
+doc["next_step"] = "rerun monday projection status bundle status bundle status bundle status bundle doctor"
+Path(sys.argv[2]).write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+PY
+
+if bash "${ROOT_DIR}/planningops/scripts/gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle.sh" \
+  --bundle-file "${BROKEN_BUNDLE}" \
+  --bundle-validation-output "${OUTER_BUNDLE_VALIDATION}" >/dev/null 2>&1; then
+  echo "expected monday projection status-bundle-status-bundle-status-bundle-status-bundle gate to fail on broken bundle" >&2
+  exit 1
+fi
+
+echo "gate monday agent harness projection status bundle status bundle status bundle status bundle ok"

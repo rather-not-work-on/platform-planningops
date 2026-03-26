@@ -1,0 +1,356 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MONDAY Agent Harness Projection Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "projection_root",
+    "monday_root",
+    "completion_summary_path",
+    "readiness_projection_path",
+    "verification_projection_path",
+    "operator_handoff_summary_path",
+    "completion_summary",
+    "readiness_projection",
+    "verification_projection",
+    "operator_handoff_summary"
+  ],
+  "properties": {
+    "bundle_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projection_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "monday_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "completion_summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_projection_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verification_projection_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "completion_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missionId",
+        "runId",
+        "sessionId",
+        "finalPhase",
+        "finalStatus",
+        "verificationVerdict",
+        "completedAtUtc",
+        "evidenceBundlePath"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer"
+        },
+        "missionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "finalPhase": {
+          "type": "string",
+          "enum": [
+            "clarify",
+            "plan",
+            "design",
+            "execute",
+            "verify",
+            "repair",
+            "publish_evidence",
+            "done"
+          ]
+        },
+        "finalStatus": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "blocked"
+          ]
+        },
+        "verificationVerdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "repairable_fail",
+            "blocked_fail"
+          ]
+        },
+        "completedAtUtc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceBundlePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "readiness_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missionId",
+        "runId",
+        "sessionId",
+        "readinessStatus",
+        "reason",
+        "verificationVerdict",
+        "blockingConditions",
+        "requiredEvidenceRefs",
+        "generatedAtUtc",
+        "evidenceBundlePath"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer"
+        },
+        "missionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "readinessStatus": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "blocked",
+            "not_ready"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verificationVerdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "repairable_fail",
+            "blocked_fail"
+          ]
+        },
+        "blockingConditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiredEvidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "generatedAtUtc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceBundlePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "verification_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missionId",
+        "runId",
+        "sessionId",
+        "verificationVerdict",
+        "verificationReportRefs",
+        "failedChecks",
+        "repairAttempts",
+        "generatedAtUtc",
+        "evidenceBundlePath"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer"
+        },
+        "missionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verificationVerdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "repairable_fail",
+            "blocked_fail"
+          ]
+        },
+        "verificationReportRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "failedChecks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "repairAttempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generatedAtUtc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceBundlePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "operator_handoff_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missionId",
+        "runId",
+        "sessionId",
+        "finalStatus",
+        "verificationVerdict",
+        "handoffStatus",
+        "handoffReason",
+        "nextRequiredActor",
+        "recommendedNextStep",
+        "blockingQuestionSet",
+        "generatedAtUtc",
+        "evidenceBundlePath"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "integer"
+        },
+        "missionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "finalStatus": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "blocked"
+          ]
+        },
+        "verificationVerdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "repairable_fail",
+            "blocked_fail"
+          ]
+        },
+        "handoffStatus": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "required"
+          ]
+        },
+        "handoffReason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nextRequiredActor": {
+          "type": "string",
+          "enum": [
+            "none",
+            "user",
+            "operator",
+            "orchestrator",
+            "planner",
+            "designer",
+            "executor",
+            "verifier",
+            "repairer",
+            "operator_advisor"
+          ]
+        },
+        "recommendedNextStep": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockingQuestionSet": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "generatedAtUtc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceBundlePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
