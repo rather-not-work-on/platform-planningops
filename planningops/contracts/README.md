@@ -47,6 +47,9 @@ Define runtime behavior contracts used by the issue-resolution loop and quality 
 - `memory-tier-contract.md`: 3-tier memory lifecycle, frontmatter keys, and compaction trigger contract
 - `inventory-issue-lifecycle-contract.md`: open-vs-archived lifecycle rules for inventory-only GitHub issues
 - `federated-label-taxonomy-contract.md`: federated required labels and in-scope issue label quality rules
+- `federated-ci-summary-contract.md`: canonical federated CI summary, validation, and readiness artifact chain
+- `monday-agent-harness-projection-contract.md`: projection-only readiness boundary over monday agent-harness completion/readiness/verification/handoff surfaces
+- `plain-python-compat-manifest-contract.md`: canonical plain-`python3` manifest, validation, resolution, and gate chain
 - `cross-repo-contract-version-pin-policy.md`: external contract version pinning
 - `compatibility-report.md`: compatibility tracking summary
 

@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MONDAY Agent Harness Projection Status Bundle Status Bundle Status Bundle Status Bundle Status Bundle Status Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_path",
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_path",
+    "bundle_path",
+    "resolved_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_path",
+    "bundle_validation_output_path",
+    "bundle_status_bundle_status_bundle_status_bundle_status_path",
+    "bundle_status_bundle_status_bundle_status_bundle_validation_path",
+    "bundle_status_bundle_status_bundle_status_path",
+    "bundle_status_bundle_status_bundle_validation_path",
+    "bundle_status_bundle_status_path",
+    "bundle_status_bundle_validation_path",
+    "bundle_status_path",
+    "bundle_status_validation_path",
+    "projection_bundle_path",
+    "projection_validation_report_path",
+    "status_path",
+    "status_validation_path",
+    "mission_id",
+    "run_id",
+    "session_id",
+    "ready",
+    "next_step",
+    "status_verdict",
+    "status_validation_verdict",
+    "bundle_status_verdict",
+    "bundle_status_validation_verdict",
+    "projection_validation_verdict",
+    "projection_validation_state",
+    "status_sidecar_validation_verdict",
+    "bundle_validation_verdict",
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_report",
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_report"
+  ],
+  "properties": {
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_path": { "type": "string", "minLength": 1 },
+    "bundle_path": { "type": "string", "minLength": 1 },
+    "resolved_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_path": { "type": "string", "minLength": 1 },
+    "bundle_validation_output_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_status_bundle_status_bundle_status_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_status_bundle_status_bundle_validation_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_status_bundle_status_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_status_bundle_validation_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_status_path": { "type": "string", "minLength": 1 },
+    "bundle_status_bundle_validation_path": { "type": "string", "minLength": 1 },
+    "bundle_status_path": { "type": "string", "minLength": 1 },
+    "bundle_status_validation_path": { "type": "string", "minLength": 1 },
+    "projection_bundle_path": { "type": "string", "minLength": 1 },
+    "projection_validation_report_path": { "type": "string", "minLength": 1 },
+    "status_path": { "type": "string", "minLength": 1 },
+    "status_validation_path": { "type": "string", "minLength": 1 },
+    "mission_id": { "type": ["string", "null"] },
+    "run_id": { "type": ["string", "null"] },
+    "session_id": { "type": ["string", "null"] },
+    "ready": { "type": "boolean" },
+    "next_step": { "type": "string", "minLength": 1 },
+    "status_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "status_validation_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "bundle_status_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "bundle_status_validation_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "projection_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "missing", "unknown"]
+    },
+    "projection_validation_state": {
+      "type": "string",
+      "enum": ["fresh", "stale", "missing"]
+    },
+    "status_sidecar_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "bundle_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_report": { "type": "object" },
+    "bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_report": { "type": "object" },
+    "resolved_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_path": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
