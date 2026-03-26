@@ -96,6 +96,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Runtime-Operations-Ready Helper Family Backfill Packet](./plans/2026-03-26-runtime-operations-ready-helper-family-backfill-packet.md)
 - [Issue-Quality Helper Family Backfill Packet](./plans/2026-03-26-issue-quality-helper-family-backfill-packet.md)
 - [Federated-Summary Helper Family Backfill Packet](./plans/2026-03-26-federated-summary-helper-family-backfill-packet.md)
+- [Contract-Conformance Helper Family Backfill Packet](./plans/2026-03-26-contract-conformance-helper-family-backfill-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
