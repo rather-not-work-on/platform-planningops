@@ -22,13 +22,463 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `federation/run_local_runtime_stack_smoke.py`
   - `federation/run_local_oracle_rehearsal.py`
   - `federation/run_wave14_oracle_rehearsal.py`
+  - `federation/reflection_cycle_common.py`
+  - `federation/run_worker_outcome_reflection_cycle.py`
+  - `federation/run_reflection_goal_completion_handoff_cycle.py`
   - `federation/federated_ci_matrix_local.sh`
+  - `federation/federated_ci_summary.py`
+  - `federation/reconcile_federated_ci_summary_tmp.py`
+  - `validate_federated_ci_summary_tmp_reconcile.py`
+    - local matrix now includes `platform-provider-gateway` and `monday` readiness gates for the promoted local planner route
+    - LiteLLM-dependent readiness gates self-start and stop the provider stack so local federated CI does not rely on an already-running endpoint
+    - summary initialization/finalization is now fail-closed, so interrupted runs still produce a stamped summary artifact
+    - the same helper is also used by `.github/workflows/federated-ci-matrix.yml` so local and GitHub summary artifacts stay schema-compatible
+    - finalize self-validates the summary document against `planningops/schemas/federated-ci-summary.schema.json`
+    - local and GitHub summary lanes now emit a run-scoped validation report artifact as well
+    - local and GitHub readiness lanes now emit stamped/latest readiness validation artifacts as well
+    - local matrix also snapshots and reconciles the in-flight tmp summary before append/finalize so later guardrail commands cannot silently erase prior checks or canonical lineage fields
+    - local matrix now emits stamped/latest tmp-summary reconcile reports plus stamped/latest reconcile validation sidecars under `planningops/artifacts/validation/`
+    - local matrix also emits stamped/latest tmp-summary reconcile bundles plus stamped/latest bundle-validation sidecars from the canonical resolver/validator pair
+    - local matrix now also emits stamped/latest tmp-summary reconcile bundle status plus stamped/latest bundle-status-validation sidecars from the canonical doctor/validator pair
+  - `test_federated_ci_workflow_summary_contract.sh`
+  - `test_federated_ci_local_matrix_mode_contract.sh`
+  - `test_reconcile_federated_ci_summary_tmp.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_contract.sh`
+  - `resolve_federated_ci_summary_tmp_reconcile.py`
+  - `test_resolve_federated_ci_summary_tmp_reconcile.sh`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle.py`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle.sh`
+  - `doctor_federated_ci_summary_tmp_reconcile_bundle.py`
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle.sh`
+  - `gate_federated_ci_summary_tmp_reconcile_bundle.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle.sh`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status.py`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_validation_contract.sh`
+  - `resolve_federated_ci_summary_tmp_reconcile_bundle_status.py`
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status.sh`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+  - `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+  - `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+  - `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+  - `test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - `doctor_federated_ci_summary_tmp_reconcile.py`
+  - `test_doctor_federated_ci_summary_tmp_reconcile.sh`
+  - `gate_federated_ci_summary_tmp_reconcile.sh`
+  - `test_gate_federated_ci_summary_tmp_reconcile.sh`
+  - `test_plain_python_compat_manifest_contract_doc.sh`
+  - `validate_federated_ci_summary.py`
+  - `test_validate_federated_ci_summary_contract.sh`
+  - `test_federated_ci_summary_contract_doc.sh`
+  - `assess_federated_ci_summary_readiness.py`
+  - `test_assess_federated_ci_summary_readiness.sh`
+  - `validate_federated_ci_summary_readiness.py`
+  - `test_validate_federated_ci_summary_readiness_contract.sh`
+  - `doctor_federated_ci_summary.py`
+  - `test_doctor_federated_ci_summary.sh`
+  - `gate_federated_ci_summary.sh`
+  - `validate_monday_agent_harness_projection.py`
+  - `resolve_monday_agent_harness_projection.py`
+  - `validate_monday_agent_harness_projection_status.py`
+  - `resolve_monday_agent_harness_projection_status.py`
+  - `validate_monday_agent_harness_projection_status_bundle.py`
+  - `validate_monday_agent_harness_projection_status_bundle_status.py`
+    - machine validator for the operator-facing monday projection resolved status-bundle status sidecar
+    - fails closed when the stored status doc drifts from the resolved bundle, its validation report, or the propagated monday readiness fields
+  - `resolve_monday_agent_harness_projection_status_bundle_status.py`
+    - canonical consumer for the monday projection resolved status-bundle-status/status-bundle-status-validation pair
+    - accepts either surface and emits `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle.json` when an output path is provided
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle.py`
+    - machine validator for the canonical monday projection resolved status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status.py`
+    - machine validator for the monday projection resolved status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded resolved-bundle lineage or validation output path
+  - `resolve_monday_agent_harness_projection_status_bundle_status_bundle_status.py`
+    - canonical consumer for the monday projection resolved status-bundle-status-bundle-status/status-bundle-status-bundle-status-validation pair
+    - accepts either surface and emits `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle.json` when an output path is provided
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical monday projection resolved status-bundle-status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the monday projection resolved status-bundle-status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded resolved-bundle lineage or validation output path
+  - `resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the monday projection resolved status-bundle-status-bundle-status-bundle-status/status-bundle-status-bundle-status-bundle-status-validation pair
+    - accepts either surface and emits `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle.json` when an output path is provided
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical monday projection resolved status-bundle-status-bundle-status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `doctor_monday_agent_harness_projection.py`
+  - `materialize_monday_agent_harness_projection_surfaces.sh`
+    - refreshes the full monday projection latest cascade from the base doctor output through the newest resolved outer bundle validation artifact
+    - use after publishing a canonical monday `runtime-artifacts/agent-harness` projection root so latest planningops artifacts stop pointing at stale bridge temp roots
+  - `sync_monday_agent_harness_projection_latest.sh`
+    - reads the latest federated summary run id, reseeds the sibling monday projection root with a matching run/session lineage, then rematerializes the full planningops projection cascade
+    - this is the canonical local/workflow sync step for keeping monday projection latest artifacts aligned with `planningops/artifacts/ci/federated-ci-summary.json`
+  - `run_monday_agent_harness_projection_ci_suite.sh`
+    - canonical suite helper for the full monday projection regression chain and final latest sync
+    - accepts `--summary-run-id`, `--monday-root`, and `--mission-id`
+    - `--print-tests` emits the canonical ordered regression inventory for contract and wiring consumers
+    - `--help` prints the supported suite options and public inventory surface
+  - `run_monday_agent_harness_projection_ci_check.sh`
+    - canonical local/workflow entrypoint for monday projection runtime checks
+    - `--print-steps` emits the canonical ordered wrapper step inventory for contract and wiring consumers
+    - `--print-local-invocation` and `--print-workflow-invocation` emit the canonical wrapper call shapes for local matrix and GitHub workflow consumers
+    - `--help` prints the supported wrapper options and suite passthrough boundary
+    - runs its own wrapper-contract regression, helper wiring regression, suite-helper contract, then the suite helper
+    - local matrix and GitHub workflow should reference only this wrapper, not duplicate its internal test inventory or call wrapper internals directly
+  - `doctor_monday_agent_harness_projection_status_bundle.py`
+    - operator-facing diagnosis for the canonical resolved monday projection `status/status-validation` bundle
+    - refreshes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-validation.json` before printing one fail-closed readiness verdict over the resolved doctor bundle
+    - also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-validation.json`
+  - `doctor_monday_agent_harness_projection_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the canonical resolved monday projection `status-bundle-status/status-bundle-status-validation` bundle
+    - refreshes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-validation.json` before printing one fail-closed readiness verdict over the resolved bundle
+    - also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-validation.json`
+  - `doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the canonical resolved monday projection `status-bundle-status-bundle-status/status-bundle-status-bundle-status-validation` bundle
+    - refreshes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-validation.json` before printing one fail-closed readiness verdict over the resolved bundle
+    - also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-validation.json`
+  - `gate_monday_agent_harness_projection.sh`
+  - `gate_monday_agent_harness_projection_status_bundle.sh`
+    - thin fail-closed wrapper around `doctor_monday_agent_harness_projection_status_bundle.py --require-pass`
+  - `gate_monday_agent_harness_projection_status_bundle_status_bundle.sh`
+    - thin fail-closed wrapper around `doctor_monday_agent_harness_projection_status_bundle_status_bundle.py --require-pass`
+  - `gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.sh`
+    - thin fail-closed wrapper around `doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.py --require-pass`
+  - `test_resolve_monday_agent_harness_projection.sh`
+  - `test_materialize_monday_agent_harness_projection_surfaces.sh`
+    - proves the rematerializer rewrites canonical latest monday projection artifacts from a freshly published projection root and keeps the newest outer bundle ready/pass
+  - `test_sync_monday_agent_harness_projection_latest.sh`
+    - proves the canonical sync helper derives monday projection run/session ids from a summary file and rematerializes latest planningops artifacts with matching lineage
+  - `test_monday_agent_harness_projection_helper_wiring.sh`
+    - proves the ci-check wrapper owns helper wiring and that local matrix and GitHub workflow invoke only the wrapper surface
+  - `test_run_monday_agent_harness_projection_ci_check_contract.sh`
+    - proves the ci-check wrapper still runs its own wrapper-contract regression, helper wiring regression, suite-helper contract, then the suite helper
+  - `test_run_monday_agent_harness_projection_ci_suite_contract.sh`
+    - proves the monday projection CI suite helper keeps the expected regression order and still ends with the canonical sync step
+  - `test_validate_monday_agent_harness_projection.sh`
+  - `test_validate_monday_agent_harness_projection_status.sh`
+  - `test_resolve_monday_agent_harness_projection_status.sh`
+  - `test_validate_monday_agent_harness_projection_status_bundle_validation_contract.sh`
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_contract.sh`
+    - proves the monday projection status-bundle doctor-owned status sidecar stays schema-valid
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_validation_contract.sh`
+    - proves the monday projection status-bundle status validator emits a schema-valid validation report and fails closed on drifted sidecars
+  - `test_resolve_monday_agent_harness_projection_status_bundle_status.sh`
+    - proves the monday projection status-bundle-status resolver accepts either sidecar and rejects drifted embedded paths or propagated readiness fields
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_validation_contract.sh`
+    - proves the monday projection status-bundle-status bundle validator emits a schema-valid validation report and fails closed on drifted resolved bundles
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_contract.sh`
+    - proves the monday projection status-bundle-status-bundle doctor-owned status sidecar stays schema-valid
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the monday projection status-bundle-status-bundle status validator emits a schema-valid validation report and fails closed on drifted sidecars
+  - `test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status.sh`
+    - proves the monday projection resolved status-bundle-status-bundle doctor-owned sidecar pair can be rehydrated into one canonical bundle artifact
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves the monday projection resolved status-bundle-status-bundle-status bundle validator emits a schema-valid validation report and fails closed on drifted bundles
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves the monday projection status-bundle-status-bundle-status-bundle doctor-owned status sidecar stays schema-valid
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the monday projection status-bundle-status-bundle-status-bundle status validator emits a schema-valid validation report and fails closed on drifted sidecars
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves the monday projection resolved status-bundle-status-bundle-status-bundle-status bundle validator emits a schema-valid validation report and fails closed on drifted bundles
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded resolved-bundle lineage or validation output path
+  - `resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status/status-bundle-status-bundle-status-bundle-status-bundle-status-validation pair
+    - accepts either surface and emits `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json` when an output path is provided
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor-owned `status + status-validation` pair
+    - accepts either surface and emits `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json` when an output path is provided
+  - `resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor-owned `status + status-validation` pair
+    - accepts either surface and emits `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json` when an output path is provided
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation report under `planningops/artifacts/validation/` and fails closed when the stored status artifact drifts from its embedded resolved-bundle lineage or validation output path
+  - `test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle doctor-owned sidecar pair can be rehydrated into one canonical outer bundle artifact
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves the monday projection resolved status-bundle-status-bundle-status-bundle-status-bundle-status bundle validator emits a schema-valid validation report and fails closed on drifted bundles
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves the monday projection newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle validator emits a schema-valid validation report and fails closed on drifted bundles
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves the monday projection newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor status sidecar stays schema-valid
+  - `test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the monday projection newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor status validator emits a schema-valid validation report and fails closed on drifted sidecars
+  - `test_doctor_monday_agent_harness_projection.sh`
+  - `test_doctor_monday_agent_harness_projection_status_bundle.sh`
+    - proves the resolved monday projection status-bundle doctor accepts healthy canonical sidecars, refreshes the canonical bundle validation report, and fails closed on broken resolved bundles
+  - `test_doctor_monday_agent_harness_projection_status_bundle_status_bundle.sh`
+    - proves the resolved monday projection status-bundle-status-bundle doctor accepts healthy canonical sidecars, refreshes the canonical bundle validation report, and fails closed on broken resolved bundles
+  - `test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.sh`
+    - proves the resolved monday projection status-bundle-status-bundle-status-bundle doctor accepts healthy canonical sidecars, refreshes the canonical bundle validation report, and fails closed on broken resolved bundles
+  - `test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves the resolved monday projection status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor accepts healthy canonical sidecars, refreshes the canonical bundle validation report, and fails closed on broken resolved bundles
+  - `test_gate_monday_agent_harness_projection.sh`
+  - `test_gate_monday_agent_harness_projection_status_bundle.sh`
+    - proves the resolved monday projection status-bundle gate accepts healthy canonical sidecars and rejects broken resolved bundles
+  - `test_gate_monday_agent_harness_projection_status_bundle_status_bundle.sh`
+    - proves the resolved monday projection status-bundle-status-bundle gate accepts healthy canonical sidecars and rejects broken resolved bundles
+  - `test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.sh`
+    - proves the resolved monday projection status-bundle-status-bundle-status-bundle gate accepts healthy canonical sidecars and rejects broken resolved bundles
+  - `test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves the resolved monday projection status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle gate accepts healthy canonical sidecars and rejects broken resolved bundles
+  - `test_monday_agent_harness_projection_bridge.sh`
+    - proves planningops can consume monday-published projection artifacts end-to-end by asking the sibling monday workspace to publish a ready projection set, then validating, doctoring, and gating that projection root without reopening monday runtime-private state
+  - `test_monday_agent_harness_projection_contract_doc.sh`
+    - doctor/gate default path refreshes `planningops/artifacts/validation/monday-agent-harness-projection-bundle.json` before validating the projection surface
+    - doctor default path also writes `planningops/artifacts/validation/monday-agent-harness-projection-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-validation.json`
+    - canonical consumers can also resolve the doctor-owned `status/status-validation` pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle.json`
+    - the resolved status bundle can be fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-validation.json`
+    - the resolved status-bundle doctor also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-validation.json`
+    - canonical consumers can also resolve that doctor-owned pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle.json`
+    - the resolved status-bundle-status bundle can be fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-validation.json`
+    - the resolved status-bundle-status-bundle doctor also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-validation.json`
+    - canonical consumers can also resolve that doctor-owned pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle.json`
+    - the resolved status-bundle-status-bundle-status bundle can be fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-validation.json`
+    - the resolved status-bundle-status-bundle-status-bundle doctor also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-validation.json`
+    - canonical consumers can also resolve that doctor-owned pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle.json`
+    - the resolved status-bundle-status-bundle-status-bundle-status bundle can be fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-validation.json`
+    - the resolved status-bundle-status-bundle-status-bundle-status-bundle doctor also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json`
+    - canonical consumers can also resolve that doctor-owned pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json`
+    - the resolved status-bundle-status-bundle-status-bundle-status-bundle-status bundle can be fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation.json`
+    - the resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json`
+    - canonical consumers can also resolve that doctor-owned pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json`
+    - the newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle resolver can also be materialized as `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json`
+    - the newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle can also be fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation.json`
+    - the newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle doctor also writes `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status.json` and `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json`
+    - canonical consumers can also resolve that doctor-owned pair into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json`
+    - that newest resolved outer bundle is also fail-closed validated into `planningops/artifacts/validation/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation.json`
+    - the resolved status bundle can also be operator-gated via `doctor_monday_agent_harness_projection_status_bundle.py` and `gate_monday_agent_harness_projection_status_bundle.sh`
+    - the resolved status-bundle-status bundle can also be operator-gated via `doctor_monday_agent_harness_projection_status_bundle_status_bundle.py` and `gate_monday_agent_harness_projection_status_bundle_status_bundle.sh`
+    - the resolved status-bundle-status-bundle-status-bundle can also be operator-gated via `doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.py` and `gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.sh`
+    - the resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle can also be operator-gated via `doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` and `gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - the newly outer resolved status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle can also be operator-gated via `doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` and `gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+  - canonical contract: `planningops/contracts/monday-agent-harness-projection-contract.md`
+    - canonical contract: `planningops/contracts/federated-ci-summary-contract.md`
+    - tmp-summary reconcile doctor/gate require fresh reconcile validation artifacts
+    - summary doctor/gate require fresh summary validation, readiness, readiness-validation, tmp-summary reconcile, and tmp-summary reconcile-validation artifacts
+  - `test_gate_federated_ci_summary.sh`
   - compatibility wrappers are preserved at the root with identical filenames where needed
+  - canonical contract: `planningops/contracts/plain-python-compat-manifest-contract.md`
 - One-off entrypoints (canonical location):
   - `oneoff/bootstrap_two_track_backlog.py`
   - compatibility wrapper: `bootstrap_two_track_backlog.py`
 - Runtime runners:
+  - `supervisor_handoff_common.py`
+    - shared planningops handoff/report/rendering helpers for goal-completion bridge surfaces
+    - owns the common operator-report, inbox-payload, bundle, and monday goal-completion admission helpers consumed by `federation/run_reflection_goal_completion_handoff_cycle.py`
   - `autonomous_supervisor_loop.py`
+    - sources the canonical operator-report, inbox-payload, bundle, and monday goal-completion admission helpers from `supervisor_handoff_common.py`
+    - operator handoff artifacts may carry a `federated_ci_summary` snapshot sourced from the canonical latest readiness artifact, plus `priority_headline` / `priority_cta_command` for downstream operator surfaces
+    - when that snapshot is blocked, otherwise-`ok` handoffs are downgraded to `degraded` with a federated gate inspection action
+    - blocked snapshots also surface canonical `remediation_commands` and summary-validation evidence refs in the markdown and inbox payload surfaces
+    - `priority_headline` / `priority_cta_command` / `priority_summary_markdown` are the planningops SoT for downstream CTA rendering; monday wrappers, dispatch artifacts, and scheduler evidence should preserve one canonical `operator_handoff_validation_path` / `priority_preview_ref` / `priority_display_packet_ref` trio plus the planningops-owned `operator_handoff_bundle_path` / `operator_handoff_bundle_validation_path` / `operator_handoff_bundle_readiness_path` / `operator_handoff_bundle_readiness_validation_path` sidecar set derived from that same surface
+    - generated `operator-report.json` / `inbox-payload.json` sidecars should remain schema-valid against `planningops/schemas/supervisor-operator-report.schema.json` and `planningops/schemas/supervisor-inbox-payload.schema.json` via `validate_supervisor_operator_handoff.py`
+    - each run now emits `operator-handoff-validation.json` plus a `last-run` copy so the generated handoff sidecars carry their own validation evidence
+    - each run also emits `operator-handoff-bundle.json`, `operator-handoff-bundle-validation.json`, `operator-handoff-bundle-readiness.json`, and `operator-handoff-bundle-readiness-validation.json` plus `last-run` copies so downstream bundle consumers can resolve, validate, diagnose, and gate the same canonical CTA surface
+    - `operator-summary.md` and `inbox-payload.json` surface that canonical handoff validation path directly so downstream operator consumers can attach or inspect it without reopening the supervisor run directory
+  - `resolve_supervisor_operator_handoff_validation.py`
+    - canonical consumer for planningops-owned handoff validation sidecars
+    - accepts either a monday/planningops artifact carrying `operator_handoff_validation_path` or a direct validation report path
+    - fail-closed if one artifact embeds conflicting handoff validation paths
+  - `resolve_supervisor_operator_handoff_bundle.py`
+    - canonical consumer bundle for planningops-owned handoff validation sidecars plus monday-owned preview/display packet consumers
+    - accepts one monday wrapper, dispatch packet, or scheduler artifact and returns the canonical `operator_handoff_validation_path`, `priority_preview_ref`, and `priority_display_packet_ref` trio together with the planningops bundle/readiness sidecar paths and all resolved documents
+    - fail-closed if the display packet points at a different preview ref than the resolved preview or if preview/display fields diverge
+  - `resolve_plain_python_compat_manifest.py`
+    - canonical consumer for `planningops/config/plain-python-compat-manifest.json`
+    - resolves the curated cross-repo shell-`python3` entrypoint set into absolute paths and exposes the canonical runtime-stack smoke sequence ids and resolved paths
+  - `validate_plain_python_compat_manifest.py`
+    - machine validator for `planningops/config/plain-python-compat-manifest.json`
+    - emits a validation report under `planningops/artifacts/validation/` and fails closed when manifest shape, canonical resolution, or runtime-stack sequence semantics drift
+  - `validate_plain_python_compat_manifest_status.py`
+    - machine validator for the canonical plain-python status sidecar
+    - emits a status-validation report under `planningops/artifacts/validation/` and fails closed when `ready/next_step`, canonical manifest resolution, or `loop_guardrails_chain` semantics drift
+  - `validate_plain_python_compat_manifest_status_bundle.py`
+    - machine validator for the canonical plain-python status bundle artifact
+    - emits a status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the bundle drifts from canonical status/status-validation resolution
+  - `validate_plain_python_compat_manifest_status_bundle_status.py`
+    - machine validator for the canonical plain-python status-bundle doctor status report
+    - emits a status-bundle-status-validation report under `planningops/artifacts/validation/` and fails closed when the status sidecar drifts from the canonical bundle-validation surface
+  - `doctor_plain_python_compat_manifest_status_bundle.py`
+    - operator-facing diagnosis for the canonical plain-python status bundle artifact
+    - resolves or reads the bundle, writes a fresh status-bundle status report, status-bundle-status-validation report, plus status-bundle-validation report, and fails closed under `--require-pass` when bundle readiness or either validation verdict drifts
+  - `gate_plain_python_compat_manifest_status_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest_status_bundle.py --require-pass`
+  - `resolve_plain_python_compat_manifest_status.py`
+    - canonical consumer for the plain-python status + status-validation sidecar pair
+    - accepts either a status report or a status-validation report, emits a canonical status bundle when an output path is provided, and fails closed when their embedded paths drift from one another
+  - `resolve_plain_python_compat_manifest_status_bundle_status.py`
+    - canonical consumer for the plain-python status-bundle-status + status-bundle-status-validation sidecar pair
+    - accepts either a status-bundle-status report or a status-bundle-status-validation report, emits a canonical self-describing bundle artifact when an output path is provided, and fails closed when their embedded bundle-status paths drift from one another
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle.py`
+    - machine validator for the canonical plain-python status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-validation report under `planningops/artifacts/validation/` and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `doctor_plain_python_compat_manifest_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the canonical plain-python status-bundle-status bundle artifact
+    - resolves or reads the bundle, writes a fresh status-bundle-status-bundle-status report plus status-bundle-status-bundle-status-validation and status-bundle-status-bundle-validation reports, and fails closed under `--require-pass` when the resolved bundle or any propagated verdict drifts
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status.py`
+    - machine validator for the outer status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded bundle lineage or validation output path
+  - `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status.py`
+    - canonical consumer for the outer plain-python status-bundle-status-bundle-status + validation sidecar pair
+    - accepts either the outer status report or its validation report, emits a self-describing bundle artifact when an output path is provided, and fails closed when their embedded output paths drift from one another
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical outer status-bundle-status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-validation report and fails closed when the stored outer bundle drifts from fresh canonical sidecar resolution
+  - `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the canonical outer status-bundle-status-bundle-status bundle artifact
+    - resolves or reads the bundle, writes a fresh status-bundle-status-bundle-status-bundle-status report plus status-bundle-status-bundle-status-bundle-status-validation and status-bundle-status-bundle-status-bundle-validation reports, and fails closed under `--require-pass` when the resolved bundle or any propagated verdict drifts
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the outermost status-bundle-status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded outer-bundle lineage or validation output path
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical outermost plain-python status-bundle-status-bundle-status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-validation report and fails closed when the stored outermost bundle drifts from fresh canonical sidecar resolution
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the outermost plain-python status-bundle-status-bundle-status-bundle-status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-validation report and fails closed when the stored outermost-doctor status artifact drifts from its embedded bundle lineage or validation output path
+  - `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the outermost-doctor plain-python status-bundle-status-bundle-status-bundle-status-bundle-status + validation sidecar pair
+    - accepts either the outermost-doctor status report or its validation report, emits a self-describing bundle artifact when an output path is provided, and fails closed when their embedded lineage or output refs drift
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the canonical outermost-doctor status-bundle-status-bundle-status-bundle-status-bundle-status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation report and fails closed when the stored resolved bundle drifts from fresh canonical sidecar resolution
+  - `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the resolved outermost-doctor plain-python status-bundle artifact
+    - resolves or reads the bundle, writes a fresh status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status report plus status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation and status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation reports, and fails closed under `--require-pass` when the resolved bundle or any propagated verdict drifts
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the resolved outermost-doctor plain-python status-bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded resolved-bundle lineage or validation output path
+  - `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the resolved outermost-doctor plain-python status-bundle doctor `status + status-validation` sidecar pair
+    - accepts either the resolved outermost-doctor status report or its validation report, emits a self-describing bundle artifact when an output path is provided, and fails closed when their embedded lineage or output refs drift
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the resolved outermost-doctor plain-python status-bundle doctor bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation report and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the resolved outermost-doctor plain-python status-bundle doctor bundle artifact
+    - resolves or reads the bundle, writes a fresh status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status report plus status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation and status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation reports, and fails closed under `--require-pass` when the resolved bundle or any propagated verdict drifts
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - machine validator for the resolved outermost-doctor plain-python status-bundle doctor bundle doctor status artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation report and fails closed when the stored status artifact drifts from its embedded resolved-bundle lineage or validation output path
+  - `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the resolved outermost-doctor plain-python status-bundle doctor bundle doctor `status + status-validation` sidecar pair
+    - accepts either the resolved outermost-doctor status report or its validation report, emits a self-describing bundle artifact when an output path is provided, and fails closed when their embedded lineage or output refs drift
+  - `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - machine validator for the resolved outermost-doctor plain-python status-bundle doctor bundle doctor status bundle artifact
+    - emits a status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation report and fails closed when the stored bundle drifts from fresh canonical sidecar resolution
+  - `test_plain_python_compat_manifest_surface_inventory.sh`
+    - replays a fresh plain-python manifest validation report and uses its resolved guardrail script inventory to ensure manifest-backed scripts and schemas stay documented in the contract and READMEs
+    - regression that fails on orphaned recursive plain-python compat scripts or schemas that are not surfaced through the contract or README inventory
+  - `gate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py --require-pass`
+  - `gate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py --require-pass`
+  - `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status.py`
+    - canonical consumer for the outermost plain-python status-bundle-status-bundle-status-bundle-status + validation sidecar pair
+    - accepts either the outermost status report or its validation report, emits a self-describing bundle artifact when an output path is provided, and fails closed when their embedded lineage or output refs drift
+  - `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.py`
+    - operator-facing diagnosis for the canonical outermost plain-python bundle artifact
+    - resolves or reads the outermost bundle, writes a fresh outermost status report plus status-validation and outermost-bundle-validation reports, and fails closed under `--require-pass` when the resolved bundle or any propagated verdict drifts
+  - `gate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.py --require-pass`
+  - `gate_plain_python_compat_manifest_status_bundle_status_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest_status_bundle_status_bundle.py --require-pass`
+  - `gate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.py --require-pass`
+  - `doctor_plain_python_compat_manifest.py`
+    - operator-facing diagnosis for the canonical plain-python compatibility manifest
+    - writes one fresh validation report plus one machine-readable status report, one fresh status-validation report, one fresh status bundle, and one fresh status-bundle-validation report, prints all five paths, and surfaces the resolved runtime-stack sequence plus canonical `loop_guardrails_chain`
+  - `gate_plain_python_compat_manifest.sh`
+    - thin fail-closed gate wrapper around `doctor_plain_python_compat_manifest.py --require-pass`
+    - `--require-pass` now fails closed on the manifest doctor verdict plus the fresh status-validation and status-bundle-validation sidecar verdicts while preserving the canonical status bundle artifact
+  - `validate_supervisor_operator_handoff_bundle.py`
+    - machine validator for canonical handoff bundles
+    - accepts either a pre-resolved bundle file or a monday artifact and emits a validation sidecar for the canonical `operator_handoff_validation_path` / `priority_preview_ref` / `priority_display_packet_ref` trio plus the planningops bundle/readiness sidecar set
+    - fail-closed if the stored bundle disagrees with fresh canonical resolution or if preview/display packet fields drift from the same validation/CTA surface
+  - `assess_supervisor_operator_handoff_bundle_readiness.py`
+    - canonical readiness assessor for handoff bundles
+    - refreshes the bundle validation sidecar first, then emits one `ready|blocked` artifact plus a readiness-validation sidecar for the same monday artifact or pre-resolved bundle
+  - `validate_supervisor_operator_handoff_bundle_readiness.py`
+    - machine validator for handoff-bundle readiness artifacts
+    - fail-closed if a readiness artifact disagrees with the validation verdict, CTA refs, or remediation next step
+  - `doctor_supervisor_operator_handoff_bundle.py`
+    - operator-facing diagnosis for canonical handoff bundles
+    - prints the canonical bundle-validation verdict, readiness status, preview/display refs, CTA fields, and the next validation step for one monday wrapper, dispatch packet, scheduler artifact, or pre-resolved bundle
+  - `gate_supervisor_operator_handoff_bundle.sh`
+    - thin fail-closed gate wrapper around `doctor_supervisor_operator_handoff_bundle.py --require-pass`
   - `supervisor_experiment_auto_executor.py`
   - `issue_loop_runner.py` compatibility wrapper for `core/loop/runner.py` (`--pec-preflight-mode legacy|hybrid|strict-pec`, `--closed-issue-reconcile-mode off|check|apply|auto`, `--project-items-snapshot-fallback off|auto|require`)
   - `ralph_loop_local.py`
@@ -50,6 +500,15 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `validate_active_goal_registry.py`
   - `validate_node_workspace_policy.py`
   - `validate_worker_task_pack.py`
+  - `validate_runtime_profiles.py`
+  - `validate_federated_ci_summary.py`
+  - `assess_federated_ci_summary_readiness.py`
+  - `validate_federated_ci_summary_readiness.py`
+  - `validate_supervisor_operator_handoff.py`
+  - `validate_supervisor_operator_handoff_bundle.py`
+  - `doctor_federated_ci_summary.py`
+  - `gate_federated_ci_summary.sh`
+  - `test_uap_automation_operations_summary_contract.sh`
   - `validate_blueprint_pack.py`
   - `validate_project_field_schema.py`
   - `validate_repo_boundaries.py`
@@ -101,6 +560,12 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `refactor_hygiene_multi_repo.py`
 - Local CI and contract tests:
   - `federated_ci_matrix_local.sh`
+    - local federated summary now requires `provider-gateway-ready` and `runtime-operations-ready` in addition to dry-run checks
+    - local federated CI now keeps `PLANNER_RUNTIME_PROFILE=local` even in free-only shells; the sibling LiteLLM stack must prove either the primary Gemini route or its checked-in Ollama fallback
+    - the local `loop-guardrails` lane tolerates GitHub field-list fetch rate limits by exporting `PLANNINGOPS_ALLOW_SCHEMA_FETCH_FAILURE=1` for `run_track1_gate_dryrun.py`
+    - the local `loop-guardrails` lane audits inventory issue lifecycle from the checked-in `planningops/fixtures/inventory-issue-lifecycle-audit-snapshot.json` fixture instead of calling `gh issue list`
+  - `test_inventory_issue_lifecycle_audit_snapshot.sh`
+  - `test_uap_automation_operations_summary_contract.sh`: regression that keeps the canonical automation operations summary aligned with federated CI readiness and supervisor handoff rules
   - `test_meta_plan_orchestrator_contract.sh`
   - `test_meta_plan_graph_schema_contract.sh`
   - `test_verify_plan_projection_contract.sh`
@@ -108,6 +573,331 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_backlog_stock_replenishment_contract.sh`
   - `test_autonomous_supervisor_loop_contract.sh`
   - `test_supervisor_operator_handoff_contract.sh`
+  - `test_validate_supervisor_operator_handoff_contract.sh`
+  - `test_resolve_supervisor_operator_handoff_validation.sh`
+  - `test_resolve_supervisor_operator_handoff_bundle.sh`
+    - proves one monday artifact can dereference the canonical handoff validation, priority preview, and priority display packet as one bundle, and that mismatched preview/display refs fail closed
+  - `test_validate_supervisor_operator_handoff_bundle.sh`
+    - proves canonical handoff bundles emit a machine-valid validation sidecar and fail closed when a stored bundle drifts from fresh canonical resolution
+  - `test_assess_supervisor_operator_handoff_bundle_readiness.sh`
+    - proves canonical handoff bundles emit `ready|blocked` readiness artifacts plus a machine-valid readiness-validation sidecar
+  - `test_validate_supervisor_operator_handoff_bundle_readiness.sh`
+    - proves handoff-bundle readiness artifacts pass when aligned and fail closed when ready/blocked semantics drift
+  - `test_doctor_supervisor_operator_handoff_bundle.sh`
+    - proves canonical handoff bundles emit an operator-facing diagnosis backed by fresh readiness + readiness-validation sidecars, and fail closed under `--require-pass` when a stored bundle drifts from fresh canonical resolution
+  - `test_gate_supervisor_operator_handoff_bundle.sh`
+    - proves the fail-closed handoff-bundle gate accepts healthy monday artifacts, emits fresh readiness sidecars, and rejects drifted bundles
+  - `test_cross_repo_plain_python_compat.sh`
+    - proves the cross-repo scripts that planningops invokes through plain shell `python3` still import and parse under the non-managed interpreter, using `planningops/config/plain-python-compat-manifest.json` as the canonical curated entrypoint set
+    - covers monday local runtime/scheduler/admission plus priority preview/display consumers, observability live smoke, and planningops supervisor/local-worker plus handoff bundle consumer surfaces
+  - `test_validate_plain_python_compat_manifest.sh`
+    - proves `planningops/config/plain-python-compat-manifest.json` stays internally consistent, points at real cross-repo entrypoints, preserves both the canonical runtime-stack sequence ids and the canonical `loop_guardrails_chain`, and fail-closes when guardrail commands point at missing planningops scripts
+  - `test_validate_plain_python_compat_manifest_validation_contract.sh`
+    - proves the validator emits a report that stays schema-valid against `planningops/schemas/plain-python-compat-manifest-validation.schema.json`, including the resolved guardrail script inventory, and that broken reports fail the same schema checks
+  - `test_validate_plain_python_compat_manifest_status_contract.sh`
+    - proves the doctor emits a machine-readable status report that stays schema-valid against `planningops/schemas/plain-python-compat-manifest-status.schema.json`, and that broken status reports fail the same schema checks
+  - `test_validate_plain_python_compat_manifest_status_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status.py` emits a schema-valid status-validation report, preserves the top-level resolved guardrail script inventory, and fails closed when status semantics drift from canonical manifest resolution
+  - `test_validate_plain_python_compat_manifest_status_bundle_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status_bundle.py` emits a schema-valid status-bundle-validation report, preserves the top-level resolved guardrail script inventory, and fails closed when the bundle drifts from canonical sidecar resolution
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_contract.sh`
+    - proves the status-bundle doctor emits a machine-readable status report that stays schema-valid against `planningops/schemas/plain-python-compat-manifest-status-bundle-status.schema.json`, and that broken status reports fail the same schema checks
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status_bundle_status.py` emits a schema-valid status-bundle-status-validation report and fails closed when the status sidecar drifts from canonical bundle-validation semantics
+  - `test_doctor_plain_python_compat_manifest_status_bundle.sh`
+    - proves the status-bundle doctor prints healthy bundle status for canonical sidecars, writes a fresh status report plus status-validation and bundle-validation reports, and fails closed on drifted bundles
+  - `test_gate_plain_python_compat_manifest_status_bundle.sh`
+    - proves the status-bundle gate accepts healthy canonical sidecars, preserves the canonical bundle artifact plus status report, and rejects drifted bundles
+  - `test_resolve_plain_python_compat_manifest_status.sh`
+    - proves `resolve_plain_python_compat_manifest_status.py` dereferences the same canonical status/status-validation pair from either entrypoint, emits a self-describing bundle artifact with top-level resolved guardrail script inventory, and fails closed when the pair drifts
+  - `test_resolve_plain_python_compat_manifest_status_bundle_status.sh`
+    - proves `resolve_plain_python_compat_manifest_status_bundle_status.py` dereferences the same canonical status-bundle-status/status-bundle-status-validation pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle.py` emits a schema-valid validation report for the resolved federated tmp-summary reconcile bundle status-bundle artifact and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle.py` prints healthy resolved bundle status for canonical sidecars, refreshes the canonical validation report, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted resolved bundle status-bundle artifacts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status.py` accepts the doctor-owned status-bundle status sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_validation_contract.sh`
+    - proves the doctor-owned status-bundle status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status.py` dereferences the same doctor-owned status-bundle-status/status-bundle-status-validation pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved federated tmp-summary reconcile bundle status-bundle-status bundle artifact and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status.py` accepts the doctor-owned status-bundle-status-bundle status sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the doctor-owned status-bundle-status-bundle status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.py` prints healthy resolved bundle status for canonical sidecars, refreshes the canonical validation report plus doctor status/status-validation sidecars, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted resolved bundle status-bundle-status artifacts
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status.py` dereferences the same status-bundle-status doctor-owned `status + status-validation` pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved status-bundle-status doctor bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.py` accepts the resolved status-bundle-status bundle status bundle doctor-owned sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the resolved status-bundle-status bundle status bundle status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.py` prints healthy resolved bundle status for canonical sidecars, refreshes the canonical validation report plus doctor status/status-validation sidecars, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted resolved bundle status-bundle-status bundle status bundle artifacts
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.py` dereferences the same resolved bundle doctor-owned `status + status-validation` pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved bundle status-bundle-status bundle status bundle status doctor bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` accepts the resolved bundle status-bundle-status bundle status bundle status doctor-owned sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the resolved bundle status-bundle-status bundle status bundle status status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` prints healthy resolved bundle status for canonical sidecars, refreshes the canonical validation report plus doctor status/status-validation sidecars, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted resolved bundle status-bundle-status bundle status bundle status bundle artifacts
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` dereferences the same resolved doctor-owned `status + status-validation` pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved doctor-owned status bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` accepts the outer resolved bundle doctor-owned sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the outer resolved bundle doctor status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` prints healthy outer resolved bundle status for canonical sidecars, refreshes the canonical bundle-validation report plus doctor status/status-validation sidecars, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted outer resolved bundle artifacts
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` dereferences the same outer doctor-owned `status + status-validation` pair from either entrypoint, emits a self-describing outer bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` accepts the next outer resolved bundle doctor-owned sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the next outer resolved bundle doctor status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the newly outer resolved bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` prints healthy next outer resolved bundle status for canonical sidecars, refreshes the canonical bundle-validation report plus doctor status/status-validation sidecars, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted next outer resolved bundle artifacts
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` dereferences the same next outer doctor-owned `status + status-validation` pair from either entrypoint, emits a self-describing next outer bundle artifact, and fails closed when the pair drifts
+  - `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` dereferences the same newly outer doctor-owned `status + status-validation` pair from either entrypoint, emits a self-describing next outer bundle artifact, and fails closed when the pair drifts
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved outer doctor-owned bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the next outer resolved bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves `validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.py` accepts the next outer resolved bundle doctor-owned sidecar for healthy canonical bundles and fails closed on drifted status docs
+  - `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the next outer resolved bundle doctor status-validation report stays schema-valid and broken reports fail the same schema checks
+  - `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` prints healthy next outer resolved bundle status for canonical sidecars, refreshes the canonical bundle-validation report plus doctor status/status-validation sidecars, and fails closed on drifted bundles
+  - `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves `gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh` accepts healthy canonical sidecars and rejects drifted next outer resolved bundle artifacts
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved status-bundle-status bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_doctor_plain_python_compat_manifest_status_bundle_status_bundle.sh`
+    - proves the status-bundle-status-bundle doctor prints healthy bundle status for canonical sidecars, writes a fresh bundle-validation report, and fails closed on drifted bundles
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_contract.sh`
+    - proves the status-bundle-status-bundle doctor emits a machine-readable status report that stays schema-valid against `planningops/schemas/plain-python-compat-manifest-status-bundle-status-bundle-status.schema.json`
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the outer status-bundle-status-bundle status-validation report stays schema-valid and fails closed when bundle lineage or validation output refs drift
+  - `test_resolve_plain_python_compat_manifest_status_bundle_status_bundle_status.sh`
+    - proves `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status.py` dereferences the same canonical outer status/status-validation pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved outer status-bundle-status-bundle-status bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.sh`
+    - proves the outer status-bundle-status-bundle-status-bundle doctor prints healthy bundle status for canonical sidecars, writes a fresh bundle-validation report plus outer status and status-validation sidecars, and fails closed on drifted bundles
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves the outer status-bundle-status-bundle-status-bundle doctor emits a machine-readable status report that stays schema-valid against `planningops/schemas/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status.schema.json`
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the outermost status-bundle-status-bundle-status-bundle status-validation report stays schema-valid and fails closed when outer-bundle lineage or validation output refs drift
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved outermost bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_doctor_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves the outermost bundle doctor prints healthy bundle status for canonical sidecars, writes a fresh status report plus status-validation and bundle-validation reports, and fails closed on drifted bundles
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`
+    - proves the outermost bundle doctor emits a machine-readable status report that stays schema-valid against `planningops/schemas/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status.schema.json`
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh`
+    - proves the outermost bundle doctor status-validation report stays schema-valid and fails closed when outermost bundle lineage or validation output refs drift
+  - `test_resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status.py` dereferences the same canonical outermost-doctor status/status-validation pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`
+    - proves `validate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.py` emits a schema-valid validation report for the resolved outermost-doctor status bundle and fails closed when the stored bundle drifts from fresh canonical resolution
+  - `test_gate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status_bundle.sh`
+    - proves the outermost bundle gate accepts healthy canonical sidecars, preserves the canonical outermost bundle artifact plus validation report, and rejects drifted bundles
+  - `test_resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status.sh`
+    - proves `resolve_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle_status.py` dereferences the same canonical outermost status/status-validation pair from either entrypoint, emits a self-describing bundle artifact, and fails closed when the pair drifts
+  - `test_gate_plain_python_compat_manifest_status_bundle_status_bundle_status_bundle.sh`
+    - proves the outer status-bundle-status-bundle-status-bundle gate accepts healthy canonical sidecars, preserves the canonical bundle artifact plus validation report, and rejects drifted bundles
+  - `test_gate_plain_python_compat_manifest_status_bundle_status_bundle.sh`
+    - proves the status-bundle-status-bundle gate accepts healthy canonical sidecars, preserves the canonical bundle artifact plus validation report, and rejects drifted bundles
+  - `test_doctor_plain_python_compat_manifest.sh`
+    - proves the plain-python manifest doctor prints healthy status for the canonical manifest, surfaces the canonical `loop_guardrails_chain`, writes fresh validation + status + status-validation + status-bundle artifacts, and fails closed on broken manifest ids
+  - `test_gate_plain_python_compat_manifest.sh`
+    - proves the plain-python manifest gate accepts the healthy canonical manifest, writes fresh validation + status + status-validation + status-bundle artifacts, and rejects broken runtime-stack sequence ids
+  - `test_resolve_plain_python_compat_manifest.sh`
+    - proves `resolve_plain_python_compat_manifest.py` emits the canonical resolved entrypoint set, runtime-stack sequence, and manifest-backed `loop_guardrails_chain`
+  - `test_cross_repo_plain_python_annotation_contract.sh`
+    - proves every manifest-backed plain-`python3` entrypoint keeps `from __future__ import annotations` in its top-of-file header, so shell interpreter parity does not drift back into PEP 604 breakage
+  - `test_plain_python_compat_manifest_wiring.sh`
+    - proves local `loop-guardrails` still replays the full manifest-backed plain-python validator/doctor/gate/smoke chain in canonical order, while GitHub `loop-guardrails` consumes the same canonical step inventory through `run_plain_python_compat_workflow_chain.sh`
+    - also proves the compat consumers keep resolving entrypoints through `resolve_plain_python_compat_manifest.py` instead of hardcoded manifest paths
+  - `test_runtime_stack_smoke_sequence_contract.sh`
+    - proves the plain-`python3` path survives the same back-to-back issue-driven-runtime-stack-smoke then local-runtime-stack-smoke sequence that federated `loop-guardrails` exercises
+    - resolves those sequence entrypoints through `resolve_plain_python_compat_manifest.py`, so the dynamic compat smoke and sequence contract share one manifest-backed source of truth
+  - `run_plain_python_compat_workflow_chain.sh`
+    - canonical workflow-only entrypoint for the manifest-backed plain-python validator/doctor/gate/smoke chain
+    - accepts optional `--manifest-file`
+    - `--print-steps` and `--print-workflow-invocation` emit the canonical GitHub helper surfaces for contract and wiring consumers
+    - `--help` prints the supported plain-python compat workflow helper surface
+  - `test_run_plain_python_compat_workflow_chain_contract.sh`
+    - proves the plain-python compat workflow helper keeps the expected step inventory, workflow invocation surface, help text, resolver wiring, and manifest-backed replay loop
+  - `test_supervisor_handoff_to_monday_status_bridge.sh`
+    - proves a blocked planningops supervisor handoff preserves federated `headline`, `first_action_command`, `priority_headline`, and remediation CTAs through monday status delivery, local dispatch packet export, and monday's canonical priority preview/display/handoff-validation resolvers
+    - also proves the wrapper artifact and dispatch packet dereference the same canonical `operator_handoff_validation_path`, `priority_preview_ref`, and `priority_display_packet_ref`, both individually and through the canonical bundle resolver, validation sidecar, and doctor/gate consumer path
+  - `test_supervisor_handoff_to_monday_goal_completion_bridge.sh`
+    - proves a planningops goal-completion handoff preserves federated `headline`, `first_action_command`, `priority_headline`, and remediation CTAs through monday terminal delivery, local dispatch packet export, and monday's canonical priority preview/display/handoff-validation resolvers
+    - also proves the wrapper artifact and dispatch packet dereference the same canonical `operator_handoff_validation_path`, `priority_preview_ref`, and `priority_display_packet_ref`, both individually and through the canonical bundle resolver, validation sidecar, and doctor/gate consumer path
+  - `test_supervisor_handoff_to_monday_goal_completion_scheduler_bridge.sh`
+    - proves a planningops goal-completion handoff preserves federated `headline`, `first_action_command`, `priority_headline`, and remediation CTAs through monday scheduled queue admission, scheduler delivery-cycle evidence, and monday's canonical priority preview/display/handoff-validation resolvers
+    - also proves scheduler evidence and nested delivery-cycle evidence dereference the same canonical `operator_handoff_validation_path`, `priority_preview_ref`, and `priority_display_packet_ref`, both individually and through the canonical bundle resolver, validation sidecar, and doctor/gate consumer path
+  - `test_supervisor_handoff_bridge_wiring.sh`
+    - keeps all three bridge regressions pinned to monday's canonical `resolve_operator_priority_preview.py` / `resolve_operator_priority_display_packet.py` consumer paths plus planningops' `resolve_supervisor_operator_handoff_validation.py` / `resolve_supervisor_operator_handoff_bundle.py` / `validate_supervisor_operator_handoff_bundle.py` / `assess_supervisor_operator_handoff_bundle_readiness.py` / `validate_supervisor_operator_handoff_bundle_readiness.py` / `doctor_supervisor_operator_handoff_bundle.py` / `gate_supervisor_operator_handoff_bundle.sh`, and proves local/workflow runtime-handoff lanes call only the canonical helper surface
+  - `run_runtime_handoff_ci_check.sh`
+    - canonical local/workflow entrypoint for runtime-handoff integration plus handoff bundle bridge regressions
+    - now also replays `test_autonomous_supervisor_loop_contract.sh`, so the supervisor loop's shared handoff dependency stays sealed inside the same lane
+    - also replays `test_assess_supervisor_operator_handoff_bundle_readiness.sh` and `test_validate_supervisor_operator_handoff_bundle_readiness.sh`, so the handoff bundle-readiness assessor and validator remain sealed inside the same helper-owned runtime lane
+    - also replays the monday memory reflection chain through direct worker-outcome reflection, scheduler-backed reflection, goal-completion handoff, direct delivery-cycle orchestration, and scheduled reflection delivery orchestration so terminal memory completion remains sealed inside the same federated runtime lane
+    - also replays `test_reflection_cycle_orchestration_contract.sh`, `test_reflection_delivery_cycle_contract.sh`, and `test_scheduled_reflection_delivery_cycle_contract.sh`, so the reflection contract boundary stays sealed inside the same helper-owned runtime lane
+    - also replays `test_local_delivery_cycle_orchestration_contract.sh`, `test_scheduled_delivery_queue_admission_contract.sh`, `test_scheduled_queue_admission_handoff_contract.sh`, `test_scheduler_native_worker_outcome_selection_contract.sh`, and `test_scheduled_worker_outcome_handoff_contract.sh`, so the delivery and scheduled-admission contract boundary stays sealed inside the same helper-owned runtime lane
+    - also replays `test_reflection_action_handoff_contract.sh`, `test_scheduled_delivery_cycle_handoff_contract.sh`, `test_local_delivery_cycle_entrypoint_contract.sh`, `test_local_operator_target_resolution_contract.sh`, `test_local_outbox_dispatch_handoff_contract.sh`, and `test_local_dispatch_cycle_handoff_contract.sh`, so the downstream action-handoff and local delivery execution boundary stays sealed inside the same helper-owned runtime lane
+    - also replays `test_active_goal_registry_contract.sh` and `test_transition_goal_state_contract.sh`, so the active-goal and goal-transition policy consumed by the reflection action path stays sealed inside the same helper-owned runtime lane
+    - also replays `test_supervisor_operator_handoff_contract.sh` and `test_validate_supervisor_operator_handoff_contract.sh`, so the core supervisor handoff artifact and validation contract stays sealed inside the same helper-owned runtime lane
+    - also replays `test_federated_ci_summary_contract.sh` and `test_validate_federated_ci_summary_contract.sh`, so the canonical federated-summary artifact builder and validation contract stay sealed inside the same helper-owned runtime lane
+    - also replays `test_reconcile_federated_ci_summary_tmp.sh`, `test_validate_federated_ci_summary_tmp_reconcile_contract.sh`, and `test_resolve_federated_ci_summary_tmp_reconcile.sh`, so the root tmp-summary reconcile repair, validation, and resolution surface stays sealed inside the same helper-owned runtime lane
+    - also replays `test_validate_federated_ci_summary_tmp_reconcile_bundle.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_contract.sh`, `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_validation_contract.sh`, `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle.sh`, and `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle.sh`, so the first tmp-summary reconcile bundle-status resolved bundle layer stays sealed inside the same helper-owned runtime lane
+    - also replays `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_contract.sh`, `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_validation_contract.sh`, `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.sh`, and `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle.sh`, so the next tmp-summary reconcile status-bundle-status outer doctor layer stays sealed inside the same helper-owned runtime lane
+    - also replays `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_contract.sh`, `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`, `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`, and `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle.sh`, so the next outer tmp-summary reconcile status-bundle-status-bundle-status layer stays sealed inside the same helper-owned runtime lane
+    - also replays `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`, `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`, `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`, and `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`, so the next outer tmp-summary reconcile status-bundle-status-bundle-status-bundle-status layer stays sealed inside the same helper-owned runtime lane
+    - also replays `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`, `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`, `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`, and `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`, so the next outer tmp-summary reconcile status-bundle-status-bundle-status-bundle-status-bundle-status layer stays sealed inside the same helper-owned runtime lane
+    - also replays `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh`, `test_resolve_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh`, `test_validate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh`, `test_doctor_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`, and `test_gate_federated_ci_summary_tmp_reconcile_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh`, so the next outer tmp-summary reconcile status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status layer stays sealed inside the same helper-owned runtime lane
+    - also replays `test_assess_federated_ci_summary_readiness.sh`, `test_validate_federated_ci_summary_readiness_contract.sh`, `test_doctor_federated_ci_summary.sh`, and `test_gate_federated_ci_summary.sh`, so the canonical federated-summary readiness assessor, validator, diagnosis, and fail-closed gate stay sealed inside the same helper-owned runtime lane
+    - also replays `test_uap_automation_operations_summary_contract.sh`, so the operator-facing automation operations summary stays aligned with the same federated-CI readiness and supervisor handoff surfaces owned by the helper lane
+    - accepts `--run-id`, `--monday-root`, optional `--planningops-last-run`, and optional `--python-bin`
+    - `--print-steps`, `--print-local-invocation`, and `--print-workflow-invocation` emit canonical helper surfaces for contract and wiring consumers
+    - `--help` prints the supported runtime-handoff options and helper surface
+  - `run_platform_contracts_ci_check.sh`
+    - canonical workflow-only entrypoint for the platform-contracts install, validation, and semver classification lane
+    - accepts `--contracts-root`, optional `--python-bin`, and optional `--venv-root`
+    - seeds a repo-local managed virtualenv under `planningops/runtime-artifacts/tooling/platform-contracts-ci` before installing dependencies, so local smoke runs do not depend on mutating a system-managed Python
+    - `--print-workflow-invocation` emits the canonical GitHub workflow helper call shape
+    - `--help` prints the supported platform-contracts options and helper surface
+  - `run_federated_summary_ci_check.sh`
+    - canonical workflow-only entrypoint for the federated summary aggregation, validation, and readiness lane
+    - accepts `--run-id`, one GitHub `needs.*.result` flag per federated check, and optional stamped/latest output overrides for smoke tests
+    - `--print-workflow-invocation` emits the canonical GitHub workflow helper call shape
+    - `--help` prints the supported federated-summary options and helper surface
+  - `run_contract_conformance_ci_check.sh`
+    - canonical local-only entrypoint for the federated contract-conformance bootstrap and cross-repo checker run
+    - accepts `--run-id`, optional `--workspace-root`, optional `--bootstrap-mode`, and optional `--python-bin`
+    - `--print-local-invocation` emits the canonical local matrix helper call shape
+    - `--help` prints the supported contract-conformance options and helper surface
+  - `run_federated_conformance_ci_check.sh`
+    - canonical workflow-only entrypoint for the federated artifact-policy rollout plus cross-repo conformance checker run
+    - accepts `--run-id`, optional `--workspace-root`, optional `--python-bin`, optional `--policy-output`, optional `--bootstrap-mode`, and required `--output`
+    - workflow wiring now relies on the checker's managed bootstrap instead of inlining per-repo `pip install -r ...` commands
+    - `--print-workflow-invocation` emits the canonical GitHub workflow helper call shape
+    - `--help` prints the supported federated-conformance options and helper surface
+  - `run_provider_profile_ci_check.sh`
+    - canonical local/workflow entrypoint for provider launcher/profile dry-run checks
+    - accepts `--run-id`, `--provider-root`, optional `--runtime-profile-file`, and optional `--profiles`
+    - `--print-local-invocation` and `--print-workflow-invocation` emit canonical helper call shapes for local matrix and GitHub workflow consumers
+    - `--help` prints the supported provider-profile options and helper surface
+  - `run_provider_gateway_ready_ci_check.sh`
+    - canonical local-only entrypoint for the provider-gateway-ready LiteLLM bootstrap plus readiness gate
+    - accepts `--run-id` and optional `--provider-root`
+    - `--print-local-invocation` emits the canonical local matrix helper call shape
+    - `--help` prints the supported provider-gateway-ready options and helper surface
+  - `run_runtime_operations_ready_ci_check.sh`
+    - canonical local-only entrypoint for the monday runtime-operations-ready LiteLLM bootstrap plus readiness gate
+    - accepts `--run-id`, optional `--provider-root`, optional `--monday-root`, and optional `--runtime-profile`
+    - `--print-local-invocation` emits the canonical local matrix helper call shape
+    - `--help` prints the supported runtime-operations-ready options and helper surface
+  - `run_o11y_replay_ci_check.sh`
+    - canonical local/workflow entrypoint for observability replay/backfill dry-run checks
+    - accepts `--run-id` and optional `--o11y-root`
+    - `--print-local-invocation` and `--print-workflow-invocation` emit canonical helper call shapes for local matrix and GitHub workflow consumers
+    - `--help` prints the supported o11y-replay options and helper surface
+  - `run_issue_quality_ci_check.sh`
+    - canonical workflow-only entrypoint for issue-quality contract regressions plus the live backlog issue-quality validator
+    - accepts optional `--python-bin`
+    - `--print-steps` and `--print-workflow-invocation` emit the canonical GitHub helper surfaces for contract and wiring consumers
+    - `--help` prints the supported issue-quality helper surface
+  - `run_external_artifact_residency_ci_check.sh`
+    - canonical workflow-only entrypoint for external-only commit/artifact residency regressions plus the live commit-guard diff/tracked audits
+    - accepts `--base-ref`, `--head-ref`, and optional `--python-bin`
+    - `--print-steps` and `--print-workflow-invocation` emit the canonical GitHub helper surfaces for contract and wiring consumers
+    - `--help` prints the supported external-artifact residency helper surface
+  - `run_control_plane_governance_ci_check.sh`
+    - canonical workflow-only entrypoint for artifact-policy, ontology, memory, inventory-lifecycle, and scheduler-queue control-plane governance regressions
+    - accepts optional `--python-bin`, `--root`, `--memory-output`, `--inventory-output`, and `--inventory-issues-file` for deterministic smoke fixtures
+    - `--print-steps` and `--print-workflow-invocation` emit the canonical GitHub helper surfaces for contract and wiring consumers
+    - `--help` prints the supported control-plane governance helper surface
+  - `test_run_runtime_handoff_ci_check_contract.sh`
+    - proves the runtime-handoff helper keeps the expected step inventory, local/workflow invocation surfaces, and help text while preserving monday integration artifact naming
+  - `test_run_platform_contracts_ci_check_contract.sh`
+    - proves the platform-contracts helper keeps the expected workflow invocation surface, help text, managed-venv bootstrap, and validation/semver wiring
+  - `test_platform_contracts_helper_wiring.sh`
+    - proves the GitHub `contract-conformance` job calls only the canonical platform-contracts helper surface instead of inlining requirements install, contract validation, or semver classification
+  - `test_run_federated_summary_ci_check_contract.sh`
+    - proves the federated-summary helper keeps the expected workflow invocation surface, help text, and summary/readiness helper wiring
+  - `test_federated_summary_helper_wiring.sh`
+    - proves the GitHub `federated-summary` job calls only the canonical wrapper surface instead of inlining append/finalize/readiness shell logic
+  - `test_run_federated_summary_ci_check_smoke.sh`
+    - proves the federated-summary helper can build both passing and fail-closed summary/readiness artifact sets under temp outputs without mutating canonical latest artifacts
+  - `test_run_contract_conformance_ci_check_contract.sh`
+    - proves the contract-conformance helper keeps the expected local invocation surface, help text, and conformance checker wiring
+  - `test_contract_conformance_helper_wiring.sh`
+    - proves the local federated matrix `contract-conformance` block calls only the canonical helper surface instead of inlining `cross_repo_conformance_check.py`
+  - `test_run_federated_conformance_ci_check_contract.sh`
+    - proves the federated-conformance helper keeps the expected workflow invocation surface, help text, artifact-policy rollout wiring, bootstrap-mode wiring, and conformance checker wiring
+  - `test_federated_conformance_helper_wiring.sh`
+    - proves the GitHub `federated-conformance` job calls only the canonical helper surface instead of inlining repo requirement installs, `rollout_external_artifact_policy.py`, or `cross_repo_conformance_check.py`
+  - `test_run_provider_profile_ci_check_contract.sh`
+    - proves the provider-profile helper keeps the expected local/workflow invocation surfaces, help text, and launcher dry-run wiring
+  - `test_provider_profile_helper_wiring.sh`
+    - proves both the local federated matrix and GitHub provider-profile job call only the canonical provider-profile helper surface
+  - `test_run_provider_gateway_ready_ci_check_contract.sh`
+    - proves the provider-gateway-ready helper keeps the expected local invocation surface, help text, stack bootstrap cleanup, and readiness gate wiring
+  - `test_provider_gateway_ready_helper_wiring.sh`
+    - proves the local federated matrix `provider-gateway-ready` block calls only the canonical helper surface instead of inlining the stack wrapper, launcher, or gate command
+  - `test_run_runtime_operations_ready_ci_check_contract.sh`
+    - proves the runtime-operations-ready helper keeps the expected local invocation surface, help text, stack bootstrap cleanup, and monday runtime gate wiring
+  - `test_runtime_operations_ready_helper_wiring.sh`
+    - proves the local federated matrix `runtime-operations-ready` block calls only the canonical helper surface instead of inlining the stack wrapper, launcher, or monday gate command
+  - `test_run_o11y_replay_ci_check_contract.sh`
+    - proves the o11y-replay helper keeps the expected local/workflow invocation surfaces, help text, and dry-run launcher wiring
+  - `test_o11y_replay_helper_wiring.sh`
+    - proves both the local federated matrix and GitHub o11y-replay job call only the canonical o11y helper surface
+  - `test_run_issue_quality_ci_check_contract.sh`
+    - proves the issue-quality helper keeps the expected workflow invocation surface, step inventory, help text, and validator wiring
+  - `test_issue_quality_helper_wiring.sh`
+    - proves the GitHub `loop-guardrails` job calls only the canonical issue-quality helper surface instead of inlining issue-quality regressions or the live validator
+  - `test_run_external_artifact_residency_ci_check_contract.sh`
+    - proves the external-artifact residency helper keeps the expected workflow invocation surface, legacy workflow step inventory, help text, base-ref normalization, and commit-guard wiring
+  - `test_external_artifact_residency_helper_wiring.sh`
+    - proves the GitHub `loop-guardrails` job calls only the canonical external-artifact residency helper surface instead of inlining commit-guard, migration, sink, or base-ref fallback logic
+  - `test_run_control_plane_governance_ci_check_contract.sh`
+    - proves the control-plane governance helper keeps the expected workflow invocation surface, governance step inventory, help text, and artifact-policy/memory/inventory validator wiring
+  - `test_run_control_plane_governance_ci_check_smoke.sh`
+    - proves the control-plane governance helper can execute end-to-end on a clean temp root plus inventory fixture without relying on the current dirty workspace state
+  - `test_control_plane_governance_helper_wiring.sh`
+    - proves the GitHub `loop-guardrails` job calls only the canonical control-plane governance helper surface instead of inlining artifact-policy, ontology, memory, inventory, or queue-governance commands
   - `test_supervisor_experiment_auto_executor_contract.sh`
   - `test_ralph_loop_local_worker_policy.sh`
   - `test_scheduler_native_worker_outcome_selection_contract.sh`
@@ -116,6 +906,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_blueprint_pack_contract.sh`
   - `test_validate_runtime_workspace_build_contract.sh`
   - `test_validate_runtime_skeleton_scaffold_contract.sh`
+  - `test_validate_runtime_profiles_contract.sh`
   - `test_validate_repo_boundaries_contract.sh`
   - `test_validate_script_roles_contract.sh`
   - `test_validate_issue_quality_contract.sh`
@@ -126,6 +917,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_audit_branch_protection_contract.sh`
   - `test_apply_branch_protection_contract.sh`
   - `test_cross_repo_conformance_bootstrap_contract.sh`
+  - `test_cross_repo_conformance_run_root_reuse_contract.sh`
   - `test_validate_wrapper_deprecation_contract.sh`
   - `test_control_tower_ontology_contract.sh`
   - `test_ontology_entity_map_contract.sh`
@@ -162,8 +954,11 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-mode auto`
 - To inspect the deterministic bootstrap plan without creating a venv:
   - `python3 planningops/scripts/federation/cross_repo_conformance_check.py --workspace-root .. --bootstrap-plan-only --bootstrap-plan-output /tmp/federated-bootstrap-plan.json`
+- `test_cross_repo_conformance_run_root_reuse_contract.sh` reruns the same conformance `run_id` against a temporary `run_root` and proves stale monday idempotency or transition-log evidence is purged before fresh scheduler evidence is written.
 
 ## Artifact Residency
+- Workflow helper:
+  - `bash planningops/scripts/run_external_artifact_residency_ci_check.sh --base-ref origin/main --head-ref HEAD --python-bin python3`
 - Diff guard:
   - `python3 planningops/scripts/validate_external_only_commit_guard.py --base-ref origin/main --head-ref HEAD --strict`
 - Baseline audit:
