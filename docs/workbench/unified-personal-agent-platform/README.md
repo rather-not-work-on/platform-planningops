@@ -90,6 +90,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [MONDAY Agent Memory Wave AN Runtime-Handoff Tmp-Reconcile Status-Contract Backfill Lane Packet](./plans/2026-03-26-monday-agent-memory-wave-an-runtime-handoff-tmp-reconcile-status-contract-backfill-lane-packet.md)
 - [MONDAY Agent Memory Wave AO Runtime-Handoff Tmp-Reconcile Root Ladder Completion Lane Packet](./plans/2026-03-26-monday-agent-memory-wave-ao-runtime-handoff-tmp-reconcile-root-ladder-completion-lane-packet.md)
 - [MONDAY Harness Projection Wave AP Suite Root-Surface Promotion Packet](./plans/2026-03-26-monday-harness-projection-wave-ap-suite-root-surface-promotion-packet.md)
+- [Runtime-Handoff Federated CI Summary Family Backfill Packet](./plans/2026-03-26-runtime-handoff-federated-ci-summary-family-backfill-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)

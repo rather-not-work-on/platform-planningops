@@ -1,0 +1,260 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "planningops/schemas/federated-ci-summary-tmp-reconcile-bundle.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "artifact_file",
+    "reconcile_report_path",
+    "reconcile_validation_report_path",
+    "run_id",
+    "reconcile_status",
+    "reconcile_check_name",
+    "reconcile_count",
+    "reconcile_report",
+    "reconcile_validation_report"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reconcile_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reconcile_validation_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reconcile_status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "restored"
+      ]
+    },
+    "reconcile_check_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reconcile_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reconcile_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generated_at_utc",
+        "summary_path",
+        "checkpoint_path",
+        "output_path",
+        "run_id",
+        "check_name",
+        "checkpoint_check_count",
+        "summary_check_count",
+        "restored",
+        "status",
+        "reasons",
+        "reconcile_count",
+        "restored_check_names"
+      ],
+      "properties": {
+        "generated_at_utc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checkpoint_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "check_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checkpoint_check_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "summary_check_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "restored": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "healthy",
+            "restored"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reconcile_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "restored_check_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "reconcile_validation_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reconcile_report_path",
+        "schema_path",
+        "output_path",
+        "generated_at_utc",
+        "verdict",
+        "error_count",
+        "warning_count",
+        "errors",
+        "warnings",
+        "reconcile_generated_at_utc",
+        "reconcile_run_id",
+        "reconcile_status",
+        "reconcile_restored",
+        "reconcile_check_name",
+        "reconcile_checkpoint_check_count",
+        "reconcile_summary_check_count",
+        "reconcile_count",
+        "reconcile_restored_check_names"
+      ],
+      "properties": {
+        "reconcile_report_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generated_at_utc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ]
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reconcile_generated_at_utc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reconcile_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reconcile_status": {
+          "type": "string",
+          "enum": [
+            "healthy",
+            "restored"
+          ]
+        },
+        "reconcile_restored": {
+          "type": "boolean"
+        },
+        "reconcile_check_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reconcile_checkpoint_check_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reconcile_summary_check_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reconcile_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reconcile_restored_check_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

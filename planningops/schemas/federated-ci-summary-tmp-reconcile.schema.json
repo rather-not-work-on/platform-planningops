@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "planningops/schemas/federated-ci-summary-tmp-reconcile.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "summary_path",
+    "checkpoint_path",
+    "output_path",
+    "run_id",
+    "check_name",
+    "checkpoint_check_count",
+    "summary_check_count",
+    "restored",
+    "status",
+    "reasons",
+    "reconcile_count",
+    "restored_check_names"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkpoint_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "check_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "checkpoint_check_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summary_check_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "restored": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "restored"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reconcile_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "restored_check_names": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

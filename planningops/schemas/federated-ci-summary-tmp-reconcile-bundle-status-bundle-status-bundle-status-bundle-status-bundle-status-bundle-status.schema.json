@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "planningops/schemas/federated-ci-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "output_path",
+    "status_validation_output_path",
+    "bundle_path",
+    "validation_report_path",
+    "bundle_present",
+    "validation_present",
+    "artifact_file",
+    "status_path",
+    "status_validation_path",
+    "nested_bundle_path",
+    "nested_bundle_validation_report_path",
+    "run_id",
+    "reconcile_status",
+    "check_name",
+    "reconcile_count",
+    "reconcile_validation_verdict",
+    "bundle_validation_verdict",
+    "bundle_validation_state",
+    "ready",
+    "next_step"
+  ],
+  "properties": {
+    "generated_at_utc": { "type": "string", "minLength": 1 },
+    "output_path": { "type": "string", "minLength": 1 },
+    "status_validation_output_path": { "type": ["string", "null"] },
+    "bundle_path": { "type": "string", "minLength": 1 },
+    "validation_report_path": { "type": "string", "minLength": 1 },
+    "bundle_present": { "type": "boolean" },
+    "validation_present": { "type": "boolean" },
+    "artifact_file": { "type": ["string", "null"] },
+    "status_path": { "type": ["string", "null"] },
+    "status_validation_path": { "type": ["string", "null"] },
+    "nested_bundle_path": { "type": ["string", "null"] },
+    "nested_bundle_validation_report_path": { "type": ["string", "null"] },
+    "run_id": { "type": ["string", "null"] },
+    "reconcile_status": {
+      "type": ["string", "null"],
+      "enum": ["healthy", "restored", null]
+    },
+    "check_name": { "type": ["string", "null"] },
+    "reconcile_count": { "type": ["integer", "null"], "minimum": 0 },
+    "reconcile_validation_verdict": {
+      "type": "string",
+      "enum": ["missing", "unknown", "pass", "fail"]
+    },
+    "bundle_validation_verdict": {
+      "type": "string",
+      "enum": ["missing", "unknown", "pass", "fail"]
+    },
+    "bundle_validation_state": {
+      "type": "string",
+      "enum": ["missing", "fresh", "stale"]
+    },
+    "ready": { "type": "boolean" },
+    "next_step": { "type": "string", "minLength": 1 }
+  }
+}
