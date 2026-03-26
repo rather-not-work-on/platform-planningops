@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlanningOps Runtime Profiles",
+  "type": "object",
+  "required": ["active_profile", "profiles", "task_overrides"],
+  "properties": {
+    "active_profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/profile"
+      }
+    },
+    "task_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/taskOverride"
+      }
+    }
+  },
+  "$defs": {
+    "plannerPolicy": {
+      "type": "object",
+      "required": ["engine_hint", "execution_mode", "capability_profile"],
+      "properties": {
+        "engine_hint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capability_profile": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "required": ["execution_mode", "litellm_base_url", "langfuse_host"],
+      "properties": {
+        "execution_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "litellm_base_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "langfuse_host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planner_policy": {
+          "$ref": "#/$defs/plannerPolicy"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "providerPolicy": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fallback_models": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "workerPolicy": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["parser_diff_dry_run", "python_script", "shell"]
+        },
+        "script": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "taskOverride": {
+      "type": "object",
+      "properties": {
+        "runtime_profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_policy": {
+          "$ref": "#/$defs/providerPolicy"
+        },
+        "worker_policy": {
+          "$ref": "#/$defs/workerPolicy"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

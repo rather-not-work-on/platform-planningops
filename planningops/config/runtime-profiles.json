@@ -5,14 +5,22 @@
       "execution_mode": "local",
       "litellm_base_url": "http://127.0.0.1:4000",
       "langfuse_host": "http://127.0.0.1:3001",
-      "nanoclaw_endpoint": "http://127.0.0.1:8787",
+      "planner_policy": {
+        "engine_hint": "deepagents",
+        "execution_mode": "embedded",
+        "capability_profile": "repo_local_skills"
+      },
       "notes": "Default local stack for planningops loop development."
     },
     "oracle_cloud": {
       "execution_mode": "hybrid",
       "litellm_base_url": "https://litellm.example.oracle.cloud",
       "langfuse_host": "https://langfuse.example.oracle.cloud",
-      "nanoclaw_endpoint": "https://nanoclaw.example.oracle.cloud",
+      "planner_policy": {
+        "engine_hint": "deepagents",
+        "execution_mode": "embedded",
+        "capability_profile": "repo_local_skills"
+      },
       "notes": "Migration target profile for OCI deployment."
     }
   },
@@ -20,9 +28,9 @@
     "default": {
       "runtime_profile": "local",
       "provider_policy": {
-        "model": "task-default",
+        "model": "gemini-2.5-flash-lite",
         "fallback_models": [
-          "task-default-fallback"
+          "llama-3.1:8b"
         ],
         "max_retries": 2,
         "timeout_ms": 60000
