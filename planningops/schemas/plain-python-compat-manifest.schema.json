@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops/schemas/plain-python-compat-manifest.schema.json",
+  "title": "PlanningOps Plain Python Compatibility Manifest",
+  "type": "object",
+  "required": ["entrypoints", "runtime_stack_sequence", "loop_guardrails_chain"],
+  "properties": {
+    "entrypoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entrypoint"
+      }
+    },
+    "runtime_stack_sequence": {
+      "$ref": "#/$defs/runtimeStackSequence"
+    },
+    "loop_guardrails_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/loopGuardrailsStep"
+      }
+    }
+  },
+  "$defs": {
+    "entrypoint": {
+      "type": "object",
+      "required": ["id", "repo", "path", "mode"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repo": {
+          "type": "string",
+          "enum": [
+            "planningops",
+            "monday",
+            "platform-observability-gateway"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "help",
+            "import"
+          ]
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtimeStackSequence": {
+      "type": "object",
+      "required": [
+        "issue_driven_entrypoint_id",
+        "local_entrypoint_id"
+      ],
+      "properties": {
+        "issue_driven_entrypoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_entrypoint_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "loopGuardrailsStep": {
+      "type": "object",
+      "required": [
+        "id",
+        "local_matrix_command",
+        "workflow_command"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_matrix_command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workflow_command": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
