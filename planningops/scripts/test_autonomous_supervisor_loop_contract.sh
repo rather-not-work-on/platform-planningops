@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$ROOT_DIR"
+
 python3 - <<'PY'
 import json
+import sqlite3
 import shutil
 import subprocess
 import tempfile
@@ -17,8 +21,127 @@ def run_supervisor(args):
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
     artifacts_root = td_path / "supervisor-artifacts"
-    monday_goal_completion_script = Path.cwd().parent / "monday" / "scripts" / "run_goal_completion_delivery_cycle.py"
+    supervisor_script = Path("planningops/scripts/autonomous_supervisor_loop.py").read_text(encoding="utf-8")
+    scripts_readme = Path("planningops/scripts/README.md").read_text(encoding="utf-8")
+    contract_text = Path("planningops/contracts/autonomous-supervisor-loop-contract.md").read_text(encoding="utf-8")
+    assert "import supervisor_handoff_common as shared_handoff_common" in supervisor_script, supervisor_script
+    assert "build_operator_report = shared_handoff_common.build_operator_report" in supervisor_script, supervisor_script
+    assert "emit_operator_handoff_bundle_sidecars = shared_handoff_common.emit_operator_handoff_bundle_sidecars" in supervisor_script, supervisor_script
+    assert "run_goal_completion_delivery = shared_handoff_common.run_goal_completion_delivery" in supervisor_script, supervisor_script
+    assert "sources the canonical operator-report, inbox-payload, bundle, and monday goal-completion admission helpers from `supervisor_handoff_common.py`" in scripts_readme, scripts_readme
+    assert "priority_headline` / `priority_cta_command` / `priority_summary_markdown` are the planningops SoT" in scripts_readme, scripts_readme
+    assert "priority_preview_ref` / `priority_display_packet_ref` trio plus the planningops-owned `operator_handoff_bundle_path` / `operator_handoff_bundle_validation_path` / `operator_handoff_bundle_readiness_path` / `operator_handoff_bundle_readiness_validation_path` sidecar set" in scripts_readme, scripts_readme
+    assert "validate_supervisor_operator_handoff.py" in scripts_readme, scripts_readme
+    assert "operator-handoff-validation.json" in scripts_readme, scripts_readme
+    assert "operator-handoff-bundle-readiness.json" in scripts_readme, scripts_readme
+    assert "priority_headline`, `priority_cta_command`, and `priority_summary_markdown` as the planningops source of truth" in contract_text, contract_text
+    assert "priority_preview_ref` / `priority_display_packet_ref` trio plus the planningops-owned `operator_handoff_bundle_path` / `operator_handoff_bundle_validation_path` / `operator_handoff_bundle_readiness_path` / `operator_handoff_bundle_readiness_validation_path` sidecar set" in contract_text, contract_text
+    assert "planningops/scripts/resolve_supervisor_operator_handoff_bundle.py" in contract_text, contract_text
+    assert "planningops/scripts/validate_supervisor_operator_handoff_bundle.py" in contract_text, contract_text
+    assert "planningops/scripts/assess_supervisor_operator_handoff_bundle_readiness.py" in contract_text, contract_text
+    assert "planningops/scripts/validate_supervisor_operator_handoff_bundle_readiness.py" in contract_text, contract_text
+    assert "planningops/scripts/doctor_supervisor_operator_handoff_bundle.py" in contract_text, contract_text
+    assert "planningops/scripts/gate_supervisor_operator_handoff_bundle.sh" in contract_text, contract_text
+    assert "scripts/resolve_operator_priority_preview.py" in contract_text, contract_text
+    assert "scripts/resolve_operator_priority_display_packet.py" in contract_text, contract_text
+    assert "validate_supervisor_operator_handoff.py" in contract_text, contract_text
+    assert "supervisor-operator-report.schema.json" in contract_text, contract_text
+    assert "supervisor-inbox-payload.schema.json" in contract_text, contract_text
+    assert "operator-handoff-validation.json" in contract_text, contract_text
+    assert "operator-handoff-bundle-readiness.json" in contract_text, contract_text
+    assert "must fail closed" in contract_text, contract_text
+    assert "planningops/scripts/supervisor_handoff_common.py" in contract_text, contract_text
+    monday_goal_completion_script = Path.cwd().parent / "monday" / "scripts" / "enqueue_scheduled_delivery_work_item.py"
     monday_runtime_test_root = Path.cwd().parent / "monday" / "runtime-artifacts" / f"test-supervisor-{td_path.name}"
+    monday_queue_db = monday_runtime_test_root / "runtime-queue.sqlite3"
+    federated_summary = td_path / "federated-ci-summary.json"
+    federated_readiness = td_path / "federated-ci-summary-readiness.json"
+    federated_summary.write_text(
+        json.dumps(
+            {
+                "run_id": "federated-ci-runtime-gates-test",
+                "generated_at_utc": "2026-03-19T11:42:10.341286+00:00",
+                "verdict": "pass",
+                "overall_status": "complete",
+                "check_count": 7,
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    federated_readiness.write_text(
+        json.dumps(
+            {
+                "generated_at_utc": "2026-03-19T11:42:14.545303+00:00",
+                "summary_path": str(federated_summary),
+                "validation_report_path": "/tmp/federated-ci-summary-validation.json",
+                "summary_present": True,
+                "validation_present": True,
+                "summary_run_id": "federated-ci-runtime-gates-test",
+                "summary_generated_at_utc": "2026-03-19T11:42:10.341286+00:00",
+                "summary_verdict": "pass",
+                "overall_status": "complete",
+                "check_count": 7,
+                "failed_checks": [],
+                "missing_required_checks": [],
+                "validation_verdict": "pass",
+                "validation_state": "fresh",
+                "ready": True,
+                "readiness_status": "ready",
+                "blocking_reasons": [],
+                "next_step": "none",
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    federated_readiness_blocked = td_path / "federated-ci-summary-readiness-blocked.json"
+    federated_readiness_blocked.write_text(
+        json.dumps(
+            {
+                "generated_at_utc": "2026-03-19T11:42:14.545303+00:00",
+                "summary_path": str(federated_summary),
+                "validation_report_path": "/tmp/federated-ci-summary-validation.json",
+                "summary_present": True,
+                "validation_present": True,
+                "summary_run_id": "federated-ci-runtime-gates-test",
+                "summary_generated_at_utc": "2026-03-19T11:42:10.341286+00:00",
+                "summary_verdict": "pass",
+                "overall_status": "complete",
+                "check_count": 7,
+                "failed_checks": [],
+                "missing_required_checks": [],
+                "validation_verdict": "pass",
+                "validation_state": "fresh",
+                "ready": False,
+                "readiness_status": "blocked",
+                "blocking_reasons": ["runtime-operations-ready"],
+                "next_step": "bash planningops/scripts/gate_federated_ci_summary.sh",
+            },
+            ensure_ascii=True,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    def run_supervisor(args):
+        enriched_args = list(args)
+        if "--federated-ci-summary" not in enriched_args:
+            enriched_args.extend(
+                [
+                    "--federated-ci-summary",
+                    str(federated_summary),
+                    "--federated-ci-summary-readiness",
+                    str(federated_readiness),
+                ]
+            )
+        cp = subprocess.run(enriched_args, check=False, capture_output=True, text=True)
+        return cp.returncode, cp.stdout, cp.stderr
 
     # 1) continue-on-experiment should allow multi-cycle run and converge.
     out_converged = td_path / "supervisor-converged.json"
@@ -40,6 +163,10 @@ with tempfile.TemporaryDirectory() as td:
             "--offline",
             "--active-goal-registry",
             "",
+            "--federated-ci-summary",
+            str(federated_summary),
+            "--federated-ci-summary-readiness",
+            str(federated_readiness),
             "--artifacts-root",
             str(artifacts_root),
             "--output",
@@ -54,15 +181,139 @@ with tempfile.TemporaryDirectory() as td:
     assert converged["cycles"][0]["experiment_trigger"]["triggered"] is True, converged
     assert converged["cycles"][1]["replenishment_candidates_count"] == 0, converged
     assert converged["cycles"][0]["project_items_rate_limit_fallback_used"] is False, converged
+    assert converged["operator_handoff_validation_path"].endswith("operator-handoff-validation.json"), converged
+    assert converged["operator_handoff_validation_last_path"].endswith("-operator-handoff-validation.json"), converged
+    assert converged["operator_handoff_bundle_path"].endswith("operator-handoff-bundle.json"), converged
+    assert converged["operator_handoff_bundle_last_path"].endswith("-operator-handoff-bundle.json"), converged
+    assert converged["operator_handoff_bundle_readiness_path"].endswith("operator-handoff-bundle-readiness.json"), converged
+    assert converged["operator_handoff_bundle_readiness_last_path"].endswith("-operator-handoff-bundle-readiness.json"), converged
     converged_operator = json.loads(Path(converged["operator_report_last_path"]).read_text(encoding="utf-8"))
+    converged_handoff_validation = json.loads(Path(converged["operator_handoff_validation_last_path"]).read_text(encoding="utf-8"))
+    converged_bundle = json.loads(Path(converged["operator_handoff_bundle_last_path"]).read_text(encoding="utf-8"))
+    converged_bundle_readiness = json.loads(Path(converged["operator_handoff_bundle_readiness_last_path"]).read_text(encoding="utf-8"))
+    assert converged_handoff_validation["verdict"] == "pass", converged_handoff_validation
+    assert converged_bundle["operator_handoff_validation_path"] == converged["operator_handoff_validation_last_path"], converged_bundle
+    assert converged_bundle_readiness["ready"] is True, converged_bundle_readiness
+    assert converged_bundle_readiness["readiness_status"] == "ready", converged_bundle_readiness
     assert converged_operator["status"] == "ok", converged_operator
     assert converged_operator["operator_action"] == "none", converged_operator
+    assert converged_operator["operator_handoff_validation_path"] == converged["operator_handoff_validation_last_path"], converged_operator
+    assert converged_operator["priority_preview_ref"] == converged["operator_priority_preview_last_path"], converged_operator
+    assert converged_operator["priority_display_packet_ref"] == converged["operator_priority_display_packet_last_path"], converged_operator
+    assert converged_operator["operator_handoff_bundle_path"] == converged["operator_handoff_bundle_last_path"], converged_operator
+    assert converged_operator["operator_handoff_bundle_readiness_path"] == converged["operator_handoff_bundle_readiness_last_path"], converged_operator
+    assert converged_operator["federated_ci_summary"]["summary_run_id"] == "federated-ci-runtime-gates-test", converged_operator
+    assert converged_operator["federated_ci_summary"]["ready"] is True, converged_operator
+    assert converged_operator["federated_ci_summary"]["remediation_commands"] == [], converged_operator
+    assert converged_operator["priority_headline"] == "Supervisor run converged with live project data.", converged_operator
+    assert "## Priority" in converged_operator["priority_summary_markdown"], converged_operator
     converged_summary = Path(converged["operator_summary_last_path"]).read_text(encoding="utf-8")
     assert "# Supervisor Operator Summary" in converged_summary, converged_summary
     assert "Action: none" in converged_summary, converged_summary
+    assert "## Priority" in converged_summary, converged_summary
+    assert "## Federated CI" in converged_summary, converged_summary
     converged_inbox = json.loads(Path(converged["inbox_payload_last_path"]).read_text(encoding="utf-8"))
     assert converged_inbox["status"] == "ok", converged_inbox
     assert converged_inbox["title"].startswith("[OK]"), converged_inbox
+    assert converged_inbox["priority_headline"] == "Supervisor run converged with live project data.", converged_inbox
+    assert converged_inbox["priority_summary_markdown"] == converged_operator["priority_summary_markdown"], converged_inbox
+    assert converged_inbox["operator_handoff_validation_path"] == converged["operator_handoff_validation_last_path"], converged_inbox
+    assert converged_inbox["priority_preview_ref"] == converged["operator_priority_preview_last_path"], converged_inbox
+    assert converged_inbox["priority_display_packet_ref"] == converged["operator_priority_display_packet_last_path"], converged_inbox
+    assert converged_inbox["operator_handoff_bundle_path"] == converged["operator_handoff_bundle_last_path"], converged_inbox
+    assert converged_inbox["operator_handoff_bundle_readiness_path"] == converged["operator_handoff_bundle_readiness_last_path"], converged_inbox
+    assert any("operator-handoff-validation.json" in str(attachment) for attachment in converged_inbox["attachments"]), converged_inbox
+    assert any("operator-handoff-bundle.json" in str(attachment) for attachment in converged_inbox["attachments"]), converged_inbox
+    assert any("operator-handoff-bundle-readiness.json" in str(attachment) for attachment in converged_inbox["attachments"]), converged_inbox
+    assert any("federated-ci-summary-readiness.json" in str(attachment) for attachment in converged_inbox["attachments"]), converged_inbox
+    assert any("federated-ci-summary-validation.json" in str(attachment) for attachment in converged_inbox["attachments"]), converged_inbox
+    assert "Handoff Validation Path:" in converged_summary, converged_summary
+    assert "operator-handoff-validation.json" in converged_summary, converged_summary
+    assert "Handoff Bundle Path:" in converged_summary, converged_summary
+    assert "operator-handoff-bundle-readiness.json" in converged_summary, converged_summary
+
+    # 1b) a blocked federated readiness snapshot should downgrade otherwise-ok convergence.
+    out_converged_blocked = td_path / "supervisor-converged-federated-blocked.json"
+    rc_converged_blocked, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "3",
+            "--convergence-pass-streak",
+            "2",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            "planningops/fixtures/supervisor-loop-sequence-sample.json",
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--active-goal-registry",
+            "",
+            "--federated-ci-summary",
+            str(federated_summary),
+            "--federated-ci-summary-readiness",
+            str(federated_readiness_blocked),
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_converged_blocked),
+        ]
+    )
+    assert rc_converged_blocked == 0, rc_converged_blocked
+    converged_blocked = json.loads(out_converged_blocked.read_text(encoding="utf-8"))
+    assert converged_blocked["operator_handoff_validation_path"].endswith("operator-handoff-validation.json"), converged_blocked
+    assert converged_blocked["operator_handoff_validation_last_path"].endswith("-operator-handoff-validation.json"), converged_blocked
+    assert converged_blocked["operator_handoff_bundle_last_path"].endswith("-operator-handoff-bundle.json"), converged_blocked
+    assert converged_blocked["operator_handoff_bundle_readiness_last_path"].endswith("-operator-handoff-bundle-readiness.json"), converged_blocked
+    converged_blocked_handoff_validation = json.loads(Path(converged_blocked["operator_handoff_validation_last_path"]).read_text(encoding="utf-8"))
+    converged_blocked_bundle = json.loads(Path(converged_blocked["operator_handoff_bundle_last_path"]).read_text(encoding="utf-8"))
+    converged_blocked_bundle_readiness = json.loads(Path(converged_blocked["operator_handoff_bundle_readiness_last_path"]).read_text(encoding="utf-8"))
+    assert converged_blocked_handoff_validation["verdict"] == "pass", converged_blocked_handoff_validation
+    assert converged_blocked_bundle["operator_handoff_validation_path"] == converged_blocked["operator_handoff_validation_last_path"], converged_blocked_bundle
+    assert converged_blocked_bundle_readiness["ready"] is True, converged_blocked_bundle_readiness
+    converged_blocked_operator = json.loads(Path(converged_blocked["operator_report_last_path"]).read_text(encoding="utf-8"))
+    assert converged_blocked_operator["status"] == "degraded", converged_blocked_operator
+    assert converged_blocked_operator["operator_action"] == "inspect_federated_ci_gates", converged_blocked_operator
+    assert converged_blocked_operator["operator_handoff_bundle_path"] == converged_blocked["operator_handoff_bundle_last_path"], converged_blocked_operator
+    assert converged_blocked_operator["operator_handoff_bundle_readiness_path"] == converged_blocked["operator_handoff_bundle_readiness_last_path"], converged_blocked_operator
+    assert converged_blocked_operator["federated_ci_summary"]["readiness_status"] == "blocked", converged_blocked_operator
+    assert converged_blocked_operator["federated_ci_summary"]["remediation_commands"] == [
+        "python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass",
+        "bash planningops/scripts/gate_federated_ci_summary.sh",
+    ], converged_blocked_operator
+    assert converged_blocked_operator["first_action_command"] == "python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass", converged_blocked_operator
+    assert converged_blocked_operator["priority_headline"] == "Supervisor converged, but the latest federated runtime gate is blocked.", converged_blocked_operator
+    assert converged_blocked_operator["priority_cta_command"] == "python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass", converged_blocked_operator
+    assert "`python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass`" in converged_blocked_operator["priority_summary_markdown"], converged_blocked_operator
+    assert "bash planningops/scripts/gate_federated_ci_summary.sh" in converged_blocked_operator["reason"], converged_blocked_operator
+    converged_blocked_summary = Path(converged_blocked["operator_summary_last_path"]).read_text(encoding="utf-8")
+    assert "Status: degraded" in converged_blocked_summary, converged_blocked_summary
+    assert "inspect_federated_ci_gates" in converged_blocked_summary, converged_blocked_summary
+    assert "## Priority" in converged_blocked_summary, converged_blocked_summary
+    assert "## First Action" in converged_blocked_summary, converged_blocked_summary
+    assert "doctor_federated_ci_summary.py --require-pass" in converged_blocked_summary, converged_blocked_summary
+    converged_blocked_inbox = json.loads(Path(converged_blocked["inbox_payload_last_path"]).read_text(encoding="utf-8"))
+    assert converged_blocked_inbox["status"] == "degraded", converged_blocked_inbox
+    assert converged_blocked_inbox["first_action_command"] == "python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass", converged_blocked_inbox
+    assert converged_blocked_inbox["priority_headline"] == "Supervisor converged, but the latest federated runtime gate is blocked.", converged_blocked_inbox
+    assert converged_blocked_inbox["priority_cta_command"] == "python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass", converged_blocked_inbox
+    assert converged_blocked_inbox["priority_summary_markdown"] == converged_blocked_operator["priority_summary_markdown"], converged_blocked_inbox
+    assert converged_blocked_inbox["operator_handoff_validation_path"] == converged_blocked["operator_handoff_validation_last_path"], converged_blocked_inbox
+    assert converged_blocked_inbox["operator_handoff_bundle_path"] == converged_blocked["operator_handoff_bundle_last_path"], converged_blocked_inbox
+    assert converged_blocked_inbox["operator_handoff_bundle_readiness_path"] == converged_blocked["operator_handoff_bundle_readiness_last_path"], converged_blocked_inbox
+    assert "inspect_federated_ci_gates" in converged_blocked_inbox["body_markdown"], converged_blocked_inbox
+    assert "First Action:" in converged_blocked_inbox["body_markdown"], converged_blocked_inbox
+    assert "doctor_federated_ci_summary.py --require-pass" in converged_blocked_inbox["body_markdown"], converged_blocked_inbox
+    assert any("operator-handoff-validation.json" in str(attachment) for attachment in converged_blocked_inbox["attachments"]), converged_blocked_inbox
+    assert any("operator-handoff-bundle.json" in str(attachment) for attachment in converged_blocked_inbox["attachments"]), converged_blocked_inbox
+    assert any("operator-handoff-bundle-readiness.json" in str(attachment) for attachment in converged_blocked_inbox["attachments"]), converged_blocked_inbox
+    assert "Handoff Validation Path:" in converged_blocked_summary, converged_blocked_summary
+    assert "operator-handoff-validation.json" in converged_blocked_summary, converged_blocked_summary
+    assert "Handoff Bundle Path:" in converged_blocked_summary, converged_blocked_summary
+    assert "operator-handoff-bundle-readiness.json" in converged_blocked_summary, converged_blocked_summary
 
     # 2) default behavior should stop when experiment trigger is detected.
     out_exp_stop = td_path / "supervisor-experiment-stop.json"
@@ -417,15 +668,67 @@ with tempfile.TemporaryDirectory() as td:
         encoding="utf-8",
     )
 
-    materialize_expect_contract = td_path / "materialize-expect-contract.py"
-    default_active_contract = json.loads(Path("planningops/config/active-goal-registry.json").read_text(encoding="utf-8"))
-    active_goal_key = str(default_active_contract.get("active_goal_key") or "").strip()
-    active_goal_contract = next(
-        goal["execution_contract_file"]
-        for goal in default_active_contract["goals"]
-        if str(goal.get("goal_key") or "").strip() == active_goal_key
+    active_goal_key = "goal-a"
+    active_goal_contract = "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json"
+    goal_registry = td_path / "goal-registry.json"
+    goal_registry.write_text(
+        json.dumps(
+            {
+                "registry_version": 1,
+                "active_goal_key": active_goal_key,
+                "goals": [
+                    {
+                        "goal_key": active_goal_key,
+                        "title": "Goal A",
+                        "status": "active",
+                        "owner_repo": "rather-not-work-on/platform-planningops",
+                        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1-goal-brief.md",
+                        "execution_contract_file": active_goal_contract,
+                        "completion_contract_refs": ["planningops/contracts/goal-completion-contract.md"],
+                        "next_goal_key": "goal-b",
+                        "operator_channels": {
+                            "primary_operator_channel": {
+                                "kind": "slack_skill_cli",
+                                "execution_repo": "rather-not-work-on/monday",
+                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
+                            },
+                            "terminal_notification_channel": {
+                                "kind": "email_cli",
+                                "execution_repo": "rather-not-work-on/monday",
+                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
+                            },
+                        },
+                    },
+                    {
+                        "goal_key": "goal-b",
+                        "title": "Goal B",
+                        "status": "draft",
+                        "owner_repo": "rather-not-work-on/platform-planningops",
+                        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2-goal-brief.md",
+                        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json",
+                        "completion_contract_refs": ["planningops/contracts/goal-completion-contract.md"],
+                        "operator_channels": {
+                            "primary_operator_channel": {
+                                "kind": "slack_skill_cli",
+                                "execution_repo": "rather-not-work-on/monday",
+                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
+                            },
+                            "terminal_notification_channel": {
+                                "kind": "email_cli",
+                                "execution_repo": "rather-not-work-on/monday",
+                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
+                            },
+                        },
+                    },
+                ],
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
     )
 
+    materialize_expect_contract = td_path / "materialize-expect-contract.py"
     materialize_expect_contract.write_text(
         "\n".join(
             [
@@ -445,6 +748,18 @@ with tempfile.TemporaryDirectory() as td:
                 "if report['verdict'] != 'pass':",
                 "    raise SystemExit(1)",
                 "raise SystemExit(0)",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    materialize_should_not_run = td_path / "materialize-should-not-run.py"
+    materialize_should_not_run.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "raise SystemExit('materializer should not run')",
             ]
         )
         + "\n",
@@ -493,6 +808,83 @@ with tempfile.TemporaryDirectory() as td:
         Path(replan_materialized_doc["operator_report_last_path"]).read_text(encoding="utf-8")
     )
     assert replan_materialized_operator["operator_action"] == "review_materialized_backlog", replan_materialized_operator
+
+    no_active_goal_registry = td_path / "no-active-goal-registry.json"
+    no_active_goal_registry.write_text(
+        json.dumps(
+            {
+                "registry_version": 1,
+                "active_goal_key": "",
+                "goals": [
+                    {
+                        "goal_key": "goal-a",
+                        "title": "Goal A",
+                        "status": "achieved",
+                        "owner_repo": "rather-not-work-on/platform-planningops",
+                        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1-goal-brief.md",
+                        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json",
+                        "completion_contract_refs": ["planningops/contracts/goal-completion-contract.md"],
+                        "operator_channels": {
+                            "primary_operator_channel": {
+                                "kind": "slack_skill_cli",
+                                "execution_repo": "rather-not-work-on/monday",
+                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
+                            },
+                            "terminal_notification_channel": {
+                                "kind": "email_cli",
+                                "execution_repo": "rather-not-work-on/monday",
+                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
+                            },
+                        },
+                    }
+                ],
+            },
+            ensure_ascii=True,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # 7b) no-active registry must not auto-materialize fallback backlog work.
+    out_no_active_registry = td_path / "supervisor-no-active-registry.json"
+    rc_no_active_registry, _, _ = run_supervisor(
+        [
+            "python3",
+            "planningops/scripts/autonomous_supervisor_loop.py",
+            "--mode",
+            "dry-run",
+            "--max-cycles",
+            "1",
+            "--continue-on-experiment",
+            "--loop-result-sequence-file",
+            str(no_eligible_sequence),
+            "--items-file",
+            "planningops/fixtures/backlog-stock-items-sample.json",
+            "--offline",
+            "--artifacts-root",
+            str(artifacts_root),
+            "--output",
+            str(out_no_active_registry),
+            "--auto-materialize-backlog",
+            "--backlog-materializer-script",
+            str(materialize_should_not_run),
+            "--active-goal-registry",
+            str(no_active_goal_registry),
+        ]
+    )
+    assert rc_no_active_registry == 1, rc_no_active_registry
+    no_active_registry_doc = json.loads(out_no_active_registry.read_text(encoding="utf-8"))
+    assert no_active_registry_doc["supervisor_verdict"] == "inconclusive", no_active_registry_doc
+    assert no_active_registry_doc["stop_reason"] == "replan_required", no_active_registry_doc
+    assert "resolved_active_goal" not in no_active_registry_doc, no_active_registry_doc
+    assert no_active_registry_doc["cycles"][0]["backlog_materialization"]["enabled"] is False, no_active_registry_doc
+    no_active_registry_operator = json.loads(
+        Path(no_active_registry_doc["operator_report_last_path"]).read_text(encoding="utf-8")
+    )
+    assert no_active_registry_operator["status"] == "review_required", no_active_registry_operator
+    assert (
+        no_active_registry_operator["operator_action"] == "regenerate_backlog_or_reconcile_project"
+    ), no_active_registry_operator
 
     # 8) apply-mode replanning can materialize backlog and continue into the next cycle.
     apply_replan_sequence = td_path / "apply-replan-sequence.json"
@@ -633,71 +1025,13 @@ with tempfile.TemporaryDirectory() as td:
             "--backlog-materializer-script",
             str(materialize_expect_contract),
             "--active-goal-registry",
-            "planningops/config/active-goal-registry.json",
+            str(goal_registry),
         ]
     )
     assert rc_registry_resolved == 1, rc_registry_resolved
     registry_resolved_doc = json.loads(out_registry_resolved.read_text(encoding="utf-8"))
     assert registry_resolved_doc["resolved_active_goal"]["goal_key"] == active_goal_key, registry_resolved_doc
     assert registry_resolved_doc["resolved_active_goal"]["execution_contract_file"] == active_goal_contract, registry_resolved_doc
-
-    goal_registry = td_path / "goal-registry.json"
-    goal_registry.write_text(
-        json.dumps(
-            {
-                "registry_version": 1,
-                "active_goal_key": "goal-a",
-                "goals": [
-                    {
-                        "goal_key": "goal-a",
-                        "title": "Goal A",
-                        "status": "active",
-                        "owner_repo": "rather-not-work-on/platform-planningops",
-                        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1-goal-brief.md",
-                        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave1.execution-contract.json",
-                        "completion_contract_refs": ["planningops/contracts/goal-completion-contract.md"],
-                        "next_goal_key": "goal-b",
-                        "operator_channels": {
-                            "primary_operator_channel": {
-                                "kind": "slack_skill_cli",
-                                "execution_repo": "rather-not-work-on/monday",
-                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
-                            },
-                            "terminal_notification_channel": {
-                                "kind": "email_cli",
-                                "execution_repo": "rather-not-work-on/monday",
-                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
-                            },
-                        },
-                    },
-                    {
-                        "goal_key": "goal-b",
-                        "title": "Goal B",
-                        "status": "draft",
-                        "owner_repo": "rather-not-work-on/platform-planningops",
-                        "goal_brief_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2-goal-brief.md",
-                        "execution_contract_file": "docs/workbench/unified-personal-agent-platform/plans/2026-03-13-goal-driven-autonomy-wave2.execution-contract.json",
-                        "completion_contract_refs": ["planningops/contracts/goal-completion-contract.md"],
-                        "operator_channels": {
-                            "primary_operator_channel": {
-                                "kind": "slack_skill_cli",
-                                "execution_repo": "rather-not-work-on/monday",
-                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
-                            },
-                            "terminal_notification_channel": {
-                                "kind": "email_cli",
-                                "execution_repo": "rather-not-work-on/monday",
-                                "adapter_contract_ref": "planningops/contracts/operator-channel-adapter-contract.md",
-                            },
-                        },
-                    },
-                ],
-            },
-            ensure_ascii=True,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
 
     # 11) exhausted active goal should surface promotion readiness before replanning in dry-run mode.
     out_goal_promotion_ready = td_path / "supervisor-goal-promotion-ready.json"
@@ -899,6 +1233,8 @@ with tempfile.TemporaryDirectory() as td:
                 str(Path.cwd().parent),
                 "--monday-profiles-config",
                 str(terminal_profiles_config),
+                "--monday-supervisor-queue-db",
+                str(monday_queue_db),
             ]
         )
     rc_goal_completed, _, _ = run_supervisor(goal_completed_cmd)
@@ -914,14 +1250,21 @@ with tempfile.TemporaryDirectory() as td:
         delivery = goal_completed_doc["goal_completion_delivery"]
         assert delivery["enabled"] is True, delivery
         assert delivery["verdict"] == "pass", delivery
-        assert delivery["delivery_verdict"] == "delivered_local_outbox", delivery
-        assert delivery["delivery_target_resolution_mode"] == "local_profile", delivery
-        assert delivery["delivery_target_profile_ref"].endswith("local-operator-channel-profiles.json#/profiles/email_cli"), delivery
-        assert delivery["delivery_outbox_message_ref"].endswith(".json"), delivery
-        delivery_outbox_path = monday_goal_completion_script.parent.parent / delivery["delivery_outbox_message_ref"]
-        assert delivery_outbox_path.exists(), delivery
-        assert goal_completed_operator["goal_completion_delivery_report_path"].startswith("monday/runtime-artifacts/messaging/delivery-cycles/"), goal_completed_operator
-        assert any(str(attachment).startswith("monday/runtime-artifacts/messaging/delivery-cycles/") for attachment in goal_completed_inbox["attachments"]), goal_completed_inbox
+        assert delivery["delivery_verdict"] == "queued", delivery
+        assert delivery["queue_admission_verdict"] == "pass", delivery
+        assert delivery["selected_delivery_entrypoint"] == "scripts/run_goal_completion_delivery_cycle.py", delivery
+        assert delivery["scheduled_delivery_work_item_ref"].startswith("monday/runtime-artifacts/messaging/scheduled-delivery-work-items/"), delivery
+        assert delivery["scheduled_queue_item_ref"].startswith("monday/runtime-artifacts/scheduler-queue/item-refs/"), delivery
+        assert delivery["scheduled_queue_item_ref"].endswith(f'{delivery["scheduled_queue_item_id"]}.json'), delivery
+        assert goal_completed_operator["goal_completion_delivery_report_path"].startswith("monday/runtime-artifacts/scheduler-queue/admission-reports/"), goal_completed_operator
+        assert any(str(attachment).startswith("monday/runtime-artifacts/scheduler-queue/admission-reports/") for attachment in goal_completed_inbox["attachments"]), goal_completed_inbox
+        conn = sqlite3.connect(monday_queue_db)
+        rows = conn.execute("SELECT queue_item_id, schedule_key, work_payload_ref FROM queue_items ORDER BY queue_item_id").fetchall()
+        conn.close()
+        assert len(rows) == 1, rows
+        assert rows[0][0] == delivery["scheduled_queue_item_id"], rows
+        assert rows[0][1] == "recurring-delivery", rows
+        assert rows[0][2].startswith("runtime-artifacts/messaging/scheduled-delivery-work-items/"), rows
     else:
         delivery = goal_completed_doc["goal_completion_delivery"]
         assert delivery["enabled"] is False, delivery

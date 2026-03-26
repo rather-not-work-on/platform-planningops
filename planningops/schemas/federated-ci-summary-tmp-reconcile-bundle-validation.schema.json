@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "planningops/schemas/federated-ci-summary-tmp-reconcile-bundle-validation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "bundle_path",
+    "artifact_file",
+    "bundle_generated_at_utc",
+    "bundle_schema_path",
+    "validation_schema_path",
+    "reconcile_report_path",
+    "reconcile_validation_report_path",
+    "run_id",
+    "reconcile_status",
+    "reconcile_check_name",
+    "reconcile_count",
+    "reconcile_validation_verdict",
+    "output_path",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "verdict"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bundle_generated_at_utc": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bundle_schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation_schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reconcile_report_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reconcile_validation_report_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reconcile_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "healthy",
+        "restored",
+        null
+      ]
+    },
+    "reconcile_check_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reconcile_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "reconcile_validation_verdict": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "pass",
+        "fail",
+        null
+      ]
+    },
+    "output_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  }
+}

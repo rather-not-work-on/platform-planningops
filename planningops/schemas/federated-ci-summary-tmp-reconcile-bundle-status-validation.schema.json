@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "planningops/schemas/federated-ci-summary-tmp-reconcile-bundle-status-validation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status_path",
+    "bundle_path",
+    "bundle_validation_report_path",
+    "schema_path",
+    "validation_schema_path",
+    "output_path",
+    "generated_at_utc",
+    "verdict",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "status_generated_at_utc",
+    "status_output_path",
+    "status_validation_output_path",
+    "status_run_id",
+    "status_reconcile_status",
+    "status_check_name",
+    "status_reconcile_count",
+    "status_reconcile_validation_verdict",
+    "status_bundle_validation_verdict",
+    "status_bundle_validation_state",
+    "status_ready",
+    "status_next_step"
+  ],
+  "properties": {
+    "status_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_validation_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation_schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "status_generated_at_utc": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status_output_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status_validation_output_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status_run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status_reconcile_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "healthy",
+        "restored",
+        null
+      ]
+    },
+    "status_check_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status_reconcile_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "status_reconcile_validation_verdict": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "unknown",
+        "pass",
+        "fail"
+      ]
+    },
+    "status_bundle_validation_verdict": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "unknown",
+        "pass",
+        "fail"
+      ]
+    },
+    "status_bundle_validation_state": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "fresh",
+        "stale"
+      ]
+    },
+    "status_ready": {
+      "type": "boolean"
+    },
+    "status_next_step": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

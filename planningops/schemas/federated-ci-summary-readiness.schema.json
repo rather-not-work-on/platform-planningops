@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops/schemas/federated-ci-summary-readiness.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "summary_path",
+    "validation_report_path",
+    "summary_present",
+    "validation_present",
+    "summary_run_id",
+    "summary_verdict",
+    "overall_status",
+    "check_count",
+    "failed_checks",
+    "missing_required_checks",
+    "validation_verdict",
+    "validation_state",
+    "ready",
+    "readiness_status",
+    "blocking_reasons",
+    "next_step"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary_present": {
+      "type": "boolean"
+    },
+    "validation_present": {
+      "type": "boolean"
+    },
+    "summary_run_id": {
+      "type": ["string", "null"]
+    },
+    "summary_generated_at_utc": {
+      "type": ["string", "null"]
+    },
+    "summary_verdict": {
+      "type": ["string", "null"],
+      "enum": ["pass", "fail", null]
+    },
+    "overall_status": {
+      "type": ["string", "null"],
+      "enum": ["complete", "interrupted", null]
+    },
+    "check_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "missing_required_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "missing", "unknown"]
+    },
+    "validation_state": {
+      "type": "string",
+      "enum": ["fresh", "stale", "missing"]
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "readiness_status": {
+      "type": "string",
+      "enum": ["ready", "blocked"]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_step": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

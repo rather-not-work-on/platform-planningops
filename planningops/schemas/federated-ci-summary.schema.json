@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops/schemas/federated-ci-summary.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "started_at_utc",
+    "checks",
+    "required_checks",
+    "generated_at_utc",
+    "finished_at_utc",
+    "overall_status",
+    "check_count",
+    "missing_required_checks",
+    "failure_classification",
+    "verdict"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finished_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    },
+    "required_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["complete", "interrupted"]
+    },
+    "check_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_required_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "failure_classification": {
+      "$ref": "#/$defs/failure_classification"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "shell_exit_code": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "$defs": {
+    "domain": {
+      "type": "string",
+      "enum": ["contract", "infra", "runtime", "policy", "federation"]
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "domain",
+        "exit_code",
+        "verdict",
+        "stdout_log",
+        "stderr_log"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "$ref": "#/$defs/domain"
+        },
+        "exit_code": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        },
+        "stdout_log": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stderr_log": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "failure_classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "domains", "deterministic_rule"],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/domain"
+          }
+        },
+        "deterministic_rule": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
