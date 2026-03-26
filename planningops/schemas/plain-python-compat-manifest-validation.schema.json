@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops/schemas/plain-python-compat-manifest-validation.schema.json",
+  "title": "PlanningOps Plain Python Compatibility Manifest Validation Report",
+  "type": "object",
+  "required": [
+    "manifest_path",
+    "schema_path",
+    "validation_output_path",
+    "generated_at_utc",
+    "verdict",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "entrypoint_count",
+    "runtime_stack_sequence",
+    "loop_guardrails_chain",
+    "resolved_guardrail_script_paths"
+  ],
+  "properties": {
+    "manifest_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validation_output_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "entrypoint_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "resolved_entrypoint_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "runtime_stack_sequence": {
+      "$ref": "#/$defs/runtimeStackSequence"
+    },
+    "loop_guardrails_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/loopGuardrailsStep"
+      }
+    },
+    "resolved_guardrail_script_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "resolved_runtime_stack_sequence": {
+      "$ref": "#/$defs/resolvedRuntimeStackSequence"
+    },
+    "resolved_loop_guardrails_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/loopGuardrailsStep"
+      }
+    }
+  },
+  "$defs": {
+    "runtimeStackSequence": {
+      "type": "object",
+      "required": [
+        "issue_driven_entrypoint_id",
+        "local_entrypoint_id"
+      ],
+      "properties": {
+        "issue_driven_entrypoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_entrypoint_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "resolvedRuntimeStackSequence": {
+      "type": "object",
+      "required": [
+        "issue_driven_entrypoint_id",
+        "issue_driven_resolved_path",
+        "local_entrypoint_id",
+        "local_resolved_path"
+      ],
+      "properties": {
+        "issue_driven_entrypoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue_driven_resolved_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_entrypoint_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_resolved_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "loopGuardrailsStep": {
+      "type": "object",
+      "required": [
+        "id",
+        "local_matrix_command",
+        "workflow_command"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "local_matrix_command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workflow_command": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -6,7 +6,8 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 ## Contents
 - `project-field-ids.json`: GitHub Project field ids/options catalog
 - `project-view-conventions.md`: view/filter/sort contract for project operations
-- `runtime-profiles.json`: local/oracle runtime and provider policies
+- `runtime-profiles.json`: local/oracle runtime, provider policies, and additive planner-policy hints
+- `plain-python-compat-manifest.json`: canonical cross-repo shell-`python3` entrypoint set plus the canonical `loop_guardrails_chain` for compat smoke and runtime-stack sequence contracts
 - `active-goal-registry.json`: canonical active goal pointer, execution contract file, and operator channel policy
 - `contract-ref-map.json`: C1~C8 schema pointer map
 - `ontology-entity-map.json`: machine-readable ontology entity/relation/repo-role map
@@ -26,6 +27,7 @@ Provide stable configuration sources for project fields, runtime profiles, and c
 ## Change Rules
 - Field id updates must be synchronized with validator scripts and CI tests.
 - Runtime profile additions must keep existing profile names and task-key fallback behavior.
+- Runtime profile changes must keep `planner_policy` vendor-neutral and must not reintroduce repo-local legacy planner endpoint fields.
 - Contract map paths must stay repo-root-relative and portable across local/CI.
 - Script role map changes must keep root wrapper compatibility for moved entrypoints.
 - Issue quality rule changes must align with `planningops/contracts/issue-quality-contract.md`.
