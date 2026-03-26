@@ -182,6 +182,7 @@ Host executable runners, validators, and contract tests for planningops loops.
     - this is the canonical local/workflow sync step for keeping monday projection latest artifacts aligned with `planningops/artifacts/ci/federated-ci-summary.json`
   - `run_monday_agent_harness_projection_ci_suite.sh`
     - canonical suite helper for the full monday projection regression chain and final latest sync
+    - owns the root projection validate/doctor/gate, the projection status/bundle ladder, the projection contract-doc regression, then the canonical latest sync
     - accepts `--summary-run-id`, `--monday-root`, and `--mission-id`
     - `--print-tests` emits the canonical ordered regression inventory for contract and wiring consumers
     - `--help` prints the supported suite options and public inventory surface
