@@ -86,6 +86,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [MONDAY Agent Memory Wave AI Runtime-Handoff Tmp-Reconcile Status-Bundle-Status-Bundle-Status-Bundle-Status-Bundle-Status-Bundle-Status-Bundle-Status Lane Packet](./plans/2026-03-26-monday-agent-memory-wave-ai-runtime-handoff-tmp-reconcile-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-lane-packet.md)
 - [MONDAY Agent Memory Wave AK Runtime-Handoff Tmp-Reconcile Next-Status Prerequisite Packet](./plans/2026-03-26-monday-agent-memory-wave-ak-runtime-handoff-tmp-reconcile-next-status-prerequisite-packet.md)
 - [MONDAY Agent Memory Wave AL Runtime-Handoff Tmp-Reconcile Next-Status Promotion Lane Packet](./plans/2026-03-26-monday-agent-memory-wave-al-runtime-handoff-tmp-reconcile-next-status-promotion-lane-packet.md)
+- [MONDAY Agent Memory Wave AM Runtime-Handoff Tmp-Reconcile Resolved-Bundle Completion Lane Packet](./plans/2026-03-26-monday-agent-memory-wave-am-runtime-handoff-tmp-reconcile-resolved-bundle-completion-lane-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
