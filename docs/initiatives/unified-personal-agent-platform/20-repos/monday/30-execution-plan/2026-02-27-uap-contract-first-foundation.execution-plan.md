@@ -5,7 +5,7 @@ doc_type: execution-plan
 domain: planning
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-03-19
 initiative: unified-personal-agent-platform
 tags:
   - uap
@@ -23,12 +23,23 @@ related_docs:
 
 ## Overview
 
-이 계획은 `nanoclaw + orchestrator + ralph-loop + codex2message`를 독립 모듈 기반으로 통합하기 위한 **Contract-First 플랫폼 기반 설계/검증 계획**이다.
+이 계획은 `planner engine + orchestrator + ralph-loop + codex2message`를 독립 모듈 기반으로 통합하기 위한 **Contract-First 플랫폼 기반 설계/검증 계획**이다.
 
 핵심 목표는 다음 3가지다.
 - 독립 모듈 캡슐화(경계 침범 방지)
 - 계약 안정성(상태/이벤트/위임/결과 의미론 단일화)
 - NanoClaw식 미니멀리즘 유지(OpenClaw식 비대화 억제)
+
+## Implementation Reality Update (2026-03-19)
+
+- `monday` local planner default is now the promoted `deepagents` path.
+- the active local model route is gateway-first:
+  - planner runtime stays inside `monday`
+  - LiteLLM route health and fallback viability stay inside `platform-provider-gateway`
+  - intended local routing priority is `Gemini free-tier -> Ollama local fallback`
+- the effective operations gate is now cross-repo.
+  - `monday` runtime-operations readiness aggregates planner runtime, provider-gateway LiteLLM readiness, skill registry, and apply sandbox posture
+  - provider-route blockers are remediated through the sibling gateway doctor/gate commands, not by moving provider ownership into `monday`
 
 ## Enhancement Summary (Deepened: 2026-02-27)
 
@@ -76,7 +87,7 @@ Found brainstorm from `2026-02-27`: `unified-personal-agent-platform`. Planning 
 우리가 풀 문제는 "에이전트를 하나 더 만든다"가 아니다.
 
 정확한 문제는:
-- 실행 엔진(ralph-loop), 조정자(orchestrator), 계획/위임(nanoclaw core), 채널 어댑터(codex2message 계열), provider adapter를
+- 실행 엔진(ralph-loop), 조정자(orchestrator), planner engine/위임, 채널 어댑터(codex2message 계열), provider adapter를
 - **서로 직접 결합하지 않고 계약으로만 연결**해,
 - provider/agent 교체에도 동일 run 의미를 유지하는 **개인 에이전트 플랫폼**을 만드는 것이다.
 
@@ -151,7 +162,7 @@ Found brainstorm from `2026-02-27`: `unified-personal-agent-platform`. Planning 
 ## Bounded Contexts
 - Mission Control
 - Execution Engine (`ralph-loop`)
-- Planning & Delegation (`nanoclaw core`)
+- Planner Engine & Delegation
 - Provider Runtime
 - Messaging Gateway (`codex2message` lineage)
 - Observability
@@ -425,6 +436,12 @@ evidence 최소 구조:
 - Gate E: `evidence-validation-report.md`, `complete -> strong evidence` 강제 검증 결과
 - Gate F: `idempotency-regression-report.md`, duplicate trigger 재생 테스트 및 dedupe 수렴 결과
 - Gate G: `docs-automation-report.md`, `uap-docs.sh sync` 실행 로그, catalog 최신화(diff) 확인 결과
+- runtime operations aggregate:
+  - `monday/runtime-artifacts/validation/runtime-operations-readiness-report.json`
+  - `monday/runtime-artifacts/validation/planner-runtime-readiness-report.json`
+  - `monday/runtime-artifacts/validation/skill-registry-readiness-report.json`
+  - `monday/runtime-artifacts/validation/apply-sandbox-readiness-report.json`
+  - `platform-provider-gateway/runtime-artifacts/validation/litellm-stack-readiness-report.json`
 
 ### Evidence location and ownership contract
 - 공통 저장 루트: `<docs-root>/40-quality/evidence/<gate>/<YYYY-MM-DD>/`
@@ -447,6 +464,8 @@ evidence 최소 구조:
   - `gate_id`, `generated_at_utc`, `git_commit`, `owner`, `sample_size`, `measurement_window`, `verdict`, `source_reports`
 - `verdict` 허용 값: `pass | fail | inconclusive`
 - `inconclusive`는 품질 결함이 아니라 증빙 결함으로 분류하지만 Phase 6 진입 기준에서는 `fail`과 동일 처리
+- cross-repo runtime gates는 sibling repo evidence까지 하나의 snapshot으로 취급한다
+- `monday` aggregate doctor는 provider-route blocker일 때 sibling `platform-provider-gateway` doctor/gate 명령을 remediation으로 제시해야 한다
 
 ## Implementation Plan (Hierarchical)
 
