@@ -130,6 +130,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Active Goal Registry Empty State Packet](./plans/2026-03-28-active-goal-registry-empty-state-packet.md)
 - [Reflection Contract Guardrails Packet](./plans/2026-03-28-reflection-contract-guardrails-packet.md)
 - [Loop Runner Snapshot Intake Normalization Packet](./plans/2026-03-28-loop-runner-snapshot-intake-normalization-packet.md)
+- [Compile Backlog Offline Issues Intake Packet](./plans/2026-03-28-compile-backlog-offline-issues-intake-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)

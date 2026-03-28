@@ -193,7 +193,25 @@ def build_manifest(source_rows, args):
     items = []
     filtered_out_count = 0
     for row in source_rows:
-        metadata = parse_metadata(row["body"], keys=["plan_item_id", "target_repo", "component", "workflow_state", "loop_profile", "execution_order", "depends_on", "plan_lane", "plan_doc", "plan_id"])
+        metadata = parse_metadata(
+            row["body"],
+            keys=[
+                "plan_item_id",
+                "target_repo",
+                "component",
+                "workflow_state",
+                "loop_profile",
+                "execution_order",
+                "depends_on",
+                "plan_lane",
+                "plan_doc",
+                "plan_id",
+                "interface_contract_refs",
+                "package_topology_ref",
+                "dependency_manifest_ref",
+                "file_plan_ref",
+            ],
+        )
         plan_doc = normalize_value(metadata.get("plan_doc"))
         if args.scope_source_plan:
             if not plan_doc or plan_doc != args.source_plan:
@@ -220,6 +238,10 @@ def build_manifest(source_rows, args):
             "loop_profile": normalize_value(metadata.get("loop_profile")),
             "plan_lane": normalize_value(metadata.get("plan_lane")),
             "depends_on": parse_depends_on_plan_item_keys(metadata.get("depends_on", "")),
+            "interface_contract_refs": normalize_value(metadata.get("interface_contract_refs")),
+            "package_topology_ref": normalize_value(metadata.get("package_topology_ref")),
+            "dependency_manifest_ref": normalize_value(metadata.get("dependency_manifest_ref")),
+            "file_plan_ref": normalize_value(metadata.get("file_plan_ref")),
         }
         items.append(item)
 

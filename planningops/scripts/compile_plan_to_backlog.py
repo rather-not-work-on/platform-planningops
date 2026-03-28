@@ -268,6 +268,37 @@ def parse_issue_metadata(body: str):
     return metadata
 
 
+def load_issues_from_file(path: Path):
+    doc = read_json(path)
+    if isinstance(doc, dict):
+        candidates = doc.get("issues")
+    elif isinstance(doc, list):
+        candidates = doc
+    else:
+        raise RuntimeError("issues-file must contain a list or object with an 'issues' list")
+
+    if not isinstance(candidates, list):
+        raise RuntimeError("issues-file payload 'issues' must be a list")
+
+    issues = []
+    for idx, issue in enumerate(candidates):
+        if not isinstance(issue, dict):
+            raise RuntimeError(f"issues-file entry #{idx} must be an object")
+        number = issue.get("number")
+        if not isinstance(number, int) or number <= 0:
+            raise RuntimeError(f"issues-file entry #{idx} has invalid number")
+        issues.append(
+            {
+                "number": number,
+                "title": issue.get("title", ""),
+                "body": issue.get("body") or "",
+                "url": issue.get("url") or issue.get("html_url"),
+                "state": str(issue.get("state") or "open").lower(),
+            }
+        )
+    return issues
+
+
 def list_existing_issues(repo: str, state: str):
     page = 1
     issues = []
@@ -659,6 +690,11 @@ def main():
         action="store_true",
         help="Scan closed issues and report exact matches even when reopen is disabled",
     )
+    parser.add_argument(
+        "--issues-file",
+        default=None,
+        help="Optional local issues JSON file for offline compile (list or object with 'issues')",
+    )
     parser.add_argument("--output", default="planningops/artifacts/validation/plan-compile-report.json", help="Output report path")
     args = parser.parse_args()
 
@@ -682,8 +718,17 @@ def main():
     items = sorted(ec["items"], key=lambda x: x["execution_order"])
     project = load_project_config(Path(args.config))
     blueprint_defaults_doc = load_blueprint_defaults(Path(args.blueprint_defaults_config))
-    open_issues = list_existing_issues(CONTROL_REPO, "open")
-    closed_issues = list_existing_issues(CONTROL_REPO, "closed") if (args.allow_reopen_closed or args.detect_closed_match) else []
+    if args.issues_file:
+        loaded_issues = load_issues_from_file(Path(args.issues_file))
+        open_issues = [issue for issue in loaded_issues if issue.get("state") != "closed"]
+        closed_issues = [issue for issue in loaded_issues if issue.get("state") == "closed"]
+        issues_source = f"file:{args.issues_file}"
+    else:
+        open_issues = list_existing_issues(CONTROL_REPO, "open")
+        closed_issues = (
+            list_existing_issues(CONTROL_REPO, "closed") if (args.allow_reopen_closed or args.detect_closed_match) else []
+        )
+        issues_source = "github_api"
     project_item_issue_index = {}
     execution_order_issue_index = {}
 
@@ -693,6 +738,7 @@ def main():
             "plan_revision": ec["plan_revision"],
             "source_of_truth": ec["source_of_truth"],
             "items_total": len(items),
+            "issues_source": issues_source,
             "open_issues_scanned": len(open_issues),
             "closed_issues_scanned": len(closed_issues),
         }

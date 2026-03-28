@@ -129,6 +129,8 @@ def build_steps(args, execution_contract, projected_issues_file: str | None = No
         "--output",
         args.compile_output,
     ]
+    if projected_issues_file:
+        compile_cmd.extend(["--issues-file", projected_issues_file])
     if args.apply:
         compile_cmd.append("--apply")
     if args.allow_reopen_closed:

@@ -243,6 +243,24 @@ legacy_match, legacy_strategy = mod.find_issue_for_item(
 assert legacy_match is None, legacy_match
 assert legacy_strategy == "identity_legacy_ambiguous_ignored", legacy_strategy
 
+# 4-4) Offline issues-file loader should normalize list payloads.
+issues_file = Path(tempfile.gettempdir()) / "compile-plan-issues-file.json"
+issues_file.write_text(
+    json.dumps(
+        [
+            {"number": 901, "title": "open row", "body": "x", "state": "open"},
+            {"number": 902, "title": "closed row", "body": "y", "state": "closed"},
+            {"number": 903, "title": "default state row", "body": "z"},
+        ]
+    ),
+    encoding="utf-8",
+)
+loaded_issues = mod.load_issues_from_file(issues_file)
+assert [issue["number"] for issue in loaded_issues] == [901, 902, 903], loaded_issues
+assert loaded_issues[0]["state"] == "open", loaded_issues[0]
+assert loaded_issues[1]["state"] == "closed", loaded_issues[1]
+assert loaded_issues[2]["state"] == "open", loaded_issues[2]
+
 # 5) Dry-run compile should create deterministic DRY-RUN issue projection when unmatched.
 dry_result = mod.compile_item(
     project={},
