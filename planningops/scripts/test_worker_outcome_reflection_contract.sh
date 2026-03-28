@@ -33,6 +33,7 @@ required_fragments = [
     "`operator_notify`",
     "PlanningOps must not own",
     "queue lease updates",
+    "unresolved goal context must fail evaluation before a reflection decision is emitted",
 ]
 for fragment in required_fragments:
     assert fragment in text, fragment

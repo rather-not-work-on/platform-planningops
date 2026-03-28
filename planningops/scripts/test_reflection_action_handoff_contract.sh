@@ -25,7 +25,7 @@ for section in required_sections:
 required_fragments = [
     "planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py",
     "planningops/scripts/core/goals/apply_worker_outcome_reflection.py",
-    "monday/scripts/run_operator_message_delivery_cycle.py",
+    "monday/scripts/enqueue_scheduled_delivery_work_item.py",
     "`record_continue`",
     "`trigger_replan_review`",
     "`prepare_goal_completion`",
@@ -39,6 +39,7 @@ required_fragments = [
     "## Goal Transition Rules",
     "PlanningOps must not own",
     "concrete Slack channel IDs",
+    "must fail closed if goal context cannot be resolved before channel projection or goal-transition side effects",
 ]
 for fragment in required_fragments:
     assert fragment in text, fragment
