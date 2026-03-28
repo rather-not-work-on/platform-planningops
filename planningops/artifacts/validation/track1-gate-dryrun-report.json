@@ -1,10 +1,10 @@
 {
-  "generated_at_utc": "2026-03-03T06:31:01.548742+00:00",
+  "generated_at_utc": "2026-03-26T12:29:55.272720+00:00",
   "template": false,
   "runs": [
     {
       "run_id": "track1-gate-dryrun-1",
-      "executed_at_utc": "2026-03-03T06:30:55.374291+00:00",
+      "executed_at_utc": "2026-03-26T12:29:30.716859+00:00",
       "checks": {
         "docs_check": {
           "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
@@ -14,10 +14,10 @@
           "stderr": ""
         },
         "schema_check": {
-          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch --allow-fetch-failure",
           "rc": 0,
           "pass": true,
-          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=200 violation_count=0 verdict=pass",
           "stderr": "",
           "violation_count": 0
         },
@@ -37,7 +37,7 @@
     },
     {
       "run_id": "track1-gate-dryrun-2",
-      "executed_at_utc": "2026-03-03T06:31:01.546929+00:00",
+      "executed_at_utc": "2026-03-26T12:29:55.268545+00:00",
       "checks": {
         "docs_check": {
           "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
@@ -47,10 +47,10 @@
           "stderr": ""
         },
         "schema_check": {
-          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch --allow-fetch-failure",
           "rc": 0,
           "pass": true,
-          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=55 violation_count=0 verdict=pass",
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=200 violation_count=0 verdict=pass",
           "stderr": "",
           "violation_count": 0
         },
