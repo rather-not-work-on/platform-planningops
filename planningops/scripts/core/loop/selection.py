@@ -30,6 +30,10 @@ EXECUTION_KIND_ALIASES = {
 }
 
 
+def normalize_workflow_state(raw: str | None):
+    return str(raw or "").strip().lower().replace("_", "-")
+
+
 def parse_depends_on(issue_body: str):
     deps = set()
     for line in issue_body.splitlines():
@@ -130,7 +134,8 @@ def parse_blueprint_refs(issue_body: str):
 
 
 def normalize_candidates(items, allowed_workflow_states, high_value_ready_states=None):
-    ready_states = high_value_ready_states or HIGH_VALUE_READY_STATES
+    ready_states = {normalize_workflow_state(state) for state in (high_value_ready_states or HIGH_VALUE_READY_STATES)}
+    allowed_states = {normalize_workflow_state(state) for state in allowed_workflow_states}
     candidates = []
     for it in items:
         content = it.get("content", {})
@@ -139,8 +144,8 @@ def normalize_candidates(items, allowed_workflow_states, high_value_ready_states
         if it.get("status") != "Todo":
             continue
 
-        workflow_state = it.get("workflow_state")
-        if workflow_state not in allowed_workflow_states:
+        workflow_state = normalize_workflow_state(it.get("workflow_state"))
+        if workflow_state not in allowed_states:
             continue
 
         issue_repo = content.get("repository")
@@ -180,7 +185,8 @@ def normalize_candidates(items, allowed_workflow_states, high_value_ready_states
 
 
 def build_selection_trace(candidates, selected, attempts, allowed_workflow_states, high_value_ready_states=None, default_attempt_budget=None):
-    ready_states = high_value_ready_states or HIGH_VALUE_READY_STATES
+    ready_states = {normalize_workflow_state(state) for state in (high_value_ready_states or HIGH_VALUE_READY_STATES)}
+    allowed_states = {normalize_workflow_state(state) for state in allowed_workflow_states}
     selected_ref = None
     if selected is not None:
         selected_ref = {
@@ -209,7 +215,7 @@ def build_selection_trace(candidates, selected, attempts, allowed_workflow_state
             "ready_workflow_states": sorted(ready_states),
             "tie_breaker": ["execution_order_asc", "issue_number_asc"],
         },
-        "allowed_workflow_states": sorted(allowed_workflow_states),
+        "allowed_workflow_states": sorted(allowed_states),
         "candidate_count": len(candidates),
         "candidates": [
             {

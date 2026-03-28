@@ -36,6 +36,13 @@ items = [
         "content": {"type": "Issue", "number": 42, "repository": "rather-not-work-on/monday"},
     },
     {
+        "status": "Todo",
+        "workflow_state": "ready_contract",
+        "execution_order": 15,
+        "target_repo": "rather-not-work-on/platform-provider-gateway",
+        "content": {"type": "Issue", "number": 55, "repository": "rather-not-work-on/platform-provider-gateway"},
+    },
+    {
         "status": "In Progress",
         "workflow_state": "in-progress",
         "execution_order": 30,
@@ -52,24 +59,26 @@ items = [
 allowed = {"ready-contract", "ready-implementation"}
 candidates = mod.normalize_candidates(items, allowed)
 
-assert [c["number"] for c in candidates] == [42, 77], candidates
+assert [c["number"] for c in candidates] == [42, 55, 77], candidates
 assert candidates[0]["issue_repo"] == "rather-not-work-on/monday", candidates[0]
-assert candidates[1]["issue_repo"] == "rather-not-work-on/platform-planningops", candidates[1]
+assert candidates[1]["issue_repo"] == "rather-not-work-on/platform-provider-gateway", candidates[1]
+assert candidates[2]["issue_repo"] == "rather-not-work-on/platform-planningops", candidates[2]
 
 # High-value ready-first rule must prioritize ready-* over backlog even when backlog has lower execution_order.
 allowed_with_backlog = {"backlog", "ready-contract", "ready-implementation"}
 candidates_with_backlog = mod.normalize_candidates(items, allowed_with_backlog)
-assert [c["number"] for c in candidates_with_backlog] == [42, 77, 101], candidates_with_backlog
+assert [c["number"] for c in candidates_with_backlog] == [42, 55, 77, 101], candidates_with_backlog
 
-selected = dict(candidates[1])
+selected = dict(candidates[2])
 selected["deps"] = [41]
 attempts = [
     {"number": 42, "issue_repo": "rather-not-work-on/monday", "result": "dependency_blocked"},
+    {"number": 55, "issue_repo": "rather-not-work-on/platform-provider-gateway", "result": "dependency_blocked"},
     {"number": 77, "issue_repo": "rather-not-work-on/platform-planningops", "result": "selected"},
 ]
 trace = mod.build_selection_trace(candidates, selected, attempts, allowed)
 
-assert trace["candidate_count"] == 2, trace
+assert trace["candidate_count"] == 3, trace
 assert trace["selected"]["number"] == 77, trace
 assert trace["selected"]["target_repo"] == "rather-not-work-on/platform-planningops", trace
 assert trace["selected"]["execution_kind"] == "executable", trace
@@ -477,6 +486,32 @@ with tempfile.TemporaryDirectory() as td:
     except RuntimeError as exc:
         assert "rate limit" in str(exc).lower(), exc
 
+with tempfile.TemporaryDirectory() as td:
+    list_snapshot_path = Path(td) / "projected-issues.json"
+    list_snapshot_path.write_text(
+        json.dumps(
+            [
+                {
+                    "repo": "rather-not-work-on/platform-planningops",
+                    "number": 10,
+                    "state": "open",
+                    "title": "plan: [10] sample",
+                    "body": "workflow_state: `ready_implementation`\nexecution_order: `10`\ntarget_repo: `rather-not-work-on/platform-planningops`",
+                }
+            ],
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+    list_snapshot_items = mod.load_project_items_snapshot(list_snapshot_path)
+    assert list_snapshot_items["source"] == "snapshot", list_snapshot_items
+    assert len(list_snapshot_items["items"]) == 1, list_snapshot_items
+    list_snapshot_candidate = list_snapshot_items["items"][0]
+    assert list_snapshot_candidate["status"] == "Todo", list_snapshot_candidate
+    assert list_snapshot_candidate["workflow_state"] == "ready-implementation", list_snapshot_candidate
+    assert list_snapshot_candidate["content"]["repository"] == "rather-not-work-on/platform-planningops"
+    assert list_snapshot_candidate["content"]["number"] == 10
+
 guidance_live_blocked = mod.build_rate_limit_guidance(
     run_mode="apply",
     snapshot_path="planningops/artifacts/loop-runner/project-items-snapshot.json",
@@ -611,6 +646,47 @@ with tempfile.TemporaryDirectory() as td:
         assert key in row, key
     assert row["selection_trace"]["selected"]["number"] == 77, row
     assert row["loop_profile"] == "L1 Contract-Clarification", row
+
+with tempfile.TemporaryDirectory() as td:
+    manifest_snapshot_path = Path(td) / "manifest-snapshot.json"
+    active_goal_registry_path = Path(td) / "active-goal-registry.json"
+    active_goal_registry_path.write_text(
+        json.dumps(
+            {
+                "active_goal_key": "wave22-active",
+                "goals": [],
+            },
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+    mod.ACTIVE_GOAL_REGISTRY_PATH = active_goal_registry_path
+    manifest_snapshot_path.write_text(
+        json.dumps(
+            {
+                "source_plan": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave22-rate-limit-guidance-issue-pack.md",
+                "items": [
+                    {
+                        "plan_item_id": "AN10",
+                        "execution_order": 10,
+                        "target_repo": "rather-not-work-on/platform-planningops",
+                        "issue_repo": "rather-not-work-on/platform-planningops",
+                        "issue_number": 10,
+                        "workflow_state": "ready_implementation",
+                        "loop_profile": "l3_implementation_tdd",
+                        "track": "control_plane",
+                    }
+                ],
+            },
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+    snapshot_payload = mod.load_project_items_snapshot(manifest_snapshot_path)
+    manifest_candidates = mod.normalize_candidates(snapshot_payload["items"], {"ready-contract", "ready-implementation"})
+    assert len(manifest_candidates) == 1, manifest_candidates
+    assert manifest_candidates[0]["number"] == 10, manifest_candidates
+    assert manifest_candidates[0]["workflow_state"] == "ready-implementation", manifest_candidates
 
 print("issue_loop_runner multi-repo intake trace ok")
 PY
