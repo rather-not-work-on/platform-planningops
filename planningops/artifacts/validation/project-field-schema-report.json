@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-08T16:05:41.785751+00:00",
+  "generated_at_utc": "2026-03-28T06:19:41.336068+00:00",
   "project": {
     "owner": "rather-not-work-on",
     "project_num": 2,
@@ -65,24 +65,10 @@
       "options_ok": true
     }
   ],
-  "evaluated_items": 130,
-  "violation_count": 1,
-  "violations": [
-    {
-      "type": "LOOP_PROFILE_WORKFLOW_MISMATCH",
-      "field": "loop_profile",
-      "item_id": "PVTI_lADOD8NujM4BQYNEzgmycR8",
-      "issue_number": 113,
-      "workflow_state": "ready-contract",
-      "expected_profiles": [
-        "L1 Contract-Clarification",
-        "L2 Simulation"
-      ],
-      "actual": "L3 Implementation-TDD",
-      "message": "loop_profile must match workflow_state default contract"
-    }
-  ],
-  "info_count": 19,
+  "evaluated_items": 200,
+  "violation_count": 0,
+  "violations": [],
+  "info_count": 64,
   "infos": [
     {
       "type": "CROSS_REPO_MAPPING",
@@ -254,7 +240,412 @@
       "control_repo": "rather-not-work-on/platform-planningops",
       "target_repo": "rather-not-work-on/platform-contracts",
       "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7b2U",
+      "issue_number": 155,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7b3Y",
+      "issue_number": 156,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7b30",
+      "issue_number": 157,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7b48",
+      "issue_number": 158,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7b5g",
+      "issue_number": 159,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7b6o",
+      "issue_number": 160,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7fSk",
+      "issue_number": 164,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7fT4",
+      "issue_number": 165,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm7fUw",
+      "issue_number": 166,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8odw",
+      "issue_number": 170,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8ohc",
+      "issue_number": 171,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8ojs",
+      "issue_number": 172,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8omY",
+      "issue_number": 173,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-contracts",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8sFc",
+      "issue_number": 180,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8sH8",
+      "issue_number": 181,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8sKg",
+      "issue_number": 182,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8sM4",
+      "issue_number": 183,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8sPU",
+      "issue_number": 184,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8sRw",
+      "issue_number": 185,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm88KE",
+      "issue_number": 190,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm88MM",
+      "issue_number": 191,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm88Oo",
+      "issue_number": 192,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8_Ac",
+      "issue_number": 195,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8_CE",
+      "issue_number": 196,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm8_EA",
+      "issue_number": 197,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9Awo",
+      "issue_number": 201,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9Ayo",
+      "issue_number": 202,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9A0Y",
+      "issue_number": 203,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9POs",
+      "issue_number": 207,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9PQs",
+      "issue_number": 208,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9PR0",
+      "issue_number": 209,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9PTA",
+      "issue_number": 210,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-contracts",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9rj4",
+      "issue_number": 213,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9rnY",
+      "issue_number": 214,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9rpo",
+      "issue_number": 215,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9txs",
+      "issue_number": 218,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9t0U",
+      "issue_number": 219,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9t28",
+      "issue_number": 220,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm9808",
+      "issue_number": 224,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm981I",
+      "issue_number": 223,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm983M",
+      "issue_number": 225,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm983U",
+      "issue_number": 226,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-provider-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm986g",
+      "issue_number": 227,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm986w",
+      "issue_number": 228,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-observability-gateway",
+      "message": "control-repo issue intentionally targets external repository"
+    },
+    {
+      "type": "CROSS_REPO_MAPPING",
+      "field": "target_repo",
+      "item_id": "PVTI_lADOD8NujM4BQYNEzgm_nPk",
+      "issue_number": 244,
+      "control_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "message": "control-repo issue intentionally targets external repository"
     }
   ],
-  "verdict": "fail"
+  "verdict": "pass"
 }
