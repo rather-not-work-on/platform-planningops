@@ -138,6 +138,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Local Delivery Queue Admission Boundary Packet](./plans/2026-03-28-local-delivery-queue-admission-boundary-packet.md)
 - [Runtime Operations Cross-Repo Doc Sync Packet](./plans/2026-03-28-runtime-operations-cross-repo-doc-sync-packet.md)
 - [Contract Helper Surface Sync Packet](./plans/2026-03-28-contract-helper-surface-sync-packet.md)
+- [Federated Label Taxonomy Helper Sync Packet](./plans/2026-03-28-federated-label-taxonomy-helper-sync-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
