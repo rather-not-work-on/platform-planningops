@@ -40,7 +40,7 @@ def parse_execution_order(raw: str | None):
     return int(value) if value.isdigit() else None
 
 
-def parse_depends_on_plan_item_keys(raw: str | None, pattern: str = r"[A-Z][0-9]{2}"):
+def parse_depends_on_plan_item_keys(raw: str | None, pattern: str = r"\b[A-Z]{1,6}[0-9]{2,4}\b"):
     value = normalize_value(raw)
     if not value:
         return []

@@ -108,6 +108,7 @@ This contract fixes:
 8. Archived inventory records must move to `workflow_state=done`, carry `archive_ref` + `compacted_into`, and remain traceable through `docs/archive/**` plus `planningops/archive-manifest/**`.
 
 ## Verification
+- Workflow helper: `bash planningops/scripts/run_control_plane_governance_ci_check.sh --python-bin python3`
 - Backlog/project metadata quality: `python3 planningops/scripts/validate_issue_quality.py --strict`
 - Ontology contract regression: `bash planningops/scripts/test_control_tower_ontology_contract.sh`
 - Boundary consistency: `bash planningops/scripts/test_validate_repo_boundaries_contract.sh`

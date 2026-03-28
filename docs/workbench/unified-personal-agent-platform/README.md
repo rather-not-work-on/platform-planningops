@@ -122,6 +122,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Review Interface Adoption Command Checks Packet](./plans/2026-03-28-review-interface-adoption-command-checks-packet.md)
 - [UAP Automation Operations Summary Contract Packet](./plans/2026-03-28-uap-automation-ops-summary-contract-packet.md)
 - [Artifact Sink Helper Link Packet](./plans/2026-03-28-artifact-sink-helper-link-packet.md)
+- [Planning Context Dependency Key Pattern Packet](./plans/2026-03-28-planning-context-dependency-key-pattern-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)

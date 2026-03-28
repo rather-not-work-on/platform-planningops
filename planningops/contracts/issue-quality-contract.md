@@ -43,3 +43,4 @@ Prevent low-quality backlog issues by enforcing deterministic structure, metadat
 - Validator: `planningops/scripts/validate_issue_quality.py`
 - Test: `bash planningops/scripts/test_validate_issue_quality_contract.sh`
 - Live check: `python3 planningops/scripts/validate_issue_quality.py --strict`
+- Workflow guardrail: `bash planningops/scripts/run_issue_quality_ci_check.sh --python-bin python3`
