@@ -1,0 +1,105 @@
+{
+  "generated_at_utc": "__GENERATED_AT__",
+  "mode": "dry-run",
+  "contract_file": "planningops/fixtures/backlog-materialization-sample-contract.json",
+  "repo": "rather-not-work-on/platform-planningops",
+  "initiative": "unified-personal-agent-platform",
+  "steps": [
+    {
+      "name": "compile_plan_to_backlog",
+      "command": [
+        "python3",
+        "planningops/scripts/compile_plan_to_backlog.py",
+        "--contract-file",
+        "planningops/fixtures/backlog-materialization-sample-contract.json",
+        "--config",
+        "planningops/config/project-field-ids.json",
+        "--blueprint-defaults-config",
+        "planningops/config/ready-implementation-blueprint-defaults.json",
+        "--output",
+        "__COMPILE_OUTPUT__",
+        "--issues-file",
+        "__PROJECTED_ISSUES_FILE__"
+      ],
+      "output_path": "__COMPILE_OUTPUT__",
+      "rc": 0,
+      "stdout": "__STDOUT__",
+      "stderr": "",
+      "verdict": "pass"
+    },
+    {
+      "name": "backfill_issue_labels",
+      "command": [
+        "python3",
+        "planningops/scripts/backfill_issue_labels.py",
+        "--output",
+        "__LABEL_OUTPUT__",
+        "--repo",
+        "rather-not-work-on/platform-planningops",
+        "--issues-file",
+        "__PROJECTED_ISSUES_FILE__",
+        "--write-updated-issues-file",
+        "__PROJECTED_ISSUES_FILE__",
+        "--apply"
+      ],
+      "output_path": "__LABEL_OUTPUT__",
+      "rc": 0,
+      "stdout": "__STDOUT__",
+      "stderr": "",
+      "verdict": "pass"
+    },
+    {
+      "name": "build_program_manifest",
+      "command": [
+        "python3",
+        "planningops/scripts/build_program_manifest.py",
+        "--plan-item-regex",
+        "^(?:A60)$",
+        "--initiative",
+        "unified-personal-agent-platform",
+        "--source-plan",
+        "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md",
+        "--scope-source-plan",
+        "--output",
+        "__MANIFEST_OUTPUT__",
+        "--report-output",
+        "__MANIFEST_REPORT__",
+        "--strict",
+        "--issues-file",
+        "__PROJECTED_ISSUES_FILE__"
+      ],
+      "output_path": "__MANIFEST_REPORT__",
+      "rc": 0,
+      "stdout": "__STDOUT__",
+      "stderr": "",
+      "verdict": "pass"
+    },
+    {
+      "name": "validate_issue_quality",
+      "command": [
+        "python3",
+        "planningops/scripts/validate_issue_quality.py",
+        "--output",
+        "__QUALITY_OUTPUT__",
+        "--strict",
+        "--issues-file",
+        "__PROJECTED_ISSUES_FILE__",
+        "--repo",
+        "rather-not-work-on/platform-planningops"
+      ],
+      "output_path": "__QUALITY_OUTPUT__",
+      "rc": 0,
+      "stdout": "__STDOUT__",
+      "stderr": "",
+      "verdict": "pass"
+    }
+  ],
+  "plan_id": "uap-backlog-wave26",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md",
+  "items_total": 1,
+  "projected_issues_output": "__PROJECTED_ISSUES_FILE__",
+  "projected_issue_count": 1,
+  "step_count": 4,
+  "verdict": "pass"
+}

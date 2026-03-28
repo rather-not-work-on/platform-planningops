@@ -1,0 +1,40 @@
+{
+  "mode": "dry-run",
+  "contract_file": "planningops/fixtures/backlog-materialization-sample-contract.json",
+  "validation_errors": [],
+  "results": [
+    {
+      "plan_item_id": "A60",
+      "execution_order": 60,
+      "issue_number": 60,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/60",
+      "created_issue": false,
+      "dedup_match_state": "open",
+      "dedup_strategy": "identity_exact",
+      "reused_closed_issue": false,
+      "reopened_closed_issue": false,
+      "closed_match_detected": false,
+      "closed_match_issue_number": null,
+      "metadata_sync_required": false,
+      "metadata_sync_action": "none",
+      "field_updates": [
+        "initiative(text)",
+        "target_repo(text)",
+        "execution_order(number)",
+        "status(todo)",
+        "component(planningops)",
+        "workflow_state(ready_implementation)",
+        "loop_profile(l4_integration_reconcile)",
+        "plan_lane(m3_guardrails)"
+      ]
+    }
+  ],
+  "plan_id": "uap-backlog-wave26",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md",
+  "items_total": 1,
+  "issues_source": "file:__PROJECTED_ISSUES_FILE__",
+  "open_issues_scanned": 1,
+  "closed_issues_scanned": 0,
+  "verdict": "pass"
+}

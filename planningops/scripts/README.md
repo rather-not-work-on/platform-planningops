@@ -558,6 +558,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_backlog_materialization_contract.sh`
   - `test_backlog_materialize_sample_fixture_smoke.sh`
   - `test_backlog_materialize_sample_report_smoke.sh`
+  - `test_backlog_materialize_sample_report_snapshot_contract.sh`
   - `test_backlog_materialize_sample_snapshot_contract.sh`
   - `test_build_program_manifest_contract.sh`
   - `test_compile_plan_to_backlog_contract.sh`
