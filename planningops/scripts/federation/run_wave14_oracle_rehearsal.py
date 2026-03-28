@@ -9,6 +9,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+DEFAULT_REHEARSAL_TASKS = [
+    "Verify local runtime composition through profiled provider and telemetry adapters.",
+]
+
 
 def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -33,6 +37,7 @@ def run_stack_smoke(
     run_id: str,
     output_path: Path,
     bootstrap_mode: str,
+    simulated_deepagents_tasks: list[str],
 ) -> tuple[int, dict]:
     command = [
         sys.executable,
@@ -47,6 +52,11 @@ def run_stack_smoke(
         str(output_path),
         "--bootstrap-mode",
         bootstrap_mode,
+        *[
+            item
+            for task in simulated_deepagents_tasks
+            for item in ("--simulate-deepagents-task", task)
+        ],
     ]
     completed = subprocess.run(command, cwd=str(planningops_repo), capture_output=True, text=True)
     report = load_json(output_path) if output_path.exists() else {}
@@ -124,6 +134,12 @@ def main() -> int:
         default="auto",
         help="Managed Python bootstrap mode passed through to the wave13 runner",
     )
+    parser.add_argument(
+        "--simulate-deepagents-task",
+        action="append",
+        default=[],
+        help="Optional deterministic planner task used to keep rehearsal focused on runtime portability",
+    )
     args = parser.parse_args()
 
     planningops_repo = resolve_repo_root()
@@ -131,6 +147,7 @@ def main() -> int:
     base_dir = planningops_repo / "planningops/runtime-artifacts/oracle-rehearsal"
     local_report_path = base_dir / f"{args.run_id}-{args.local_profile}.json"
     oracle_report_path = base_dir / f"{args.run_id}-{args.oracle_profile}.json"
+    simulated_tasks = list(args.simulate_deepagents_task or DEFAULT_REHEARSAL_TASKS)
 
     local_run_rc, local_summary = run_stack_smoke(
         planningops_repo=planningops_repo,
@@ -139,6 +156,7 @@ def main() -> int:
         run_id=f"{args.run_id}-{args.local_profile}",
         output_path=local_report_path,
         bootstrap_mode=args.bootstrap_mode,
+        simulated_deepagents_tasks=simulated_tasks,
     )
     oracle_run_rc, oracle_summary = run_stack_smoke(
         planningops_repo=planningops_repo,
@@ -147,6 +165,7 @@ def main() -> int:
         run_id=f"{args.run_id}-{args.oracle_profile}",
         output_path=oracle_report_path,
         bootstrap_mode=args.bootstrap_mode,
+        simulated_deepagents_tasks=simulated_tasks,
     )
 
     component_comparison = compare_components(local_summary.get("report") or {}, oracle_summary.get("report") or {})
@@ -164,6 +183,7 @@ def main() -> int:
             "local": args.local_profile,
             "oracle": args.oracle_profile,
         },
+        "simulated_deepagents_tasks": simulated_tasks,
         "runs": {
             "local": local_summary,
             "oracle": oracle_summary,
