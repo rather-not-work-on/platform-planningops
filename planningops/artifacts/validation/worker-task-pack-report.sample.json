@@ -1,0 +1,40 @@
+{
+  "generated_at_utc": "2026-03-28T14:03:05.464400+00:00",
+  "runtime_profile_file": "planningops/config/runtime-profiles.json",
+  "schema_file": "planningops/schemas/worker-task-pack.schema.json",
+  "task_key": "reflection_action",
+  "issue_number": 95,
+  "mode": "dry-run",
+  "loop_profile": "L3 Implementation-TDD",
+  "target_repo": "rather-not-work-on/platform-planningops",
+  "validation_errors": [],
+  "worker_task_pack": {
+    "version": "v1",
+    "task_key": "reflection_action",
+    "issue_number": 95,
+    "mode": "dry-run",
+    "loop_profile": "L3 Implementation-TDD",
+    "runtime_profile": "local",
+    "worker_policy_kind": "parser_diff_dry_run",
+    "command": [
+      "python3",
+      "planningops/scripts/parser_diff_dry_run.py",
+      "--run-id",
+      "worker-pack-issue-95",
+      "--mode",
+      "dry-run"
+    ],
+    "retry_policy": {
+      "max_retries": 2
+    },
+    "timeout_ms": 60000,
+    "idempotency_key": "71877e41370622d41daa75d49a251a91a1d709c33b3066212edf723c9d2cb0df",
+    "target_repo": "rather-not-work-on/platform-planningops",
+    "metadata": {
+      "profile_file": "planningops/config/runtime-profiles.json",
+      "task_key": "reflection_action"
+    }
+  },
+  "verdict": "pass",
+  "reason": "ok"
+}
