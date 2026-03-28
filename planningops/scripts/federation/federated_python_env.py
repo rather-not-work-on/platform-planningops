@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any
 
 
@@ -85,6 +86,40 @@ def managed_python_path(venv_dir: Path) -> Path:
     return venv_dir / "bin" / "python"
 
 
+def prune_appledouble_files(root: Path) -> int:
+    if not root.exists():
+        return 0
+    removed = 0
+    for path in root.rglob("._*"):
+        if path.is_file():
+            try:
+                path.unlink()
+                removed += 1
+            except FileNotFoundError:
+                continue
+    return removed
+
+
+def managed_python_is_healthy(managed_python: str) -> bool:
+    path = Path(managed_python)
+    if not path.exists():
+        return False
+    try:
+        probe = subprocess.run(
+            [str(path), "-c", "import site"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        return False
+    return probe.returncode == 0
+
+
+def run_bootstrap_command(command: list[str]) -> None:
+    subprocess.run(command, check=True, stdout=sys.stderr, stderr=sys.stderr)
+
+
 def build_bootstrap_plan(planningops_repo: Path, workspace_root: Path, bootstrap_root: Path) -> dict[str, Any]:
     requirement_files = [workspace_root / rel for rel in REQUIREMENTS_RELATIVE_PATHS]
     requirement_entries: list[dict[str, Any]] = []
@@ -156,6 +191,7 @@ def manifest_is_current(plan: dict[str, Any], manifest: dict[str, Any] | None) -
         and manifest.get("python_version") == plan["python_version"]
         and manifest.get("managed_python") == plan["managed_python"]
         and Path(plan["managed_python"]).exists()
+        and managed_python_is_healthy(plan["managed_python"])
     )
 
 
@@ -179,20 +215,28 @@ def create_managed_venv(plan: dict[str, Any]) -> tuple[bool, list[dict[str, Any]
     if venv_dir.exists():
         shutil.rmtree(venv_dir)
     bootstrap_root.mkdir(parents=True, exist_ok=True)
+    prune_appledouble_files(bootstrap_root)
 
     create_cmd = [sys.executable, "-m", "venv", str(venv_dir)]
     commands.append({"command": create_cmd})
-    subprocess.run(create_cmd, check=True)
+    run_bootstrap_command(create_cmd)
+    prune_appledouble_files(venv_dir)
+    if not managed_python_is_healthy(str(managed_python)):
+        raise RuntimeError(f"managed python is unhealthy after venv creation: {managed_python}")
 
     upgrade_pip_cmd = [str(managed_python), "-m", "pip", "install", "--upgrade", "pip"]
     commands.append({"command": upgrade_pip_cmd})
-    subprocess.run(upgrade_pip_cmd, check=True)
+    run_bootstrap_command(upgrade_pip_cmd)
+    prune_appledouble_files(venv_dir)
 
     install_cmd = [str(managed_python), "-m", "pip", "install"]
     for entry in plan["requirements"]:
         install_cmd.extend(["-r", entry["absolute_path"]])
     commands.append({"command": install_cmd})
-    subprocess.run(install_cmd, check=True)
+    run_bootstrap_command(install_cmd)
+    prune_appledouble_files(venv_dir)
+    if not managed_python_is_healthy(str(managed_python)):
+        raise RuntimeError(f"managed python is unhealthy after dependency install: {managed_python}")
 
     write_json(
         manifest_path,
@@ -208,6 +252,7 @@ def create_managed_venv(plan: dict[str, Any]) -> tuple[bool, list[dict[str, Any]
 
 
 def ensure_bootstrap_environment(plan: dict[str, Any], mode: str) -> dict[str, Any]:
+    prune_appledouble_files(Path(plan["bootstrap_root"]))
     manifest = load_manifest(plan)
     missing_modules_current = detect_missing_modules(plan["import_names"])
     current_python = str(Path(sys.executable).absolute())
@@ -255,6 +300,45 @@ def ensure_bootstrap_environment(plan: dict[str, Any], mode: str) -> dict[str, A
     return result
 
 
+def test_only_create_invalid_python_probe(root: Path) -> Path:
+    script_path = root / "fake-python.sh"
+    script_path.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    script_path.chmod(0o755)
+    return script_path
+
+
+def run_test_mode() -> int:
+    tmp_root = Path(tempfile.mkdtemp(prefix="federated-python-env-test-"))
+    try:
+        apple_root = tmp_root / "appledouble"
+        apple_root.mkdir(parents=True, exist_ok=True)
+        nested = apple_root / "site-packages"
+        nested.mkdir(parents=True, exist_ok=True)
+        (nested / "._distutils-precedence.pth").write_bytes(b"\x00\x01broken")
+        removed = prune_appledouble_files(apple_root)
+        assert removed == 1, removed
+        assert not (nested / "._distutils-precedence.pth").exists()
+
+        invalid_python = test_only_create_invalid_python_probe(tmp_root)
+        assert managed_python_is_healthy(str(invalid_python)) is False
+        plan = {
+            "requirements_hash": "abc",
+            "python_version": "3.9",
+            "managed_python": str(invalid_python),
+        }
+        manifest = {
+            "manifest_version": MANIFEST_VERSION,
+            "requirements_hash": "abc",
+            "python_version": "3.9",
+            "managed_python": str(invalid_python),
+        }
+        assert manifest_is_current(plan, manifest) is False
+        print("federated_python_env contract ok")
+        return 0
+    finally:
+        shutil.rmtree(tmp_root, ignore_errors=True)
+
+
 def build_managed_env(result: dict[str, Any]) -> dict[str, str]:
     env = dict(os.environ)
     managed_python = Path(result["managed_python"]).absolute()
@@ -273,7 +357,11 @@ def main() -> int:
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--print-python-path", action="store_true")
     parser.add_argument("--output", default=None)
+    parser.add_argument("--test-mode", action="store_true")
     args = parser.parse_args()
+
+    if args.test_mode:
+        return run_test_mode()
 
     planningops_repo = resolve_repo_root()
     workspace_root = resolve_workspace_root(planningops_repo, args.workspace_root)

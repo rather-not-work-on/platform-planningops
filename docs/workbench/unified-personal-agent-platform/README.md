@@ -133,6 +133,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Compile Backlog Offline Issues Intake Packet](./plans/2026-03-28-compile-backlog-offline-issues-intake-packet.md)
 - [Backlog Stock Snapshot Normalization Packet](./plans/2026-03-28-backlog-stock-snapshot-normalization-packet.md)
 - [Wave14 Rehearsal Default Task Packet](./plans/2026-03-28-wave14-rehearsal-default-task-packet.md)
+- [Local Runtime Smoke Bootstrap Hygiene Packet](./plans/2026-03-28-local-runtime-smoke-bootstrap-hygiene-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)

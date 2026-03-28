@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -232,6 +233,8 @@ def main():
     )
     if not run_root.is_absolute():
         run_root = planningops_repo / run_root
+    if run_root.exists():
+        shutil.rmtree(run_root)
     run_root.mkdir(parents=True, exist_ok=True)
 
     contract_repo = workspace_root / "platform-contracts"
