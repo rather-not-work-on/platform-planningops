@@ -5,18 +5,9 @@ repo_root="$(pwd)"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
-allowed_files="$tmp_dir/allowed.txt"
-blocked_files="$tmp_dir/blocked.txt"
-
-cat > "$allowed_files" <<'EOF'
-planningops/artifacts/validation/report.json
-planningops/contracts/issue-quality-contract.md
-EOF
-
-cat > "$blocked_files" <<'EOF'
-planningops/artifacts/loops/2026-03-06/loop-001/verification-report.json
-planningops/artifacts/transition-log/2026-03-06.ndjson
-EOF
+allowed_files="planningops/fixtures/external-only-commit-guard-allowed-files.sample.txt"
+blocked_files="planningops/fixtures/external-only-commit-guard-blocked-files.sample.txt"
+tracked_policy="planningops/fixtures/external-only-commit-guard-policy.sample.json"
 
 python3 planningops/scripts/validate_external_only_commit_guard.py \
   --policy planningops/config/artifact-storage-policy.json \
@@ -44,31 +35,7 @@ cd "$tracked_repo"
 git init -q
 git config user.name "Codex"
 git config user.email "codex@example.com"
-cat > policy.json <<'JSON'
-{
-  "policy_version": 1,
-  "default_external_backend": "local",
-  "pointer_manifest_root": "planningops/artifacts/pointers",
-  "tiers": {
-    "git_canonical": ["planningops/artifacts/validation/**"],
-    "git_optional": [],
-    "external_only": ["planningops/artifacts/loops/**"]
-  },
-  "backends": {
-    "local": {"kind": "local", "base_path": "planningops/runtime-artifacts/local"},
-    "s3": {"kind": "s3_mock", "bucket": "demo", "prefix": "planningops", "mock_base_path": "planningops/runtime-artifacts/s3"},
-    "oci": {"kind": "oci_mock", "namespace": "demo", "bucket": "demo", "prefix": "planningops", "mock_base_path": "planningops/runtime-artifacts/oci"}
-  },
-  "retention": {
-    "git_canonical_days": 3650,
-    "git_optional_days": 180,
-    "external_only_days": 30
-  },
-  "commit_guard": {
-    "forbidden_external_only_in_git": true
-  }
-}
-JSON
+cp "$repo_root/$tracked_policy" policy.json
 printf '{"ok":true}\n' > planningops/artifacts/validation/report.json
 printf '{"bad":true}\n' > planningops/artifacts/loops/demo/run.json
 printf 'metadata\n' > planningops/artifacts/loops/demo/._run.json

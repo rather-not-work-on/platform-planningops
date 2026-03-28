@@ -1,0 +1,17 @@
+{
+  "generated_at_utc": "2026-03-28T13:45:01.128147+00:00",
+  "policy_path": "planningops/config/artifact-storage-policy.json",
+  "mode": "diff",
+  "base_ref": null,
+  "head_ref": "HEAD",
+  "changed_file_count": 2,
+  "candidate_file_count": 2,
+  "metadata_file_count": 0,
+  "metadata_files": [],
+  "violation_count": 2,
+  "violations": [
+    "planningops/artifacts/loops/2026-03-06/loop-001/verification-report.json",
+    "planningops/artifacts/transition-log/2026-03-06.ndjson"
+  ],
+  "verdict": "fail"
+}
