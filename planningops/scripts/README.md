@@ -941,6 +941,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_external_only_commit_guard.sh`
   - `test_migrate_external_only_artifact_lanes.sh`
   - `test_migrate_external_only_artifacts_contract.sh`
+  - `test_artifact_sink_e2e_artifact_lane.sh`
   - `test_branch_protection_audit_artifact_lanes.sh`
   - `test_audit_branch_protection_contract.sh`
   - `test_branch_protection_apply_artifact_lanes.sh`

@@ -1,0 +1,34 @@
+{
+  "summary_version": 1,
+  "local_pointer": {
+    "generated_at_utc": "__GENERATED_AT__",
+    "policy_path": "__POLICY_PATH__",
+    "policy_version": 1,
+    "tier": "external_only",
+    "logical_path": "planningops/artifacts/loops/demo/run.json",
+    "backend": "local",
+    "uri": "__URI__",
+    "backend_target_path": "__BACKEND_TARGET_PATH__",
+    "bytes": 39,
+    "sha256": "4946e7ce842ec28d36782440090e7092a4c09e4f0a127d33806eb7168cdf6de6",
+    "local_cache_external": false
+  },
+  "s3_pointer": {
+    "generated_at_utc": "__GENERATED_AT__",
+    "policy_path": "__POLICY_PATH__",
+    "policy_version": 1,
+    "tier": "external_only",
+    "logical_path": "planningops/artifacts/loops/demo/replay.ndjson",
+    "backend": "s3",
+    "uri": "s3://demo-bucket/planningops/loops/demo/replay.ndjson",
+    "backend_target_path": "__BACKEND_TARGET_PATH__",
+    "bytes": 14,
+    "sha256": "25a8bbba90ca6e018c37d36f8639a9b428a20b1f4a461eb893a0c1fe6ca71e90",
+    "local_cache_external": false
+  },
+  "rehydrated_local": {
+    "verdict": "pass",
+    "attempt": 1
+  },
+  "rehydrated_s3": "{\"event\":\"a\"}\n"
+}
