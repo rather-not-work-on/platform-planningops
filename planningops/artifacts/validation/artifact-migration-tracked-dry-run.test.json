@@ -1,0 +1,16 @@
+{
+  "generated_at_utc": "2026-03-28T13:47:31.277290+00:00",
+  "policy_path": "policy.json",
+  "backend": "local",
+  "mode": "dry-run",
+  "scope": "tracked",
+  "candidate_count": 1,
+  "migrated_count": 0,
+  "rows": [
+    {
+      "logical_path": "planningops/artifacts/loops/demo/run.json",
+      "externalized": false,
+      "reason": "dry-run"
+    }
+  ]
+}

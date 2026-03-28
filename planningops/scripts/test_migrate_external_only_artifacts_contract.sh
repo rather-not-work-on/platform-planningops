@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(pwd)"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
+policy_fixture="$repo_root/planningops/fixtures/external-only-commit-guard-policy.sample.json"
 
 work_repo="$tmp_dir/work-repo"
 mkdir -p "$work_repo/planningops/artifacts/loops/demo" "$work_repo/planningops/artifacts/validation"
@@ -11,32 +12,7 @@ cd "$work_repo"
 git init -q
 git config user.name "Codex"
 git config user.email "codex@example.com"
-
-cat > policy.json <<'JSON'
-{
-  "policy_version": 1,
-  "default_external_backend": "local",
-  "pointer_manifest_root": "planningops/artifacts/pointers",
-  "tiers": {
-    "git_canonical": ["planningops/artifacts/validation/**"],
-    "git_optional": [],
-    "external_only": ["planningops/artifacts/loops/**"]
-  },
-  "backends": {
-    "local": {"kind": "local", "base_path": "planningops/runtime-artifacts/local"},
-    "s3": {"kind": "s3_mock", "bucket": "demo", "prefix": "planningops", "mock_base_path": "planningops/runtime-artifacts/s3"},
-    "oci": {"kind": "oci_mock", "namespace": "demo", "bucket": "demo", "prefix": "planningops", "mock_base_path": "planningops/runtime-artifacts/oci"}
-  },
-  "retention": {
-    "git_canonical_days": 3650,
-    "git_optional_days": 180,
-    "external_only_days": 30
-  },
-  "commit_guard": {
-    "forbidden_external_only_in_git": true
-  }
-}
-JSON
+cp "$policy_fixture" policy.json
 
 printf '{"tracked":true}\n' > planningops/artifacts/loops/demo/run.json
 printf '{"untracked":true}\n' > planningops/artifacts/loops/demo/extra.json

@@ -1,0 +1,18 @@
+{
+  "generated_at_utc": "2026-03-28T13:47:31.331136+00:00",
+  "policy_path": "policy.json",
+  "backend": "local",
+  "mode": "apply",
+  "scope": "tracked",
+  "candidate_count": 1,
+  "migrated_count": 1,
+  "rows": [
+    {
+      "logical_path": "planningops/artifacts/loops/demo/run.json",
+      "externalized": true,
+      "pointer_path": "planningops/artifacts/pointers/loops/demo/run.json.pointer.json",
+      "backend_target_path": "planningops/runtime-artifacts/local/loops/demo/run.json",
+      "reason": null
+    }
+  ]
+}
