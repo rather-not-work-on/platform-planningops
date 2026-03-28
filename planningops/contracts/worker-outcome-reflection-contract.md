@@ -107,6 +107,7 @@ Every evaluator result must include:
 ## Failure Rules
 - missing or malformed runtime source fields must fail packet export
 - malformed `reflection_hints` must fail evaluation
+- unresolved goal context must fail evaluation before a reflection decision is emitted
 - evaluators must return deterministic failure evidence instead of silently defaulting to `continue`
 - control-plane evaluation must not mutate monday queue state directly
 

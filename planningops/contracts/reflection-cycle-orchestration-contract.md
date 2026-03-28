@@ -5,25 +5,30 @@ Freeze the thin control-plane orchestration path that turns one monday worker ou
 
 This contract exists so:
 - `planningops` can run the reflection chain end to end without prompt-local glue
-- `monday` remains the owner of runtime outcome export and downstream operator delivery
+- `monday` remains the owner of runtime outcome export and downstream queue admission
 - later scheduler and queue work can reuse one deterministic cycle runner instead of re-stitching the same steps in ad hoc scripts
 
 ## Canonical Boundary
 - runtime exporter: `monday/scripts/export_worker_outcome_reflection_packet.py`
+- scheduler-evidence exporter: `monday/scripts/export_scheduler_worker_outcome_reflection_packet.py`
 - control-plane evaluator: `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - control-plane applier: `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
+- shared control-plane plumbing: `planningops/scripts/federation/reflection_cycle_common.py`
 - orchestration runner: `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
-- downstream monday consumer: `monday/scripts/run_operator_message_delivery_cycle.py`
+- goal-completion bridge: `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py`
+- downstream monday consumer: `monday/scripts/enqueue_scheduled_delivery_work_item.py`
 
 ## Cycle Scope
 The reflection cycle covered by this contract is:
-1. read one monday worker outcome artifact
+1. read one monday worker outcome artifact or one monday scheduler report that resolves to exactly one worker outcome
 2. export one reflection packet through the monday-owned exporter
 3. evaluate the packet into one planningops reflection decision
 4. apply the decision into one planningops action artifact
 5. emit one planningops-owned cycle report
 
 The cycle ends at the action artifact.
+
+Goal-completed actions must flow through `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py` for the follow-on handoff into supervisor artifacts and monday goal-completion queue admission.
 
 The cycle must not:
 - mutate monday queue state directly
@@ -32,7 +37,7 @@ The cycle must not:
 
 ## Required Inputs
 The orchestration runner must accept enough input to resolve the full cycle deterministically:
-- a worker outcome artifact path
+- either a worker outcome artifact path or a monday scheduler report path that resolves to one worker outcome
 - an active-goal registry path
 - a goal key or a deterministic active-goal resolution path
 - an execution mode: `dry-run` or `apply`
@@ -76,7 +81,9 @@ Optional cycle report fields may include:
 - `operator_channel_execution_repo`
 
 ## Deterministic Orchestration Rules
-- the runner must call the monday exporter instead of recreating packet logic inside planningops
+- the runner must resolve goal context before packet export starts
+- the runner must call the matching monday exporter instead of recreating packet logic inside planningops
+- scheduler-report inputs must flow through `monday/scripts/export_scheduler_worker_outcome_reflection_packet.py`
 - the runner must call the planningops evaluator instead of deriving decisions inline
 - the runner must call the planningops applier instead of deriving action mappings inline
 - the runner must pass the same goal context to the evaluator and applier within one cycle
@@ -85,7 +92,9 @@ Optional cycle report fields may include:
 - `apply` mode may allow the applier to perform goal transition side effects, but only through `planningops/scripts/core/goals/transition_goal_state.py`
 
 ## Failure Rules
+- unresolved goal context must fail the cycle before packet export starts
 - exporter failure must fail the cycle before evaluation starts
+- scheduler reports that do not resolve to one worker outcome must fail the cycle before evaluation starts
 - evaluator failure must fail the cycle before action application starts
 - applier failure must fail the cycle before the runner reports success
 - the runner must fail closed and emit deterministic failure evidence instead of silently skipping a stage
@@ -101,7 +110,7 @@ Optional cycle report fields may include:
 ### Monday owns
 - worker outcome production
 - reflection packet export implementation
-- operator-channel delivery implementation
+- scheduled delivery queue admission and downstream delivery implementation
 - queue persistence and lease mutation
 
 ### PlanningOps must not own
@@ -112,7 +121,12 @@ Optional cycle report fields may include:
 ## Validation
 - `planningops/scripts/test_reflection_cycle_orchestration_contract.sh`
 - `monday/scripts/export_worker_outcome_reflection_packet.py`
+- `monday/scripts/export_scheduler_worker_outcome_reflection_packet.py`
 - `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
+- `planningops/scripts/federation/reflection_cycle_common.py`
 - `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
+- `planningops/scripts/test_worker_outcome_reflection_cycle_scheduler_report.sh`
+- `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py`
+- `planningops/scripts/test_reflection_goal_completion_handoff_cycle.sh`
 - `planningops/scripts/federation/run_reflection_delivery_cycle.py`

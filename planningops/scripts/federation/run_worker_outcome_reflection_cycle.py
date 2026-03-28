@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -12,6 +11,9 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
+CORE_GOALS_DIR = SCRIPT_DIR.parent / "core" / "goals"
+if str(CORE_GOALS_DIR) not in sys.path:
+    sys.path.insert(0, str(CORE_GOALS_DIR))
 
 from federated_python_env import (
     build_bootstrap_plan,
@@ -19,104 +21,23 @@ from federated_python_env import (
     ensure_bootstrap_environment,
     resolve_bootstrap_root,
 )
+from reflection_cycle_common import (
+    build_stage_report,
+    load_json,
+    normalize_repo_path,
+    now_utc,
+    resolve_component_repo,
+    resolve_goal_context,
+    resolve_input_path,
+    resolve_output_path,
+    resolve_repo_root,
+    resolve_workspace_root,
+    run_cmd,
+    write_report,
+)
 
 
 RUNNER_CONTRACT_REF = "planningops/contracts/reflection-cycle-orchestration-contract.md"
-
-
-def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def resolve_repo_root() -> Path:
-    current = Path(__file__).resolve()
-    for candidate in [current] + list(current.parents):
-        if (candidate / ".git").exists():
-            return candidate
-    return Path(__file__).resolve().parents[4]
-
-
-def resolve_workspace_root(planningops_repo: Path, raw_workspace_root: str) -> Path:
-    candidates = [
-        (planningops_repo / raw_workspace_root).resolve(),
-        planningops_repo,
-        planningops_repo.parent,
-    ]
-    for candidate in candidates:
-        if (candidate / "monday").exists():
-            return candidate
-    return (planningops_repo / raw_workspace_root).resolve()
-
-
-def resolve_component_repo(workspace_root: Path, repo_dir: str) -> Path:
-    path = Path(repo_dir)
-    if path.is_absolute():
-        return path
-    return (workspace_root / path).resolve()
-
-
-def resolve_input_path(planningops_repo: Path, workspace_root: Path, monday_repo: Path, raw_path: str) -> Path:
-    path = Path(raw_path)
-    candidates: list[Path] = []
-    if path.is_absolute():
-        candidates.append(path)
-    else:
-        candidates.extend(
-            [
-                (planningops_repo / path).resolve(),
-                (workspace_root / path).resolve(),
-                (monday_repo / path).resolve(),
-                path.resolve(),
-            ]
-        )
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"worker outcome input not found: {raw_path}")
-
-
-def resolve_output_path(planningops_repo: Path, raw_path: str | None, default_path: Path) -> Path:
-    if raw_path is None:
-        return default_path
-    path = Path(raw_path)
-    if path.is_absolute():
-        return path
-    return (planningops_repo / path).resolve()
-
-
-def normalize_repo_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root.resolve()))
-    except ValueError:
-        return str(path.resolve())
-
-
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def build_stage_report(stage: str, command: list[str], cwd: Path, rc: int, out: str, err: str, artifact_path: Path) -> dict:
-    return {
-        "stage": stage,
-        "command": command,
-        "cwd": str(cwd),
-        "exit_code": rc,
-        "stdout_tail": out[-1000:],
-        "stderr_tail": err[-1000:],
-        "artifact_path": str(artifact_path),
-        "artifact_exists": artifact_path.exists(),
-        "verdict": "pass" if rc == 0 else "fail",
-    }
-
-
-def run_cmd(command: list[str], cwd: Path, env: dict[str, str]) -> tuple[int, str, str]:
-    completed = subprocess.run(command, cwd=str(cwd), capture_output=True, text=True, env=env)
-    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
-
-
-def write_report(path: Path, payload: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 
 
 def parse_args():
@@ -124,12 +45,19 @@ def parse_args():
     parser.add_argument("--workspace-root", default="..", help="Workspace root containing sibling repositories")
     parser.add_argument("--monday-repo-dir", default="monday", help="monday repo directory relative to workspace root")
     parser.add_argument("--monday-python", default=None, help="Optional Python interpreter override for monday leaf scripts")
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("--outcome-json", help="Worker outcome artifact path")
+    input_group.add_argument("--scheduler-report-json", help="monday scheduler report path that resolves to one worker outcome")
     parser.add_argument(
         "--monday-exporter-script",
         default="scripts/export_worker_outcome_reflection_packet.py",
         help="monday exporter script path relative to the monday repo",
     )
-    parser.add_argument("--outcome-json", required=True, help="Worker outcome artifact path")
+    parser.add_argument(
+        "--monday-scheduler-exporter-script",
+        default="scripts/export_scheduler_worker_outcome_reflection_packet.py",
+        help="monday scheduler-report exporter script path relative to the monday repo",
+    )
     parser.add_argument("--source-outcome-ref", default=None, help="Explicit source outcome reference to preserve in packet output")
     parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
     parser.add_argument("--goal-key", default=None)
@@ -215,28 +143,81 @@ def main() -> int:
     if not args.monday_python:
         python_bin = bootstrap_info["preferred_python"]
 
-    outcome_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, args.outcome_json)
     report_dir = planningops_repo / "planningops" / "artifacts" / "validation" / "worker-outcome-reflection-cycle" / args.run_id
     packet_output = resolve_output_path(planningops_repo, args.packet_output, report_dir / "packet.json")
     evaluation_output = resolve_output_path(planningops_repo, args.evaluation_output, report_dir / "evaluation.json")
     action_output = resolve_output_path(planningops_repo, args.action_output, report_dir / "action.json")
     report_output = resolve_output_path(planningops_repo, args.output, report_dir / "cycle-report.json")
 
-    source_outcome_ref = args.source_outcome_ref or normalize_repo_path(monday_repo, outcome_path)
+    source_outcome_ref = "-"
     goal_key = args.goal_key or "-"
+    resolved_goal_key = None
 
     stage_reports: list[dict] = []
 
-    exporter_command = [
-        python_bin,
-        args.monday_exporter_script,
-        "--outcome-json",
-        str(outcome_path),
-        "--source-outcome-ref",
-        source_outcome_ref,
-        "--output",
-        str(packet_output),
-    ]
+    if args.active_goal_registry:
+        resolved_goal, goal_errors = resolve_goal_context(
+            planningops_repo / args.active_goal_registry, planningops_repo, args.goal_key
+        )
+        if goal_errors:
+            return failure_report(
+                args=args,
+                goal_key=goal_key,
+                outcome_ref=source_outcome_ref,
+                packet_ref=normalize_repo_path(planningops_repo, packet_output),
+                evaluation_ref=normalize_repo_path(planningops_repo, evaluation_output),
+                action_ref=normalize_repo_path(planningops_repo, action_output),
+                stage_reports=stage_reports,
+                failure_stage="resolve_goal_context",
+                errors=goal_errors,
+                report_path=report_output,
+            )
+        resolved_goal_key = str((resolved_goal or {}).get("goal_key") or "").strip() or None
+        goal_key = resolved_goal_key or goal_key
+
+    if args.scheduler_report_json and args.source_outcome_ref:
+        return failure_report(
+            args=args,
+            goal_key=goal_key,
+            outcome_ref=source_outcome_ref,
+            packet_ref=normalize_repo_path(planningops_repo, packet_output),
+            evaluation_ref=normalize_repo_path(planningops_repo, evaluation_output),
+            action_ref=normalize_repo_path(planningops_repo, action_output),
+            stage_reports=stage_reports,
+            failure_stage="resolve_packet_source",
+            errors=["--source-outcome-ref is not allowed with --scheduler-report-json"],
+            report_path=report_output,
+        )
+
+    if args.outcome_json:
+        outcome_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, args.outcome_json)
+        source_outcome_ref = args.source_outcome_ref or normalize_repo_path(monday_repo, outcome_path)
+        exporter_command = [
+            python_bin,
+            args.monday_exporter_script,
+            "--outcome-json",
+            str(outcome_path),
+            "--source-outcome-ref",
+            source_outcome_ref,
+            "--output",
+            str(packet_output),
+        ]
+    else:
+        scheduler_report_path = resolve_input_path(planningops_repo, workspace_root, monday_repo, args.scheduler_report_json)
+        try:
+            scheduler_report = load_json(scheduler_report_path)
+        except json.JSONDecodeError:
+            scheduler_report = {}
+        if isinstance(scheduler_report, dict):
+            source_outcome_ref = str(scheduler_report.get("worker_outcome_ref") or "").strip() or "-"
+        exporter_command = [
+            python_bin,
+            args.monday_scheduler_exporter_script,
+            "--scheduler-report",
+            str(scheduler_report_path),
+            "--output",
+            str(packet_output),
+        ]
     rc, out, err = run_cmd(exporter_command, monday_repo, env)
     stage_reports.append(build_stage_report("packet_export", exporter_command, monday_repo, rc, out, err, packet_output))
     if rc != 0:
@@ -253,6 +234,11 @@ def main() -> int:
             report_path=report_output,
         )
 
+    packet = load_json(packet_output)
+    packet_source_outcome_ref = str(packet.get("source_outcome_ref") or "").strip()
+    if packet_source_outcome_ref:
+        source_outcome_ref = packet_source_outcome_ref
+
     evaluator_command = [
         bootstrap_info["preferred_python"],
         str(planningops_repo / "planningops" / "scripts" / "core" / "goals" / "evaluate_worker_outcome_reflection.py"),
@@ -263,8 +249,8 @@ def main() -> int:
         "--output",
         str(evaluation_output),
     ]
-    if args.goal_key:
-        evaluator_command.extend(["--goal-key", args.goal_key])
+    if resolved_goal_key:
+        evaluator_command.extend(["--goal-key", resolved_goal_key])
     rc, out, err = run_cmd(evaluator_command, planningops_repo, env)
     stage_reports.append(
         build_stage_report("reflection_evaluation", evaluator_command, planningops_repo, rc, out, err, evaluation_output)
@@ -298,8 +284,8 @@ def main() -> int:
         "--output",
         str(action_output),
     ]
-    if args.goal_key:
-        applier_command.extend(["--goal-key", args.goal_key])
+    if resolved_goal_key:
+        applier_command.extend(["--goal-key", resolved_goal_key])
     if args.goal_transition_output:
         applier_command.extend(["--goal-transition-output", args.goal_transition_output])
     rc, out, err = run_cmd(applier_command, planningops_repo, env)
