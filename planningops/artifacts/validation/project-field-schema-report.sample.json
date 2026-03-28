@@ -1,0 +1,74 @@
+{
+  "generated_at_utc": "2026-03-28T14:00:12.000000+00:00",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_num": 2,
+    "initiative": "unified-personal-agent-platform"
+  },
+  "required_field_checks": [
+    {
+      "field_key": "status",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hBm0",
+      "exists": true,
+      "actual_name": "Status",
+      "missing_option_ids": [],
+      "options_ok": true
+    },
+    {
+      "field_key": "initiative",
+      "expected_id": "PVTF_lADOD8NujM4BQYNEzg-hBrQ",
+      "exists": true,
+      "actual_name": "Initiative"
+    },
+    {
+      "field_key": "target_repo",
+      "expected_id": "PVTF_lADOD8NujM4BQYNEzg-hBrM",
+      "exists": true,
+      "actual_name": "Target Repo"
+    },
+    {
+      "field_key": "component",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hBsE",
+      "exists": true,
+      "actual_name": "Component",
+      "missing_option_ids": [],
+      "options_ok": true
+    },
+    {
+      "field_key": "execution_order",
+      "expected_id": "PVTF_lADOD8NujM4BQYNEzg-hM3Y",
+      "exists": true,
+      "actual_name": "Execution Order"
+    },
+    {
+      "field_key": "plan_lane",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hM3c",
+      "exists": true,
+      "actual_name": "Plan Lane",
+      "missing_option_ids": [],
+      "options_ok": true
+    },
+    {
+      "field_key": "workflow_state",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-hxGo",
+      "exists": true,
+      "actual_name": "Workflow State",
+      "missing_option_ids": [],
+      "options_ok": true
+    },
+    {
+      "field_key": "loop_profile",
+      "expected_id": "PVTSSF_lADOD8NujM4BQYNEzg-kZMI",
+      "exists": true,
+      "actual_name": "Loop Profile",
+      "missing_option_ids": [],
+      "options_ok": true
+    }
+  ],
+  "evaluated_items": 1,
+  "violation_count": 0,
+  "violations": [],
+  "info_count": 0,
+  "infos": [],
+  "verdict": "pass"
+}
