@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops-supervisor-operator-handoff-bundle-readiness-validation",
+  "title": "Planningops Supervisor Operator Handoff Bundle Readiness Validation",
+  "type": "object",
+  "required": [
+    "generated_at_utc",
+    "readiness_path",
+    "readiness_generated_at_utc",
+    "source_kind",
+    "validation_report_path",
+    "operator_handoff_bundle_path",
+    "operator_handoff_bundle_validation_path",
+    "operator_handoff_bundle_readiness_path",
+    "operator_handoff_bundle_readiness_validation_path",
+    "readiness_status",
+    "readiness_ready",
+    "schema_path",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "verdict"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "readiness_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_generated_at_utc": {
+      "type": ["string", "null"]
+    },
+    "source_kind": {
+      "type": ["string", "null"],
+      "enum": ["artifact", "bundle", null]
+    },
+    "artifact_file": {
+      "type": ["string", "null"]
+    },
+    "bundle_path": {
+      "type": ["string", "null"]
+    },
+    "validation_report_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_validation_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_readiness_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_readiness_validation_path": {
+      "type": ["string", "null"]
+    },
+    "readiness_status": {
+      "type": ["string", "null"],
+      "enum": ["ready", "blocked", null]
+    },
+    "readiness_ready": {
+      "type": "boolean"
+    },
+    "schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    }
+  },
+  "additionalProperties": false
+}
