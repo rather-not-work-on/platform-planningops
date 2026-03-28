@@ -1,0 +1,72 @@
+{
+  "fields": [
+    {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hBm0",
+      "name": "Status",
+      "options": [
+        {"id": "e225d619", "name": "Todo"},
+        {"id": "18f5944b", "name": "In Progress"},
+        {"id": "1184a4e7", "name": "Blocked"},
+        {"id": "cffcdc7d", "name": "Done"}
+      ]
+    },
+    {
+      "id": "PVTF_lADOD8NujM4BQYNEzg-hBrQ",
+      "name": "Initiative"
+    },
+    {
+      "id": "PVTF_lADOD8NujM4BQYNEzg-hBrM",
+      "name": "Target Repo"
+    },
+    {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hBsE",
+      "name": "Component",
+      "options": [
+        {"id": "1a47f1d9", "name": "planningops"},
+        {"id": "ac884f5a", "name": "contracts"},
+        {"id": "f6ceeede", "name": "provider_gateway"},
+        {"id": "2a19b378", "name": "observability_gateway"},
+        {"id": "d55bc97a", "name": "runtime"},
+        {"id": "9233c6ef", "name": "orchestrator"}
+      ]
+    },
+    {
+      "id": "PVTF_lADOD8NujM4BQYNEzg-hM3Y",
+      "name": "Execution Order"
+    },
+    {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hM3c",
+      "name": "Plan Lane",
+      "options": [
+        {"id": "c12b812b", "name": "m0_bootstrap"},
+        {"id": "0f566f80", "name": "m1_contract_freeze"},
+        {"id": "196964ba", "name": "m2_sync_core"},
+        {"id": "6b2c1c64", "name": "m3_guardrails"}
+      ]
+    },
+    {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-hxGo",
+      "name": "Workflow State",
+      "options": [
+        {"id": "5635cc18", "name": "backlog"},
+        {"id": "1da67253", "name": "ready_contract"},
+        {"id": "c8b7cc9f", "name": "in_progress"},
+        {"id": "18a75432", "name": "review_gate"},
+        {"id": "c8b07c0f", "name": "ready_implementation"},
+        {"id": "41f8c85f", "name": "blocked"},
+        {"id": "c8db8ee1", "name": "done"}
+      ]
+    },
+    {
+      "id": "PVTSSF_lADOD8NujM4BQYNEzg-kZMI",
+      "name": "Loop Profile",
+      "options": [
+        {"id": "0aa7a66a", "name": "l1_contract_clarification"},
+        {"id": "60de8d1a", "name": "l2_simulation"},
+        {"id": "e18297a8", "name": "l3_implementation_tdd"},
+        {"id": "1e144499", "name": "l4_integration_reconcile"},
+        {"id": "9f6cfe0a", "name": "l5_recovery_replan"}
+      ]
+    }
+  ]
+}

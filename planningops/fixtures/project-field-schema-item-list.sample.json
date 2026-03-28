@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "PVTI_project_field_schema_sample",
+      "status": "Todo",
+      "initiative": "unified-personal-agent-platform",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "component": "planningops",
+      "workflow_state": "ready-contract",
+      "loop_profile": "L1 Contract-Clarification",
+      "execution_order": 1,
+      "plan_lane": "m1-contract-freeze",
+      "content": {
+        "type": "Issue",
+        "number": 4001,
+        "url": "https://github.com/rather-not-work-on/platform-planningops/issues/4001",
+        "repository": "rather-not-work-on/platform-planningops",
+        "body": "fixture-backed project field schema sample"
+      }
+    }
+  ]
+}
