@@ -7,20 +7,7 @@ trap 'rm -rf "$tmpdir"' EXIT
 issues_file="$tmpdir/issues.json"
 report_file="$tmpdir/report.json"
 
-cat >"$issues_file" <<'JSON'
-[
-  {
-    "repo": "rather-not-work-on/platform-planningops",
-    "number": 60,
-    "state": "open",
-    "updated_at": "2026-03-12T00:00:00+00:00",
-    "title": "plan: [60] Add recurring backlog materialization runner",
-    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/60",
-    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- plan_id: `uap-backlog-wave26`\n- plan_revision: `1`\n- plan_item_id: `A60`\n- execution_order: `60`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- workflow_state: `ready_implementation`\n- loop_profile: `l4_integration_reconcile`\n- plan_lane: `m3_guardrails`\n- depends_on: `-`\n- primary_output: `planningops/scripts/core/backlog/materialize.py`\n\n## Problem Statement\n- Resolve this plan item with deterministic artifacts and contract-aligned updates.\n\n## Interfaces & Dependencies\n- target_repo: `rather-not-work-on/platform-planningops`\n- depends_on: `-`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- `planningops/scripts/core/backlog/materialize.py`\n\n## Acceptance Criteria\n- [ ] Required artifact created and linked under Evidence.\n- [ ] Contract/path references are updated and validated.\n\n## Definition of Done\n- [ ] Required artifact created\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence",
-    "labels": []
-  }
-]
-JSON
+cp planningops/fixtures/issue-label-backfill-sample-issues.json "$issues_file"
 
 python3 planningops/scripts/backfill_issue_labels.py \
   --repo rather-not-work-on/platform-planningops \

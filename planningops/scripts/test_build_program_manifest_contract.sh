@@ -19,74 +19,9 @@ with tempfile.TemporaryDirectory() as td:
     output_path = td_path / "program-manifest.json"
     report_path = td_path / "program-manifest-report.json"
 
-    base_issues = [
-        {
-            "repo": "rather-not-work-on/platform-planningops",
-            "number": 94,
-            "state": "open",
-            "updated_at": "2026-03-10T12:00:00Z",
-            "title": "[PO-CT][A00]",
-            "url": "https://github.com/rather-not-work-on/platform-planningops/issues/94",
-            "body": "\n".join(
-                [
-                    "## Planning Context",
-                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`",
-                    "- plan_item_id: `A00`",
-                    "- target_repo: `rather-not-work-on/platform-planningops`",
-                    "- component: `orchestrator`",
-                    "- workflow_state: `ready-contract`",
-                    "- loop_profile: `l1_contract_clarification`",
-                    "- execution_order: `1000`",
-                    "- depends_on: `none`",
-                    "- plan_lane: `M0 Bootstrap`",
-                ]
-            ),
-        },
-        {
-            "repo": "rather-not-work-on/platform-planningops",
-            "number": 95,
-            "state": "open",
-            "updated_at": "2026-03-10T13:00:00Z",
-            "title": "[PO-CT][A10]",
-            "url": "https://github.com/rather-not-work-on/platform-planningops/issues/95",
-            "body": "\n".join(
-                [
-                    "## Planning Context",
-                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`",
-                    "- plan_item_id: `A10`",
-                    "- target_repo: `rather-not-work-on/platform-planningops`",
-                    "- component: `planningops`",
-                    "- workflow_state: `ready-contract`",
-                    "- loop_profile: `l1_contract_clarification`",
-                    "- execution_order: `1010`",
-                    "- depends_on: `A00 (rather-not-work-on/platform-planningops#94)`",
-                    "- plan_lane: `M0 Bootstrap`",
-                ]
-            ),
-        },
-        {
-            "repo": "rather-not-work-on/platform-contracts",
-            "number": 2,
-            "state": "open",
-            "updated_at": "2026-03-10T14:00:00Z",
-            "title": "[PO-CT][B10]",
-            "url": "https://github.com/rather-not-work-on/platform-contracts/issues/2",
-            "body": "\n".join(
-                [
-                    "## Planning Context",
-                    "- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`",
-                    "- plan_item_id: `B10`",
-                    "- target_repo: `rather-not-work-on/platform-contracts`",
-                    "- component: `contracts`",
-                    "- workflow_state: `ready-contract`",
-                    "- loop_profile: `l1_contract_clarification`",
-                    "- execution_order: `2100`",
-                    "- depends_on: `A10 (rather-not-work-on/platform-planningops#95)`",
-                    "- plan_lane: `M1 Contract Freeze`",
-                ]
-            ),
-        },
-    ]
+    base_issues = json.loads(
+        Path("planningops/fixtures/program-manifest-sample-issues.json").read_text(encoding="utf-8")
+    )
 
     issues_path.write_text(json.dumps(base_issues, ensure_ascii=True, indent=2), encoding="utf-8")
     rc, out, err = run(

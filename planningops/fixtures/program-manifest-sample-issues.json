@@ -1,0 +1,29 @@
+[
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 94,
+    "state": "open",
+    "updated_at": "2026-03-10T12:00:00Z",
+    "title": "[PO-CT][A00]",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/94",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- plan_item_id: `A00`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `orchestrator`\n- workflow_state: `ready-contract`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `1000`\n- depends_on: `none`\n- plan_lane: `M0 Bootstrap`"
+  },
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 95,
+    "state": "open",
+    "updated_at": "2026-03-10T13:00:00Z",
+    "title": "[PO-CT][A10]",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/95",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- plan_item_id: `A10`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- workflow_state: `ready-contract`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `1010`\n- depends_on: `A00 (rather-not-work-on/platform-planningops#94)`\n- plan_lane: `M0 Bootstrap`"
+  },
+  {
+    "repo": "rather-not-work-on/platform-contracts",
+    "number": 2,
+    "state": "open",
+    "updated_at": "2026-03-10T14:00:00Z",
+    "title": "[PO-CT][B10]",
+    "url": "https://github.com/rather-not-work-on/platform-contracts/issues/2",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- plan_item_id: `B10`\n- target_repo: `rather-not-work-on/platform-contracts`\n- component: `contracts`\n- workflow_state: `ready-contract`\n- loop_profile: `l1_contract_clarification`\n- execution_order: `2100`\n- depends_on: `A10 (rather-not-work-on/platform-planningops#95)`\n- plan_lane: `M1 Contract Freeze`"
+  }
+]
