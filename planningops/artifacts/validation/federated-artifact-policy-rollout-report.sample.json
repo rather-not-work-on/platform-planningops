@@ -1,0 +1,29 @@
+{
+  "generated_at_utc": "2026-03-28T14:11:52.148927+00:00",
+  "workspace_root": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.dmGkoQZjXw/ws",
+  "contract_ref": "planningops/contracts/federated-artifact-storage-contract.md",
+  "repo_results": [
+    {
+      "repo": "platform-provider-gateway",
+      "required_errors": [],
+      "forbidden_refs": [],
+      "forbidden_paths": [],
+      "verdict": "pass"
+    },
+    {
+      "repo": "platform-observability-gateway",
+      "required_errors": [],
+      "forbidden_refs": [],
+      "forbidden_paths": [],
+      "verdict": "pass"
+    },
+    {
+      "repo": "monday",
+      "required_errors": [],
+      "forbidden_refs": [],
+      "forbidden_paths": [],
+      "verdict": "pass"
+    }
+  ],
+  "verdict": "pass"
+}
