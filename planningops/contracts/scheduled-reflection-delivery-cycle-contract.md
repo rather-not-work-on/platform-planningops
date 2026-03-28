@@ -17,8 +17,10 @@ This contract exists so:
 - scheduler-native selection contract: `planningops/contracts/scheduler-native-worker-outcome-selection-contract.md`
 - scheduled worker-outcome handoff contract: `planningops/contracts/scheduled-worker-outcome-handoff-contract.md`
 - monday reflection exporter: `monday/scripts/export_worker_outcome_reflection_packet.py`
+- shared control-plane plumbing: `planningops/scripts/federation/reflection_cycle_common.py`
 - planningops reflection-cycle runner: `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
 - planningops delivery-cycle runner: `planningops/scripts/federation/run_reflection_delivery_cycle.py`
+- planningops goal-completion bridge runner: `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py`
 - planningops scheduled-cycle runner: `planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py`
 - scheduler boundary contract: `planningops/contracts/autonomous-scheduler-queue-control-plane-contract.md`
 - reflection boundary contract: `planningops/contracts/reflection-cycle-orchestration-contract.md`
@@ -32,7 +34,7 @@ The cycle includes:
 2. invoking one monday scheduled queue cycle against monday-owned queue-store state
 3. loading one monday worker outcome artifact from that scheduled run
 4. running the planningops-owned reflection cycle over that worker outcome
-5. running the planningops-owned delivery cycle over the emitted reflection action artifact
+5. running the planningops-owned delivery cycle over the emitted reflection action artifact, or the goal-completion bridge when the emitted action is terminal `goal_completed`
 6. writing one planningops-owned aggregate scheduled cycle report
 
 The cycle does not include:
@@ -67,6 +69,10 @@ Input rules:
 - the runner must invoke `monday/scripts/admit_scheduled_queue_packet.py` before `monday/scripts/run_scheduled_queue_cycle.py`
 - the runner must invoke `monday/scripts/run_scheduled_queue_cycle.py` instead of recreating queue dequeue logic in `planningops`
 - when `--goal-key` is supplied, it must be forwarded consistently through the scheduled run, reflection cycle, and delivery cycle
+- before queue admission starts, the runner must resolve one deterministic goal context from `--goal-key` or the active-goal registry
+- when `--goal-key` is omitted, the runner must fail before queue admission if the active-goal registry has no active goal
+- the queue seed `goal_key` must match the resolved goal context before queue admission starts
+- once goal context is resolved, the runner must forward that resolved goal key to the reflection cycle even when the caller omitted `--goal-key`
 - `planningops` may forward operator-channel hints such as `delivery-target`, `channel-kind`, and `thread-ref`, but must not derive concrete transport recipients on its own
 - `planningops` may pass only a monday-owned worker outcome root hint and must not supply a canonical worker outcome file path for the primary path
 - the primary path must resolve the worker outcome through monday scheduler-native selection and monday-emitted handoff evidence rather than a control-plane-owned worker-outcome file path
@@ -129,6 +135,7 @@ Each stage report must include:
 - the runner must derive `worker_outcome_ref` from the resolved handoff artifact instead of reconstructing worker outcome paths inline
 - the runner must call the planningops reflection-cycle runner instead of re-implementing reflection export, evaluation, or action mapping inline
 - the runner must call the planningops delivery-cycle runner instead of re-implementing monday delivery invocation inline
+- goal-completed actions must flow through `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py` instead of `planningops/scripts/federation/run_reflection_delivery_cycle.py`
 - the runner must preserve `goal_transition_report_path` from the reflection action artifact through the delivery cycle and aggregate report
 - `delivery_required = false` must still produce a successful aggregate report with `delivery_skipped = true`
 - identical `dry-run` inputs must produce the same stage structure and verdicts apart from timestamps
@@ -159,6 +166,7 @@ Each stage report must include:
 ## Failure Rules
 - missing monday scheduled entrypoint or missing scheduled evidence must fail the cycle
 - missing monday admission entrypoint or missing queue admission evidence must fail the cycle
+- unresolved goal context must fail the cycle before queue admission starts
 - the runner must fail if monday scheduled queue evidence does not resolve exactly one worker outcome artifact for the current cycle
 - reflection-cycle failure must fail the aggregate cycle before delivery starts
 - delivery-cycle failure must fail the aggregate cycle even if scheduled and reflection stages passed
@@ -173,5 +181,8 @@ Each stage report must include:
 - `monday/scripts/admit_scheduled_queue_packet.py`
 - `monday/scripts/run_scheduled_queue_cycle.py`
 - `planningops/scripts/federation/run_worker_outcome_reflection_cycle.py`
+- `planningops/scripts/federation/reflection_cycle_common.py`
 - `planningops/scripts/federation/run_reflection_delivery_cycle.py`
+- `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py`
 - `planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py`
+- `planningops/scripts/test_scheduled_reflection_delivery_cycle.sh`
