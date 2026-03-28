@@ -4,52 +4,13 @@ set -euo pipefail
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
-cat > "$tmp_dir/policy.json" <<'JSON'
-{
-  "owner": "rather-not-work-on",
-  "default_branch": "main",
-  "defaults": {
-    "require_approving_reviews": true,
-    "min_approving_review_count": 1,
-    "require_conversation_resolution": true,
-    "require_status_checks": true,
-    "require_strict_status_checks": true,
-    "allow_force_pushes": false,
-    "allow_deletions": false,
-    "enforce_admins": false
-  },
-  "repos": [
-    {
-      "name": "platform-planningops",
-      "required_status_checks_all": [
-        "template-and-link-check",
-        "validate-and-dry-run",
-        "federated-summary"
-      ]
-    },
-    {
-      "name": "platform-provider-gateway",
-      "required_status_checks_all": [
-        "template-and-link-check",
-        "provider-local-ci"
-      ]
-    }
-  ]
-}
-JSON
-
-cat > "$tmp_dir/snapshot.json" <<'JSON'
-{
-  "repositories": [
-    {"name": "platform-planningops", "default_branch": "main"},
-    {"name": "platform-provider-gateway", "default_branch": "main"}
-  ]
-}
-JSON
+policy="planningops/fixtures/repository-governance-apply-policy.sample.json"
+policy_invalid="planningops/fixtures/repository-governance-apply-policy-invalid.sample.json"
+snapshot="planningops/fixtures/branch-protection-apply-snapshot.sample.json"
 
 python3 planningops/scripts/apply_branch_protection.py \
-  --policy "$tmp_dir/policy.json" \
-  --snapshot-file "$tmp_dir/snapshot.json" \
+  --policy "$policy" \
+  --snapshot-file "$snapshot" \
   --output "$tmp_dir/branch-protection-apply.test.json" \
   --strict
 
@@ -81,33 +42,10 @@ assert payload["allow_deletions"] is False, payload
 assert payload["required_conversation_resolution"] is True, payload
 PY
 
-cat > "$tmp_dir/policy-invalid.json" <<'JSON'
-{
-  "owner": "rather-not-work-on",
-  "default_branch": "main",
-  "defaults": {
-    "require_approving_reviews": true,
-    "min_approving_review_count": 1,
-    "require_conversation_resolution": true,
-    "require_status_checks": true,
-    "require_strict_status_checks": true,
-    "allow_force_pushes": false,
-    "allow_deletions": false,
-    "enforce_admins": false
-  },
-  "repos": [
-    {
-      "name": "platform-planningops",
-      "required_status_checks_any": ["template-and-link-check", "federated-summary"]
-    }
-  ]
-}
-JSON
-
 set +e
 python3 planningops/scripts/apply_branch_protection.py \
-  --policy "$tmp_dir/policy-invalid.json" \
-  --snapshot-file "$tmp_dir/snapshot.json" \
+  --policy "$policy_invalid" \
+  --snapshot-file "$snapshot" \
   --output "$tmp_dir/branch-protection-apply-invalid.test.json" \
   --strict
 rc=$?

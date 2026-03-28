@@ -19,6 +19,8 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `supervisor-loop-sequence-sample.json`: deterministic loop-result sequence for supervisor contract tests
 - `repository-governance-policy.sample.json`: fixture-backed repository governance policy for branch protection audit tests
 - `branch-protection-snapshot-*.sample.json`: valid and invalid branch protection snapshots for repository governance audit tests
+- `repository-governance-apply-policy*.sample.json`: valid and invalid repository governance policies for branch protection apply tests
+- `branch-protection-apply-snapshot.sample.json`: minimal apply snapshot for branch protection apply tests
 
 ## Change Rules
 - Fixtures must be static and deterministic.
