@@ -1,0 +1,47 @@
+{
+  "repositories": [
+    {
+      "name": "platform-planningops",
+      "default_branch": "main",
+      "rules": [
+        {
+          "pattern": "main",
+          "requiresApprovingReviews": true,
+          "requiredApprovingReviewCount": 1,
+          "requiresStatusChecks": true,
+          "requiredStatusCheckContexts": [
+            "template-and-link-check",
+            "validate-and-dry-run",
+            "federated-summary"
+          ],
+          "requiresStrictStatusChecks": true,
+          "requiresConversationResolution": true,
+          "allowsForcePushes": false,
+          "allowsDeletions": false,
+          "isAdminEnforced": false
+        }
+      ]
+    },
+    {
+      "name": "monday",
+      "default_branch": "main",
+      "rules": [
+        {
+          "pattern": "main",
+          "requiresApprovingReviews": true,
+          "requiredApprovingReviewCount": 1,
+          "requiresStatusChecks": true,
+          "requiredStatusCheckContexts": [
+            "template-and-link-check",
+            "monday-local-ci"
+          ],
+          "requiresStrictStatusChecks": true,
+          "requiresConversationResolution": true,
+          "allowsForcePushes": false,
+          "allowsDeletions": false,
+          "isAdminEnforced": false
+        }
+      ]
+    }
+  ]
+}
