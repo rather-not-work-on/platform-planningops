@@ -36,9 +36,9 @@ PY
 for scenario in completed retry-wait dead-letter; do
   SCENARIO_DIR="$TMP_DIR/$scenario"
   mkdir -p "$SCENARIO_DIR"
-  python3 planningops/scripts/run_worker_outcome_reflection_cycle.py \
-    --workspace-root .. \
-    --outcome-json "monday/fixtures/runtime-queue-worker-outcome.${scenario}.sample.json" \
+python3 planningops/scripts/run_worker_outcome_reflection_cycle.py \
+  --workspace-root .. \
+  --outcome-json "monday/fixtures/runtime-queue-worker-outcome.${scenario}.sample.json" \
     --active-goal-registry "$TMP_DIR/registry.json" \
     --goal-key uap-goal-driven-autonomy-wave6 \
     --run-id "test-reflection-cycle-${scenario}" \
@@ -48,7 +48,41 @@ for scenario in completed retry-wait dead-letter; do
     --output "$SCENARIO_DIR/report.json" >/dev/null
 done
 
-python3 - "$TMP_DIR/completed/report.json" "$TMP_DIR/completed/action.json" "$TMP_DIR/retry-wait/report.json" "$TMP_DIR/retry-wait/action.json" "$TMP_DIR/dead-letter/report.json" "$TMP_DIR/dead-letter/action.json" <<'PY'
+python3 planningops/scripts/run_worker_outcome_reflection_cycle.py \
+  --workspace-root .. \
+  --outcome-json "monday/fixtures/runtime-queue-worker-outcome.completed.sample.json" \
+  --active-goal-registry "$TMP_DIR/registry.json" \
+  --run-id "test-reflection-cycle-inferred-goal" \
+  --packet-output "$TMP_DIR/inferred-goal-packet.json" \
+  --evaluation-output "$TMP_DIR/inferred-goal-evaluation.json" \
+  --action-output "$TMP_DIR/inferred-goal-action.json" \
+  --output "$TMP_DIR/inferred-goal-report.json" >/dev/null
+
+python3 - "$TMP_DIR/no-active-registry.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+source = Path("planningops/config/active-goal-registry.json")
+doc = json.loads(source.read_text(encoding="utf-8"))
+doc["active_goal_key"] = ""
+for goal in doc["goals"]:
+    if goal.get("status") == "active":
+        goal["status"] = "achieved"
+Path(sys.argv[1]).write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+PY
+
+python3 planningops/scripts/run_worker_outcome_reflection_cycle.py \
+  --workspace-root .. \
+  --outcome-json "monday/fixtures/runtime-queue-worker-outcome.completed.sample.json" \
+  --active-goal-registry "$TMP_DIR/no-active-registry.json" \
+  --run-id "test-reflection-cycle-no-active-goal" \
+  --packet-output "$TMP_DIR/no-active-packet.json" \
+  --evaluation-output "$TMP_DIR/no-active-evaluation.json" \
+  --action-output "$TMP_DIR/no-active-action.json" \
+  --output "$TMP_DIR/no-active-report.json" >/dev/null 2>&1 || true
+
+python3 - "$TMP_DIR/completed/report.json" "$TMP_DIR/completed/action.json" "$TMP_DIR/retry-wait/report.json" "$TMP_DIR/retry-wait/action.json" "$TMP_DIR/dead-letter/report.json" "$TMP_DIR/dead-letter/action.json" "$TMP_DIR/no-active-report.json" "$TMP_DIR/inferred-goal-report.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -59,6 +93,8 @@ retry_report = json.loads(Path(sys.argv[3]).read_text())
 retry_action = json.loads(Path(sys.argv[4]).read_text())
 dead_letter_report = json.loads(Path(sys.argv[5]).read_text())
 dead_letter_action = json.loads(Path(sys.argv[6]).read_text())
+no_active_report = json.loads(Path(sys.argv[7]).read_text())
+inferred_goal_report = json.loads(Path(sys.argv[8]).read_text())
 
 for report in [completed_report, retry_report, dead_letter_report]:
     assert report["verdict"] == "pass", report
@@ -89,6 +125,18 @@ assert dead_letter_report["action_kind"] == "trigger_replan_review", dead_letter
 assert dead_letter_report["delivery_required"] is True, dead_letter_report
 assert dead_letter_report["goal_transition_required"] is False, dead_letter_report
 assert dead_letter_action["operator_channel_kind"] == "slack_skill_cli", dead_letter_action
+
+assert inferred_goal_report["verdict"] == "pass", inferred_goal_report
+assert inferred_goal_report["goal_key"] == "uap-goal-driven-autonomy-wave6", inferred_goal_report
+assert "--goal-key" in inferred_goal_report["stage_reports"][1]["command"], inferred_goal_report
+assert "uap-goal-driven-autonomy-wave6" in inferred_goal_report["stage_reports"][1]["command"], inferred_goal_report
+assert "--goal-key" in inferred_goal_report["stage_reports"][2]["command"], inferred_goal_report
+assert "uap-goal-driven-autonomy-wave6" in inferred_goal_report["stage_reports"][2]["command"], inferred_goal_report
+
+assert no_active_report["verdict"] == "fail", no_active_report
+assert no_active_report["failure_stage"] == "resolve_goal_context", no_active_report
+assert no_active_report["stage_reports"] == [], no_active_report
+assert no_active_report["errors"] == ["no active goal configured"], no_active_report
 
 print("worker outcome reflection cycle test passed")
 PY
