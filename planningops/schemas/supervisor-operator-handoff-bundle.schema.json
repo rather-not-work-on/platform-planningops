@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops-supervisor-operator-handoff-bundle",
+  "title": "Planningops Supervisor Operator Handoff Bundle",
+  "type": "object",
+  "required": [
+    "generated_at_utc",
+    "artifact_file",
+    "operator_handoff_validation_path",
+    "operator_handoff_bundle_path",
+    "operator_handoff_bundle_validation_path",
+    "operator_handoff_bundle_readiness_path",
+    "operator_handoff_bundle_readiness_validation_path",
+    "priority_preview_ref",
+    "priority_display_packet_ref",
+    "operator_handoff_validation",
+    "priority_preview",
+    "priority_display_packet"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifact_file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_validation_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_bundle_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_bundle_validation_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_bundle_readiness_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_bundle_readiness_validation_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority_preview_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority_display_packet_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resolved_bundle_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_validation": {
+      "type": "object",
+      "required": [
+        "generated_at_utc",
+        "operator_report_path",
+        "inbox_payload_path",
+        "operator_report_schema_path",
+        "inbox_payload_schema_path",
+        "error_count",
+        "warning_count",
+        "errors",
+        "warnings",
+        "verdict"
+      ],
+      "properties": {
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "operator_report_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inbox_payload_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_report_schema_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inbox_payload_schema_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        }
+      }
+    },
+    "priority_preview": {
+      "type": "object",
+      "required": [
+        "generated_at_utc",
+        "source_artifact_ref",
+        "source_artifact_kind",
+        "source_priority_path",
+        "preview_state",
+        "priority_cta_command",
+        "priority_summary_markdown"
+      ],
+      "properties": {
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_artifact_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_priority_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preview_state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_validation_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_validation_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_readiness_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_readiness_validation_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_headline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_cta_command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_summary_markdown": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "priority_display_packet": {
+      "type": "object",
+      "required": [
+        "generated_at_utc",
+        "input_kind",
+        "input_ref",
+        "source_artifact_ref",
+        "priority_preview_ref",
+        "preview_source_artifact_kind",
+        "priority_headline",
+        "priority_cta_command",
+        "priority_summary_markdown",
+        "display_title",
+        "cta_command",
+        "display_markdown"
+      ],
+      "properties": {
+        "generated_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "input_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_artifact_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_preview_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preview_source_artifact_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_validation_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_validation_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_readiness_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operator_handoff_bundle_readiness_validation_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_headline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_cta_command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_summary_markdown": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cta_command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_markdown": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
