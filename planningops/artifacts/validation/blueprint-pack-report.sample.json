@@ -1,0 +1,21 @@
+{
+  "docs_checked": 1,
+  "violation_count": 0,
+  "required_sections": [
+    "Interface Contract Refs",
+    "Target Package Topology",
+    "Dependency Manifest",
+    "File Plan",
+    "Verification Plan",
+    "Module README Deltas"
+  ],
+  "rows": [
+    {
+      "path": "planningops/fixtures/blueprint-pack-valid.sample.md",
+      "exists": true,
+      "missing_sections": [],
+      "verdict": "pass"
+    }
+  ],
+  "verdict": "pass"
+}

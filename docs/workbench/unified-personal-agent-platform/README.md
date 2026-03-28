@@ -151,6 +151,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Project Field Schema Sample Artifact Lane Packet](./plans/2026-03-28-project-field-schema-sample-artifact-lane-packet.md)
 - [Worker Task Pack Sample Artifact Lane Packet](./plans/2026-03-28-worker-task-pack-sample-artifact-lane-packet.md)
 - [Runtime Profiles Sample Artifact Lane Packet](./plans/2026-03-28-runtime-profiles-sample-artifact-lane-packet.md)
+- [Blueprint Pack Sample Artifact Lane Packet](./plans/2026-03-28-blueprint-pack-sample-artifact-lane-packet.md)
 - [Branch Protection Audit Artifact Lanes Packet](./plans/2026-03-28-branch-protection-audit-artifact-lanes-packet.md)
 - [Branch Protection Apply Artifact Lanes Packet](./plans/2026-03-28-branch-protection-apply-artifact-lanes-packet.md)
 - [Artifact Storage Policy Validation Artifact Lanes Packet](./plans/2026-03-28-artifact-storage-policy-validation-artifact-lanes-packet.md)
