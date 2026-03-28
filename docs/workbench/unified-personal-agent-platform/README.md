@@ -146,6 +146,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Active Goal Registry Artifact Refresh Packet](./plans/2026-03-28-active-goal-registry-artifact-refresh-packet.md)
 - [Issue Quality Artifact Refresh Packet](./plans/2026-03-28-issue-quality-artifact-refresh-packet.md)
 - [Validation Sample Artifact Lanes Packet](./plans/2026-03-28-validation-sample-artifact-lanes-packet.md)
+- [Governance Validation Artifact Lanes Packet](./plans/2026-03-28-governance-validation-artifact-lanes-packet.md)
 - [Project Field Schema Artifact Refresh Packet](./plans/2026-03-28-project-field-schema-artifact-refresh-packet.md)
 - [Plan Projection Artifact Refresh Packet](./plans/2026-03-28-plan-projection-artifact-refresh-packet.md)
 - [Plan Compile Artifact Refresh Packet](./plans/2026-03-28-plan-compile-artifact-refresh-packet.md)

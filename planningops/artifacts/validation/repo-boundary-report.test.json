@@ -1,0 +1,18 @@
+{
+  "generated_at_utc": "2026-03-28T07:02:33.595881+00:00",
+  "config_path": "planningops/config/repository-boundary-map.json",
+  "verdict": "pass",
+  "violation_count": 0,
+  "violations": [],
+  "info_count": 1,
+  "infos": [
+    {
+      "type": "CHECK_SUMMARY",
+      "scripts_root_file_count": 217,
+      "core_entrypoint_count": 3,
+      "federation_entrypoint_count": 13,
+      "root_wrapper_count": 12,
+      "metadata_ignored_count": 444
+    }
+  ]
+}

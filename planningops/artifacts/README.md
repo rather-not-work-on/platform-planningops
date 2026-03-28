@@ -19,6 +19,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - `program/`: canonical program-manifest outputs, including fixture-backed `.sample.json` lanes
 - `validation/`: gate/schema reports, including fixture-backed `.sample.json` lanes that stay separate from live latest artifacts
   - canonical sample validation lanes currently include `plan-compile-report.sample.json` and `issue-quality-*.sample.json`
+  - canonical governance validator lanes also include `repo-boundary-report.test.json`, `script-role-report.test.json`, and `artifact-storage-policy-valid.test.json`
 - `adapter-hooks/`, `verification/`, `drift/`, `transition-log/`, `pilot/`, `idempotency/`: supporting evidence
 
 ## Change Rules
