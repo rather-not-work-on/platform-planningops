@@ -152,6 +152,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Artifact Storage Policy Validation Artifact Lanes Packet](./plans/2026-03-28-artifact-storage-policy-validation-artifact-lanes-packet.md)
 - [External Only Commit Guard Artifact Lanes Packet](./plans/2026-03-28-external-only-commit-guard-artifact-lanes-packet.md)
 - [External Only Artifact Migration Lanes Packet](./plans/2026-03-28-external-only-artifact-migration-lanes-packet.md)
+- [Artifact Sink E2E Lane Packet](./plans/2026-03-28-artifact-sink-e2e-lane-packet.md)
 - [Governance Validation Artifact Lanes Packet](./plans/2026-03-28-governance-validation-artifact-lanes-packet.md)
 - [Project Field Schema Artifact Refresh Packet](./plans/2026-03-28-project-field-schema-artifact-refresh-packet.md)
 - [Plan Projection Artifact Refresh Packet](./plans/2026-03-28-plan-projection-artifact-refresh-packet.md)
