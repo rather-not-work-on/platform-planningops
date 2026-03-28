@@ -41,6 +41,11 @@ def run(cmd: list[str]) -> tuple[int, str, str]:
     return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
 
 
+def run_in_repo(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
+    cp = subprocess.run(cmd, capture_output=True, text=True, cwd=str(cwd))
+    return cp.returncode, cp.stdout.strip(), cp.stderr.strip()
+
+
 def issue_state(repo: str, number: int) -> dict:
     rc, out, err = run(["gh", "issue", "view", str(number), "--repo", repo, "--json", "number,state,title,url"])
     if rc != 0:
@@ -83,6 +88,34 @@ def substring_check(path: Path, markers: list[str]) -> dict:
     }
 
 
+def command_check(repo_dir: Path, row: dict) -> dict:
+    command = [str(part) for part in row.get("command") or []]
+    if not command:
+        return {
+            "name": str(row.get("name") or ""),
+            "cwd": str(repo_dir),
+            "command": command,
+            "expected_exit_code": 0,
+            "actual_exit_code": None,
+            "stdout_tail": "",
+            "stderr_tail": "missing command",
+            "verdict": "fail",
+        }
+
+    expected_exit_code = int(row.get("expected_exit_code", 0))
+    rc, out, err = run_in_repo(command, repo_dir)
+    return {
+        "name": str(row.get("name") or ""),
+        "cwd": str(repo_dir),
+        "command": command,
+        "expected_exit_code": expected_exit_code,
+        "actual_exit_code": rc,
+        "stdout_tail": out[-1000:],
+        "stderr_tail": err[-1000:],
+        "verdict": "pass" if rc == expected_exit_code else "fail",
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Review cross-repo interface adoption against a wave spec")
     parser.add_argument("--spec", required=True, help="Spec JSON describing required closed issues and file markers")
@@ -114,9 +147,17 @@ def main() -> int:
         file_report["repo"] = str(row.get("repo") or "")
         file_checks.append(file_report)
 
+    command_checks = []
+    for row in spec.get("command_checks") or []:
+        repo_dir = workspace_root / str(row.get("repo_dir") or "")
+        command_report = command_check(repo_dir, row)
+        command_report["repo"] = str(row.get("repo") or "")
+        command_checks.append(command_report)
+
     failures = [row for row in issue_checks if row["verdict"] != "pass"]
     failures.extend(row for row in gap_checks if row["verdict"] != "pass")
     failures.extend(row for row in file_checks if row["verdict"] != "pass")
+    failures.extend(row for row in command_checks if row["verdict"] != "pass")
 
     report = {
         "generated_at_utc": now_utc(),
@@ -126,7 +167,8 @@ def main() -> int:
         "issue_checks": issue_checks,
         "gap_checks": gap_checks,
         "file_checks": file_checks,
-        "check_count": len(issue_checks) + len(gap_checks) + len(file_checks),
+        "command_checks": command_checks,
+        "check_count": len(issue_checks) + len(gap_checks) + len(file_checks) + len(command_checks),
         "failure_count": len(failures),
         "verdict": "pass" if not failures else "fail",
     }
