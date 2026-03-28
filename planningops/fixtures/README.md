@@ -21,6 +21,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `branch-protection-snapshot-*.sample.json`: valid and invalid branch protection snapshots for repository governance audit tests
 - `repository-governance-apply-policy*.sample.json`: valid and invalid repository governance policies for branch protection apply tests
 - `branch-protection-apply-snapshot.sample.json`: minimal apply snapshot for branch protection apply tests
+- `artifact-storage-policy-invalid.sample.json`: invalid artifact storage policy fixture for validator contract and artifact-lane tests
 
 ## Change Rules
 - Fixtures must be static and deterministic.
