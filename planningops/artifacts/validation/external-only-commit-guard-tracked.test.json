@@ -1,0 +1,18 @@
+{
+  "generated_at_utc": "2026-03-28T13:45:01.251436+00:00",
+  "policy_path": "policy.json",
+  "mode": "tracked",
+  "base_ref": null,
+  "head_ref": "HEAD",
+  "changed_file_count": 4,
+  "candidate_file_count": 3,
+  "metadata_file_count": 1,
+  "metadata_files": [
+    "planningops/artifacts/loops/demo/._run.json"
+  ],
+  "violation_count": 1,
+  "violations": [
+    "planningops/artifacts/loops/demo/run.json"
+  ],
+  "verdict": "fail"
+}

@@ -1,0 +1,2 @@
+planningops/artifacts/loops/2026-03-06/loop-001/verification-report.json
+planningops/artifacts/transition-log/2026-03-06.ndjson

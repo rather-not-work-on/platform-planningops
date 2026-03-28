@@ -1,0 +1,2 @@
+planningops/artifacts/validation/report.json
+planningops/contracts/issue-quality-contract.md
