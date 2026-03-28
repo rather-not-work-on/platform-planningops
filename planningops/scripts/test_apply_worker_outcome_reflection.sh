@@ -84,7 +84,37 @@ python3 planningops/scripts/core/goals/apply_worker_outcome_reflection.py \
   --mode apply \
   --output "$TMP_DIR/completed-action-apply.json" >/dev/null
 
-python3 - "$TMP_DIR/completed-action-dry.json" "$TMP_DIR/retry-action.json" "$TMP_DIR/dead-letter-action.json" "$TMP_DIR/goal-mismatch-action.json" "$TMP_DIR/completed-action-apply.json" "$TMP_DIR/registry-wave7-active-apply.json" <<'PY'
+python3 - "$TMP_DIR/registry-no-active.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+source = Path("planningops/config/active-goal-registry.json")
+doc = json.loads(source.read_text(encoding="utf-8"))
+doc["active_goal_key"] = ""
+for goal in doc["goals"]:
+    if goal.get("status") == "active":
+        goal["status"] = "achieved"
+Path(sys.argv[1]).write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+PY
+
+if python3 planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py \
+  --packet-json planningops/fixtures/worker-outcome-reflection-packet.completed.sample.json \
+  --active-goal-registry "$TMP_DIR/registry-no-active.json" \
+  --output "$TMP_DIR/no-active-eval.json" >/dev/null 2>&1; then
+  echo "expected no-active reflection evaluation to fail"
+  exit 1
+fi
+
+if python3 planningops/scripts/core/goals/apply_worker_outcome_reflection.py \
+  --evaluation-json "$TMP_DIR/completed-eval.json" \
+  --active-goal-registry "$TMP_DIR/registry-no-active.json" \
+  --output "$TMP_DIR/no-active-action.json" >/dev/null 2>&1; then
+  echo "expected no-active reflection action application to fail"
+  exit 1
+fi
+
+python3 - "$TMP_DIR/completed-action-dry.json" "$TMP_DIR/retry-action.json" "$TMP_DIR/dead-letter-action.json" "$TMP_DIR/goal-mismatch-action.json" "$TMP_DIR/completed-action-apply.json" "$TMP_DIR/registry-wave7-active-apply.json" "$TMP_DIR/no-active-eval.json" "$TMP_DIR/no-active-action.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -95,6 +125,8 @@ dead_letter = json.loads(Path(sys.argv[3]).read_text())
 goal_mismatch = json.loads(Path(sys.argv[4]).read_text())
 completed_apply = json.loads(Path(sys.argv[5]).read_text())
 apply_registry = json.loads(Path(sys.argv[6]).read_text())
+no_active_eval = json.loads(Path(sys.argv[7]).read_text())
+no_active_action = json.loads(Path(sys.argv[8]).read_text())
 
 assert completed_dry["verdict"] == "pass", completed_dry
 assert completed_dry["action_kind"] == "prepare_goal_completion", completed_dry
@@ -132,6 +164,12 @@ assert transition["verdict"] == "pass", transition
 assert apply_registry["active_goal_key"] == "", apply_registry
 wave7 = next(goal for goal in apply_registry["goals"] if goal["goal_key"] == "uap-goal-driven-autonomy-wave7")
 assert wave7["status"] == "achieved", wave7
+
+assert no_active_eval["verdict"] == "fail", no_active_eval
+assert no_active_eval["errors"] == ["no active goal configured"], no_active_eval
+
+assert no_active_action["verdict"] == "fail", no_active_action
+assert no_active_action["errors"] == ["no active goal configured"], no_active_action
 
 print("apply worker outcome reflection test passed")
 PY

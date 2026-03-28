@@ -126,6 +126,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Worker Outcome Reflection Goal Context Packet](./plans/2026-03-28-worker-outcome-reflection-goal-context-packet.md)
 - [Scheduled Reflection Goal Context Packet](./plans/2026-03-28-scheduled-reflection-goal-context-packet.md)
 - [Reflection Delivery Queue Admission Packet](./plans/2026-03-28-reflection-delivery-queue-admission-packet.md)
+- [Reflection Action No Active Goal Packet](./plans/2026-03-28-reflection-action-no-active-goal-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
