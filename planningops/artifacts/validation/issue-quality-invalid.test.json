@@ -1,0 +1,35 @@
+{
+  "generated_at_utc": "2026-03-28T07:04:11.035293+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_scanned": 1,
+  "issues_in_scope": 1,
+  "violation_count": 1,
+  "violations": [
+    {
+      "number": 1002,
+      "title": "Invalid quality issue",
+      "url": "https://example.local/1002",
+      "labels": [],
+      "violation_count": 15,
+      "violations": [
+        "missing section: Problem Statement",
+        "missing section: Interfaces & Dependencies",
+        "missing section: Definition of Done",
+        "missing metadata key: target_repo",
+        "missing metadata key: component",
+        "missing metadata key: workflow_state",
+        "missing metadata key: loop_profile",
+        "missing metadata key: execution_order",
+        "missing metadata key: depends_on",
+        "acceptance checklist items < 2 (actual=1)",
+        "forbidden evidence marker present: - (none)",
+        "missing required label: task",
+        "missing priority label; require one of ['p1', 'p2', 'p3']",
+        "missing required label prefix: area/*",
+        "missing required label prefix: type/*"
+      ]
+    }
+  ],
+  "verdict": "fail"
+}
