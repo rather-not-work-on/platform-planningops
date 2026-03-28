@@ -118,6 +118,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Reflection Goal-Completion Runner Common Backfill Packet](./plans/2026-03-28-reflection-goal-completion-runner-common-backfill-packet.md)
 - [Scheduled Reflection Delivery Regression Hardening Packet](./plans/2026-03-28-scheduled-reflection-delivery-regression-hardening-packet.md)
 - [Federated Tooling Contract Test Family Backfill Packet](./plans/2026-03-28-federated-tooling-contract-test-family-backfill-packet.md)
+- [Inventory Issue Lifecycle Snapshot Test Backfill Packet](./plans/2026-03-28-inventory-issue-lifecycle-snapshot-test-backfill-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
