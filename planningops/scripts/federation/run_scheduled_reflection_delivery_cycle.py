@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -12,12 +11,35 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
+SCRIPTS_DIR = SCRIPT_DIR.parent
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+CORE_GOALS_DIR = SCRIPT_DIR.parent / "core" / "goals"
+if str(CORE_GOALS_DIR) not in sys.path:
+    sys.path.insert(0, str(CORE_GOALS_DIR))
 
 from federated_python_env import (  # noqa: E402
     build_bootstrap_plan,
     build_managed_env,
     ensure_bootstrap_environment,
     resolve_bootstrap_root,
+)
+from reflection_cycle_common import (  # noqa: E402
+    build_stage_report,
+    derive_single_queue_value,
+    load_json,
+    normalize_cross_repo_path,
+    normalize_repo_path,
+    now_utc,
+    require_string,
+    resolve_component_repo,
+    resolve_goal_context,
+    resolve_input_path,
+    resolve_output_path,
+    resolve_repo_root,
+    resolve_workspace_root,
+    run_cmd,
+    write_report,
 )
 
 
@@ -28,125 +50,7 @@ MONDAY_ADMISSION_ENTRYPOINT = "monday/scripts/admit_scheduled_queue_packet.py"
 MONDAY_SCHEDULED_ENTRYPOINT = "monday/scripts/run_scheduled_queue_cycle.py"
 REFLECTION_RUNNER = "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py"
 DELIVERY_RUNNER = "planningops/scripts/federation/run_reflection_delivery_cycle.py"
-
-
-def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def resolve_repo_root() -> Path:
-    current = Path(__file__).resolve()
-    for candidate in [current] + list(current.parents):
-        if (candidate / ".git").exists():
-            return candidate
-    return Path(__file__).resolve().parents[4]
-
-
-def resolve_workspace_root(planningops_repo: Path, raw_workspace_root: str) -> Path:
-    candidates = [
-        (planningops_repo / raw_workspace_root).resolve(),
-        planningops_repo,
-        planningops_repo.parent,
-    ]
-    for candidate in candidates:
-        if (candidate / "monday").exists():
-            return candidate
-    return (planningops_repo / raw_workspace_root).resolve()
-
-
-def resolve_component_repo(workspace_root: Path, repo_dir: str) -> Path:
-    path = Path(repo_dir)
-    if path.is_absolute():
-        return path
-    return (workspace_root / path).resolve()
-
-
-def resolve_input_path(planningops_repo: Path, workspace_root: Path, monday_repo: Path, raw_path: str) -> Path:
-    path = Path(raw_path)
-    candidates: list[Path] = []
-    if path.is_absolute():
-        candidates.append(path)
-    else:
-        candidates.extend(
-            [
-                (planningops_repo / path).resolve(),
-                (workspace_root / path).resolve(),
-                (monday_repo / path).resolve(),
-                path.resolve(),
-            ]
-        )
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"input not found: {raw_path}")
-
-
-def resolve_output_path(planningops_repo: Path, raw_path: str | None, default_path: Path) -> Path:
-    if raw_path is None:
-        return default_path
-    path = Path(raw_path)
-    if path.is_absolute():
-        return path
-    return (planningops_repo / path).resolve()
-
-
-def normalize_repo_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root.resolve()))
-    except ValueError:
-        return str(path.resolve())
-
-
-def normalize_cross_repo_path(planningops_repo: Path, monday_repo: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(planningops_repo.resolve()))
-    except ValueError:
-        try:
-            return str(path.resolve().relative_to(monday_repo.resolve()))
-        except ValueError:
-            return str(path.resolve())
-
-
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def require_string(doc: dict, key: str) -> str:
-    value = doc.get(key)
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{key} must be a non-empty string")
-    return value.strip()
-
-
-def write_report(path: Path, payload: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
-
-
-def derive_single_queue_value(queue_doc: dict, key: str) -> str:
-    values = {str(item.get(key) or "").strip() for item in queue_doc.get("queue_items", []) if str(item.get(key) or "").strip()}
-    if len(values) != 1:
-        raise ValueError(f"queue seed must provide exactly one {key}; got {sorted(values)}")
-    return next(iter(values))
-
-
-def run_cmd(command: list[str], cwd: Path, env: dict[str, str]) -> tuple[int, str, str]:
-    completed = subprocess.run(command, cwd=str(cwd), capture_output=True, text=True, env=env)
-    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
-
-
-def build_stage_report(stage: str, command: list[str], cwd: Path, rc: int, out: str, err: str, artifact_path: Path) -> dict:
-    return {
-        "stage": stage,
-        "command": command,
-        "cwd": str(cwd),
-        "exit_code": rc,
-        "stdout_tail": out[-1000:],
-        "stderr_tail": err[-1000:],
-        "artifact_path": str(artifact_path),
-        "artifact_exists": artifact_path.exists(),
-        "verdict": "pass" if rc == 0 else "fail",
-    }
+GOAL_COMPLETION_HANDOFF_RUNNER = "planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py"
 
 
 def parse_args():
@@ -156,6 +60,11 @@ def parse_args():
     parser.add_argument("--workspace-root", default="..", help="Workspace root containing sibling repositories")
     parser.add_argument("--monday-repo-dir", default="monday", help="monday repo directory relative to workspace root")
     parser.add_argument("--monday-python", default=None, help="Optional Python interpreter override for monday leaf scripts")
+    parser.add_argument(
+        "--monday-profiles-config",
+        default=None,
+        help="Optional monday local operator profile config override passed through to monday delivery CLIs",
+    )
     parser.add_argument(
         "--monday-admission-script",
         default="scripts/admit_scheduled_queue_packet.py",
@@ -173,6 +82,7 @@ def parse_args():
         help="monday-owned worker outcome root used for scheduler-native selection",
     )
     parser.add_argument("--active-goal-registry", default="planningops/config/active-goal-registry.json")
+    parser.add_argument("--schedule-key", default=None)
     parser.add_argument("--queue-db", default=None)
     parser.add_argument("--idempotency", default=None)
     parser.add_argument("--transition-log", default=None)
@@ -208,6 +118,15 @@ def parse_args():
         help="Managed virtualenv root used when bootstrap is required",
     )
     return parser.parse_args()
+
+
+def requires_goal_completion_handoff(reflection_report: dict) -> bool:
+    message_class_hint = str(reflection_report.get("message_class_hint") or "").strip()
+    return (
+        str(reflection_report.get("reflection_decision") or "").strip() == "goal_achieved"
+        and str(reflection_report.get("action_kind") or "").strip() == "prepare_goal_completion"
+        and (not message_class_hint or message_class_hint == "goal_completed")
+    )
 
 
 def failure_report(
@@ -369,6 +288,47 @@ def main() -> int:
             report_path=report_output,
         )
     goal_key = args.goal_key or derived_goal_key
+    delivery_schedule_key = args.schedule_key or derived_schedule_key
+
+    resolved_goal = None
+    resolved_goal_key = None
+    if args.active_goal_registry:
+        resolved_goal, goal_errors = resolve_goal_context(planningops_repo / args.active_goal_registry, planningops_repo, args.goal_key)
+        if goal_errors:
+            return failure_report(
+                args=args,
+                goal_key=goal_key,
+                queue_admission_report_ref=queue_admission_report_ref,
+                scheduled_cycle_report_ref=scheduled_report_ref,
+                worker_outcome_ref=worker_outcome_ref,
+                reflection_cycle_report_ref=reflection_report_ref,
+                reflection_action_ref=action_ref,
+                delivery_cycle_report_ref=delivery_report_ref,
+                stage_reports=stage_reports,
+                failure_stage="resolve_goal_context",
+                errors=goal_errors,
+                report_path=report_output,
+            )
+        resolved_goal_key = str((resolved_goal or {}).get("goal_key") or "").strip()
+        if resolved_goal_key and resolved_goal_key != goal_key:
+            return failure_report(
+                args=args,
+                goal_key=goal_key,
+                queue_admission_report_ref=queue_admission_report_ref,
+                scheduled_cycle_report_ref=scheduled_report_ref,
+                worker_outcome_ref=worker_outcome_ref,
+                reflection_cycle_report_ref=reflection_report_ref,
+                reflection_action_ref=action_ref,
+                delivery_cycle_report_ref=delivery_report_ref,
+                stage_reports=stage_reports,
+                failure_stage="resolve_goal_context",
+                errors=[
+                    "queue seed goal_key must match the resolved goal context",
+                    f"expected={resolved_goal_key}",
+                    f"actual={goal_key}",
+                ],
+                report_path=report_output,
+            )
 
     admission_packet = {
         "admission_version": 1,
@@ -687,8 +647,8 @@ def main() -> int:
         "--output",
         str(reflection_output),
     ]
-    if args.goal_key:
-        reflection_command.extend(["--goal-key", args.goal_key])
+    if resolved_goal_key:
+        reflection_command.extend(["--goal-key", resolved_goal_key])
 
     rc, out, err = run_cmd(reflection_command, planningops_repo, env)
     stage_reports.append(build_stage_report("reflection_cycle", reflection_command, planningops_repo, rc, out, err, reflection_output))
@@ -730,28 +690,64 @@ def main() -> int:
     reflection_report = load_json(reflection_output)
     action_ref = str(reflection_report.get("reflection_action_ref") or action_ref)
 
-    delivery_command = [
-        bootstrap_info["preferred_python"],
-        str(planningops_repo / "planningops" / "scripts" / "federation" / "run_reflection_delivery_cycle.py"),
-        "--workspace-root",
-        str(workspace_root),
-        "--monday-repo-dir",
-        str(monday_repo),
-        "--action-file",
-        str(action_output),
-        "--mode",
-        args.mode,
-        "--run-id",
-        f"{args.run_id}-delivery",
-        "--output",
-        str(delivery_output),
-    ]
-    if args.delivery_target:
-        delivery_command.extend(["--delivery-target", args.delivery_target])
-    if args.channel_kind:
-        delivery_command.extend(["--channel-kind", args.channel_kind])
-    if args.thread_ref:
-        delivery_command.extend(["--thread-ref", args.thread_ref])
+    if requires_goal_completion_handoff(reflection_report):
+        delivery_command = [
+            bootstrap_info["preferred_python"],
+            str(planningops_repo / "planningops" / "scripts" / "federation" / "run_reflection_goal_completion_handoff_cycle.py"),
+            "--workspace-root",
+            str(workspace_root),
+            "--monday-repo-dir",
+            str(monday_repo),
+            "--reflection-action-file",
+            str(action_output),
+            "--active-goal-registry",
+            args.active_goal_registry,
+            "--mode",
+            args.mode,
+            "--run-id",
+            f"{args.run_id}-delivery",
+            "--output",
+            str(delivery_output),
+            "--monday-supervisor-queue-db",
+            str(queue_db_path),
+        ]
+        if resolved_goal_key:
+            delivery_command.extend(["--goal-key", resolved_goal_key])
+        if args.monday_python:
+            delivery_command.extend(["--monday-python", args.monday_python])
+        if args.monday_profiles_config:
+            delivery_command.extend(["--monday-profiles-config", args.monday_profiles_config])
+    else:
+        delivery_command = [
+            bootstrap_info["preferred_python"],
+            str(planningops_repo / "planningops" / "scripts" / "federation" / "run_reflection_delivery_cycle.py"),
+            "--workspace-root",
+            str(workspace_root),
+            "--monday-repo-dir",
+            str(monday_repo),
+            "--action-file",
+            str(action_output),
+            "--schedule-key",
+            delivery_schedule_key,
+            "--mode",
+            args.mode,
+            "--run-id",
+            f"{args.run_id}-delivery",
+            "--output",
+            str(delivery_output),
+            "--monday-queue-db",
+            str(queue_db_path),
+        ]
+        if args.monday_python:
+            delivery_command.extend(["--monday-python", args.monday_python])
+        if args.monday_profiles_config:
+            delivery_command.extend(["--monday-profiles-config", args.monday_profiles_config])
+        if args.delivery_target:
+            delivery_command.extend(["--delivery-target", args.delivery_target])
+        if args.channel_kind:
+            delivery_command.extend(["--channel-kind", args.channel_kind])
+        if args.thread_ref:
+            delivery_command.extend(["--thread-ref", args.thread_ref])
 
     rc, out, err = run_cmd(delivery_command, planningops_repo, env)
     stage_reports.append(build_stage_report("delivery_cycle", delivery_command, planningops_repo, rc, out, err, delivery_output))
@@ -791,6 +787,13 @@ def main() -> int:
         )
 
     delivery_report = load_json(delivery_output)
+    delivery_required = delivery_report.get("delivery_required")
+    if delivery_required is None:
+        delivery_required = reflection_report.get("delivery_required")
+    delivery_skipped = delivery_report.get("delivery_skipped")
+    if delivery_skipped is None:
+        delivery_skipped = False if delivery_required else True
+
     payload = {
         "generated_at_utc": now_utc(),
         "mode": args.mode,
@@ -803,8 +806,8 @@ def main() -> int:
         "delivery_cycle_report_ref": delivery_report_ref,
         "reflection_decision": reflection_report.get("reflection_decision"),
         "action_kind": reflection_report.get("action_kind"),
-        "delivery_required": delivery_report.get("delivery_required"),
-        "delivery_skipped": delivery_report.get("delivery_skipped"),
+        "delivery_required": delivery_required,
+        "delivery_skipped": delivery_skipped,
         "goal_transition_required": reflection_report.get("goal_transition_required"),
         "goal_transition_report_path": delivery_report.get("goal_transition_report_path")
         or reflection_report.get("goal_transition_report_path")

@@ -30,8 +30,10 @@ required_fragments = [
     "planningops/contracts/scheduler-native-worker-outcome-selection-contract.md",
     "planningops/contracts/scheduled-worker-outcome-handoff-contract.md",
     "monday/scripts/export_worker_outcome_reflection_packet.py",
+    "planningops/scripts/federation/reflection_cycle_common.py",
     "planningops/scripts/federation/run_worker_outcome_reflection_cycle.py",
     "planningops/scripts/federation/run_reflection_delivery_cycle.py",
+    "planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py",
     "planningops/scripts/federation/run_scheduled_reflection_delivery_cycle.py",
     "planningops/contracts/autonomous-scheduler-queue-control-plane-contract.md",
     "planningops/contracts/reflection-cycle-orchestration-contract.md",
@@ -50,10 +52,16 @@ required_fragments = [
     "`reflection_cycle`",
     "`delivery_cycle`",
     "must invoke `monday/scripts/admit_scheduled_queue_packet.py` before `monday/scripts/run_scheduled_queue_cycle.py`",
+    "before queue admission starts, the runner must resolve one deterministic goal context",
+    "when `--goal-key` is omitted, the runner must fail before queue admission if the active-goal registry has no active goal",
+    "queue seed `goal_key` must match the resolved goal context before queue admission starts",
+    "once goal context is resolved, the runner must forward that resolved goal key to the reflection cycle even when the caller omitted `--goal-key`",
+    "goal-completed actions must flow through `planningops/scripts/federation/run_reflection_goal_completion_handoff_cycle.py` instead of `planningops/scripts/federation/run_reflection_delivery_cycle.py`",
     "queue row mutation or lease heartbeat logic",
     "must not supply a canonical worker outcome file path",
     "must not forward a direct `--queue` seed input into monday scheduled execution",
     "must not require `--worker-outcome-json` for the primary path",
+    "unresolved goal context must fail the cycle before queue admission starts",
 ]
 for fragment in required_fragments:
     assert fragment in text, fragment
