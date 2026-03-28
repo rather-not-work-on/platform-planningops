@@ -15,6 +15,9 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - `refactor-hygiene/`: periodic refactor hygiene run reports
 - `supervisor/`: autonomous supervisor loop cycle reports and run summaries
 - `backlog/`: evidence-backed replenishment candidate artifacts per issue
+  - deterministic sample backlog outputs also live here with `.sample.json` suffixes when a fixture-backed artifact lane is promoted
+- `program/`: canonical program-manifest outputs, including fixture-backed `.sample.json` lanes
+- `validation/`: gate/schema reports, including fixture-backed `.sample.json` lanes that stay separate from live latest artifacts
 - `adapter-hooks/`, `verification/`, `drift/`, `transition-log/`, `pilot/`, `idempotency/`: supporting evidence
 
 ## Change Rules

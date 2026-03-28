@@ -1,0 +1,27 @@
+{
+  "generated_at_utc": "2026-03-28T06:53:08.816936+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": "planningops/fixtures/issue-label-backfill-sample-issues.json",
+  "write_updated_issues_file": "planningops/artifacts/backlog/issue-label-updated-issues.sample.json",
+  "mode": "apply",
+  "issues_in_scope": 1,
+  "issues_with_missing_labels": 1,
+  "issues_applied": 1,
+  "rows": [
+    {
+      "number": 60,
+      "title": "plan: [60] Add recurring backlog materialization runner",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/60",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied_local",
+      "error": ""
+    }
+  ]
+}
