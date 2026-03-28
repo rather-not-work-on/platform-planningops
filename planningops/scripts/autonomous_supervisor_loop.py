@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import argparse
 import json
 import subprocess
@@ -17,6 +19,8 @@ if str(GOALS_CORE_DIR) not in sys.path:
 
 from artifact_sink import ArtifactSink
 from resolve_active_goal import build_resolved_payload, load_json as load_goal_json, resolve_active_goal, validate_registry
+import supervisor_handoff_common as shared_handoff_common
+import validate_supervisor_operator_handoff as handoff_validator
 
 
 ARTIFACT_SINK = ArtifactSink(local_cache_external=True)
@@ -57,6 +61,13 @@ def resolve_component_repo(workspace_root: Path, repo_dir: str) -> Path:
     return (workspace_root / path).resolve()
 
 
+def resolve_repo_path(repo_root: Path, raw_path: str) -> Path:
+    path = Path(raw_path)
+    if path.is_absolute():
+        return path
+    return (repo_root / path).resolve()
+
+
 def normalize_workspace_path(workspace_root: Path, path: Path) -> str:
     try:
         return str(path.resolve().relative_to(workspace_root.resolve()))
@@ -64,22 +75,135 @@ def normalize_workspace_path(workspace_root: Path, path: Path) -> str:
         return str(path.resolve())
 
 
-def extract_delivery_summary(delivery_cycle_report: dict, monday_repo: Path) -> dict:
-    delivery_report_ref = str(delivery_cycle_report.get("delivery_report_ref") or "-")
-    nested_report = {}
-    if delivery_report_ref != "-":
-        delivery_report_path = (monday_repo / delivery_report_ref).resolve()
-        if delivery_report_path.exists():
-            loaded = load_json(delivery_report_path, {})
-            if isinstance(loaded, dict):
-                nested_report = loaded.get("delivery_report") or loaded
-    outbox_message_ref = nested_report.get("outboxMessageRef") or nested_report.get("outbox_message_ref") or "-"
+def normalize_monday_runtime_ref(workspace_root: Path, monday_repo: Path, raw_ref: str | None) -> str:
+    text = str(raw_ref or "").strip()
+    if not text or text == "-":
+        return "-"
+    path_text, separator, suffix = text.partition("#")
+    path = Path(path_text)
+    if not path.is_absolute():
+        path = (monday_repo / path).resolve()
+    normalized = normalize_workspace_path(workspace_root, path)
+    return f"{normalized}{separator}{suffix}" if separator else normalized
+
+
+def build_federated_ci_remediation_commands(next_step: str | None, ready: bool) -> list[str]:
+    if ready:
+        return []
+
+    commands: list[str] = [
+        "python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass",
+    ]
+    normalized_next_step = str(next_step or "").strip()
+    if normalized_next_step and normalized_next_step.lower() != "none" and normalized_next_step not in commands:
+        commands.append(normalized_next_step)
+    gate_command = "bash planningops/scripts/gate_federated_ci_summary.sh"
+    if gate_command not in commands:
+        commands.append(gate_command)
+    return commands
+
+
+def first_remediation_command(commands: list[str]) -> str | None:
+    for command in commands:
+        normalized = str(command or "").strip()
+        if normalized:
+            return normalized
+    return None
+
+
+def render_priority_summary_markdown(
+    *,
+    headline: str | None = None,
+    first_action_command: str | None = None,
+    remediation_commands: list[str] | None = None,
+) -> str | None:
+    resolved_headline = str(headline or "").strip()
+    resolved_first_action = str(first_action_command or "").strip()
+    resolved_commands = [str(item).strip() for item in (remediation_commands or []) if str(item).strip()]
+    if not (resolved_headline or resolved_first_action or resolved_commands):
+        return None
+
+    lines = ["## Priority"]
+    if resolved_headline:
+        lines.append(f"- headline: {resolved_headline}")
+    if resolved_first_action:
+        lines.append(f"- first action: `{resolved_first_action}`")
+    if resolved_commands:
+        rendered_commands = "; ".join(f"`{command}`" for command in resolved_commands)
+        lines.append(f"- remediation commands: {rendered_commands}")
+    return "\n".join(lines)
+
+
+def apply_priority_surface_fields(
+    doc: dict,
+    *,
+    headline: str | None = None,
+    first_action_command: str | None = None,
+    remediation_commands: list[str] | None = None,
+) -> None:
+    resolved_headline = str(headline or "").strip()
+    resolved_first_action = str(first_action_command or "").strip()
+    if resolved_headline:
+        doc["priority_headline"] = resolved_headline
+    if resolved_first_action:
+        doc["priority_cta_command"] = resolved_first_action
+    if summary_markdown := render_priority_summary_markdown(
+        headline=resolved_headline,
+        first_action_command=resolved_first_action,
+        remediation_commands=remediation_commands,
+    ):
+        doc["priority_summary_markdown"] = summary_markdown
+
+
+def load_federated_ci_summary_snapshot(summary_path: Path, readiness_path: Path) -> dict | None:
+    readiness_doc = load_json(readiness_path, {})
+    if not isinstance(readiness_doc, dict) or not readiness_doc:
+        return None
+
+    ready = bool(readiness_doc.get("ready") is True)
+    next_step = str(readiness_doc.get("next_step") or "").strip() or None
+
+    remediation_commands = build_federated_ci_remediation_commands(next_step, ready)
     return {
-        "delivery_verdict": str(delivery_cycle_report.get("delivery_verdict") or nested_report.get("deliveryVerdict") or "-"),
-        "delivery_target_resolution_mode": str(nested_report.get("targetResolutionMode") or "-"),
-        "delivery_target_profile_ref": str(nested_report.get("targetProfileRef") or "-"),
-        "delivery_transport_kind": str(nested_report.get("transportKind") or "-"),
-        "delivery_outbox_message_ref": str(outbox_message_ref or "-"),
+        "summary_path": str(readiness_doc.get("summary_path") or summary_path),
+        "readiness_path": str(readiness_path),
+        "validation_report_path": str(readiness_doc.get("validation_report_path") or "").strip() or None,
+        "summary_run_id": str(readiness_doc.get("summary_run_id") or "").strip() or None,
+        "summary_generated_at_utc": str(readiness_doc.get("summary_generated_at_utc") or "").strip() or None,
+        "summary_verdict": str(readiness_doc.get("summary_verdict") or "").strip() or None,
+        "overall_status": str(readiness_doc.get("overall_status") or "").strip() or None,
+        "check_count": int(readiness_doc.get("check_count") or 0),
+        "validation_verdict": str(readiness_doc.get("validation_verdict") or "").strip() or None,
+        "validation_state": str(readiness_doc.get("validation_state") or "").strip() or None,
+        "readiness_status": str(readiness_doc.get("readiness_status") or "").strip() or None,
+        "ready": ready,
+        "blocking_reasons": list(readiness_doc.get("blocking_reasons") or []),
+        "next_step": next_step,
+        "remediation_commands": remediation_commands,
+        "first_action_command": first_remediation_command(remediation_commands),
+    }
+
+
+def extract_queue_admission_summary(queue_admission_report: dict, workspace_root: Path, monday_repo: Path) -> dict:
+    mode = str(queue_admission_report.get("mode") or "").strip()
+    admitted_count = int(queue_admission_report.get("admitted_count") or 0)
+    projected_delivery_verdict = "queued" if mode == "apply" and admitted_count > 0 else "dry_run"
+    return {
+        "delivery_verdict": projected_delivery_verdict,
+        "queue_admission_verdict": str(queue_admission_report.get("verdict") or "-"),
+        "selected_delivery_entrypoint": str(queue_admission_report.get("selected_delivery_entrypoint") or "-"),
+        "scheduled_delivery_work_item_ref": normalize_monday_runtime_ref(
+            workspace_root, monday_repo, queue_admission_report.get("scheduled_delivery_work_item_ref")
+        ),
+        "scheduled_queue_item_ref": normalize_monday_runtime_ref(
+            workspace_root, monday_repo, queue_admission_report.get("scheduled_queue_item_ref")
+        ),
+        "scheduled_queue_item_id": str(queue_admission_report.get("queue_item_id") or "-"),
+        "delivery_idempotency_key": str(queue_admission_report.get("delivery_idempotency_key") or "-"),
+        "delivery_target_resolution_mode": "-",
+        "delivery_target_profile_ref": "-",
+        "delivery_transport_kind": "-",
+        "delivery_outbox_message_ref": "-",
     }
 
 
@@ -92,7 +216,9 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
     workspace_root = resolve_workspace_root(planningops_repo, args.workspace_root)
     monday_repo = resolve_component_repo(workspace_root, args.monday_repo_dir)
     monday_script = monday_repo / args.monday_supervisor_goal_completion_script
-    monday_output_rel = Path("runtime-artifacts") / "messaging" / "delivery-cycles" / f"supervisor-goal-completion-{run_dir.name}.json"
+    monday_output_rel = (
+        Path("runtime-artifacts") / "scheduler-queue" / "admission-reports" / f"supervisor-goal-completion-{run_dir.name}.json"
+    )
     delivery_output = (monday_repo / monday_output_rel).resolve()
 
     if not monday_script.exists():
@@ -110,6 +236,8 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
         str(operator_report_path),
         "--operator-summary-file",
         str(operator_summary_path),
+        "--schedule-key",
+        args.monday_supervisor_schedule_key,
         "--mode",
         args.mode,
         "--output",
@@ -117,6 +245,8 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
     ]
     if args.monday_profiles_config:
         command.extend(["--profiles-config", args.monday_profiles_config])
+    if args.monday_supervisor_queue_db:
+        command.extend(["--queue-db", args.monday_supervisor_queue_db])
 
     rc, out, err = run(command, cwd=monday_repo)
     parsed_stdout_report = parse_json_doc(out)
@@ -125,11 +255,11 @@ def run_goal_completion_delivery(args, run_dir: Path, operator_report_path: Path
         if reported_ref:
             delivery_output = (monday_repo / reported_ref).resolve()
     report = load_json(delivery_output, {})
-    summary = extract_delivery_summary(report if isinstance(report, dict) else {}, monday_repo)
+    summary = extract_queue_admission_summary(report if isinstance(report, dict) else {}, workspace_root, monday_repo)
     errors = list(report.get("errors") or []) if isinstance(report, dict) else []
     verdict = "pass" if rc == 0 and isinstance(report, dict) and report.get("verdict") == "pass" else "fail"
     if verdict == "fail" and not errors:
-        errors = ["monday supervisor goal completion delivery failed"]
+        errors = ["monday supervisor goal completion queue admission failed"]
 
     return {
         "enabled": True,
@@ -155,6 +285,28 @@ def load_json(path: Path, default):
 
 def save_json(path: Path, data):
     ARTIFACT_SINK.write_json(path, data)
+
+
+def copy_json_sidecar(source: Path, target: Path) -> None:
+    save_json(target, load_json(source, {}))
+
+
+def apply_operator_handoff_sidecar_fields(doc: dict, summary: dict) -> None:
+    for doc_key, summary_key in (
+        ("operator_handoff_validation_path", "operator_handoff_validation_last_path"),
+        ("priority_preview_ref", "operator_priority_preview_last_path"),
+        ("priority_display_packet_ref", "operator_priority_display_packet_last_path"),
+        ("operator_handoff_bundle_path", "operator_handoff_bundle_last_path"),
+        ("operator_handoff_bundle_validation_path", "operator_handoff_bundle_validation_last_path"),
+        ("operator_handoff_bundle_readiness_path", "operator_handoff_bundle_readiness_last_path"),
+        (
+            "operator_handoff_bundle_readiness_validation_path",
+            "operator_handoff_bundle_readiness_validation_last_path",
+        ),
+    ):
+        value = str(summary.get(summary_key) or "").strip()
+        if value:
+            doc[doc_key] = value
 
 
 def resolve_materialization_contract_from_goal(args):
@@ -334,6 +486,51 @@ def decorate_operator_handoff(report: dict, summary: dict, stop_reason: str):
     return report
 
 
+def finalize_operator_report(report: dict, summary: dict, stop_reason: str):
+    federated_ci_summary = report.get("federated_ci_summary")
+    remediation_commands = []
+    if isinstance(federated_ci_summary, dict) and federated_ci_summary and not federated_ci_summary.get("ready", False):
+        remediation_commands = list(federated_ci_summary.get("remediation_commands") or [])
+        first_action_command = first_remediation_command(remediation_commands)
+        guidance = report.get("guidance") or {}
+        report["guidance"] = {
+            **guidance,
+            "federated_ci_summary_run_id": federated_ci_summary.get("summary_run_id"),
+            "federated_ci_readiness_status": federated_ci_summary.get("readiness_status"),
+            "federated_ci_next_step": federated_ci_summary.get("next_step"),
+            "federated_ci_remediation_commands": remediation_commands,
+        }
+        if first_action_command:
+            report["guidance"]["first_action_command"] = first_action_command
+        if str(report.get("status") or "") == "ok":
+            report.update(
+                {
+                    "status": "degraded",
+                    "headline": "Supervisor converged, but the latest federated runtime gate is blocked.",
+                    "operator_action": "inspect_federated_ci_gates",
+                    "needs_human_attention": False,
+                    "reason": (
+                        "Supervisor converged locally, but the latest federated CI readiness is "
+                        f"{federated_ci_summary.get('readiness_status') or 'blocked'}; "
+                        f"next step: {federated_ci_summary.get('next_step') or 'inspect the canonical federated CI doctor output.'}"
+                    ),
+                }
+            )
+        if first_action_command:
+            report["first_action_command"] = first_action_command
+    apply_priority_surface_fields(
+        report,
+        headline=str(report.get("headline") or "").strip(),
+        first_action_command=str(report.get("first_action_command") or "").strip(),
+        remediation_commands=remediation_commands,
+    )
+    if not str(report.get("priority_cta_command") or "").strip():
+        fallback_priority_cta = str(report.get("operator_action") or "").strip()
+        if fallback_priority_cta:
+            report["priority_cta_command"] = fallback_priority_cta
+    return decorate_operator_handoff(report, summary, stop_reason)
+
+
 def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
     cycles = summary.get("cycles") or []
     last_cycle = cycles[-1] if cycles else {}
@@ -364,6 +561,10 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
         "reason": guidance.get("reason") or stop_reason,
         "guidance": guidance if isinstance(guidance, dict) else {},
     }
+    federated_ci_summary = summary.get("federated_ci_summary")
+    if isinstance(federated_ci_summary, dict) and federated_ci_summary:
+        report["federated_ci_summary"] = federated_ci_summary
+    apply_operator_handoff_sidecar_fields(report, summary)
 
     if stop_reason == "converged":
         report.update(
@@ -375,7 +576,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "reason": "No cooldown or retry guidance required.",
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "converged_with_snapshot_fallback":
         report.update(
@@ -386,7 +587,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "needs_human_attention": False,
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "github_rate_limited":
         report.update(
@@ -397,7 +598,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "needs_human_attention": False,
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "experiment_triggered":
         report.update(
@@ -407,7 +608,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "operator_action": "review_experiment_trigger",
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "replan_required":
         materialization = stop_details.get("backlog_materialization") or {}
@@ -425,7 +626,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                     },
                 }
             )
-            return decorate_operator_handoff(report, summary, stop_reason)
+            return finalize_operator_report(report, summary, stop_reason)
         report.update(
             {
                 "status": "review_required",
@@ -433,7 +634,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "operator_action": "regenerate_backlog_or_reconcile_project",
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "goal_promotion_ready":
         transition = stop_details.get("goal_transition") or {}
@@ -450,7 +651,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "goal_completion_ready":
         transition = stop_details.get("goal_transition") or {}
@@ -467,7 +668,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "goal_completed":
         transition = stop_details.get("goal_transition") or {}
@@ -484,6 +685,12 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                     "completed_goal_key": transition.get("goal_key"),
                     "goal_completion_delivery_report_path": goal_completion_delivery.get("output_path"),
                     "goal_completion_delivery_verdict": goal_completion_delivery.get("delivery_verdict"),
+                    "goal_completion_queue_admission_verdict": goal_completion_delivery.get("queue_admission_verdict"),
+                    "goal_completion_selected_delivery_entrypoint": goal_completion_delivery.get("selected_delivery_entrypoint"),
+                    "goal_completion_scheduled_delivery_work_item_ref": goal_completion_delivery.get("scheduled_delivery_work_item_ref"),
+                    "goal_completion_scheduled_queue_item_ref": goal_completion_delivery.get("scheduled_queue_item_ref"),
+                    "goal_completion_scheduled_queue_item_id": goal_completion_delivery.get("scheduled_queue_item_id"),
+                    "goal_completion_delivery_idempotency_key": goal_completion_delivery.get("delivery_idempotency_key"),
                     "goal_completion_delivery_target_resolution_mode": goal_completion_delivery.get("delivery_target_resolution_mode"),
                     "goal_completion_delivery_target_profile_ref": goal_completion_delivery.get("delivery_target_profile_ref"),
                     "goal_completion_delivery_outbox_message_ref": goal_completion_delivery.get("delivery_outbox_message_ref"),
@@ -492,7 +699,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
         )
         if goal_completion_delivery.get("output_path"):
             report["goal_completion_delivery_report_path"] = goal_completion_delivery.get("output_path")
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "goal_completion_delivery_failed":
         transition = stop_details.get("goal_transition") or {}
@@ -509,6 +716,12 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                     "completed_goal_key": transition.get("goal_key"),
                     "goal_completion_delivery_report_path": goal_completion_delivery.get("output_path"),
                     "goal_completion_delivery_verdict": goal_completion_delivery.get("delivery_verdict"),
+                    "goal_completion_queue_admission_verdict": goal_completion_delivery.get("queue_admission_verdict"),
+                    "goal_completion_selected_delivery_entrypoint": goal_completion_delivery.get("selected_delivery_entrypoint"),
+                    "goal_completion_scheduled_delivery_work_item_ref": goal_completion_delivery.get("scheduled_delivery_work_item_ref"),
+                    "goal_completion_scheduled_queue_item_ref": goal_completion_delivery.get("scheduled_queue_item_ref"),
+                    "goal_completion_scheduled_queue_item_id": goal_completion_delivery.get("scheduled_queue_item_id"),
+                    "goal_completion_delivery_idempotency_key": goal_completion_delivery.get("delivery_idempotency_key"),
                     "goal_completion_delivery_target_resolution_mode": goal_completion_delivery.get("delivery_target_resolution_mode"),
                     "goal_completion_delivery_target_profile_ref": goal_completion_delivery.get("delivery_target_profile_ref"),
                     "goal_completion_delivery_outbox_message_ref": goal_completion_delivery.get("delivery_outbox_message_ref"),
@@ -517,7 +730,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
         )
         if goal_completion_delivery.get("output_path"):
             report["goal_completion_delivery_report_path"] = goal_completion_delivery.get("output_path")
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "goal_transition_failed":
         transition = stop_details.get("goal_transition") or {}
@@ -533,7 +746,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason == "replan_materialization_failed":
         materialization = stop_details.get("backlog_materialization") or {}
@@ -550,7 +763,7 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 },
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
     if stop_reason in {"quality_gate_fail", "backlog_gate_fail", "escalation_auto_pause", "experiment_auto_executor_failed"}:
         report.update(
@@ -560,12 +773,12 @@ def build_operator_report(summary: dict, summary_path: Path, run_dir: Path):
                 "operator_action": "inspect_failure_and_replan",
             }
         )
-        return decorate_operator_handoff(report, summary, stop_reason)
+        return finalize_operator_report(report, summary, stop_reason)
 
-    return decorate_operator_handoff(report, summary, stop_reason)
+    return finalize_operator_report(report, summary, stop_reason)
 
 
-def build_operator_summary_markdown(operator_report: dict):
+def build_operator_summary_markdown(operator_report: dict, handoff_validation_path: Path | None = None):
     allowed_modes = operator_report.get("allowed_modes") or []
     blocked_modes = operator_report.get("blocked_modes") or []
     lines = [
@@ -584,13 +797,56 @@ def build_operator_summary_markdown(operator_report: dict):
     cycle_report_path = operator_report.get("cycle_report_path")
     if cycle_report_path:
         lines.append(f"- Cycle Report Path: {cycle_report_path}")
+    if handoff_validation_path is not None:
+        lines.append(f"- Handoff Validation Path: {handoff_validation_path}")
+    for label, field in (
+        ("Handoff Bundle Path", "operator_handoff_bundle_path"),
+        ("Handoff Bundle Validation Path", "operator_handoff_bundle_validation_path"),
+        ("Handoff Bundle Readiness Path", "operator_handoff_bundle_readiness_path"),
+        (
+            "Handoff Bundle Readiness Validation Path",
+            "operator_handoff_bundle_readiness_validation_path",
+        ),
+    ):
+        value = str(operator_report.get(field) or "").strip()
+        if value:
+            lines.append(f"- {label}: {value}")
     reason = operator_report.get("reason")
     if reason:
         lines.extend(["", "## Reason", "", reason])
+    first_action_command = str(operator_report.get("first_action_command") or "").strip()
+    priority_cta_command = str(operator_report.get("priority_cta_command") or "").strip()
+    priority_summary_markdown = str(operator_report.get("priority_summary_markdown") or "").strip()
+    if priority_summary_markdown:
+        lines.extend(["", priority_summary_markdown])
+    if first_action_command:
+        lines.extend(["", "## First Action", "", f"`{first_action_command}`"])
+    federated_ci_summary = operator_report.get("federated_ci_summary")
+    if isinstance(federated_ci_summary, dict) and federated_ci_summary:
+        lines.extend(
+            [
+                "",
+                "## Federated CI",
+                "",
+                f"- Run ID: {federated_ci_summary.get('summary_run_id') or 'unknown'}",
+                f"- Summary Verdict: {federated_ci_summary.get('summary_verdict') or 'unknown'}",
+                f"- Readiness Status: {federated_ci_summary.get('readiness_status') or 'unknown'}",
+                f"- Ready: {'yes' if federated_ci_summary.get('ready') else 'no'}",
+                f"- Summary Path: {federated_ci_summary.get('summary_path') or '-'}",
+                f"- Readiness Path: {federated_ci_summary.get('readiness_path') or '-'}",
+            ]
+        )
+        next_step = federated_ci_summary.get("next_step")
+        if next_step:
+            lines.append(f"- Next Step: {next_step}")
+        remediation_commands = list(federated_ci_summary.get("remediation_commands") or [])
+        if remediation_commands:
+            lines.extend(["- Remediation Commands:"])
+            lines.extend([f"  - {command}" for command in remediation_commands])
     return "\n".join(lines) + "\n"
 
 
-def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
+def build_inbox_payload(operator_report: dict, operator_summary_path: Path, handoff_validation_path: Path | None = None):
     attachments = [str(operator_summary_path), str(operator_report.get("summary_path"))]
     cycle_report_path = operator_report.get("cycle_report_path")
     if cycle_report_path:
@@ -598,6 +854,28 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
     goal_completion_delivery_report_path = operator_report.get("goal_completion_delivery_report_path")
     if goal_completion_delivery_report_path:
         attachments.append(str(goal_completion_delivery_report_path))
+    if handoff_validation_path is not None:
+        attachments.append(str(handoff_validation_path))
+    for field in (
+        "operator_handoff_bundle_path",
+        "operator_handoff_bundle_validation_path",
+        "operator_handoff_bundle_readiness_path",
+        "operator_handoff_bundle_readiness_validation_path",
+    ):
+        value = str(operator_report.get(field) or "").strip()
+        if value:
+            attachments.append(value)
+    federated_ci_summary = operator_report.get("federated_ci_summary")
+    if isinstance(federated_ci_summary, dict):
+        federated_summary_path = str(federated_ci_summary.get("summary_path") or "").strip()
+        federated_readiness_path = str(federated_ci_summary.get("readiness_path") or "").strip()
+        federated_validation_report_path = str(federated_ci_summary.get("validation_report_path") or "").strip()
+        if federated_summary_path:
+            attachments.append(federated_summary_path)
+        if federated_readiness_path:
+            attachments.append(federated_readiness_path)
+        if federated_validation_report_path:
+            attachments.append(federated_validation_report_path)
 
     lines = [
         f"Status: {operator_report.get('status')}",
@@ -612,12 +890,37 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
     reason = operator_report.get("reason")
     if reason:
         lines.extend(["", "Reason:", reason])
+    first_action_command = str(operator_report.get("first_action_command") or "").strip()
+    priority_headline = str(operator_report.get("priority_headline") or operator_report.get("headline") or "").strip()
+    priority_cta_command = str(operator_report.get("priority_cta_command") or first_action_command or "").strip()
+    priority_summary_markdown = str(operator_report.get("priority_summary_markdown") or "").strip()
+    if priority_summary_markdown:
+        lines.extend(["", priority_summary_markdown])
+    if first_action_command:
+        lines.extend(["", "First Action:", f"`{first_action_command}`"])
+    if isinstance(federated_ci_summary, dict) and federated_ci_summary:
+        lines.extend(
+            [
+                "",
+                "Federated CI:",
+                f"- Run ID: {federated_ci_summary.get('summary_run_id') or 'unknown'}",
+                f"- Readiness Status: {federated_ci_summary.get('readiness_status') or 'unknown'}",
+                f"- Ready: {'yes' if federated_ci_summary.get('ready') else 'no'}",
+                f"- Summary Verdict: {federated_ci_summary.get('summary_verdict') or 'unknown'}",
+                f"- Next Step: {federated_ci_summary.get('next_step') or 'none'}",
+            ]
+        )
+        remediation_commands = list(federated_ci_summary.get("remediation_commands") or [])
+        if remediation_commands:
+            lines.append("- Remediation Commands:")
+            lines.extend([f"  - {command}" for command in remediation_commands])
 
     payload = {
         "generated_at_utc": now_utc(),
-        "title": f"[{str(operator_report.get('status') or 'unknown').upper()}] {operator_report.get('headline')}",
+        "title": f"[{str(operator_report.get('status') or 'unknown').upper()}] {priority_headline or operator_report.get('headline')}",
         "status": operator_report.get("status"),
         "headline": operator_report.get("headline"),
+        "priority_headline": priority_headline or None,
         "operator_action": operator_report.get("operator_action"),
         "recommended_wait_minutes": operator_report.get("recommended_wait_minutes"),
         "retry_mode": operator_report.get("retry_mode"),
@@ -625,6 +928,25 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
         "attachments": attachments,
         "body_markdown": "\n".join(lines) + "\n",
     }
+    if handoff_validation_path is not None:
+        payload["operator_handoff_validation_path"] = str(handoff_validation_path)
+    for field in (
+        "priority_preview_ref",
+        "priority_display_packet_ref",
+        "operator_handoff_bundle_path",
+        "operator_handoff_bundle_validation_path",
+        "operator_handoff_bundle_readiness_path",
+        "operator_handoff_bundle_readiness_validation_path",
+    ):
+        value = str(operator_report.get(field) or "").strip()
+        if value:
+            payload[field] = value
+    if first_action_command:
+        payload["first_action_command"] = first_action_command
+    if priority_cta_command:
+        payload["priority_cta_command"] = priority_cta_command
+    if priority_summary_markdown:
+        payload["priority_summary_markdown"] = priority_summary_markdown
     goal_key = operator_report.get("goal_key")
     if goal_key:
         payload["goal_key"] = goal_key
@@ -642,6 +964,132 @@ def build_inbox_payload(operator_report: dict, operator_summary_path: Path):
     if operator_report.get("goal_transition_report_path"):
         payload["goal_transition_report_path"] = operator_report.get("goal_transition_report_path")
     return payload
+
+
+def build_operator_handoff_validation_report(
+    *,
+    operator_report_path: Path,
+    inbox_payload_path: Path,
+    operator_summary_path: Path,
+) -> dict:
+    report_schema_path = Path(handoff_validator.DEFAULT_REPORT_SCHEMA)
+    payload_schema_path = Path(handoff_validator.DEFAULT_PAYLOAD_SCHEMA)
+    report_schema_doc = handoff_validator.load_json(report_schema_path)
+    payload_schema_doc = handoff_validator.load_json(payload_schema_path)
+    operator_report_doc = handoff_validator.load_json(operator_report_path)
+    inbox_payload_doc = handoff_validator.load_json(inbox_payload_path)
+    return handoff_validator.build_report(
+        operator_report_path=operator_report_path,
+        inbox_payload_path=inbox_payload_path,
+        operator_summary_path=operator_summary_path,
+        operator_report_doc=operator_report_doc,
+        inbox_payload_doc=inbox_payload_doc,
+        report_schema_path=report_schema_path,
+        payload_schema_path=payload_schema_path,
+        report_schema_doc=report_schema_doc,
+        payload_schema_doc=payload_schema_doc,
+    )
+
+
+def emit_operator_handoff_bundle_sidecars(
+    *,
+    operator_report_path: Path,
+    monday_repo: Path,
+    preview_path: Path,
+    display_packet_path: Path,
+    bundle_path: Path,
+    bundle_validation_path: Path,
+    readiness_path: Path,
+    readiness_validation_path: Path,
+) -> tuple[dict, dict, dict]:
+    monday_repo = monday_repo.resolve()
+    monday_scripts_dir = monday_repo / "scripts"
+    if str(monday_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(monday_scripts_dir))
+
+    from render_operator_priority_preview import render_priority_preview
+    from export_operator_priority_display_packet import export_display_packet
+    from resolve_supervisor_operator_handoff_bundle import resolve_handoff_bundle
+    from assess_supervisor_operator_handoff_bundle_readiness import assess_handoff_bundle_readiness
+
+    preview_output_path, preview_doc = render_priority_preview(
+        str(operator_report_path),
+        output=str(preview_path),
+        root=monday_repo,
+    )
+    preview_ref_for_display = str(preview_output_path.resolve())
+    try:
+        preview_ref_for_display = preview_output_path.resolve().relative_to(monday_repo.resolve()).as_posix()
+    except ValueError:
+        # Fallback to absolute path when preview output is outside the monday repo root.
+        preview_ref_for_display = str(preview_output_path.resolve())
+    display_output_path, display_packet = export_display_packet(
+        artifact_file=None,
+        preview_ref=preview_ref_for_display,
+        output=str(display_packet_path),
+        root=monday_repo,
+    )
+    if preview_output_path.resolve() != preview_path.resolve():
+        raise RuntimeError(
+            f"operator priority preview path drifted: expected {preview_path.resolve()} got {preview_output_path.resolve()}"
+        )
+    if display_output_path.resolve() != display_packet_path.resolve():
+        raise RuntimeError(
+            f"operator priority display packet path drifted: expected {display_packet_path.resolve()} got {display_output_path.resolve()}"
+        )
+    preview_ref = str(display_packet.get("priority_preview_ref") or "").strip()
+    resolved_preview_ref = Path(preview_ref)
+    if not resolved_preview_ref.is_absolute():
+        resolved_preview_ref = (monday_repo / resolved_preview_ref).resolve()
+    else:
+        resolved_preview_ref = resolved_preview_ref.resolve()
+    if resolved_preview_ref != preview_output_path.resolve():
+        raise RuntimeError(
+            f"operator priority display packet preview ref drifted: expected {preview_output_path.resolve()} got {preview_ref or 'missing'}"
+        )
+
+    _bundle_output_path, bundle_doc = resolve_handoff_bundle(
+        artifact_file=str(operator_report_path),
+        schema_path=None,
+        output=str(bundle_path),
+    )
+    readiness_doc, _readiness_validation_doc = assess_handoff_bundle_readiness(
+        bundle_file=str(bundle_path),
+        artifact_file=None,
+        bundle_schema_path=None,
+        validation_schema_path=None,
+        bundle_validation_output=str(bundle_validation_path),
+        output=str(readiness_path),
+        readiness_validation_output=str(readiness_validation_path),
+    )
+    return preview_doc, display_packet, readiness_doc
+
+
+# Canonical supervisor handoff/report helpers are sourced from supervisor_handoff_common.py.
+now_utc = shared_handoff_common.now_utc
+resolve_repo_root = shared_handoff_common.resolve_repo_root
+resolve_workspace_root = shared_handoff_common.resolve_workspace_root
+resolve_component_repo = shared_handoff_common.resolve_component_repo
+resolve_repo_path = shared_handoff_common.resolve_repo_path
+normalize_workspace_path = shared_handoff_common.normalize_workspace_path
+normalize_monday_runtime_ref = shared_handoff_common.normalize_monday_runtime_ref
+apply_priority_surface_fields = shared_handoff_common.apply_priority_surface_fields
+load_federated_ci_summary_snapshot = shared_handoff_common.load_federated_ci_summary_snapshot
+extract_queue_admission_summary = shared_handoff_common.extract_queue_admission_summary
+run_goal_completion_delivery = shared_handoff_common.run_goal_completion_delivery
+load_json = shared_handoff_common.load_json
+save_json = shared_handoff_common.save_json
+copy_json_sidecar = shared_handoff_common.copy_json_sidecar
+parse_json_doc = shared_handoff_common.parse_json_doc
+apply_operator_handoff_sidecar_fields = shared_handoff_common.apply_operator_handoff_sidecar_fields
+derive_message_class_hint = shared_handoff_common.derive_message_class_hint
+decorate_operator_handoff = shared_handoff_common.decorate_operator_handoff
+finalize_operator_report = shared_handoff_common.finalize_operator_report
+build_operator_report = shared_handoff_common.build_operator_report
+build_operator_summary_markdown = shared_handoff_common.build_operator_summary_markdown
+build_inbox_payload = shared_handoff_common.build_inbox_payload
+build_operator_handoff_validation_report = shared_handoff_common.build_operator_handoff_validation_report
+emit_operator_handoff_bundle_sidecars = shared_handoff_common.emit_operator_handoff_bundle_sidecars
 
 
 def build_issue_runner_command(args):
@@ -702,7 +1150,7 @@ def run_issue_cycle(args, cycle_index: int, sequence_rows):
     }
 
 
-def run_backlog_gate(args, cycle_dir: Path, candidate_file: str | None):
+def run_backlog_gate(args, cycle_dir: Path, candidate_file: str | None, items_file: str | None = None):
     report_path = cycle_dir / "backlog-stock-report.json"
     cmd = [
         "python3",
@@ -718,8 +1166,9 @@ def run_backlog_gate(args, cycle_dir: Path, candidate_file: str | None):
         "--output",
         str(report_path),
     ]
-    if args.items_file:
-        cmd.extend(["--items-file", args.items_file])
+    effective_items_file = args.items_file or items_file
+    if effective_items_file:
+        cmd.extend(["--items-file", effective_items_file])
     if args.offline:
         cmd.append("--offline")
     if candidate_file:
@@ -864,10 +1313,17 @@ def parse_args():
     parser.add_argument("--monday-repo-dir", default="monday")
     parser.add_argument("--monday-python", default=None)
     parser.add_argument("--monday-profiles-config", default=None)
+    parser.add_argument("--federated-ci-summary", default="planningops/artifacts/ci/federated-ci-summary.json")
+    parser.add_argument(
+        "--federated-ci-summary-readiness",
+        default="planningops/artifacts/validation/federated-ci-summary-readiness.json",
+    )
     parser.add_argument(
         "--monday-supervisor-goal-completion-script",
-        default="scripts/run_goal_completion_delivery_cycle.py",
+        default="scripts/enqueue_scheduled_delivery_work_item.py",
     )
+    parser.add_argument("--monday-supervisor-schedule-key", default="recurring-delivery")
+    parser.add_argument("--monday-supervisor-queue-db", default=None)
     return parser.parse_args()
 
 
@@ -906,7 +1362,7 @@ def main():
             sequence_rows = []
 
     run_id = args.run_id or f"supervisor-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
-    run_dir = Path(args.artifacts_root) / run_id
+    run_dir = (Path(args.artifacts_root) / run_id).resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
 
     cycles = []
@@ -953,7 +1409,27 @@ def main():
                 experiment_executor = run_experiment_auto_executor(args, run_id, cycle_index, loop_result)
 
         candidate_file = str(loop_result.get("replenishment_candidates_path") or "") or None
-        backlog_gate = run_backlog_gate(args, cycle_dir, candidate_file)
+        selection_trace = loop_result.get("selection_trace") if isinstance(loop_result.get("selection_trace"), dict) else {}
+        snapshot_items_file = None
+        if selection_trace:
+            snapshot_path = selection_trace.get("project_items_snapshot_path")
+            if isinstance(snapshot_path, str) and snapshot_path.strip():
+                snapshot_candidate = Path(snapshot_path.strip())
+                if snapshot_candidate.exists():
+                    snapshot_items_file = str(snapshot_candidate)
+                    # Program manifests omit project status fields; prefer projected issues when present.
+                    if "program-manifest" in snapshot_candidate.name:
+                        projected_issues_fallback = Path("planningops/artifacts/backlog/projected-issues.json")
+                        if projected_issues_fallback.exists():
+                            snapshot_items_file = str(projected_issues_fallback)
+
+        # In offline mode, avoid live gh item-list dependency for backlog gate.
+        if snapshot_items_file is None and args.offline:
+            manifest_fallback = Path("planningops/artifacts/program/program-manifest.json")
+            if manifest_fallback.exists():
+                snapshot_items_file = str(manifest_fallback)
+
+        backlog_gate = run_backlog_gate(args, cycle_dir, candidate_file, snapshot_items_file)
         backlog_verdict = str((backlog_gate.get("report") or {}).get("verdict", "")).lower()
         backlog_failed = backlog_gate.get("rc", 1) != 0 or backlog_verdict == "fail"
         selection_trace = loop_result.get("selection_trace") or {}
@@ -1238,24 +1714,84 @@ def main():
             "primary_operator_channel": resolved_active_goal.get("primary_operator_channel"),
             "terminal_notification_channel": resolved_active_goal.get("terminal_notification_channel"),
         }
+    planningops_repo = resolve_repo_root()
+    federated_ci_summary = load_federated_ci_summary_snapshot(
+        resolve_repo_path(planningops_repo, args.federated_ci_summary),
+        resolve_repo_path(planningops_repo, args.federated_ci_summary_readiness),
+    )
+    if federated_ci_summary:
+        summary["federated_ci_summary"] = federated_ci_summary
 
-    output_path = Path(args.output)
+    output_path = Path(args.output).resolve()
+    workspace_root = resolve_workspace_root(planningops_repo, args.workspace_root)
+    monday_repo = resolve_component_repo(workspace_root, args.monday_repo_dir)
     operator_report_path = run_dir / "operator-report.json"
     last_operator_report_path = output_path.with_name(f"{output_path.stem}-operator-report.json")
     operator_summary_path = run_dir / "operator-summary.md"
     last_operator_summary_path = output_path.with_name(f"{output_path.stem}-operator-summary.md")
     inbox_payload_path = run_dir / "inbox-payload.json"
     last_inbox_payload_path = output_path.with_name(f"{output_path.stem}-inbox-payload.json")
+    operator_handoff_validation_path = run_dir / "operator-handoff-validation.json"
+    last_operator_handoff_validation_path = output_path.with_name(f"{output_path.stem}-operator-handoff-validation.json")
+    monday_priority_preview_root = monday_repo / "runtime-artifacts" / "messaging" / "operator-priority-previews"
+    monday_priority_display_packet_root = (
+        monday_repo / "runtime-artifacts" / "messaging" / "operator-priority-display-packets"
+    )
+    operator_priority_preview_path = monday_priority_preview_root / f"{run_id}-operator-priority-preview.json"
+    last_operator_priority_preview_path = monday_priority_preview_root / f"{output_path.stem}-operator-priority-preview.json"
+    operator_priority_display_packet_path = (
+        monday_priority_display_packet_root / f"{run_id}-operator-priority-display-packet.json"
+    )
+    last_operator_priority_display_packet_path = (
+        monday_priority_display_packet_root / f"{output_path.stem}-operator-priority-display-packet.json"
+    )
+    operator_handoff_bundle_path = run_dir / "operator-handoff-bundle.json"
+    last_operator_handoff_bundle_path = output_path.with_name(f"{output_path.stem}-operator-handoff-bundle.json")
+    operator_handoff_bundle_validation_path = run_dir / "operator-handoff-bundle-validation.json"
+    last_operator_handoff_bundle_validation_path = output_path.with_name(
+        f"{output_path.stem}-operator-handoff-bundle-validation.json"
+    )
+    operator_handoff_bundle_readiness_path = run_dir / "operator-handoff-bundle-readiness.json"
+    last_operator_handoff_bundle_readiness_path = output_path.with_name(
+        f"{output_path.stem}-operator-handoff-bundle-readiness.json"
+    )
+    operator_handoff_bundle_readiness_validation_path = (
+        run_dir / "operator-handoff-bundle-readiness-validation.json"
+    )
+    last_operator_handoff_bundle_readiness_validation_path = output_path.with_name(
+        f"{output_path.stem}-operator-handoff-bundle-readiness-validation.json"
+    )
     summary["operator_report_path"] = str(operator_report_path)
     summary["operator_report_last_path"] = str(last_operator_report_path)
     summary["operator_summary_path"] = str(operator_summary_path)
     summary["operator_summary_last_path"] = str(last_operator_summary_path)
     summary["inbox_payload_path"] = str(inbox_payload_path)
     summary["inbox_payload_last_path"] = str(last_inbox_payload_path)
+    summary["operator_handoff_validation_path"] = str(operator_handoff_validation_path)
+    summary["operator_handoff_validation_last_path"] = str(last_operator_handoff_validation_path)
+    summary["operator_priority_preview_path"] = str(operator_priority_preview_path)
+    summary["operator_priority_preview_last_path"] = str(last_operator_priority_preview_path)
+    summary["operator_priority_display_packet_path"] = str(operator_priority_display_packet_path)
+    summary["operator_priority_display_packet_last_path"] = str(last_operator_priority_display_packet_path)
+    summary["operator_handoff_bundle_path"] = str(operator_handoff_bundle_path)
+    summary["operator_handoff_bundle_last_path"] = str(last_operator_handoff_bundle_path)
+    summary["operator_handoff_bundle_validation_path"] = str(operator_handoff_bundle_validation_path)
+    summary["operator_handoff_bundle_validation_last_path"] = str(last_operator_handoff_bundle_validation_path)
+    summary["operator_handoff_bundle_readiness_path"] = str(operator_handoff_bundle_readiness_path)
+    summary["operator_handoff_bundle_readiness_last_path"] = str(last_operator_handoff_bundle_readiness_path)
+    summary["operator_handoff_bundle_readiness_validation_path"] = str(
+        operator_handoff_bundle_readiness_validation_path
+    )
+    summary["operator_handoff_bundle_readiness_validation_last_path"] = str(
+        last_operator_handoff_bundle_readiness_validation_path
+    )
     operator_report = build_operator_report(summary, output_path, run_dir)
     save_json(operator_report_path, operator_report)
     save_json(last_operator_report_path, operator_report)
-    operator_summary = build_operator_summary_markdown(operator_report)
+    operator_summary = build_operator_summary_markdown(
+        operator_report,
+        handoff_validation_path=last_operator_handoff_validation_path,
+    )
     operator_summary_path.write_text(operator_summary, encoding="utf-8")
     last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
     if stop_reason == "goal_completed":
@@ -1280,12 +1816,80 @@ def main():
         operator_report = build_operator_report(summary, output_path, run_dir)
         save_json(operator_report_path, operator_report)
         save_json(last_operator_report_path, operator_report)
-        operator_summary = build_operator_summary_markdown(operator_report)
+        operator_summary = build_operator_summary_markdown(
+            operator_report,
+            handoff_validation_path=last_operator_handoff_validation_path,
+        )
         operator_summary_path.write_text(operator_summary, encoding="utf-8")
         last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
-    inbox_payload = build_inbox_payload(operator_report, last_operator_summary_path)
+    inbox_payload = build_inbox_payload(
+        operator_report,
+        last_operator_summary_path,
+        handoff_validation_path=last_operator_handoff_validation_path,
+    )
     save_json(inbox_payload_path, inbox_payload)
     save_json(last_inbox_payload_path, inbox_payload)
+    operator_handoff_validation = build_operator_handoff_validation_report(
+        operator_report_path=operator_report_path,
+        inbox_payload_path=inbox_payload_path,
+        operator_summary_path=last_operator_summary_path,
+    )
+    save_json(operator_handoff_validation_path, operator_handoff_validation)
+    save_json(last_operator_handoff_validation_path, operator_handoff_validation)
+    if operator_handoff_validation.get("verdict") != "pass":
+        raise RuntimeError(
+            "supervisor operator handoff validation failed: "
+            f"{operator_handoff_validation.get('errors') or ['unknown validation failure']}"
+        )
+    _preview_doc, _display_packet_doc, handoff_bundle_readiness = emit_operator_handoff_bundle_sidecars(
+        operator_report_path=operator_report_path,
+        monday_repo=monday_repo,
+        preview_path=last_operator_priority_preview_path,
+        display_packet_path=last_operator_priority_display_packet_path,
+        bundle_path=last_operator_handoff_bundle_path,
+        bundle_validation_path=last_operator_handoff_bundle_validation_path,
+        readiness_path=last_operator_handoff_bundle_readiness_path,
+        readiness_validation_path=last_operator_handoff_bundle_readiness_validation_path,
+    )
+    if handoff_bundle_readiness.get("ready") is not True:
+        raise RuntimeError(
+            "supervisor operator handoff bundle readiness failed: "
+            f"{handoff_bundle_readiness.get('blocking_reasons') or ['unknown readiness failure']}"
+        )
+    copy_json_sidecar(last_operator_priority_preview_path, operator_priority_preview_path)
+    copy_json_sidecar(last_operator_priority_display_packet_path, operator_priority_display_packet_path)
+    copy_json_sidecar(last_operator_handoff_bundle_path, operator_handoff_bundle_path)
+    copy_json_sidecar(last_operator_handoff_bundle_validation_path, operator_handoff_bundle_validation_path)
+    copy_json_sidecar(last_operator_handoff_bundle_readiness_path, operator_handoff_bundle_readiness_path)
+    copy_json_sidecar(
+        last_operator_handoff_bundle_readiness_validation_path,
+        operator_handoff_bundle_readiness_validation_path,
+    )
+    operator_summary = build_operator_summary_markdown(
+        operator_report,
+        handoff_validation_path=last_operator_handoff_validation_path,
+    )
+    operator_summary_path.write_text(operator_summary, encoding="utf-8")
+    last_operator_summary_path.write_text(operator_summary, encoding="utf-8")
+    inbox_payload = build_inbox_payload(
+        operator_report,
+        last_operator_summary_path,
+        handoff_validation_path=last_operator_handoff_validation_path,
+    )
+    save_json(inbox_payload_path, inbox_payload)
+    save_json(last_inbox_payload_path, inbox_payload)
+    operator_handoff_validation = build_operator_handoff_validation_report(
+        operator_report_path=operator_report_path,
+        inbox_payload_path=inbox_payload_path,
+        operator_summary_path=last_operator_summary_path,
+    )
+    save_json(operator_handoff_validation_path, operator_handoff_validation)
+    save_json(last_operator_handoff_validation_path, operator_handoff_validation)
+    if operator_handoff_validation.get("verdict") != "pass":
+        raise RuntimeError(
+            "supervisor operator handoff validation failed after bundle emission: "
+            f"{operator_handoff_validation.get('errors') or ['unknown validation failure']}"
+        )
     save_json(output_path, summary)
     save_json(run_dir / "summary.json", summary)
     print(json.dumps(summary, ensure_ascii=True, indent=2))
