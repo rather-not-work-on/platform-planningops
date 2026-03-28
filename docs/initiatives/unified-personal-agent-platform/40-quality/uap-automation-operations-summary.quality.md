@@ -5,7 +5,7 @@ doc_type: quality
 domain: quality
 status: active
 date: 2026-03-11
-updated: 2026-03-13
+updated: 2026-03-19
 initiative: unified-personal-agent-platform
 memory_tier: L1
 tags:
@@ -18,8 +18,10 @@ summary: Canonical operating summary for active Codex automations, their role bo
 related_docs:
   - ../README.md
   - ./uap-planningops-tradeoff-decision-framework.quality.md
+  - ../../../../planningops/contracts/federated-ci-summary-contract.md
   - ../../../../planningops/contracts/active-goal-registry-contract.md
   - ../../../../planningops/contracts/operator-channel-adapter-contract.md
+  - ../../../../planningops/contracts/supervisor-operator-handoff-contract.md
   - ../../../workbench/unified-personal-agent-platform/audits/federated-reconciliation-report-20260311.md
   - ../../../archive/README.md
 ---
@@ -102,6 +104,40 @@ The earlier local-only behavior was not caused by git permissions.
    - primary operator channel: `Slack skill -> monday-owned CLI/MCP adapter -> Slack API`
    - terminal completion channel: `monday-owned CLI/MCP adapter -> email provider`
    - planningops owns only the policy, goal state, and delivery evidence requirements
+9. Local runtime readiness is now cross-repo.
+   - `monday` operator automation should treat `runtime-operations` as the top-level gate for planner/runtime safety
+   - `platform-provider-gateway` LiteLLM gate must stay green alongside `monday` because the promoted local planner route depends on that sibling stack
+   - local federated CI keeps `monday` on the canonical `local` profile even when `GEMINI_API_KEY` and `GOOGLE_API_KEY` are absent; in that free-only mode `platform-provider-gateway` must prove the LiteLLM-exposed Ollama fallback path with `reason_code=litellm_fallback_only_ready` or better
+   - local `loop-guardrails` should soft-skip GitHub project field fetch failures during `track1 gate dry-run`; external rate limits are not allowed to make the local federated runtime gate nondeterministic
+10. Federated CI summary artifacts are canonical operator evidence.
+   - canonical contract: `planningops/contracts/federated-ci-summary-contract.md`
+   - latest summary artifact: `planningops/artifacts/ci/federated-ci-summary.json`
+   - latest validation artifact: `planningops/artifacts/validation/federated-ci-summary-validation.json`
+   - latest readiness artifact: `planningops/artifacts/validation/federated-ci-summary-readiness.json`
+   - latest readiness validation artifact: `planningops/artifacts/validation/federated-ci-summary-readiness-validation.json`
+   - canonical readiness command: `python3 planningops/scripts/assess_federated_ci_summary_readiness.py --strict`
+   - operator-facing diagnosis command: `python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass`
+   - diagnosis and gate must fail closed when summary validation, readiness, or readiness-validation is stale
+   - fail-closed gate command: `bash planningops/scripts/gate_federated_ci_summary.sh`
+11. Supervisor/operator handoff must consume the canonical federated readiness surface, not raw summary files.
+   - canonical contract: `planningops/contracts/supervisor-operator-handoff-contract.md`
+   - implementation: `planningops/scripts/autonomous_supervisor_loop.py`
+   - `operator-report.json` may embed a `federated_ci_summary` snapshot sourced from the latest readiness artifact, and should derive `priority_headline` plus `priority_cta_command` for downstream operator surfaces
+   - that snapshot should carry canonical evidence refs plus `remediation_commands` so monday-owned delivery adapters do not need to rediscover the operator path
+   - `operator-summary.md` and `inbox-payload.json` should carry the same federated evidence refs and remediation commands
+   - monday-owned wrappers, dispatch artifacts, and scheduler evidence should preserve `operator_handoff_validation_path`, `priority_preview_ref`, and `priority_display_packet_ref` so CTA consumers can dereference one canonical validation/preview/display trio instead of reparsing markdown or nested delivery reports
+   - canonical planningops handoff-validation consumer command: `python3 planningops/scripts/resolve_supervisor_operator_handoff_validation.py --artifact-file <wrapper-or-scheduler-report> --output <handoff-validation.json>`
+   - canonical planningops bundle consumer command: `python3 planningops/scripts/resolve_supervisor_operator_handoff_bundle.py --artifact-file <wrapper-or-scheduler-report> --output <handoff-bundle.json>`
+   - canonical planningops bundle validation command: `python3 planningops/scripts/validate_supervisor_operator_handoff_bundle.py --artifact-file <wrapper-or-scheduler-report> --output <handoff-bundle-validation.json> --strict`
+   - canonical planningops bundle readiness command: `python3 planningops/scripts/assess_supervisor_operator_handoff_bundle_readiness.py --artifact-file <wrapper-or-scheduler-report> --bundle-validation-output <handoff-bundle-validation.json> --output <handoff-bundle-readiness.json> --readiness-validation-output <handoff-bundle-readiness-validation.json> --strict`
+   - canonical planningops bundle readiness-validation command: `python3 planningops/scripts/validate_supervisor_operator_handoff_bundle_readiness.py --readiness <handoff-bundle-readiness.json> --output <handoff-bundle-readiness-validation.json> --strict`
+   - canonical planningops bundle doctor command: `python3 planningops/scripts/doctor_supervisor_operator_handoff_bundle.py --artifact-file <wrapper-or-scheduler-report> --require-pass`
+   - canonical planningops bundle gate command: `bash planningops/scripts/gate_supervisor_operator_handoff_bundle.sh --artifact-file <wrapper-or-scheduler-report>`
+   - canonical monday preview consumer command: `python3 scripts/resolve_operator_priority_preview.py --artifact-file <wrapper-or-scheduler-report> --output <preview.json>`
+   - canonical monday display consumer command: `python3 scripts/resolve_operator_priority_display_packet.py --artifact-file <wrapper-or-scheduler-report> --output <display-packet.json>`
+   - if multiple monday artifacts from one delivery path disagree on their dereferenced preview/display packet JSON, that is a contract regression and must fail closed
+   - if federated readiness is blocked while the supervisor would otherwise emit `status=ok`, the handoff must be downgraded to `status=degraded` with `operator_action=inspect_federated_ci_gates`
+   - the downgraded reason should surface the canonical readiness `next_step` instead of ad hoc operator guidance
 
 ## Reflected Outcomes
 - execution-repo remote reconciliation completed for:
@@ -122,3 +158,12 @@ The earlier local-only behavior was not caused by git permissions.
 - `python3 planningops/scripts/autonomous_supervisor_loop.py --mode apply --auto-materialize-backlog --active-goal-registry planningops/config/active-goal-registry.json`
 - `python3 planningops/scripts/validate_active_goal_registry.py --registry planningops/config/active-goal-registry.json --strict`
 - `python3 planningops/scripts/backfill_issue_labels.py --repo rather-not-work-on/platform-planningops --issues-file /tmp/projected-issues.json --write-updated-issues-file /tmp/projected-issues.json --output /tmp/issue-label-backfill-report.json --apply`
+- `(cd /Users/minijb/rather-not-work-on/platform-provider-gateway && npm run gate:litellm-stack-ready)`
+- `(cd /Users/minijb/rather-not-work-on/monday && npm run gate:runtime-operations-ready)`
+- `python3 planningops/scripts/doctor_federated_ci_summary.py --require-pass`
+- `python3 planningops/scripts/assess_federated_ci_summary_readiness.py --strict`
+- `bash planningops/scripts/gate_federated_ci_summary.sh`
+- `bash planningops/scripts/test_supervisor_operator_handoff_contract.sh`
+- `bash planningops/scripts/test_autonomous_supervisor_loop_contract.sh`
+- `(cd /Users/minijb/rather-not-work-on/monday && python3 scripts/resolve_operator_priority_preview.py --artifact-file runtime-artifacts/messaging/local-dispatch-cycle-report.json --output /tmp/operator-priority-preview.json)`
+- `(cd /Users/minijb/rather-not-work-on/monday && python3 scripts/resolve_operator_priority_display_packet.py --artifact-file runtime-artifacts/messaging/local-dispatch-cycle-report.json --output /tmp/operator-priority-display-packet.json)`
