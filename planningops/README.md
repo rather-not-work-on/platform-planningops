@@ -43,11 +43,15 @@ Module-level navigation:
 
 ## Runtime Profiles
 - Profile catalog: `planningops/config/runtime-profiles.json`
+- Profile schema: `planningops/schemas/runtime-profiles.schema.json`
 - Contract reference map: `planningops/config/contract-ref-map.json`
 - `active_profile` defines the default runtime surface.
+- profile-level `planner_policy` carries the vendor-neutral planner-engine hints consumed by `monday` runtime selection
+- validator: `python3 planningops/scripts/validate_runtime_profiles.py --strict`
 - `task_overrides.<task_key>` can override:
   - `runtime_profile`
   - provider policy (`model`, `fallback_models`, `max_retries`, `timeout_ms`)
+    - current default intent: `Gemini free-tier first -> Ollama local fallback`
   - worker policy:
     - `kind=parser_diff_dry_run` (baseline)
     - `kind=python_script` + `script` + `args[]` (`{loop_id}`, `{mode}`, `{issue_number}`, `{task_key}`, `{runtime_profile}` templating)

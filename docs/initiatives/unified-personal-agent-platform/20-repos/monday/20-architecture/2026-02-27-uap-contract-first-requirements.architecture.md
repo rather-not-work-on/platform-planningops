@@ -5,7 +5,7 @@ doc_type: architecture
 domain: architecture
 status: active
 date: 2026-02-27
-updated: 2026-02-27
+updated: 2026-03-19
 initiative: unified-personal-agent-platform
 topic: unified-personal-agent-platform-contract-first-requirements
 tags:
@@ -21,6 +21,21 @@ related_docs:
 ---
 
 # Contract-First Requirements Refinement
+
+## Implementation Reality Update (2026-03-19)
+
+- `monday` local planner default is now `deepagents`, not a legacy stub-only path.
+- the active local provider route is gateway-owned:
+  - `monday` planner runtime points at a LiteLLM-compatible local endpoint
+  - `platform-provider-gateway` owns route health, fallback routing, and operator-facing LiteLLM doctor/gate commands
+- `monday` top-level runtime-operations gate now aggregates four surfaces together:
+  - planner runtime
+  - provider-gateway LiteLLM stack
+  - skill registry supply chain
+  - apply sandbox posture
+- operator remediation for provider-route failures must stay cross-repo:
+  - `monday` may point operators at the sibling gateway doctor/gate
+  - `monday` must not absorb raw provider-stack ownership or secret-management responsibilities
 
 ## Refined Problem Definition
 우리가 해결하려는 문제는 "에이전트를 잘 만드는 것"이 아니라 "독립 모듈을 깨지지 않게 조립해 다양한 에이전트를 일관되게 실행하는 것"이다.
@@ -42,13 +57,16 @@ related_docs:
 - 핵심 엔티티: `ExecutionAttempt`, `CompletionEvidence`
 - 규칙: 내부 판단 로직은 외부로 유출 금지
 
-### Bounded Context C: Planning & Delegation (`nanoclaw core`)
+### Bounded Context C: Planner Engine & Delegation
 - 책임: 목표 해석, 서브태스크 분해, handoff 생성
 - 핵심 엔티티: `TaskPlan`, `SubtaskHandoff`
 
 ### Bounded Context D: Provider Runtime
 - 책임: 모델 호출/도구호출 추상화
 - 핵심 엔티티: `ProviderProfile`, `InvocationRecord`
+- 운영 규칙:
+  - local planner/provider access is still gateway-owned even when the planner runs inside `monday`
+  - route-health diagnosis, LiteLLM readiness, and fallback viability are owned by `platform-provider-gateway`
 
 ### Bounded Context E: Messaging Gateway (`codex2message` lineage)
 - 책임: user/channel I/O, ack/dispatch
@@ -96,6 +114,9 @@ related_docs:
 - `adapters/provider-codex`
 - `adapters/provider-claude`
 - `adapters/provider-local-llm`
+- operator-facing route health:
+  - `doctor:litellm-stack`
+  - `gate:litellm-stack-ready`
 
 ### Repo C: `platform-observability-gateway` (independent)
 - `services/telemetry-gateway`
@@ -117,6 +138,7 @@ related_docs:
 - `orchestrator`는 executor 내부 상태/구조를 해석하지 않음
 - `messaging-adapter`는 run state를 생성하지 않고 relay/ack만 담당
 - boundary lint 실패 시 배포/병합 차단
+- `monday` planner/runtime gates may consume the sibling provider-gateway readiness report, but must not inline provider-stack ownership
 
 ## Contract Ownership Model (Hybrid)
 - 중앙 소유: C1~C5(run lifecycle, handoff, result, provider invocation, observability event)
@@ -135,7 +157,7 @@ related_docs:
 ## Candidate Service/Class Map (For Design Review)
 - `MissionOrchestrator` (Mission Control): run 생성/정책 적용/상태 집계
 - `RalphLoopExecutor` (Execution Engine): 반복 실행/완료 증거 산출
-- `SubtaskDelegator` (Planning): handoff 생성 및 위임
+- `SubtaskDelegator` / `DeepAgentsPlanner` (Planner Engine): handoff 생성 및 위임
 - `ProviderGateway` (Provider Runtime): provider profile 적용/호출 기록
 - `TimelineEmitter` (Observability): trace/span/event 표준화 전송
 - `MessageBridge` (Messaging): inbound 명령과 outbound 상태 메시지 중재
