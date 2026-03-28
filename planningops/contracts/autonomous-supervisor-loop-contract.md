@@ -19,6 +19,8 @@ Operator summary artifact:
 - `planningops/artifacts/supervisor/<run-id>/operator-summary.md`
 Inbox payload artifact:
 - `planningops/artifacts/supervisor/<run-id>/inbox-payload.json`
+Operator handoff validation artifact:
+- `planningops/artifacts/supervisor/<run-id>/operator-handoff-validation.json`
 Optional goal-completion delivery artifact:
 - `monday/runtime-artifacts/messaging/delivery-cycles/supervisor-goal-completion-<run-id>.json`
 
@@ -80,17 +82,52 @@ Run summary must include:
 3. full `cycles[]` records
 4. referenced contracts
 5. operator report sidecar paths when generated
+6. operator handoff validation sidecar paths when generated
+
+Supervisor/operator CTA sidecars must also obey these rules:
+- `operator-report.json` and `inbox-payload.json` should treat `priority_headline`, `priority_cta_command`, and `priority_summary_markdown` as the planningops source of truth for downstream CTA rendering
+- `operator-summary.md` and `inbox-payload.json` should expose the canonical `operator-handoff-validation.json` path so downstream operator surfaces can inspect emitted handoff validation evidence without reopening the run directory manually
+- each run should also emit `operator-handoff-bundle.json`, `operator-handoff-bundle-validation.json`, `operator-handoff-bundle-readiness.json`, and `operator-handoff-bundle-readiness-validation.json` plus `last-run` copies so bundle consumers can resolve, validate, diagnose, and gate the same canonical CTA surface
+- when monday translates those artifacts into wrappers, dispatch artifacts, delivery-cycle reports, or scheduler evidence, that downstream path should preserve one canonical `operator_handoff_validation_path` / `priority_preview_ref` / `priority_display_packet_ref` trio plus the planningops-owned `operator_handoff_bundle_path` / `operator_handoff_bundle_validation_path` / `operator_handoff_bundle_readiness_path` / `operator_handoff_bundle_readiness_validation_path` sidecar set derived from the same planningops CTA surface
+- CTA consumers should use monday's canonical resolver entrypoints:
+  - `scripts/resolve_operator_priority_preview.py`
+  - `scripts/resolve_operator_priority_display_packet.py`
+- planningops bundle consumers should use:
+  - `planningops/scripts/resolve_supervisor_operator_handoff_bundle.py`
+  - `planningops/scripts/validate_supervisor_operator_handoff_bundle.py`
+  - `planningops/scripts/assess_supervisor_operator_handoff_bundle_readiness.py`
+  - `planningops/scripts/validate_supervisor_operator_handoff_bundle_readiness.py`
+  - `planningops/scripts/doctor_supervisor_operator_handoff_bundle.py`
+  - `planningops/scripts/gate_supervisor_operator_handoff_bundle.sh`
+- if multiple monday artifacts from one supervisor delivery path dereference different preview/display packet JSON, that is a contract regression and must fail closed
+- machine validation should use:
+  - `planningops/schemas/supervisor-operator-report.schema.json`
+  - `planningops/schemas/supervisor-inbox-payload.schema.json`
+  - `planningops/scripts/validate_supervisor_operator_handoff.py`
+  - `planningops/schemas/supervisor-operator-handoff-bundle.schema.json`
+  - `planningops/schemas/supervisor-operator-handoff-bundle-validation.schema.json`
+  - `planningops/schemas/supervisor-operator-handoff-bundle-readiness.schema.json`
+  - `planningops/schemas/supervisor-operator-handoff-bundle-readiness-validation.schema.json`
+  - `planningops/scripts/validate_supervisor_operator_handoff_bundle.py`
+  - `planningops/scripts/validate_supervisor_operator_handoff_bundle_readiness.py`
+  - `planningops/scripts/assess_supervisor_operator_handoff_bundle_readiness.py`
+  - `planningops/scripts/doctor_supervisor_operator_handoff_bundle.py`
+  - `planningops/scripts/gate_supervisor_operator_handoff_bundle.sh`
 
 Output:
 - `planningops/artifacts/supervisor/last-run.json`
 - `planningops/artifacts/supervisor/last-run-operator-report.json`
 - `planningops/artifacts/supervisor/last-run-operator-summary.md`
 - `planningops/artifacts/supervisor/last-run-inbox-payload.json`
+- `planningops/artifacts/supervisor/last-run-operator-handoff-validation.json`
 - when `stop_reason=goal_completed` and monday delivery is available:
   - planningops may cache a copy of the monday delivery-cycle report as local evidence
 
 ## Testability Mapping
 - implementation:
   - `planningops/scripts/autonomous_supervisor_loop.py`
+  - `planningops/scripts/supervisor_handoff_common.py`
+- machine validation:
+  - `planningops/scripts/validate_supervisor_operator_handoff.py`
 - deterministic simulation test:
   - `planningops/scripts/test_autonomous_supervisor_loop_contract.sh`
