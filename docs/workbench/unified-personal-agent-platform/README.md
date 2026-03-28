@@ -105,6 +105,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Runtime-Profiles Validator Family Backfill Packet](./plans/2026-03-26-runtime-profiles-validator-family-backfill-packet.md)
 - [Control-Plane Governance Helper Smoke Packet](./plans/2026-03-26-control-plane-governance-helper-smoke-packet.md)
 - [Supervisor Handoff Validator Family Backfill Packet](./plans/2026-03-28-supervisor-handoff-validator-family-backfill-packet.md)
+- [Supervisor Handoff Validation Resolver Family Backfill Packet](./plans/2026-03-28-supervisor-handoff-validation-resolver-family-backfill-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
