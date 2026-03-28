@@ -23,7 +23,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `branch-protection-apply-snapshot.sample.json`: minimal apply snapshot for branch protection apply tests
 - `artifact-storage-policy-invalid.sample.json`: invalid artifact storage policy fixture for validator contract and artifact-lane tests
 - `external-only-commit-guard-*.sample.txt`: allowed and blocked file lists for commit guard validator tests
-- `external-only-commit-guard-policy.sample.json`: tracked-mode policy fixture for commit guard validator tests
+- `external-only-commit-guard-policy.sample.json`: tracked-mode policy fixture for commit guard and migration tests
 
 ## Change Rules
 - Fixtures must be static and deterministic.
