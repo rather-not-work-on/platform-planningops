@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Supervisor Operator Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "run_id",
+    "summary_path",
+    "cycle_report_path",
+    "supervisor_verdict",
+    "stop_reason",
+    "status",
+    "headline",
+    "priority_headline",
+    "operator_action",
+    "recommended_wait_minutes",
+    "retry_mode",
+    "allowed_modes",
+    "blocked_modes",
+    "needs_human_attention",
+    "reason",
+    "guidance",
+    "message_class_hint",
+    "handoff_contract_ref",
+    "operator_handoff_validation_path",
+    "priority_preview_ref",
+    "priority_display_packet_ref",
+    "operator_handoff_bundle_path",
+    "operator_handoff_bundle_validation_path",
+    "operator_handoff_bundle_readiness_path",
+    "operator_handoff_bundle_readiness_validation_path",
+    "priority_summary_markdown"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "run_id": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "summary_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "cycle_report_path": {
+      "$ref": "#/$defs/stringOrNull"
+    },
+    "supervisor_verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "inconclusive"
+      ]
+    },
+    "stop_reason": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded",
+        "blocked",
+        "review_required"
+      ]
+    },
+    "headline": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_headline": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_action": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "recommended_wait_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retry_mode": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "allowed_modes": {
+      "$ref": "#/$defs/stringList"
+    },
+    "blocked_modes": {
+      "$ref": "#/$defs/stringList"
+    },
+    "needs_human_attention": {
+      "type": "boolean"
+    },
+    "reason": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "guidance": {
+      "type": "object"
+    },
+    "message_class_hint": {
+      "type": "string",
+      "enum": [
+        "goal_completed",
+        "blocked_report",
+        "decision_request",
+        "status_update"
+      ]
+    },
+    "handoff_contract_ref": {
+      "type": "string",
+      "enum": [
+        "planningops/contracts/supervisor-operator-handoff-contract.md"
+      ]
+    },
+    "operator_handoff_validation_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "first_action_command": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_cta_command": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_summary_markdown": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "goal_key": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "primary_operator_channel": {
+      "$ref": "#/$defs/operatorChannelHint"
+    },
+    "terminal_notification_channel": {
+      "$ref": "#/$defs/operatorChannelHint"
+    },
+    "goal_transition_report_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "goal_completion_delivery_report_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_preview_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_display_packet_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_validation_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_readiness_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_readiness_validation_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "federated_ci_summary": {
+      "$ref": "#/$defs/federatedCiSummary"
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringOrNull": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stringList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "operatorChannelHint": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "execution_repo": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "adapter_contract_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "federatedCiSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary_path",
+        "readiness_path",
+        "summary_run_id",
+        "summary_verdict",
+        "check_count",
+        "ready",
+        "blocking_reasons",
+        "remediation_commands"
+      ],
+      "properties": {
+        "summary_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "readiness_path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "validation_report_path": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "summary_run_id": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "summary_generated_at_utc": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "summary_verdict": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "overall_status": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "check_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validation_verdict": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "validation_state": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "readiness_status": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "blocking_reasons": {
+          "$ref": "#/$defs/stringList"
+        },
+        "next_step": {
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "remediation_commands": {
+          "$ref": "#/$defs/stringList"
+        },
+        "first_action_command": {
+          "$ref": "#/$defs/stringOrNull"
+        }
+      }
+    }
+  }
+}
