@@ -13,15 +13,16 @@ text = contract.read_text(encoding="utf-8")
 required_paths = [
     "planningops/scripts/federation/run_reflection_delivery_cycle.py",
     "planningops/scripts/autonomous_supervisor_loop.py",
+    "monday/scripts/enqueue_scheduled_delivery_work_item.py",
     "monday/scripts/run_operator_message_delivery_cycle.py",
     "monday/scripts/run_goal_completion_delivery_cycle.py",
 ]
 
 required_markers = [
-    "must invoke only monday-owned local delivery-cycle entrypoints on the primary local path",
-    "must not invoke these lower-level monday scripts directly on the primary local path",
-    "reflection actions requiring operator delivery must flow through `monday/scripts/run_operator_message_delivery_cycle.py`",
-    "goal completion delivery must flow through `monday/scripts/run_goal_completion_delivery_cycle.py`",
+    "must invoke only monday-owned queue-admission entrypoints on the primary local path",
+    "must not invoke these monday scripts directly on the primary local path",
+    "reflection actions requiring operator delivery must flow through `monday/scripts/enqueue_scheduled_delivery_work_item.py`",
+    "goal completion delivery must flow through `monday/scripts/enqueue_scheduled_delivery_work_item.py`",
 ]
 
 for path in required_paths:
