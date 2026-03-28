@@ -46,6 +46,7 @@ from core.loop.selection import (
     parse_selector_hints,
 )
 from federation.adapter_registry import invoke_adapter_hook, resolve_execution_adapter
+from planning_context import parse_depends_on_plan_item_keys, parse_execution_order
 from sync_project_fields_after_issue_create import (
     DEFAULT_CONFIG as PROJECT_SYNC_DEFAULT_CONFIG,
     build_project_item_issue_index as build_project_sync_issue_index,
@@ -64,6 +65,7 @@ WATCHDOG_DIR = Path("planningops/artifacts/loop-runner/watchdog")
 ESCALATION_HISTORY_PATH = Path("planningops/artifacts/loop-runner/escalation-history.json")
 PROJECT_ITEMS_SNAPSHOT_PATH = Path("planningops/artifacts/loop-runner/project-items-snapshot.json")
 PROGRAM_MANIFEST_PATH = Path("planningops/artifacts/program/program-manifest.json")
+ACTIVE_GOAL_REGISTRY_PATH = Path("planningops/config/active-goal-registry.json")
 LAST_RUN_PATH = Path("planningops/artifacts/loop-runner/last-run.json")
 DEFAULT_ATTEMPT_BUDGET = {
     "max_attempts": 3,
@@ -420,13 +422,118 @@ def is_rate_limit_error(text: str):
     return "rate limit exceeded" in str(text or "").lower()
 
 
+def synthesize_project_items_from_issue_snapshot_rows(rows):
+    parsed_rows = []
+    plan_item_issue_index = {}
+
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        issue_repo = str(row.get("repo") or row.get("repository") or "").strip()
+        issue_number = row.get("number")
+        if not issue_repo or not isinstance(issue_number, int):
+            continue
+        issue_body = str(row.get("body") or "")
+        metadata = parse_project_sync_metadata(issue_body)
+        plan_item_id = str(metadata.get("plan_item_id") or "").strip()
+        parsed = {
+            "row": row,
+            "issue_repo": issue_repo,
+            "issue_number": issue_number,
+            "issue_body": issue_body,
+            "metadata": metadata,
+            "plan_item_id": plan_item_id,
+        }
+        parsed_rows.append(parsed)
+        if plan_item_id:
+            plan_item_issue_index[plan_item_id] = {"issue_repo": issue_repo, "issue_number": issue_number}
+
+    synthesized = []
+    for parsed in parsed_rows:
+        row = parsed["row"]
+        issue_repo = parsed["issue_repo"]
+        issue_number = parsed["issue_number"]
+        issue_body = parsed["issue_body"]
+        metadata = parsed["metadata"]
+        workflow_state = str(metadata.get("workflow_state") or "").strip().lower().replace("_", "-")
+        workflow_state = workflow_state or "backlog"
+        lifecycle_key = workflow_state.replace("-", "_")
+        status_token = WORKFLOW_TO_STATUS.get(lifecycle_key, "todo")
+        status = {
+            "todo": "Todo",
+            "in_progress": "In Progress",
+            "blocked": "Blocked",
+            "done": "Done",
+        }.get(status_token, "Todo")
+        execution_order = parse_execution_order(metadata.get("execution_order")) or 0
+        execution_kind = parse_execution_kind(issue_body)
+        depends_on_refs = []
+        for dep_plan_item in parse_depends_on_plan_item_keys(metadata.get("depends_on")):
+            dep_info = plan_item_issue_index.get(dep_plan_item)
+            if not dep_info:
+                continue
+            if dep_info.get("issue_repo") != issue_repo:
+                continue
+            depends_on_refs.append(f"#{dep_info.get('issue_number')}")
+        normalized_issue_body = issue_body
+        if depends_on_refs:
+            normalized_issue_body = f"{issue_body.rstrip()}\ndepends_on: {', '.join(depends_on_refs)}\n"
+        issue_state = str(row.get("state") or "OPEN").upper()
+        ISSUE_DOC_CACHE[f"{issue_repo}#{issue_number}"] = {
+            "body": normalized_issue_body,
+            "state": issue_state,
+        }
+
+        synthesized.append(
+            {
+                "status": status,
+                "workflow_state": workflow_state,
+                "target_repo": metadata.get("target_repo") or issue_repo,
+                "execution_order": execution_order,
+                "component": metadata.get("component"),
+                "loop_profile": metadata.get("loop_profile"),
+                "initiative": metadata.get("initiative"),
+                "execution_kind": execution_kind,
+                "content": {
+                    "type": "Issue",
+                    "number": issue_number,
+                    "repository": issue_repo,
+                },
+            }
+        )
+
+    return synthesized
+
+
 def load_project_items_snapshot(snapshot_path: Path):
     if not snapshot_path.exists():
         raise RuntimeError(f"project item snapshot missing: {snapshot_path}")
     doc = json.loads(snapshot_path.read_text(encoding="utf-8"))
-    items = doc.get("items")
+
+    if isinstance(doc, list):
+        if doc and isinstance(doc[0], dict) and "repo" in doc[0] and "number" in doc[0]:
+            items = synthesize_project_items_from_issue_snapshot_rows(doc)
+        else:
+            items = doc
+    elif isinstance(doc, dict):
+        items = doc.get("items")
+    else:
+        items = None
+
     if not isinstance(items, list):
         raise RuntimeError(f"invalid project item snapshot: {snapshot_path}")
+    # Allow manifest-style snapshots as a fallback source for selector intake.
+    if items:
+        first_item = items[0]
+        if isinstance(first_item, dict) and "content" not in first_item and "issue_number" in first_item:
+            synthesized_items = synthesize_project_items_from_manifest(snapshot_path)
+            return {
+                "items": synthesized_items,
+                "source": "snapshot",
+                "snapshot_path": str(snapshot_path),
+                "rate_limit_fallback_used": True,
+                "rate_limit_error": None,
+            }
     return {
         "items": items,
         "source": "snapshot",
@@ -458,8 +565,56 @@ def load_program_manifest_items(manifest_path: Path | None = None):
     return items
 
 
+def active_goal_registry_allows_manifest_source_plan(manifest_doc: dict, active_goal_registry_path: Path | None = None):
+    if not isinstance(manifest_doc, dict):
+        return True
+
+    source_plan = str(manifest_doc.get("source_plan") or "").strip()
+    if not source_plan:
+        return True
+
+    registry_path = Path(active_goal_registry_path) if active_goal_registry_path else ACTIVE_GOAL_REGISTRY_PATH
+    registry_doc = load_json(registry_path, {})
+    if not isinstance(registry_doc, dict):
+        return True
+
+    active_goal_key = str(registry_doc.get("active_goal_key") or "").strip()
+    if active_goal_key:
+        return True
+
+    goals = registry_doc.get("goals")
+    if not isinstance(goals, list):
+        return True
+
+    for goal in goals:
+        if not isinstance(goal, dict):
+            continue
+        if str(goal.get("status") or "").strip().lower() != "achieved":
+            continue
+        execution_contract_file = str(goal.get("execution_contract_file") or "").strip()
+        if not execution_contract_file:
+            continue
+        contract_doc = load_json(Path(execution_contract_file), {})
+        execution_contract = contract_doc.get("execution_contract") if isinstance(contract_doc, dict) else None
+        if not isinstance(execution_contract, dict):
+            continue
+        contract_source_plan = str(execution_contract.get("source_of_truth") or "").strip()
+        if contract_source_plan and contract_source_plan == source_plan:
+            return False
+
+    return True
+
+
 def synthesize_project_items_from_manifest(manifest_path: Path | None = None):
-    manifest_items = load_program_manifest_items(manifest_path)
+    path = Path(manifest_path) if manifest_path else PROGRAM_MANIFEST_PATH
+    manifest_doc = load_json(path, {})
+    manifest_items = manifest_doc.get("items") if isinstance(manifest_doc, dict) else None
+    if not isinstance(manifest_items, list):
+        raise RuntimeError(f"invalid program manifest items: {path}")
+
+    if not active_goal_registry_allows_manifest_source_plan(manifest_doc, ACTIVE_GOAL_REGISTRY_PATH):
+        return []
+
     synthesized = []
     for row in manifest_items:
         if not isinstance(row, dict):
@@ -494,8 +649,6 @@ def synthesize_project_items_from_manifest(manifest_path: Path | None = None):
                 },
             }
         )
-    if not synthesized:
-        raise RuntimeError("program manifest fallback has no issue items")
     return synthesized
 
 
@@ -537,6 +690,10 @@ def build_manifest_issue_doc_cache(manifest_path: Path | None = None):
             f"execution_order: {row.get('execution_order') or 0}",
             f"depends_on: {', '.join(depends_tokens)}" if depends_tokens else "depends_on:",
             f"execution_kind: {row.get('execution_kind') or EXECUTION_KIND_EXECUTABLE}",
+            f"interface_contract_refs: {row.get('interface_contract_refs') or ''}",
+            f"package_topology_ref: {row.get('package_topology_ref') or ''}",
+            f"dependency_manifest_ref: {row.get('dependency_manifest_ref') or ''}",
+            f"file_plan_ref: {row.get('file_plan_ref') or ''}",
         ]
         body = "\n".join(line for line in body_lines if line != "")
         issue_state = str(row.get("issue_state") or "").strip().lower()
