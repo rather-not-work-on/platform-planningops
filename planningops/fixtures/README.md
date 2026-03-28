@@ -10,7 +10,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `plan-compile-sample-issues.json`: deterministic offline issues input for compile sample artifact lanes
 - `backlog-materialization-sample-contract.json`: ready-implementation PEC sample for offline backlog materialization tests
 - `backlog-materialize-*.expected.json`: normalized expected outputs for the offline backlog materialize sample lane
-- `plan-projection-snapshot-sample.json`: sample project snapshot matching PEC sample
+- `plan-projection-snapshot-sample.json`: sample project snapshot matching the PEC sample for plan-projection artifact lanes
 - `meta-plan-graph-sample.json`: minimal valid MPG v1 graph sample
 - `worker-task-pack-sample.json`: minimal valid worker task pack sample
 - `track1-kpi-baseline-ci.json`: strict gate KPI baseline input
