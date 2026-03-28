@@ -1,0 +1,40 @@
+{
+  "mode": "dry-run",
+  "contract_file": "planningops/fixtures/plan-execution-contract-sample.json",
+  "validation_errors": [],
+  "results": [
+    {
+      "plan_item_id": "sample-001",
+      "execution_order": 1,
+      "issue_number": null,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/DRY-RUN-1",
+      "created_issue": true,
+      "dedup_match_state": null,
+      "dedup_strategy": null,
+      "reused_closed_issue": false,
+      "reopened_closed_issue": false,
+      "closed_match_detected": false,
+      "closed_match_issue_number": null,
+      "metadata_sync_required": false,
+      "metadata_sync_action": "none",
+      "field_updates": [
+        "initiative(text)",
+        "target_repo(text)",
+        "execution_order(number)",
+        "status(todo)",
+        "component(planningops)",
+        "workflow_state(ready_contract)",
+        "loop_profile(l1_contract_clarification)",
+        "plan_lane(m1_contract_freeze)"
+      ]
+    }
+  ],
+  "plan_id": "sample-pec-plan",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "items_total": 1,
+  "issues_source": "file:planningops/fixtures/plan-compile-sample-issues.json",
+  "open_issues_scanned": 0,
+  "closed_issues_scanned": 0,
+  "verdict": "pass"
+}

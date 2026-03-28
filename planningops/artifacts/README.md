@@ -18,6 +18,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
   - deterministic sample backlog outputs also live here with `.sample.json` suffixes when a fixture-backed artifact lane is promoted
 - `program/`: canonical program-manifest outputs, including fixture-backed `.sample.json` lanes
 - `validation/`: gate/schema reports, including fixture-backed `.sample.json` lanes that stay separate from live latest artifacts
+  - canonical sample validation lanes currently include `plan-compile-report.sample.json` and `issue-quality-*.sample.json`
 - `adapter-hooks/`, `verification/`, `drift/`, `transition-log/`, `pilot/`, `idempotency/`: supporting evidence
 
 ## Change Rules

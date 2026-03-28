@@ -7,6 +7,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `contracts/`: valid schema fixture payloads (C1~C5)
 - `plan-items/`: valid/invalid planning item sample sets
 - `plan-execution-contract-sample.json`: minimal valid PEC v1 sample
+- `plan-compile-sample-issues.json`: deterministic offline issues input for compile sample artifact lanes
 - `backlog-materialization-sample-contract.json`: ready-implementation PEC sample for offline backlog materialization tests
 - `backlog-materialize-*.expected.json`: normalized expected outputs for the offline backlog materialize sample lane
 - `plan-projection-snapshot-sample.json`: sample project snapshot matching PEC sample
