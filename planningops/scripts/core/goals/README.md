@@ -16,4 +16,5 @@ Hold recurring goal-resolution logic for the control plane.
 ## Rules
 - Goal resolution must be deterministic and file-backed.
 - The active goal registry is the first source of truth for autonomous execution when no explicit contract path is supplied.
+- A registry without an active goal is a valid terminal state; callers must fail closed or emit a review-required outcome instead of inventing a fallback goal.
 - Goal state transitions must fail closed when the resulting registry would violate the active-goal contract.
