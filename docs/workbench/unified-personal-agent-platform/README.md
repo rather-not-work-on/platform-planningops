@@ -120,6 +120,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Federated Tooling Contract Test Family Backfill Packet](./plans/2026-03-28-federated-tooling-contract-test-family-backfill-packet.md)
 - [Inventory Issue Lifecycle Snapshot Test Backfill Packet](./plans/2026-03-28-inventory-issue-lifecycle-snapshot-test-backfill-packet.md)
 - [Review Interface Adoption Command Checks Packet](./plans/2026-03-28-review-interface-adoption-command-checks-packet.md)
+- [UAP Automation Operations Summary Contract Packet](./plans/2026-03-28-uap-automation-ops-summary-contract-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
