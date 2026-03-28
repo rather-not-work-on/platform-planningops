@@ -29,6 +29,7 @@ Each in-scope planning issue (`plan_item_id:` marker in body) must include:
 - Label sync: `planningops/scripts/ensure_label_taxonomy.py`
 - Issue quality validator: `planningops/scripts/validate_federated_issue_quality.py`
 - Contract test: `planningops/scripts/test_validate_federated_issue_quality_contract.sh`
+- Workflow guardrail companion: `planningops/scripts/run_issue_quality_ci_check.sh`
 
 ## Operational Notes
 - `ensure_label_taxonomy.py --apply` creates/updates missing taxonomy labels per repo.
