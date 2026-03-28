@@ -147,6 +147,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Issue Quality Artifact Refresh Packet](./plans/2026-03-28-issue-quality-artifact-refresh-packet.md)
 - [Project Field Schema Artifact Refresh Packet](./plans/2026-03-28-project-field-schema-artifact-refresh-packet.md)
 - [Plan Projection Artifact Refresh Packet](./plans/2026-03-28-plan-projection-artifact-refresh-packet.md)
+- [Plan Compile Artifact Refresh Packet](./plans/2026-03-28-plan-compile-artifact-refresh-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
