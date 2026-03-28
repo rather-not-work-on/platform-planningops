@@ -12,6 +12,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `backlog-materialize-*.expected.json`: normalized expected outputs for the offline backlog materialize sample lane
 - `plan-projection-snapshot-sample.json`: sample project snapshot matching the PEC sample for plan-projection artifact lanes
 - `blueprint-pack-valid.sample.md`: fixture-backed ready-implementation blueprint pack doc with all required sections
+- `ready-implementation-blueprint-*.sample.json`: fixture-backed project item-list and issue-view payloads for offline blueprint normalization lanes
 - `project-field-schema-*.sample.json`: fixture-backed `gh project` field-list and item-list payloads for offline project field schema validation lanes
 - `meta-plan-graph-sample.json`: minimal valid MPG v1 graph sample
 - `worker-task-pack-sample.json`: minimal valid worker task pack sample

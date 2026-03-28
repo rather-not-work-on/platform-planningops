@@ -1,0 +1,42 @@
+{
+  "generated_at_utc": "2026-03-28T14:09:02.311891+00:00",
+  "mode": "dry-run",
+  "owner": "rather-not-work-on",
+  "project_num": 2,
+  "initiative": "unified-personal-agent-platform",
+  "workflow_states": [
+    "ready-implementation",
+    "ready_implementation"
+  ],
+  "candidates_count": 1,
+  "changed_count": 1,
+  "applied_count": 0,
+  "missing_count": 0,
+  "rows": [
+    {
+      "issue_number": 321,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "workflow_state": "ready-implementation",
+      "status": "Todo",
+      "changed": true,
+      "applied": false,
+      "apply_error": null,
+      "missing_keys": [],
+      "source": {
+        "interface_contract_refs": "default",
+        "package_topology_ref": "default",
+        "dependency_manifest_ref": "default",
+        "file_plan_ref": "default"
+      },
+      "resolved_refs": {
+        "interface_contract_refs": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md",
+        "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/README.md",
+        "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+        "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md"
+      },
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/321"
+    }
+  ],
+  "verdict": "pass"
+}

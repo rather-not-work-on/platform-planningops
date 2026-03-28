@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "id": "PVTI_sample_ready_impl",
+      "initiative": "unified-personal-agent-platform",
+      "target_repo": "rather-not-work-on/monday",
+      "workflow_state": "ready-implementation",
+      "status": "Todo",
+      "content": {
+        "type": "Issue",
+        "number": 321,
+        "repository": "rather-not-work-on/platform-planningops"
+      }
+    }
+  ]
+}
