@@ -2,7 +2,7 @@
 title: plan: Goal-Driven Autonomy Wave 21 Goal Brief
 type: plan
 date: 2026-03-15
-updated: 2026-03-15
+updated: 2026-03-17
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
@@ -57,3 +57,11 @@ Move the primary recurring delivery handoff up to monday queue admission:
 ## Execution Contract
 
 - `docs/workbench/unified-personal-agent-platform/plans/2026-03-15-goal-driven-autonomy-wave21.execution-contract.json`
+
+## Current Status
+
+- implementation and review scope for wave21 is complete
+- review evidence is green at `planningops/artifacts/validation/goal-driven-autonomy-wave21-review.json`
+- active-goal lifecycle transition is green in `dry-run` at `planningops/artifacts/validation/wave21-goal-transition-dry-run.json`
+- live registry mutation is applied at `planningops/artifacts/validation/wave21-goal-transition-apply.json`
+- `planningops/config/active-goal-registry.json` now records no active goal and marks `uap-goal-driven-autonomy-wave21` as `achieved`
