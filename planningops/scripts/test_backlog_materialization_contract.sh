@@ -15,35 +15,7 @@ spec.loader.exec_module(mod)
 
 with tempfile.TemporaryDirectory() as td:
     td_path = Path(td)
-    contract_path = td_path / "execution-contract.json"
-    contract_path.write_text(
-        json.dumps(
-            {
-                "execution_contract": {
-                    "plan_id": "uap-backlog-wave26",
-                    "plan_revision": 1,
-                    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md",
-                    "items": [
-                        {
-                            "plan_item_id": "A60",
-                            "execution_order": 60,
-                            "title": "Add recurring backlog materialization runner",
-                            "target_repo": "rather-not-work-on/platform-planningops",
-                            "component": "planningops",
-                            "workflow_state": "ready_implementation",
-                            "loop_profile": "l4_integration_reconcile",
-                            "plan_lane": "m3_guardrails",
-                            "depends_on": [],
-                            "primary_output": "planningops/scripts/core/backlog/materialize.py",
-                        }
-                    ],
-                }
-            },
-            ensure_ascii=True,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+    contract_path = Path("planningops/fixtures/backlog-materialization-sample-contract.json")
 
     execution_contract = mod.load_execution_contract(contract_path)
     assert execution_contract["plan_id"] == "uap-backlog-wave26", execution_contract
