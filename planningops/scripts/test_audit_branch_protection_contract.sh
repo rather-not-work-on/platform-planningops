@@ -4,136 +4,20 @@ set -euo pipefail
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
-cat > "$tmp_dir/policy.json" <<'JSON'
-{
-  "owner": "rather-not-work-on",
-  "default_branch": "main",
-  "defaults": {
-    "require_approving_reviews": true,
-    "min_approving_review_count": 1,
-    "require_conversation_resolution": true,
-    "require_status_checks": true,
-    "require_strict_status_checks": true,
-    "allow_force_pushes": false,
-    "allow_deletions": false,
-    "enforce_admins": false
-  },
-  "repos": [
-    {
-      "name": "platform-planningops",
-      "required_status_checks_all": ["template-and-link-check", "validate-and-dry-run", "federated-summary"]
-    },
-    {
-      "name": "monday",
-      "required_status_checks_all": ["template-and-link-check", "monday-local-ci"]
-    }
-  ]
-}
-JSON
-
-cat > "$tmp_dir/snapshot-valid.json" <<'JSON'
-{
-  "repositories": [
-    {
-      "name": "platform-planningops",
-      "default_branch": "main",
-      "rules": [
-        {
-          "pattern": "main",
-          "requiresApprovingReviews": true,
-          "requiredApprovingReviewCount": 1,
-          "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": [
-            "template-and-link-check",
-            "validate-and-dry-run",
-            "federated-summary"
-          ],
-          "requiresStrictStatusChecks": true,
-          "requiresConversationResolution": true,
-          "allowsForcePushes": false,
-          "allowsDeletions": false,
-          "isAdminEnforced": false
-        }
-      ]
-    },
-    {
-      "name": "monday",
-      "default_branch": "main",
-      "rules": [
-        {
-          "pattern": "main",
-          "requiresApprovingReviews": true,
-          "requiredApprovingReviewCount": 1,
-          "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": ["template-and-link-check", "monday-local-ci"],
-          "requiresStrictStatusChecks": true,
-          "requiresConversationResolution": true,
-          "allowsForcePushes": false,
-          "allowsDeletions": false,
-          "isAdminEnforced": false
-        }
-      ]
-    }
-  ]
-}
-JSON
+policy="planningops/fixtures/repository-governance-policy.sample.json"
+snapshot_valid="planningops/fixtures/branch-protection-snapshot-valid.sample.json"
+snapshot_invalid="planningops/fixtures/branch-protection-snapshot-invalid.sample.json"
 
 python3 planningops/scripts/audit_branch_protection.py \
-  --policy "$tmp_dir/policy.json" \
-  --snapshot-file "$tmp_dir/snapshot-valid.json" \
+  --policy "$policy" \
+  --snapshot-file "$snapshot_valid" \
   --output "$tmp_dir/branch-protection-valid.test.json" \
   --strict
 
-cat > "$tmp_dir/snapshot-invalid.json" <<'JSON'
-{
-  "repositories": [
-    {
-      "name": "platform-planningops",
-      "default_branch": "main",
-      "rules": [
-        {
-          "pattern": "main",
-          "requiresApprovingReviews": true,
-          "requiredApprovingReviewCount": 1,
-          "requiresStatusChecks": true,
-          "requiredStatusCheckContexts": [
-            "template-and-link-check",
-            "validate-and-dry-run"
-          ],
-          "requiresStrictStatusChecks": true,
-          "requiresConversationResolution": true,
-          "allowsForcePushes": false,
-          "allowsDeletions": false,
-          "isAdminEnforced": false
-        }
-      ]
-    },
-    {
-      "name": "monday",
-      "default_branch": "main",
-      "rules": [
-        {
-          "pattern": "main",
-          "requiresApprovingReviews": false,
-          "requiredApprovingReviewCount": 0,
-          "requiresStatusChecks": false,
-          "requiredStatusCheckContexts": [],
-          "requiresStrictStatusChecks": false,
-          "requiresConversationResolution": false,
-          "allowsForcePushes": true,
-          "allowsDeletions": true,
-          "isAdminEnforced": false
-        }
-      ]
-    }
-  ]
-}
-JSON
-
 set +e
 python3 planningops/scripts/audit_branch_protection.py \
-  --policy "$tmp_dir/policy.json" \
-  --snapshot-file "$tmp_dir/snapshot-invalid.json" \
+  --policy "$policy" \
+  --snapshot-file "$snapshot_invalid" \
   --output "$tmp_dir/branch-protection-invalid.test.json" \
   --strict
 rc=$?

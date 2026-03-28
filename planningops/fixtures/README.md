@@ -17,6 +17,8 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `backlog-stock-items-sample.json`: normalized project-item sample for stock gate checks
 - `backlog-replenishment-candidates-sample.json`: evidence-backed replenishment candidate sample
 - `supervisor-loop-sequence-sample.json`: deterministic loop-result sequence for supervisor contract tests
+- `repository-governance-policy.sample.json`: fixture-backed repository governance policy for branch protection audit tests
+- `branch-protection-snapshot-*.sample.json`: valid and invalid branch protection snapshots for repository governance audit tests
 
 ## Change Rules
 - Fixtures must be static and deterministic.

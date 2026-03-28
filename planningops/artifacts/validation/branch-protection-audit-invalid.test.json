@@ -1,0 +1,143 @@
+{
+  "generated_at_utc": "2026-03-28T07:07:38.941101+00:00",
+  "mode": "snapshot",
+  "policy_path": "planningops/fixtures/repository-governance-policy.sample.json",
+  "owner": "rather-not-work-on",
+  "repo_count": 2,
+  "repo_evaluated_count": 2,
+  "fetch_error_count": 0,
+  "fetch_errors": [],
+  "violation_count": 9,
+  "violations": [
+    {
+      "repo": "platform-planningops",
+      "code": "required_status_checks_all_missing",
+      "message": "missing required status checks (all): federated-summary",
+      "field": "requiredStatusCheckContexts"
+    },
+    {
+      "repo": "monday",
+      "code": "approving_reviews_mismatch",
+      "message": "requiresApprovingReviews expected=True actual=False",
+      "field": "requiresApprovingReviews"
+    },
+    {
+      "repo": "monday",
+      "code": "insufficient_approving_review_count",
+      "message": "requiredApprovingReviewCount expected>=1 actual=0",
+      "field": "requiredApprovingReviewCount"
+    },
+    {
+      "repo": "monday",
+      "code": "status_checks_requirement_mismatch",
+      "message": "requiresStatusChecks expected=True actual=False",
+      "field": "requiresStatusChecks"
+    },
+    {
+      "repo": "monday",
+      "code": "required_status_checks_all_missing",
+      "message": "missing required status checks (all): monday-local-ci, template-and-link-check",
+      "field": "requiredStatusCheckContexts"
+    },
+    {
+      "repo": "monday",
+      "code": "strict_status_checks_mismatch",
+      "message": "requiresStrictStatusChecks expected=True actual=False",
+      "field": "requiresStrictStatusChecks"
+    },
+    {
+      "repo": "monday",
+      "code": "conversation_resolution_mismatch",
+      "message": "requiresConversationResolution expected=True actual=False",
+      "field": "requiresConversationResolution"
+    },
+    {
+      "repo": "monday",
+      "code": "force_push_policy_mismatch",
+      "message": "allowsForcePushes expected=False actual=True",
+      "field": "allowsForcePushes"
+    },
+    {
+      "repo": "monday",
+      "code": "deletion_policy_mismatch",
+      "message": "allowsDeletions expected=False actual=True",
+      "field": "allowsDeletions"
+    }
+  ],
+  "results": [
+    {
+      "repo": "platform-planningops",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [
+        "template-and-link-check",
+        "validate-and-dry-run"
+      ],
+      "violations": [
+        {
+          "repo": "platform-planningops",
+          "code": "required_status_checks_all_missing",
+          "message": "missing required status checks (all): federated-summary",
+          "field": "requiredStatusCheckContexts"
+        }
+      ]
+    },
+    {
+      "repo": "monday",
+      "default_branch": "main",
+      "selected_pattern": "main",
+      "available_status_checks": [],
+      "violations": [
+        {
+          "repo": "monday",
+          "code": "approving_reviews_mismatch",
+          "message": "requiresApprovingReviews expected=True actual=False",
+          "field": "requiresApprovingReviews"
+        },
+        {
+          "repo": "monday",
+          "code": "insufficient_approving_review_count",
+          "message": "requiredApprovingReviewCount expected>=1 actual=0",
+          "field": "requiredApprovingReviewCount"
+        },
+        {
+          "repo": "monday",
+          "code": "status_checks_requirement_mismatch",
+          "message": "requiresStatusChecks expected=True actual=False",
+          "field": "requiresStatusChecks"
+        },
+        {
+          "repo": "monday",
+          "code": "required_status_checks_all_missing",
+          "message": "missing required status checks (all): monday-local-ci, template-and-link-check",
+          "field": "requiredStatusCheckContexts"
+        },
+        {
+          "repo": "monday",
+          "code": "strict_status_checks_mismatch",
+          "message": "requiresStrictStatusChecks expected=True actual=False",
+          "field": "requiresStrictStatusChecks"
+        },
+        {
+          "repo": "monday",
+          "code": "conversation_resolution_mismatch",
+          "message": "requiresConversationResolution expected=True actual=False",
+          "field": "requiresConversationResolution"
+        },
+        {
+          "repo": "monday",
+          "code": "force_push_policy_mismatch",
+          "message": "allowsForcePushes expected=False actual=True",
+          "field": "allowsForcePushes"
+        },
+        {
+          "repo": "monday",
+          "code": "deletion_policy_mismatch",
+          "message": "allowsDeletions expected=False actual=True",
+          "field": "allowsDeletions"
+        }
+      ]
+    }
+  ],
+  "verdict": "fail"
+}
