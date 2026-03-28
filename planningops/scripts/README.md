@@ -556,6 +556,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_active_goal_registry_contract.sh`
   - `test_backfill_issue_labels_contract.sh`
   - `test_backlog_materialization_contract.sh`
+  - `test_backlog_materialize_sample_artifact_lane.sh`
   - `test_backlog_materialize_sample_fixture_smoke.sh`
   - `test_backlog_materialize_sample_report_smoke.sh`
   - `test_backlog_materialize_sample_report_snapshot_contract.sh`
