@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops-supervisor-operator-handoff-bundle-readiness",
+  "title": "Planningops Supervisor Operator Handoff Bundle Readiness",
+  "type": "object",
+  "required": [
+    "generated_at_utc",
+    "source_kind",
+    "validation_report_path",
+    "bundle_validation_verdict",
+    "operator_handoff_validation_verdict",
+    "operator_handoff_bundle_path",
+    "operator_handoff_bundle_validation_path",
+    "operator_handoff_bundle_readiness_path",
+    "operator_handoff_bundle_readiness_validation_path",
+    "priority_preview_ref",
+    "priority_display_packet_ref",
+    "priority_headline",
+    "priority_cta_command",
+    "display_title",
+    "cta_command",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "ready",
+    "readiness_status",
+    "blocking_reasons",
+    "next_step"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_kind": {
+      "type": "string",
+      "enum": ["artifact", "bundle"]
+    },
+    "artifact_file": {
+      "type": ["string", "null"]
+    },
+    "bundle_path": {
+      "type": ["string", "null"]
+    },
+    "validation_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_generated_at_utc": {
+      "type": ["string", "null"]
+    },
+    "validation_generated_at_utc": {
+      "type": ["string", "null"]
+    },
+    "bundle_validation_verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "operator_handoff_validation_verdict": {
+      "type": ["string", "null"],
+      "enum": ["pass", "fail", null]
+    },
+    "operator_handoff_bundle_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_validation_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_readiness_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_readiness_validation_path": {
+      "type": ["string", "null"]
+    },
+    "priority_preview_ref": {
+      "type": ["string", "null"]
+    },
+    "priority_display_packet_ref": {
+      "type": ["string", "null"]
+    },
+    "priority_headline": {
+      "type": ["string", "null"]
+    },
+    "priority_cta_command": {
+      "type": ["string", "null"]
+    },
+    "display_title": {
+      "type": ["string", "null"]
+    },
+    "cta_command": {
+      "type": ["string", "null"]
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "readiness_status": {
+      "type": "string",
+      "enum": ["ready", "blocked"]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_step": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}
