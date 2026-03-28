@@ -565,6 +565,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_compile_plan_to_backlog_contract.sh`
   - `test_sync_project_fields_after_issue_create_contract.sh`
   - `test_build_meta_plan_graph_contract.sh`
+  - `test_validation_sample_artifact_lanes.sh`
   - `run_track1_gate_dryrun.py`
   - `run_track2_contract_pack_validation.py`
   - `normalize_ready_implementation_blueprint_refs.py`
