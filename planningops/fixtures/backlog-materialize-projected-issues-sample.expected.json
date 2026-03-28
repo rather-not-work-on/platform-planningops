@@ -1,0 +1,25 @@
+[
+  {
+    "repo": "rather-not-work-on/platform-planningops",
+    "number": 60,
+    "state": "open",
+    "updated_at": "__UPDATED_AT__",
+    "title": "plan: [60] Add recurring backlog materialization runner",
+    "url": "https://github.com/rather-not-work-on/platform-planningops/issues/60",
+    "body": "## Planning Context\n- plan_doc: `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- plan_id: `uap-backlog-wave26`\n- plan_revision: `1`\n- plan_item_id: `A60`\n- execution_order: `60`\n- target_repo: `rather-not-work-on/platform-planningops`\n- component: `planningops`\n- workflow_state: `ready_implementation`\n- loop_profile: `l4_integration_reconcile`\n- plan_lane: `m3_guardrails`\n- depends_on: `-`\n- primary_output: `planningops/scripts/core/backlog/materialize.py`\n\n## Problem Statement\n- Resolve this plan item with deterministic artifacts and contract-aligned updates.\n\n## Interfaces & Dependencies\n- target_repo: `rather-not-work-on/platform-planningops`\n- depends_on: `-`\n\n## Evidence\n- `docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave26-issue-pack.md`\n- `planningops/scripts/core/backlog/materialize.py`\n\n## Acceptance Criteria\n- [ ] Required artifact created and linked under Evidence.\n- [ ] Contract/path references are updated and validated.\n\n## Definition of Done\n- [ ] Required artifact created\n- [ ] Validation report attached\n- [ ] Project fields updated with evidence\n\n## Implementation Blueprint Refs\ninterface_contract_refs: planningops/contracts/requirements-contract.md\npackage_topology_ref: planningops/README.md\ndependency_manifest_ref: planningops/config/runtime-profiles.json\nfile_plan_ref: docs/workbench/unified-personal-agent-platform/plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md\n",
+    "labels": [
+      {
+        "name": "area/planningops"
+      },
+      {
+        "name": "p2"
+      },
+      {
+        "name": "task"
+      },
+      {
+        "name": "type/hardening"
+      }
+    ]
+  }
+]
