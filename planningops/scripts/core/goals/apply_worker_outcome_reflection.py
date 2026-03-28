@@ -294,32 +294,19 @@ def main() -> int:
         "errors": errors,
     }
 
-    if (
-        payload["delivery_required"] is True
-        and payload["operator_channel_role"] == "none"
-        and "delivery_required=true requires operator_channel_role" not in errors
-    ):
-        payload["verdict"] = "fail"
-        payload["error_count"] += 1
-        payload["errors"].append("delivery_required=true requires operator_channel_role")
+    if not payload["errors"]:
+        if payload["delivery_required"] is True and payload["operator_channel_role"] == "none":
+            payload["errors"].append("delivery_required=true requires operator_channel_role")
 
-    if (
-        payload["goal_transition_required"] is True
-        and payload["requested_goal_status"] != "achieved"
-        and "goal_transition_required requires requested_goal_status=achieved" not in payload["errors"]
-    ):
-        payload["verdict"] = "fail"
-        payload["error_count"] += 1
-        payload["errors"].append("goal_transition_required requires requested_goal_status=achieved")
+        if payload["goal_transition_required"] is True and payload["requested_goal_status"] != "achieved":
+            payload["errors"].append("goal_transition_required requires requested_goal_status=achieved")
 
-    if (
-        payload["operator_channel_role"] != "none"
-        and payload["operator_channel_kind"] == "-"
-        and "operator_channel_role requires channel projection" not in payload["errors"]
-    ):
-        payload["verdict"] = "fail"
-        payload["error_count"] += 1
-        payload["errors"].append("operator_channel_role requires channel projection")
+        if payload["operator_channel_role"] != "none" and payload["operator_channel_kind"] == "-":
+            payload["errors"].append("operator_channel_role requires channel projection")
+
+        if payload["errors"]:
+            payload["verdict"] = "fail"
+            payload["error_count"] = len(payload["errors"])
 
     output_path = repo_root / args.output
     output_path.parent.mkdir(parents=True, exist_ok=True)

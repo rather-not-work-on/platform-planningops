@@ -1,7 +1,7 @@
 # Reflection Action Handoff Contract
 
 ## Purpose
-Define the deterministic boundary between planningops-owned reflection evaluation outputs and the next action artifacts consumed by supervisor policy and monday-owned operator delivery entrypoints.
+Define the deterministic boundary between planningops-owned reflection evaluation outputs and the next action artifacts consumed by supervisor policy and monday-owned scheduled delivery queue admission.
 
 This contract exists so:
 - `planningops` can turn reflection decisions into explicit control-plane action intent without mutating monday queue state
@@ -11,7 +11,7 @@ This contract exists so:
 ## Canonical Boundary
 - reflection evaluator: `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - action applier: `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
-- monday operator delivery entrypoint: `monday/scripts/run_operator_message_delivery_cycle.py`
+- monday scheduled delivery queue admission entrypoint: `monday/scripts/enqueue_scheduled_delivery_work_item.py`
 - operator channel policy: `planningops/contracts/operator-channel-adapter-contract.md`
 - goal completion policy: `planningops/contracts/goal-completion-contract.md`
 
@@ -119,11 +119,11 @@ PlanningOps may emit only these `operator_channel_role` values:
 - control-plane evidence and handoff summaries
 
 ### Monday owns
-- translating action artifacts into concrete operator delivery payloads
-- local delivery-cycle execution for operator-message classes
+- translating action artifacts into scheduled delivery work items
+- scheduled queue admission and downstream local delivery-cycle execution
 - resolving concrete delivery targets from local config or skill context
 - invoking Slack/email transport through CLI or MCP adapters
-- returning delivery evidence
+- returning queue-admission and runtime delivery evidence
 
 ### PlanningOps must not own
 - queue lease mutation
@@ -134,6 +134,7 @@ PlanningOps may emit only these `operator_channel_role` values:
 
 ## Failure Rules
 - the applier must fail closed if `reflection_decision` is outside the allowed vocabulary
+- the applier must fail closed if goal context cannot be resolved before channel projection or goal-transition side effects
 - the applier must fail if the action artifact would violate the deterministic mapping rules above
 - `delivery_required = true` must never pair with `operator_channel_role = none`
 - `goal_transition_required = true` must only pair with `requested_goal_status = achieved`
@@ -144,4 +145,4 @@ PlanningOps may emit only these `operator_channel_role` values:
 - `planningops/scripts/test_reflection_action_handoff_contract.sh`
 - `planningops/scripts/core/goals/evaluate_worker_outcome_reflection.py`
 - `planningops/scripts/core/goals/apply_worker_outcome_reflection.py`
-- `monday/scripts/run_operator_message_delivery_cycle.py`
+- `monday/scripts/enqueue_scheduled_delivery_work_item.py`
