@@ -40,6 +40,17 @@ def load_json(path: Path, default):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def normalize_items_payload(payload):
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in ("items", "issues", "project_items"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+
+
 def save_json(path: Path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=True, indent=2), encoding="utf-8")
@@ -50,6 +61,7 @@ def parse_depends_on(issue_body: str):
     for line in issue_body.splitlines():
         if "depends_on:" in line:
             deps.update(int(n) for n in re.findall(r"#(\d+)", line))
+            deps.update(int(n) for n in re.findall(r"\bU(\d+)\b", line, flags=re.IGNORECASE))
     return sorted(deps)
 
 
@@ -64,6 +76,18 @@ def parse_issue_ref_to_int(value):
         if match:
             return int(match.group(1))
     return None
+
+
+def parse_context_value(issue_body: str, key: str):
+    pattern = re.compile(rf"-\s*{re.escape(key)}:\s*`([^`]+)`", re.IGNORECASE)
+    match = pattern.search(issue_body)
+    if not match:
+        return ""
+    return match.group(1).strip()
+
+
+def normalize_workflow_state(value):
+    return str(value or "").strip().lower().replace("_", "-")
 
 
 def normalize_replenishment_depends(depends_raw):
@@ -227,7 +251,7 @@ def normalize_item(raw):
             "issue_number": issue_number,
             "issue_repo": str(raw.get("issue_repo")),
             "status": str(raw.get("status", "")),
-            "workflow_state": str(raw.get("workflow_state", "")),
+            "workflow_state": normalize_workflow_state(raw.get("workflow_state")),
             "execution_order": int(raw.get("execution_order") or 0),
             "component": str(raw.get("component", "")),
             "initiative": str(raw.get("initiative", "")),
@@ -235,6 +259,29 @@ def normalize_item(raw):
             "issue_state": str(raw.get("issue_state", "")),
             "open_dependency_count": raw.get("open_dependency_count"),
             "execution_kind": normalize_execution_kind(raw.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)[0],
+        }
+
+    # projected issue snapshot shape (repo/number/body/state)
+    if raw.get("repo") and raw.get("number") is not None:
+        issue_body = str(raw.get("body", ""))
+        execution_order_raw = parse_context_value(issue_body, "execution_order")
+        try:
+            execution_order = int(execution_order_raw) if execution_order_raw else 0
+        except ValueError:
+            execution_order = 0
+
+        return {
+            "issue_number": int(raw.get("number")),
+            "issue_repo": str(raw.get("repo")),
+            "status": "Todo" if str(raw.get("state", "")).upper() == "OPEN" else "",
+            "workflow_state": normalize_workflow_state(parse_context_value(issue_body, "workflow_state")),
+            "execution_order": execution_order,
+            "component": parse_context_value(issue_body, "component"),
+            "initiative": "",
+            "issue_body": issue_body,
+            "issue_state": str(raw.get("state", "")),
+            "open_dependency_count": raw.get("open_dependency_count"),
+            "execution_kind": parse_execution_kind(issue_body, default=EXECUTION_KIND_EXECUTABLE),
         }
 
     # gh project item-list shape
@@ -249,7 +296,7 @@ def normalize_item(raw):
         "issue_number": int(issue_number),
         "issue_repo": str(issue_repo),
         "status": str(raw.get("status", "")),
-        "workflow_state": str(raw.get("workflow_state", "")),
+        "workflow_state": normalize_workflow_state(raw.get("workflow_state")),
         "execution_order": int(raw.get("execution_order") or 0),
         "component": str(raw.get("component", "")),
         "initiative": str(raw.get("initiative", "")),
@@ -608,7 +655,7 @@ def main():
         return 0 if args.report_only else 1
 
     if args.items_file:
-        raw_items = load_json(Path(args.items_file), [])
+        raw_items = normalize_items_payload(load_json(Path(args.items_file), []))
     else:
         raw_items = fetch_project_items(args.owner, args.project_num, args.limit)
 
