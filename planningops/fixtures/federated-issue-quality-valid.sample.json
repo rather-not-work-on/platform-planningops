@@ -1,0 +1,23 @@
+[
+  {
+    "repo": "rather-not-work-on/platform-contracts",
+    "number": 1,
+    "title": "valid sample",
+    "url": "https://example.com/1",
+    "body": "## Planning Context\n- plan_item_id: `B10`",
+    "labels": [
+      {
+        "name": "task"
+      },
+      {
+        "name": "p2"
+      },
+      {
+        "name": "area/contracts"
+      },
+      {
+        "name": "type/governance"
+      }
+    ]
+  }
+]

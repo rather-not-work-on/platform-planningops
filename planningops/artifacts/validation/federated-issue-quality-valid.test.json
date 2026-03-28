@@ -1,0 +1,23 @@
+{
+  "generated_at_utc": "2026-03-28T13:52:42.167409+00:00",
+  "mode": "check",
+  "config_path": "planningops/fixtures/federated-issue-quality-config.sample.json",
+  "issues_in_scope": 1,
+  "applied_label_count": 0,
+  "violation_count": 0,
+  "error_count": 0,
+  "violations": [],
+  "errors": [],
+  "results": [
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "issue_number": 1,
+      "issue_title": "valid sample",
+      "issue_url": "https://example.com/1",
+      "missing_before": [],
+      "applied_labels": [],
+      "missing_after": []
+    }
+  ],
+  "verdict": "pass"
+}

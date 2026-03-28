@@ -934,6 +934,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_governance_validation_artifact_lanes.sh`
   - `test_issue_quality_validation_artifact_lanes.sh`
   - `test_validate_issue_quality_contract.sh`
+  - `test_federated_issue_quality_artifact_lanes.sh`
   - `test_validate_federated_issue_quality_contract.sh`
   - `test_artifact_storage_policy_validation_artifact_lanes.sh`
   - `test_validate_artifact_storage_policy_contract.sh`

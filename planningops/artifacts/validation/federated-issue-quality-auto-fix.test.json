@@ -1,0 +1,33 @@
+{
+  "generated_at_utc": "2026-03-28T13:52:42.254846+00:00",
+  "mode": "apply-default-labels",
+  "config_path": "planningops/fixtures/federated-issue-quality-config.sample.json",
+  "issues_in_scope": 1,
+  "applied_label_count": 4,
+  "violation_count": 0,
+  "error_count": 0,
+  "violations": [],
+  "errors": [],
+  "results": [
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "issue_number": 2,
+      "issue_title": "invalid sample",
+      "issue_url": "https://example.com/2",
+      "missing_before": [
+        "task",
+        "priority",
+        "area/",
+        "type/"
+      ],
+      "applied_labels": [
+        "area/contracts",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "missing_after": []
+    }
+  ],
+  "verdict": "pass"
+}

@@ -1,0 +1,24 @@
+{
+  "default_priority_label": "p2",
+  "required": {
+    "required_labels_all": [
+      "task"
+    ],
+    "required_priority_labels_any": [
+      "p1",
+      "p2",
+      "p3"
+    ],
+    "required_label_prefixes": [
+      "area/",
+      "type/"
+    ]
+  },
+  "repos": [
+    {
+      "repo": "rather-not-work-on/platform-contracts",
+      "default_area_label": "area/contracts",
+      "default_type_label": "type/governance"
+    }
+  ]
+}
