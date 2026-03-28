@@ -103,6 +103,7 @@ Allowed when:
 - Human prose may use relative links, but automation must resolve `repo + path`.
 
 ## Verification
+- Workflow helper: `bash planningops/scripts/run_control_plane_governance_ci_check.sh --python-bin python3`
 - Rules config: `planningops/config/memory-tier-rules.json`
 - Validator: `planningops/scripts/validate_memory_tier_rules.py`
 - Check mode: `python3 planningops/scripts/memory_compactor.py --mode check`

@@ -47,6 +47,7 @@ Backend selection is controlled by:
 - Validator: `planningops/scripts/validate_artifact_storage_policy.py`
 - Test: `bash planningops/scripts/test_validate_artifact_storage_policy_contract.sh`
 - Commit guard: `planningops/scripts/validate_external_only_commit_guard.py`
+- Workflow helper: `bash planningops/scripts/run_external_artifact_residency_ci_check.sh --base-ref <base> --head-ref <head> --python-bin python3`
 - Diff guard command: `python3 planningops/scripts/validate_external_only_commit_guard.py --base-ref <base> --head-ref <head> --strict`
 - Tracked baseline audit: `python3 planningops/scripts/validate_external_only_commit_guard.py --mode tracked --strict`
 - Migration/rehydrate: `planningops/scripts/migrate_external_only_artifacts.py`, `planningops/scripts/rehydrate_artifact_pointer.py`
