@@ -2,7 +2,7 @@
 title: UAP Workbench Hub
 type: hub
 date: 2026-02-28
-updated: 2026-03-26
+updated: 2026-03-28
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
@@ -129,6 +129,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Reflection Action No Active Goal Packet](./plans/2026-03-28-reflection-action-no-active-goal-packet.md)
 - [Active Goal Registry Empty State Packet](./plans/2026-03-28-active-goal-registry-empty-state-packet.md)
 - [Reflection Contract Guardrails Packet](./plans/2026-03-28-reflection-contract-guardrails-packet.md)
+- [Reflection Cycle Contract Surface Sync Packet](./plans/2026-03-28-reflection-cycle-contract-surface-sync-packet.md)
 - [Loop Runner Snapshot Intake Normalization Packet](./plans/2026-03-28-loop-runner-snapshot-intake-normalization-packet.md)
 - [Compile Backlog Offline Issues Intake Packet](./plans/2026-03-28-compile-backlog-offline-issues-intake-packet.md)
 - [Backlog Stock Snapshot Normalization Packet](./plans/2026-03-28-backlog-stock-snapshot-normalization-packet.md)
