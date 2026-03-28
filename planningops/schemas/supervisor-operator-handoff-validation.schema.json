@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "planningops-supervisor-operator-handoff-validation",
+  "title": "Planningops Supervisor Operator Handoff Validation",
+  "type": "object",
+  "required": [
+    "generated_at_utc",
+    "operator_report_path",
+    "inbox_payload_path",
+    "operator_report_schema_path",
+    "inbox_payload_schema_path",
+    "operator_handoff_validation_path",
+    "priority_preview_ref",
+    "priority_display_packet_ref",
+    "operator_handoff_bundle_path",
+    "operator_handoff_bundle_validation_path",
+    "operator_handoff_bundle_readiness_path",
+    "operator_handoff_bundle_readiness_validation_path",
+    "error_count",
+    "warning_count",
+    "errors",
+    "warnings",
+    "verdict"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "operator_report_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_report_run_id": {
+      "type": ["string", "null"]
+    },
+    "operator_report_status": {
+      "type": ["string", "null"]
+    },
+    "inbox_payload_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inbox_payload_status": {
+      "type": ["string", "null"]
+    },
+    "inbox_payload_title": {
+      "type": ["string", "null"]
+    },
+    "operator_summary_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_report_schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inbox_payload_schema_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operator_handoff_validation_path": {
+      "type": ["string", "null"]
+    },
+    "priority_preview_ref": {
+      "type": ["string", "null"]
+    },
+    "priority_display_packet_ref": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_validation_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_readiness_path": {
+      "type": ["string", "null"]
+    },
+    "operator_handoff_bundle_readiness_validation_path": {
+      "type": ["string", "null"]
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    }
+  },
+  "additionalProperties": false
+}

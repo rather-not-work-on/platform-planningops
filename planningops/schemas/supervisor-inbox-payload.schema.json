@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Supervisor Inbox Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at_utc",
+    "title",
+    "status",
+    "headline",
+    "priority_headline",
+    "operator_action",
+    "recommended_wait_minutes",
+    "retry_mode",
+    "needs_human_attention",
+    "attachments",
+    "body_markdown",
+    "message_class_hint",
+    "handoff_contract_ref",
+    "priority_summary_markdown",
+    "operator_handoff_validation_path",
+    "priority_preview_ref",
+    "priority_display_packet_ref",
+    "operator_handoff_bundle_path",
+    "operator_handoff_bundle_validation_path",
+    "operator_handoff_bundle_readiness_path",
+    "operator_handoff_bundle_readiness_validation_path"
+  ],
+  "properties": {
+    "generated_at_utc": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "title": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded",
+        "blocked",
+        "review_required"
+      ]
+    },
+    "headline": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_headline": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_action": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "recommended_wait_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retry_mode": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "needs_human_attention": {
+      "type": "boolean"
+    },
+    "attachments": {
+      "$ref": "#/$defs/stringList"
+    },
+    "body_markdown": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "first_action_command": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_cta_command": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_summary_markdown": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "goal_key": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "message_class_hint": {
+      "type": "string",
+      "enum": [
+        "goal_completed",
+        "blocked_report",
+        "decision_request",
+        "status_update"
+      ]
+    },
+    "handoff_contract_ref": {
+      "type": "string",
+      "enum": [
+        "planningops/contracts/supervisor-operator-handoff-contract.md"
+      ]
+    },
+    "operator_handoff_validation_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_preview_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "priority_display_packet_ref": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_validation_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_readiness_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "operator_handoff_bundle_readiness_validation_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "primary_operator_channel": {
+      "$ref": "#/$defs/operatorChannelHint"
+    },
+    "terminal_notification_channel": {
+      "$ref": "#/$defs/operatorChannelHint"
+    },
+    "goal_transition_report_path": {
+      "$ref": "#/$defs/nonEmptyString"
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "operatorChannelHint": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "execution_repo": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "adapter_contract_ref": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
