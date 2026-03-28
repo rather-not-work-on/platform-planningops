@@ -29,7 +29,7 @@
       "min_stock": 2,
       "rule": {
         "statuses": ["Todo"],
-        "workflow_states": ["backlog", "ready-contract"],
+        "workflow_states": ["backlog", "ready-contract", "ready-implementation", "review-gate"],
         "components": ["planningops"],
         "execution_kinds": ["executable"],
         "dependency_mode": "any"
