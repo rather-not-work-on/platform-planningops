@@ -2,7 +2,7 @@
 title: plan: Goal-Driven Autonomy Wave 21 Issue Pack
 type: plan
 date: 2026-03-15
-updated: 2026-03-15
+updated: 2026-03-17
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
@@ -55,3 +55,12 @@ Move recurring delivery from direct monday delivery-cycle invocation into monday
 - no SMTP or third-party email provider integration
 - no distributed scheduler backend
 - no planningops-owned queue persistence
+
+## Current Status
+
+- `U10`, `U20`, `U30`, and `U40` now have implementation/review evidence
+- queue-admission delegation is validated through reflection, supervisor, and scheduled orchestration regressions
+- review gate output is `planningops/artifacts/validation/goal-driven-autonomy-wave21-review.json`
+- active-goal transition feasibility is recorded in `planningops/artifacts/validation/wave21-goal-transition-dry-run.json`
+- live terminal closeout is recorded in `planningops/artifacts/validation/wave21-goal-transition-apply.json`
+- `planningops/config/active-goal-registry.json` now has `active_goal_key = ""` and `uap-goal-driven-autonomy-wave21.status = "achieved"`
