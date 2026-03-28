@@ -22,6 +22,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
   - canonical issue-quality validator lanes also include `issue-quality-valid.test.json` and `issue-quality-invalid.test.json`
   - canonical governance validator lanes also include `repo-boundary-report.test.json`, `script-role-report.test.json`, and `artifact-storage-policy-valid.test.json`
   - canonical repository-governance validator lanes also include `branch-protection-audit-valid.test.json` and `branch-protection-audit-invalid.test.json`
+  - canonical repository-governance apply lanes also include `branch-protection-apply-valid.test.json` and `branch-protection-apply-invalid.test.json`
 - `adapter-hooks/`, `verification/`, `drift/`, `transition-log/`, `pilot/`, `idempotency/`: supporting evidence
 
 ## Change Rules

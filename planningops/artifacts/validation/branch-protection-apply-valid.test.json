@@ -1,0 +1,73 @@
+{
+  "generated_at_utc": "2026-03-28T07:09:59.403522+00:00",
+  "mode": "dry-run",
+  "policy_path": "planningops/fixtures/repository-governance-apply-policy.sample.json",
+  "owner": "rather-not-work-on",
+  "repo_count": 2,
+  "repo_evaluated_count": 2,
+  "error_count": 0,
+  "results": [
+    {
+      "repo": "platform-planningops",
+      "branch": "main",
+      "mode": "dry-run",
+      "required_status_checks": [
+        "template-and-link-check",
+        "validate-and-dry-run",
+        "federated-summary"
+      ],
+      "payload": {
+        "enforce_admins": false,
+        "restrictions": null,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "required_status_checks": {
+          "strict": true,
+          "contexts": [
+            "template-and-link-check",
+            "validate-and-dry-run",
+            "federated-summary"
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": false,
+          "require_code_owner_reviews": false,
+          "required_approving_review_count": 1,
+          "require_last_push_approval": false
+        }
+      }
+    },
+    {
+      "repo": "platform-provider-gateway",
+      "branch": "main",
+      "mode": "dry-run",
+      "required_status_checks": [
+        "template-and-link-check",
+        "provider-local-ci"
+      ],
+      "payload": {
+        "enforce_admins": false,
+        "restrictions": null,
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "required_conversation_resolution": true,
+        "required_status_checks": {
+          "strict": true,
+          "contexts": [
+            "template-and-link-check",
+            "provider-local-ci"
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": false,
+          "require_code_owner_reviews": false,
+          "required_approving_review_count": 1,
+          "require_last_push_approval": false
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "verdict": "pass"
+}

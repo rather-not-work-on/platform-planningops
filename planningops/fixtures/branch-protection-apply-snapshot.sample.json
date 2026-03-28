@@ -1,0 +1,12 @@
+{
+  "repositories": [
+    {
+      "name": "platform-planningops",
+      "default_branch": "main"
+    },
+    {
+      "name": "platform-provider-gateway",
+      "default_branch": "main"
+    }
+  ]
+}
