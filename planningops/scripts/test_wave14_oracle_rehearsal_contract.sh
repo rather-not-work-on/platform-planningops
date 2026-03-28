@@ -24,6 +24,9 @@ assert report["default_profile_preserved"] is True, report
 assert report["oracle_rehearsal_only"] is True, report
 assert report["profiles"]["local"] == "local", report
 assert report["profiles"]["oracle"] == "oracle_cloud", report
+assert report["simulated_deepagents_tasks"] == [
+    "Verify local runtime composition through profiled provider and telemetry adapters."
+], report
 assert report["portability_gap_count"] == 0, report
 assert sorted(report["rehearsal_supported_components"]) == ["monday", "provider"], report
 assert report["shared_profile_components"] == ["observability"], report
