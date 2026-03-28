@@ -1,0 +1,33 @@
+{
+  "generated_at_utc": "2026-03-28T13:42:09.235396+00:00",
+  "policy_path": "planningops/fixtures/artifact-storage-policy-invalid.sample.json",
+  "error_count": 25,
+  "errors": [
+    "policy_version must be >= 1",
+    "default_external_backend must be non-empty string",
+    "pointer_manifest_root must start with planningops/artifacts/pointers",
+    "tiers.git_canonical must be non-empty list",
+    "tiers.git_optional must be non-empty list",
+    "tiers.external_only must be non-empty list",
+    "backends.local.base_path must be non-empty string",
+    "backends.s3 must be object",
+    "backends.oci must be object",
+    "default_external_backend must reference existing backends key",
+    "retention.git_canonical_days must be positive integer",
+    "retention.git_optional_days must be positive integer",
+    "retention.external_only_days must be positive integer",
+    "portability_profile.mode must be local_first",
+    "portability_profile.default_backend must match default_external_backend",
+    "portability_profile.approved_migration_backends must be non-empty list",
+    "portability_profile.target_platforms must be non-empty list",
+    "portability_profile.canonical_pointer_strategy must be git_pointer_only",
+    "execution_event_families.broken_family.logical_root must be planningops/artifacts/*/ path",
+    "execution_event_families.broken_family.residency must be external_only",
+    "execution_event_families.broken_family.pointer_visibility must be git_pointer_only",
+    "execution_event_families.broken_family.migration_backends must stay within portability profile",
+    "execution_event_families.broken_family.retention_days exceeds retention.external_only_days",
+    "execution_event_families.broken_family.owner_script missing: planningops/scripts/does-not-exist.py",
+    "commit_guard.forbidden_external_only_in_git must be boolean"
+  ],
+  "verdict": "fail"
+}
