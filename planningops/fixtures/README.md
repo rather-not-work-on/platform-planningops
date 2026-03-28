@@ -24,6 +24,7 @@ Provide deterministic sample inputs for contract and loop verification tests.
 - `artifact-storage-policy-invalid.sample.json`: invalid artifact storage policy fixture for validator contract and artifact-lane tests
 - `external-only-commit-guard-*.sample.txt`: allowed and blocked file lists for commit guard validator tests
 - `external-only-commit-guard-policy.sample.json`: tracked-mode policy fixture for commit guard and migration tests
+- `federated-issue-quality-*.sample.json`: config, valid issue set, and invalid issue set for federated label-quality tests
 
 ## Change Rules
 - Fixtures must be static and deterministic.

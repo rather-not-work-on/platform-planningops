@@ -20,6 +20,7 @@ Persist loop execution outputs, validation reports, and CI evidence bundles.
 - `validation/`: gate/schema reports, including fixture-backed `.sample.json` lanes that stay separate from live latest artifacts
   - canonical sample validation lanes currently include `plan-compile-report.sample.json` and `issue-quality-*.sample.json`
   - canonical issue-quality validator lanes also include `issue-quality-valid.test.json` and `issue-quality-invalid.test.json`
+  - canonical federated issue-quality lanes also include `federated-issue-quality-valid.test.json`, `federated-issue-quality-invalid.test.json`, and `federated-issue-quality-auto-fix.test.json`
   - canonical governance validator lanes also include `repo-boundary-report.test.json`, `script-role-report.test.json`, `artifact-storage-policy-valid.test.json`, and `artifact-storage-policy-invalid.test.json`
   - canonical external-only guard lanes also include `external-only-commit-guard-allowed.test.json`, `external-only-commit-guard-blocked.test.json`, and `external-only-commit-guard-tracked.test.json`
   - canonical external-only migration lanes also include `artifact-migration-tracked-dry-run.test.json` and `artifact-migration-tracked-apply.test.json`
