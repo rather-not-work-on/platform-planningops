@@ -1,35 +1,35 @@
 {
-  "generated_at_utc": "2026-03-15T06:30:23.251510+00:00",
+  "generated_at_utc": "2026-03-28T14:31:27.527242+00:00",
   "repo": "rather-not-work-on/platform-planningops",
   "rules_path": "planningops/config/issue-quality-rules.json",
   "issues_file": "planningops/artifacts/backlog/projected-issues.json",
   "write_updated_issues_file": "planningops/artifacts/backlog/projected-issues.json",
   "mode": "apply",
-  "issues_in_scope": 4,
-  "issues_with_missing_labels": 4,
-  "issues_applied": 4,
+  "issues_in_scope": 3,
+  "issues_with_missing_labels": 3,
+  "issues_applied": 3,
   "rows": [
     {
       "number": 10,
-      "title": "plan: [10] Freeze monday scheduled delivery-cycle handoff contract",
+      "title": "plan: [10] planningops runner rate-limit guidance",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/10",
       "existing_labels": [],
       "planned_labels": [
         "area/planningops",
         "p2",
         "task",
-        "type/governance"
+        "type/hardening"
       ],
       "apply_status": "applied_local",
       "error": ""
     },
     {
       "number": 20,
-      "title": "plan: [20] Define monday scheduler delivery-cycle work items",
+      "title": "plan: [20] planningops supervisor rate-limit guidance summary",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/20",
       "existing_labels": [],
       "planned_labels": [
-        "area/runtime",
+        "area/planningops",
         "p2",
         "task",
         "type/hardening"
@@ -39,22 +39,8 @@
     },
     {
       "number": 30,
-      "title": "plan: [30] Execute scheduled delivery work items through monday queue cycle",
+      "title": "plan: [30] runtime mission wave22 review",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/30",
-      "existing_labels": [],
-      "planned_labels": [
-        "area/runtime",
-        "p2",
-        "task",
-        "type/hardening"
-      ],
-      "apply_status": "applied_local",
-      "error": ""
-    },
-    {
-      "number": 40,
-      "title": "plan: [40] Review goal-driven autonomy wave 20 scheduled delivery queue execution",
-      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/40",
       "existing_labels": [],
       "planned_labels": [
         "area/planningops",

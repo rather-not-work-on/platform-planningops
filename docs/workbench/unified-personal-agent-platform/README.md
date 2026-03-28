@@ -175,6 +175,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Backlog Materialize Sample Report Smoke Packet](./plans/2026-03-28-backlog-materialize-sample-report-smoke-packet.md)
 - [Backlog Materialize Sample Report Snapshot Packet](./plans/2026-03-28-backlog-materialize-sample-report-snapshot-packet.md)
 - [Backlog Materialize Snapshot Regression Packet](./plans/2026-03-28-backlog-materialize-snapshot-regression-packet.md)
+- [Backlog Materialize Wave22 Latest Refresh Packet](./plans/2026-03-28-backlog-materialize-wave22-latest-refresh-packet.md)
 - [MONDAY Harness Capability Contract Draft](./plans/2026-03-23-monday-harness-capability-contract-draft.md)
 - [MONDAY PlanningOps Evidence Projection Contract Draft](./plans/2026-03-23-monday-planningops-evidence-projection-contract-draft.md)
 - [MONDAY Runtime Artifact Map Draft](./plans/2026-03-23-monday-runtime-artifact-map-draft.md)
