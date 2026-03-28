@@ -1,10 +1,10 @@
 {
-  "generated_at_utc": "2026-03-26T12:29:55.272720+00:00",
+  "generated_at_utc": "2026-03-28T14:28:02.194272+00:00",
   "template": false,
   "runs": [
     {
       "run_id": "track1-gate-dryrun-1",
-      "executed_at_utc": "2026-03-26T12:29:30.716859+00:00",
+      "executed_at_utc": "2026-03-28T14:27:24.951907+00:00",
       "checks": {
         "docs_check": {
           "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
@@ -37,7 +37,7 @@
     },
     {
       "run_id": "track1-gate-dryrun-2",
-      "executed_at_utc": "2026-03-26T12:29:55.268545+00:00",
+      "executed_at_utc": "2026-03-28T14:28:02.188564+00:00",
       "checks": {
         "docs_check": {
           "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
