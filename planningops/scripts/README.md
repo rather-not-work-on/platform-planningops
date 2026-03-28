@@ -590,6 +590,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_validate_blueprint_pack_artifact_lane.sh`
   - `test_normalize_ready_implementation_blueprint_refs_artifact_lane.sh`
   - `test_rollout_external_artifact_policy_artifact_lane.sh`
+  - `test_run_track2_contract_pack_validation_artifact_lane.sh`
   - `test_verify_loop_run_hard_gate_contract.sh`
   - `test_backlog_stock_replenishment_contract.sh`
   - `test_autonomous_supervisor_loop_contract.sh`

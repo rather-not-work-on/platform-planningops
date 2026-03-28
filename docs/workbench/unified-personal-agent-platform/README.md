@@ -154,6 +154,7 @@ python3 planningops/scripts/memory_compactor.py --mode check --root . --rules pl
 - [Blueprint Pack Sample Artifact Lane Packet](./plans/2026-03-28-blueprint-pack-sample-artifact-lane-packet.md)
 - [Ready-Implementation Blueprint Normalize Sample Artifact Lane Packet](./plans/2026-03-28-ready-implementation-blueprint-normalize-sample-artifact-lane-packet.md)
 - [Federated Artifact Policy Rollout Sample Artifact Lane Packet](./plans/2026-03-28-federated-artifact-policy-rollout-sample-artifact-lane-packet.md)
+- [Track2 Contract Pack Sample Artifact Lane Packet](./plans/2026-03-28-track2-contract-pack-sample-artifact-lane-packet.md)
 - [Branch Protection Audit Artifact Lanes Packet](./plans/2026-03-28-branch-protection-audit-artifact-lanes-packet.md)
 - [Branch Protection Apply Artifact Lanes Packet](./plans/2026-03-28-branch-protection-apply-artifact-lanes-packet.md)
 - [Artifact Storage Policy Validation Artifact Lanes Packet](./plans/2026-03-28-artifact-storage-policy-validation-artifact-lanes-packet.md)
