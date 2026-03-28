@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -19,11 +18,28 @@ from federated_python_env import (
     ensure_bootstrap_environment,
     resolve_bootstrap_root,
 )
+from reflection_cycle_common import (
+    build_stage_report,
+    load_json,
+    normalize_monday_runtime_ref,
+    normalize_repo_path,
+    normalize_workspace_path,
+    now_utc,
+    parse_json_doc,
+    resolve_component_repo,
+    resolve_input_path,
+    resolve_output_path,
+    resolve_repo_root,
+    resolve_workspace_root,
+    run_cmd,
+    write_report,
+)
 
 
 RUNNER_CONTRACT_REF = "planningops/contracts/reflection-delivery-cycle-contract.md"
 ACTION_CONTRACT_REF = "planningops/contracts/reflection-action-handoff-contract.md"
-MONDAY_DELIVERY_ENTRYPOINT = "monday/scripts/run_operator_message_delivery_cycle.py"
+MONDAY_DELIVERY_ENTRYPOINT = "monday/scripts/enqueue_scheduled_delivery_work_item.py"
+DEFAULT_SCHEDULE_KEY = "recurring-delivery"
 
 REQUIRED_ACTION_FIELDS = [
     "active_goal_key",
@@ -36,121 +52,6 @@ REQUIRED_ACTION_FIELDS = [
     "handoff_contract_ref",
     "verdict",
 ]
-
-
-def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def resolve_repo_root() -> Path:
-    current = Path(__file__).resolve()
-    for candidate in [current] + list(current.parents):
-        if (candidate / ".git").exists():
-            return candidate
-    return Path(__file__).resolve().parents[4]
-
-
-def resolve_workspace_root(planningops_repo: Path, raw_workspace_root: str) -> Path:
-    candidates = [
-        (planningops_repo / raw_workspace_root).resolve(),
-        planningops_repo,
-        planningops_repo.parent,
-    ]
-    for candidate in candidates:
-        if (candidate / "monday").exists():
-            return candidate
-    return (planningops_repo / raw_workspace_root).resolve()
-
-
-def resolve_component_repo(workspace_root: Path, repo_dir: str) -> Path:
-    path = Path(repo_dir)
-    if path.is_absolute():
-        return path
-    return (workspace_root / path).resolve()
-
-
-def resolve_input_path(planningops_repo: Path, workspace_root: Path, monday_repo: Path, raw_path: str) -> Path:
-    path = Path(raw_path)
-    candidates: list[Path] = []
-    if path.is_absolute():
-        candidates.append(path)
-    else:
-        candidates.extend(
-            [
-                (planningops_repo / path).resolve(),
-                (workspace_root / path).resolve(),
-                (monday_repo / path).resolve(),
-                path.resolve(),
-            ]
-        )
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"reflection action input not found: {raw_path}")
-
-
-def resolve_output_path(planningops_repo: Path, raw_path: str | None, default_path: Path) -> Path:
-    if raw_path is None:
-        return default_path
-    path = Path(raw_path)
-    if path.is_absolute():
-        return path
-    return (planningops_repo / path).resolve()
-
-
-def normalize_repo_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root.resolve()))
-    except ValueError:
-        return str(path.resolve())
-
-
-def normalize_workspace_path(workspace_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(workspace_root.resolve()))
-    except ValueError:
-        return str(path.resolve())
-
-
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def write_report(path: Path, payload: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
-
-
-def parse_json_doc(raw: str) -> dict | None:
-    text = (raw or "").strip()
-    if not text:
-        return None
-    try:
-        doc = json.loads(text)
-    except json.JSONDecodeError:
-        return None
-    return doc if isinstance(doc, dict) else None
-
-
-def run_cmd(command: list[str], cwd: Path, env: dict[str, str]) -> tuple[int, str, str]:
-    completed = subprocess.run(command, cwd=str(cwd), capture_output=True, text=True, env=env)
-    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
-
-
-def build_stage_report(stage: str, command: list[str], cwd: Path, rc: int, out: str, err: str, artifact_path: Path) -> dict:
-    return {
-        "stage": stage,
-        "command": command,
-        "cwd": str(cwd),
-        "exit_code": rc,
-        "stdout_tail": out[-1000:],
-        "stderr_tail": err[-1000:],
-        "artifact_path": str(artifact_path),
-        "artifact_exists": artifact_path.exists(),
-        "verdict": "pass" if rc == 0 else "fail",
-    }
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Run the planningops -> monday reflection delivery cycle")
     parser.add_argument("--workspace-root", default="..", help="Workspace root containing sibling repositories")
@@ -163,13 +64,19 @@ def parse_args():
     )
     parser.add_argument(
         "--monday-delivery-script",
-        default="scripts/run_operator_message_delivery_cycle.py",
-        help="monday delivery script path relative to the monday repo",
+        default="scripts/enqueue_scheduled_delivery_work_item.py",
+        help="monday scheduled delivery queue admission script path relative to the monday repo",
+    )
+    parser.add_argument(
+        "--monday-queue-db",
+        default=None,
+        help="Optional monday queue-db override passed through to monday queue admission",
     )
     parser.add_argument("--action-file", required=True, help="Reflection action artifact path")
     parser.add_argument("--delivery-target", default=None)
     parser.add_argument("--channel-kind", default=None)
     parser.add_argument("--thread-ref", default=None)
+    parser.add_argument("--schedule-key", default=DEFAULT_SCHEDULE_KEY)
     parser.add_argument("--mode", choices=["dry-run", "apply"], default="dry-run")
     parser.add_argument(
         "--run-id",
@@ -205,6 +112,12 @@ def base_report_fields(action_ref: str, action: dict | None) -> dict:
         "monday_delivery_entrypoint": "-",
         "monday_delivery_report_ref": "-",
         "delivery_verdict": "-",
+        "queue_admission_verdict": "-",
+        "selected_delivery_entrypoint": "-",
+        "scheduled_delivery_work_item_ref": "-",
+        "scheduled_queue_item_ref": "-",
+        "scheduled_queue_item_id": "-",
+        "delivery_idempotency_key": "-",
         "delivery_target_resolution_mode": "-",
         "delivery_target_profile_ref": "-",
         "delivery_transport_kind": "-",
@@ -214,27 +127,31 @@ def base_report_fields(action_ref: str, action: dict | None) -> dict:
     }
 
 
-def extract_delivery_summary(delivery_cycle_report: dict, monday_repo: Path) -> dict:
-    delivery_report_ref = str(delivery_cycle_report.get("delivery_report_ref") or "-")
-    nested_report: dict = {}
-    if delivery_report_ref != "-":
-        delivery_report_path = (monday_repo / delivery_report_ref).resolve()
-        if delivery_report_path.exists():
-            loaded = load_json(delivery_report_path)
-            if isinstance(loaded, dict):
-                nested_report = loaded.get("delivery_report") or loaded
-    outbox_message_ref = nested_report.get("outboxMessageRef") or nested_report.get("outbox_message_ref") or "-"
+def extract_queue_admission_summary(queue_admission_report: dict, workspace_root: Path, monday_repo: Path) -> dict:
+    mode = str(queue_admission_report.get("mode") or "").strip()
+    admitted_count = int(queue_admission_report.get("admitted_count") or 0)
+    projected_delivery_verdict = "queued" if mode == "apply" and admitted_count > 0 else "dry_run"
     return {
-        "delivery_verdict": str(delivery_cycle_report.get("delivery_verdict") or nested_report.get("deliveryVerdict") or "-"),
-        "delivery_target_resolution_mode": str(nested_report.get("targetResolutionMode") or "-"),
-        "delivery_target_profile_ref": str(nested_report.get("targetProfileRef") or "-"),
-        "delivery_transport_kind": str(nested_report.get("transportKind") or "-"),
-        "delivery_outbox_message_ref": str(outbox_message_ref or "-"),
+        "delivery_verdict": projected_delivery_verdict,
+        "queue_admission_verdict": str(queue_admission_report.get("verdict") or "-"),
+        "selected_delivery_entrypoint": str(queue_admission_report.get("selected_delivery_entrypoint") or "-"),
+        "scheduled_delivery_work_item_ref": normalize_monday_runtime_ref(
+            workspace_root, monday_repo, queue_admission_report.get("scheduled_delivery_work_item_ref")
+        ),
+        "scheduled_queue_item_ref": normalize_monday_runtime_ref(
+            workspace_root, monday_repo, queue_admission_report.get("scheduled_queue_item_ref")
+        ),
+        "scheduled_queue_item_id": str(queue_admission_report.get("queue_item_id") or "-"),
+        "delivery_idempotency_key": str(queue_admission_report.get("delivery_idempotency_key") or "-"),
+        "delivery_target_resolution_mode": "-",
+        "delivery_target_profile_ref": "-",
+        "delivery_transport_kind": "-",
+        "delivery_outbox_message_ref": "-",
     }
 
 
 def resolve_monday_output(raw_path: str | None, run_id: str, monday_repo: Path) -> tuple[str, Path]:
-    default_rel = Path("runtime-artifacts") / "messaging" / "delivery-cycles" / f"reflection-delivery-cycle-{run_id}.json"
+    default_rel = Path("runtime-artifacts") / "scheduler-queue" / "admission-reports" / f"reflection-delivery-cycle-{run_id}.json"
     if raw_path is None:
         return str(default_rel), (monday_repo / default_rel).resolve()
     output_path = Path(raw_path)
@@ -258,6 +175,12 @@ def failure_report(
     delivery_target_profile_ref: str = "-",
     delivery_transport_kind: str = "-",
     delivery_outbox_message_ref: str = "-",
+    queue_admission_verdict: str = "-",
+    selected_delivery_entrypoint: str = "-",
+    scheduled_delivery_work_item_ref: str = "-",
+    scheduled_queue_item_ref: str = "-",
+    scheduled_queue_item_id: str = "-",
+    delivery_idempotency_key: str = "-",
 ) -> int:
     payload = {
         "generated_at_utc": now_utc(),
@@ -266,6 +189,12 @@ def failure_report(
         "delivery_skipped": False,
         "monday_delivery_report_ref": monday_delivery_report_ref,
         "delivery_verdict": delivery_verdict,
+        "queue_admission_verdict": queue_admission_verdict,
+        "selected_delivery_entrypoint": selected_delivery_entrypoint,
+        "scheduled_delivery_work_item_ref": scheduled_delivery_work_item_ref,
+        "scheduled_queue_item_ref": scheduled_queue_item_ref,
+        "scheduled_queue_item_id": scheduled_queue_item_id,
+        "delivery_idempotency_key": delivery_idempotency_key,
         "delivery_target_resolution_mode": delivery_target_resolution_mode,
         "delivery_target_profile_ref": delivery_target_profile_ref,
         "delivery_transport_kind": delivery_transport_kind,
@@ -347,6 +276,17 @@ def main() -> int:
             report_path=report_output,
         )
 
+    if action.get("message_class_hint") == "goal_completed":
+        return failure_report(
+            args=args,
+            action_ref=action_ref,
+            action=action,
+            stage_reports=stage_reports,
+            failure_stage="validate_queue_admission_handoff",
+            errors=["goal_completed reflection actions must flow through the supervisor goal-completion handoff"],
+            report_path=report_output,
+        )
+
     if not action["delivery_required"]:
         payload = {
             "generated_at_utc": now_utc(),
@@ -383,6 +323,8 @@ def main() -> int:
         args.monday_delivery_script,
         "--reflection-action-file",
         str(action_path),
+        "--schedule-key",
+        args.schedule_key,
         "--mode",
         args.mode,
         "--output",
@@ -396,6 +338,8 @@ def main() -> int:
         command.extend(["--thread-ref", args.thread_ref])
     if args.monday_profiles_config:
         command.extend(["--profiles-config", args.monday_profiles_config])
+    if args.monday_queue_db:
+        command.extend(["--queue-db", args.monday_queue_db])
 
     rc, out, err = run_cmd(command, monday_repo, env)
     parsed_stdout_report = parse_json_doc(out)
@@ -404,7 +348,7 @@ def main() -> int:
         reported_ref = str(parsed_stdout_report.get("report_ref") or "").strip()
         if reported_ref:
             delivery_output = (monday_repo / reported_ref).resolve()
-    stage_reports.append(build_stage_report("delivery_execution", command, monday_repo, rc, out, err, delivery_output))
+    stage_reports.append(build_stage_report("queue_admission", command, monday_repo, rc, out, err, delivery_output))
 
     delivery_report_ref = normalize_workspace_path(workspace_root, delivery_output)
     if not delivery_output.exists():
@@ -413,23 +357,23 @@ def main() -> int:
             action_ref=action_ref,
             action=action,
             stage_reports=stage_reports,
-            failure_stage="delivery_execution",
-            errors=["monday delivery report missing"],
+            failure_stage="queue_admission",
+            errors=["monday queue admission report missing"],
             report_path=report_output,
             monday_delivery_report_ref=delivery_report_ref,
         )
 
     delivery_report = load_json(delivery_output)
-    delivery_summary = extract_delivery_summary(delivery_report, monday_repo)
+    delivery_summary = extract_queue_admission_summary(delivery_report, workspace_root, monday_repo)
     errors = list(delivery_report.get("errors") or [])
     if rc != 0:
-        errors = errors or ["monday delivery entrypoint returned non-zero"]
+        errors = errors or ["monday queue admission returned non-zero"]
         return failure_report(
             args=args,
             action_ref=action_ref,
             action=action,
             stage_reports=stage_reports,
-            failure_stage="delivery_execution",
+            failure_stage="queue_admission",
             errors=errors,
             report_path=report_output,
             monday_delivery_report_ref=delivery_report_ref,
@@ -441,8 +385,8 @@ def main() -> int:
             action_ref=action_ref,
             action=action,
             stage_reports=stage_reports,
-            failure_stage="delivery_execution",
-            errors=errors or ["monday delivery report verdict must be pass"],
+            failure_stage="queue_admission",
+            errors=errors or ["monday queue admission report verdict must be pass"],
             report_path=report_output,
             monday_delivery_report_ref=delivery_report_ref,
             **delivery_summary,
