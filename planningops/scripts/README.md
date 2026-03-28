@@ -583,6 +583,7 @@ Host executable runners, validators, and contract tests for planningops loops.
   - `test_meta_plan_orchestrator_contract.sh`
   - `test_meta_plan_graph_schema_contract.sh`
   - `test_verify_plan_projection_contract.sh`
+  - `test_verify_plan_projection_artifact_lane.sh`
   - `test_verify_loop_run_hard_gate_contract.sh`
   - `test_backlog_stock_replenishment_contract.sh`
   - `test_autonomous_supervisor_loop_contract.sh`
