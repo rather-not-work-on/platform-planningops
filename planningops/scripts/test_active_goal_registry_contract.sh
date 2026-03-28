@@ -15,8 +15,35 @@ python3 planningops/scripts/validate_active_goal_registry.py \
   --output "$report_path" \
   --strict >/dev/null
 
-resolved_contract="$(python3 planningops/scripts/core/goals/resolve_active_goal.py --registry "$valid_registry" --field execution_contract_file)"
-expected_contract="$(python3 - <<'PY' "$valid_registry"
+python3 - <<'PY' "$valid_registry" "$report_path"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+report = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+active_goal_key = str(doc.get("active_goal_key") or "").strip()
+
+assert report["verdict"] == "pass", report
+if active_goal_key:
+    assert report["resolved_goal"]["goal_key"] == active_goal_key, report
+else:
+    assert report["resolved_goal"] is None, report
+PY
+
+current_active_goal_key="$(python3 - <<'PY' "$valid_registry"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(str(doc.get("active_goal_key") or "").strip())
+PY
+)"
+
+if [ -n "$current_active_goal_key" ]; then
+  resolved_contract="$(python3 planningops/scripts/core/goals/resolve_active_goal.py --registry "$valid_registry" --field execution_contract_file)"
+  expected_contract="$(python3 - <<'PY' "$valid_registry"
 import json
 import sys
 from pathlib import Path
@@ -27,7 +54,13 @@ active_goal = next(goal for goal in doc["goals"] if str(goal.get("goal_key") or 
 print(active_goal["execution_contract_file"])
 PY
 )"
-[ "$resolved_contract" = "$expected_contract" ]
+  [ "$resolved_contract" = "$expected_contract" ]
+else
+  if python3 planningops/scripts/core/goals/resolve_active_goal.py --registry "$valid_registry" >/dev/null 2>&1; then
+    echo "expected resolve_active_goal.py to fail when no active goal is configured"
+    exit 1
+  fi
+fi
 
 cat >"$invalid_registry" <<'JSON'
 {
