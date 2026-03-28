@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-03T06:46:08.923305+00:00",
+  "generated_at_utc": "2026-03-28T14:20:45.410477+00:00",
   "mode": "dry-run",
   "owner": "rather-not-work-on",
   "project_num": 2,
@@ -8,10 +8,59 @@
     "ready-implementation",
     "ready_implementation"
   ],
-  "candidates_count": 0,
+  "candidates_count": 56,
   "changed_count": 0,
   "applied_count": 0,
   "missing_count": 0,
-  "rows": [],
+  "rows": [
+    {
+      "issue_number": 499,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/monday",
+      "workflow_state": "ready-implementation",
+      "status": "Todo",
+      "changed": false,
+      "applied": false,
+      "apply_error": null,
+      "missing_keys": [],
+      "source": {
+        "interface_contract_refs": "existing",
+        "package_topology_ref": "existing",
+        "dependency_manifest_ref": "existing",
+        "file_plan_ref": "existing"
+      },
+      "resolved_refs": {
+        "interface_contract_refs": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/20-architecture/2026-02-27-uap-contract-first-requirements.architecture.md",
+        "package_topology_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/README.md",
+        "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+        "file_plan_ref": "docs/initiatives/unified-personal-agent-platform/20-repos/monday/30-execution-plan/2026-02-27-uap-contract-first-foundation.execution-plan.md"
+      },
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/499"
+    },
+    {
+      "issue_number": 500,
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "workflow_state": "ready-implementation",
+      "status": "Todo",
+      "changed": false,
+      "applied": false,
+      "apply_error": null,
+      "missing_keys": [],
+      "source": {
+        "interface_contract_refs": "existing",
+        "package_topology_ref": "existing",
+        "dependency_manifest_ref": "existing",
+        "file_plan_ref": "existing"
+      },
+      "resolved_refs": {
+        "interface_contract_refs": "planningops/contracts/requirements-contract.md",
+        "package_topology_ref": "planningops/README.md",
+        "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+        "file_plan_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md"
+      },
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/500"
+    }
+  ],
   "verdict": "pass"
 }
