@@ -463,7 +463,28 @@ with tempfile.TemporaryDirectory() as td:
     assert snapshot_project_items["rate_limit_fallback_used"] is True, snapshot_project_items
     assert "rate limit exceeded" in snapshot_project_items["rate_limit_error"].lower(), snapshot_project_items
     assert snapshot_project_items["rate_limit_guidance"]["status"] == "snapshot_fallback_active", snapshot_project_items
+    assert snapshot_project_items["rate_limit_guidance"]["fallback_cause"] == "rate_limit", snapshot_project_items
     assert "apply" in snapshot_project_items["rate_limit_guidance"]["blocked_modes"], snapshot_project_items
+
+    def fake_run_project_items_unknown_owner(args):
+        if args[:3] == ["gh", "project", "item-list"]:
+            return 1, "", "unknown owner type"
+        raise AssertionError(f"unexpected run call: {args}")
+
+    mod.run = fake_run_project_items_unknown_owner
+    owner_error_project_items = mod.load_project_items(
+        "rather-not-work-on",
+        2,
+        1000,
+        snapshot_path=snapshot_path,
+        snapshot_fallback_mode="auto",
+    )
+    assert owner_error_project_items["source"] == "snapshot", owner_error_project_items
+    assert owner_error_project_items["rate_limit_fallback_used"] is True, owner_error_project_items
+    owner_guidance = owner_error_project_items["rate_limit_guidance"]
+    assert owner_guidance["status"] == "snapshot_fallback_active", owner_guidance
+    assert owner_guidance["fallback_cause"] == "owner_resolution", owner_guidance
+    assert "owner/project" in owner_guidance["reason"], owner_guidance
 
     require_project_items = mod.load_project_items(
         "rather-not-work-on",
@@ -484,7 +505,7 @@ with tempfile.TemporaryDirectory() as td:
         )
         raise AssertionError("expected rate-limit failure without snapshot fallback")
     except RuntimeError as exc:
-        assert "rate limit" in str(exc).lower(), exc
+        assert "failed to list project items" in str(exc).lower(), exc
 
 with tempfile.TemporaryDirectory() as td:
     list_snapshot_path = Path(td) / "projected-issues.json"
@@ -520,6 +541,7 @@ guidance_live_blocked = mod.build_rate_limit_guidance(
 )
 assert guidance_live_blocked["status"] == "live_api_blocked", guidance_live_blocked
 assert guidance_live_blocked["blocked_modes"] == ["apply"], guidance_live_blocked
+assert guidance_live_blocked["fallback_cause"] == "rate_limit", guidance_live_blocked
 
 issue_doc_calls = []
 
