@@ -1,0 +1,16 @@
+{
+  "checks": [],
+  "required_checks": [],
+  "generated_at_utc": "2026-03-19T11:06:41.437125+00:00",
+  "finished_at_utc": "2026-03-19T11:06:41.437272+00:00",
+  "overall_status": "interrupted",
+  "check_count": 0,
+  "missing_required_checks": [],
+  "failure_classification": {
+    "count": 0,
+    "domains": [],
+    "deterministic_rule": "contract-conformance->contract, provider-profile/provider-gateway-ready/o11y-replay->infra, runtime-handoff/runtime-operations-ready->runtime, federated-conformance->federation, loop-guardrails->policy"
+  },
+  "verdict": "fail",
+  "shell_exit_code": 1
+}
