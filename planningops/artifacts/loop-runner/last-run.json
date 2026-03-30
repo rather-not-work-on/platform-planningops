@@ -1,214 +1,331 @@
 {
-  "generated_at_utc": "2026-03-25T02:01:59.941377+00:00",
-  "run_id": "overnight-uap-20260325T0100Z",
-  "mode": "dry-run",
-  "max_cycles": 1,
-  "executed_cycles": 1,
-  "convergence_pass_streak": 2,
-  "stop_on_experiment_trigger": true,
-  "report_only_gates": false,
-  "supervisor_verdict": "inconclusive",
-  "stop_reason": "replan_required",
-  "stop_details": {
-    "cycle": 1,
-    "reason_code": "no_candidate_project_items",
-    "backlog_materialization": {
-      "enabled": false,
-      "rc": null,
-      "output_path": null,
-      "projected_issues_output": null,
-      "verdict": null
-    }
+  "selected_issue": 10,
+  "selected_issue_repo": "rather-not-work-on/platform-planningops",
+  "selected_target_repo": "rather-not-work-on/platform-planningops",
+  "selected_workflow_state": "ready-contract",
+  "selected_loop_profile": "L1 Contract-Clarification",
+  "selected_plan_item_id": "U10",
+  "attempt_budget": {
+    "max_attempts": 3,
+    "max_duration_minutes": 30,
+    "max_token_budget": 120000
   },
-  "cycles": [
-    {
-      "cycle": 1,
-      "started_at_utc": "2026-03-25T02:01:59.935783+00:00",
-      "loop_result_rc": 2,
-      "loop_result": {
-        "result": "no_eligible_todo_issue",
-        "reason_code": "no_candidate_project_items",
-        "recommended_action": "retriage_backlog",
-        "last_verdict": "inconclusive",
-        "auto_paused": false,
-        "selection_trace": {
-          "selection_policy": {
-            "name": "high_value_ready_first",
-            "ready_workflow_states": [
-              "ready-contract",
-              "ready-implementation"
-            ],
-            "tie_breaker": [
-              "execution_order_asc",
-              "issue_number_asc"
-            ]
-          },
-          "allowed_workflow_states": [
-            "ready-contract",
-            "ready-implementation"
-          ],
-          "candidate_count": 0,
-          "candidates": [],
-          "attempts": [],
-          "selected": null,
-          "project_item_limit": 1000,
-          "project_item_limit_hit": false,
-          "project_items_source": "manifest",
-          "project_items_snapshot_path": "planningops/artifacts/program/program-manifest.json",
-          "project_items_rate_limit_fallback_used": true,
-          "project_items_rate_limit_error": "unknown owner type",
-          "rate_limit_guidance": {
-            "status": "snapshot_fallback_active",
-            "recommended_wait_minutes": 15,
-            "retry_mode": "retry_live_after_cooldown",
-            "allowed_modes": [
-              "dry-run",
-              "no-feedback"
-            ],
-            "blocked_modes": [
-              "apply"
-            ],
-            "snapshot_path": "planningops/artifacts/program/program-manifest.json",
-            "reason": "GitHub API rate limit forced project item snapshot fallback; use snapshot-backed dry-runs only until live quota recovers.",
-            "raw_error": "unknown owner type"
-          },
-          "closed_issue_reconcile": {
-            "requested_mode": "auto",
-            "effective_mode": "check",
-            "candidate_scope_count": 0,
-            "leading_closed_candidate_count": 0,
-            "status": "skipped",
-            "reason_code": "closed_issue_reconcile_not_needed",
-            "report_path": null,
-            "issues_total": 0,
-            "updated_count": 0,
-            "error_count": 0,
-            "verdict": "pass",
-            "issue_refs": []
-          },
-          "pec_preflight": {
-            "mode": "hybrid",
-            "contract_file": null,
-            "status": "not_evaluated",
-            "reason_code": "selected_issue_missing"
-          }
-        },
-        "candidate_count": 0,
-        "replenishment_candidates_path": null,
-        "replenishment_candidates_count": 0,
-        "generated_at_utc": "2026-03-25T02:01:59.866617+00:00",
-        "no_feedback": true
-      },
-      "last_verdict": "inconclusive",
-      "reason_code": "no_candidate_project_items",
-      "auto_paused": false,
-      "replan_required": true,
-      "replan_decision_path": null,
-      "replenishment_candidates_path": null,
-      "replenishment_candidates_count": 0,
-      "experiment_trigger": {
-        "triggered": false,
-        "reasons": [],
-        "uncertainty_level": null,
-        "simulation_required": false,
-        "loop_profile": null
-      },
-      "experiment_trigger_artifact": null,
-      "experiment_auto_executor": {
-        "enabled": false,
-        "rc": null,
-        "output_path": null,
-        "verdict": null,
-        "selected_option": null
-      },
-      "backlog_materialization": {
-        "enabled": false,
-        "rc": null,
-        "output_path": null,
-        "projected_issues_output": null,
-        "verdict": null
-      },
-      "goal_transition": {
-        "enabled": false,
-        "rc": null,
-        "output_path": null,
-        "verdict": null,
-        "goal_key": null,
-        "next_goal_key": null
-      },
-      "project_items_source": "manifest",
-      "project_items_rate_limit_fallback_used": true,
-      "project_items_rate_limit_error": "unknown owner type",
-      "rate_limit_guidance": {
-        "status": "snapshot_fallback_active",
-        "recommended_wait_minutes": 15,
-        "retry_mode": "retry_live_after_cooldown",
-        "allowed_modes": [
-          "dry-run",
-          "no-feedback"
-        ],
-        "blocked_modes": [
-          "apply"
-        ],
-        "reason": "Supervisor observed snapshot-backed issue intake due to GitHub API pressure.",
-        "raw_error": "unknown owner type"
-      },
-      "backlog_gate": {
-        "rc": 0,
-        "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/cycle-01/backlog-stock-report.json",
-        "verdict": "pass",
-        "breach_count": 0,
-        "candidate_violation_count": 0
-      },
-      "ended_at_utc": "2026-03-25T02:01:59.935857+00:00"
-    }
+  "attempt_budget_guard": {
+    "attempt_budget": {
+      "max_attempts": 3,
+      "max_duration_minutes": 30,
+      "max_token_budget": 120000
+    },
+    "max_attempts": 3,
+    "max_retries": 2,
+    "retry_cap_attempts": 3,
+    "enforced_worker_attempts": 3
+  },
+  "checkpoint_resumed": false,
+  "checkpoint_stage_at_start": null,
+  "lock_owner_id": "issue-loop-runner-8437-1774875680",
+  "stale_lock_recovered": false,
+  "watchdog_report": "planningops/artifacts/loop-runner/watchdog/issue-10.json",
+  "final_loop_profile": "L1 Contract-Clarification",
+  "auto_paused": false,
+  "escalation": {
+    "auto_paused": false,
+    "trigger_type": null,
+    "same_reason_consecutive": 0,
+    "inconclusive_consecutive": 0,
+    "history_count": 20
+  },
+  "replan_decision_path": null,
+  "deps": [],
+  "candidate_count": 3,
+  "allowed_workflow_states": [
+    "ready-contract",
+    "ready-implementation"
   ],
-  "contracts": {
-    "autonomous_run_policy": "planningops/contracts/autonomous-run-policy-contract.md",
-    "worktree_experiment_protocol": "planningops/contracts/worktree-comparative-experiment-protocol.md",
-    "backlog_replenishment": "planningops/contracts/backlog-stock-replenishment-contract.md",
-    "backlog_materialization": "planningops/contracts/backlog-materialization-contract.md",
-    "active_goal_registry": "planningops/contracts/active-goal-registry-contract.md",
-    "goal_lifecycle_transition": "planningops/contracts/goal-lifecycle-transition-contract.md",
-    "goal_completion": "planningops/contracts/goal-completion-contract.md",
-    "operator_channel_adapter": "planningops/contracts/operator-channel-adapter-contract.md"
+  "selection_trace": {
+    "selection_policy": {
+      "name": "high_value_ready_first",
+      "ready_workflow_states": [
+        "ready-contract",
+        "ready-implementation"
+      ],
+      "tie_breaker": [
+        "execution_order_asc",
+        "issue_number_asc"
+      ]
+    },
+    "allowed_workflow_states": [
+      "ready-contract",
+      "ready-implementation"
+    ],
+    "candidate_count": 3,
+    "candidates": [
+      {
+        "number": 10,
+        "order": 10,
+        "status": "Todo",
+        "workflow_state": "ready-contract",
+        "issue_repo": "rather-not-work-on/platform-planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "loop_profile": "l1_contract_clarification",
+        "initiative": "control_plane",
+        "plan_item_id": "U10",
+        "execution_kind": "executable",
+        "simulation_required": false,
+        "uncertainty_level": null,
+        "blueprint_refs": {
+          "interface_contract_refs": null,
+          "package_topology_ref": null,
+          "dependency_manifest_ref": null,
+          "file_plan_ref": null
+        },
+        "blueprint_complete": false
+      },
+      {
+        "number": 20,
+        "order": 20,
+        "status": "Todo",
+        "workflow_state": "ready-implementation",
+        "issue_repo": "rather-not-work-on/platform-planningops",
+        "target_repo": "rather-not-work-on/monday",
+        "component": "runtime",
+        "loop_profile": "l3_implementation_tdd",
+        "initiative": "federated_runtime",
+        "plan_item_id": null,
+        "execution_kind": "executable",
+        "simulation_required": false,
+        "uncertainty_level": null,
+        "blueprint_refs": {},
+        "blueprint_complete": true
+      },
+      {
+        "number": 30,
+        "order": 30,
+        "status": "Todo",
+        "workflow_state": "ready-implementation",
+        "issue_repo": "rather-not-work-on/platform-planningops",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "loop_profile": "l3_implementation_tdd",
+        "initiative": "control_plane",
+        "plan_item_id": null,
+        "execution_kind": "executable",
+        "simulation_required": false,
+        "uncertainty_level": null,
+        "blueprint_refs": {},
+        "blueprint_complete": true
+      }
+    ],
+    "attempts": [
+      {
+        "number": 10,
+        "issue_repo": "rather-not-work-on/platform-planningops",
+        "result": "selected",
+        "plan_item_id": "U10",
+        "execution_kind": "executable",
+        "depends_on": [],
+        "dep_checks": [],
+        "attempt_budget": {
+          "max_attempts": 3,
+          "max_duration_minutes": 30,
+          "max_token_budget": 120000
+        },
+        "selector_hints": {
+          "simulation_required": false,
+          "uncertainty_level": null
+        },
+        "blueprint_refs": {
+          "interface_contract_refs": null,
+          "package_topology_ref": null,
+          "dependency_manifest_ref": null,
+          "file_plan_ref": null
+        }
+      }
+    ],
+    "selected": {
+      "number": 10,
+      "order": 10,
+      "status": "Todo",
+      "workflow_state": "ready-contract",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "component": "planningops",
+      "loop_profile": "l1_contract_clarification",
+      "initiative": "control_plane",
+      "plan_item_id": "U10",
+      "execution_kind": "executable",
+      "depends_on": [],
+      "attempt_budget": {
+        "max_attempts": 3,
+        "max_duration_minutes": 30,
+        "max_token_budget": 120000
+      },
+      "simulation_required": false,
+      "uncertainty_level": null,
+      "blueprint_refs": {
+        "interface_contract_refs": null,
+        "package_topology_ref": null,
+        "dependency_manifest_ref": null,
+        "file_plan_ref": null
+      },
+      "blueprint_complete": false
+    },
+    "project_item_limit": 1000,
+    "project_item_limit_hit": false,
+    "project_items_source": "snapshot",
+    "project_items_snapshot_path": "planningops/artifacts/loop-runner/project-items-snapshot.json",
+    "project_items_rate_limit_fallback_used": true,
+    "project_items_rate_limit_error": null,
+    "rate_limit_guidance": {
+      "status": "snapshot_fallback_active",
+      "recommended_wait_minutes": 15,
+      "retry_mode": "retry_live_after_cooldown",
+      "allowed_modes": [
+        "dry-run",
+        "no-feedback"
+      ],
+      "blocked_modes": [
+        "apply"
+      ],
+      "snapshot_path": "planningops/artifacts/loop-runner/project-items-snapshot.json",
+      "reason": "Live GitHub project intake failed; using snapshot-backed dry-runs until live access recovers.",
+      "raw_error": null,
+      "fallback_cause": "none"
+    },
+    "closed_issue_reconcile": {
+      "requested_mode": "check",
+      "effective_mode": "check",
+      "candidate_scope_count": 3,
+      "leading_closed_candidate_count": 0,
+      "status": "skipped",
+      "reason_code": "closed_issue_reconcile_not_needed",
+      "report_path": null,
+      "issues_total": 0,
+      "updated_count": 0,
+      "error_count": 0,
+      "verdict": "pass",
+      "issue_refs": []
+    },
+    "pec_preflight": {
+      "mode": "hybrid",
+      "contract_file": null,
+      "plan_item_id": "U10",
+      "status": "skipped",
+      "reason_code": "pec_contract_file_missing_hybrid",
+      "validation_errors": [],
+      "mismatches": []
+    },
+    "worker_task_pack_preflight": {
+      "status": "pass",
+      "reason_code": "worker_task_pack_ok",
+      "report_path": "planningops/artifacts/validation/worker-task-pack-issue-10.json",
+      "rc": 0,
+      "stdout": "{\n  \"generated_at_utc\": \"2026-03-30T13:01:20.267209+00:00\",\n  \"runtime_profile_file\": \"planningops/config/runtime-profiles.json\",\n  \"schema_file\": \"planningops/schemas/worker-task-pack.schema.json\",\n  \"task_key\": \"issue-10\",\n  \"issue_number\": 10,\n  \"mode\": \"dry-run\",\n  \"loop_profile\": \"L1 Contract-Clarification\",\n  \"target_repo\": \"rather-not-work-on/platform-planningops\",\n  \"validation_errors\": [],\n  \"worker_task_pack\": {\n    \"version\": \"v1\",\n    \"task_key\": \"issue-10\",\n    \"issue_number\": 10,\n    \"mode\": \"dry-run\",\n    \"loop_profile\": \"L1 Contract-Clarification\",\n    \"runtime_profile\": \"local\",\n    \"worker_policy_kind\": \"parser_diff_dry_run\",\n    \"command\": [\n      \"python3\",\n      \"planningops/scripts/parser_diff_dry_run.py\",\n      \"--run-id\",\n      \"worker-pack-issue-10\",\n      \"--mode\",\n      \"dry-run\"\n    ],\n    \"retry_policy\": {\n      \"max_retries\": 2\n    },\n    \"timeout_ms\": 60000,\n    \"idempotency_key\": \"4b05ce5303926ae5b24d9f8867bb79669f85fba6b6c112326b8fc1bef1ca3380\",\n    \"target_repo\": \"rather-not-work-on/platform-planningops\",\n    \"metadata\": {\n      \"profile_file\": \"planningops/config/runtime-profiles.json\",\n      \"task_key\": \"issue-10\"\n    }\n  },\n  \"verdict\": \"pass\",\n  \"reason\": \"ok\"\n}",
+      "stderr": "",
+      "worker_task_pack": {
+        "version": "v1",
+        "task_key": "issue-10",
+        "issue_number": 10,
+        "mode": "dry-run",
+        "loop_profile": "L1 Contract-Clarification",
+        "runtime_profile": "local",
+        "worker_policy_kind": "parser_diff_dry_run",
+        "command": [
+          "python3",
+          "planningops/scripts/parser_diff_dry_run.py",
+          "--run-id",
+          "worker-pack-issue-10",
+          "--mode",
+          "dry-run"
+        ],
+        "retry_policy": {
+          "max_retries": 2
+        },
+        "timeout_ms": 60000,
+        "idempotency_key": "4b05ce5303926ae5b24d9f8867bb79669f85fba6b6c112326b8fc1bef1ca3380",
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "metadata": {
+          "profile_file": "planningops/config/runtime-profiles.json",
+          "task_key": "issue-10"
+        }
+      },
+      "validation_errors": []
+    },
+    "attempt_budget_guard": {
+      "attempt_budget": {
+        "max_attempts": 3,
+        "max_duration_minutes": 30,
+        "max_token_budget": 120000
+      },
+      "max_attempts": 3,
+      "max_retries": 2,
+      "retry_cap_attempts": 3,
+      "enforced_worker_attempts": 3
+    }
   },
-  "federated_ci_summary": {
-    "summary_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-summary.json",
-    "readiness_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-summary-readiness.json",
-    "validation_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-summary-validation.json",
-    "summary_run_id": "federated-ci-20260324T070603Z",
-    "summary_generated_at_utc": "2026-03-24T07:09:30.235035+00:00",
-    "summary_verdict": "pass",
-    "overall_status": "complete",
-    "check_count": 10,
-    "validation_verdict": "pass",
-    "validation_state": "fresh",
-    "readiness_status": "ready",
-    "ready": true,
-    "blocking_reasons": [],
-    "next_step": "none",
-    "remediation_commands": [],
-    "first_action_command": null
+  "pec_preflight": {
+    "mode": "hybrid",
+    "contract_file": null,
+    "plan_item_id": "U10",
+    "status": "skipped",
+    "reason_code": "pec_contract_file_missing_hybrid",
+    "validation_errors": [],
+    "mismatches": []
   },
-  "operator_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-report.json",
-  "operator_report_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-report.json",
-  "operator_summary_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-summary.md",
-  "operator_summary_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-summary.md",
-  "inbox_payload_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/inbox-payload.json",
-  "inbox_payload_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-inbox-payload.json",
-  "operator_handoff_validation_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-handoff-validation.json",
-  "operator_handoff_validation_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-handoff-validation.json",
-  "operator_priority_preview_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/runtime-artifacts/messaging/operator-priority-previews/overnight-uap-20260325T0100Z-operator-priority-preview.json",
-  "operator_priority_preview_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/runtime-artifacts/messaging/operator-priority-previews/last-run-operator-priority-preview.json",
-  "operator_priority_display_packet_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/runtime-artifacts/messaging/operator-priority-display-packets/overnight-uap-20260325T0100Z-operator-priority-display-packet.json",
-  "operator_priority_display_packet_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/runtime-artifacts/messaging/operator-priority-display-packets/last-run-operator-priority-display-packet.json",
-  "operator_handoff_bundle_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-handoff-bundle.json",
-  "operator_handoff_bundle_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-handoff-bundle.json",
-  "operator_handoff_bundle_validation_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-handoff-bundle-validation.json",
-  "operator_handoff_bundle_validation_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-handoff-bundle-validation.json",
-  "operator_handoff_bundle_readiness_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-handoff-bundle-readiness.json",
-  "operator_handoff_bundle_readiness_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-handoff-bundle-readiness.json",
-  "operator_handoff_bundle_readiness_validation_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/supervisor/overnight-uap-20260325T0100Z/operator-handoff-bundle-readiness-validation.json",
-  "operator_handoff_bundle_readiness_validation_last_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run-operator-handoff-bundle-readiness-validation.json"
+  "selection_transition_id": "loop-20260330T130120Z-issue-10-intake-selection",
+  "blueprint_refs": {
+    "interface_contract_refs": null,
+    "package_topology_ref": null,
+    "dependency_manifest_ref": null,
+    "file_plan_ref": null
+  },
+  "blueprint_complete": false,
+  "adapter_id": "planningops-adapter",
+  "adapter_pre_hook": {
+    "status": "ok",
+    "phase": "before_loop",
+    "adapter": "planningops-adapter",
+    "target_repo": "rather-not-work-on/platform-planningops",
+    "reason_code": "runtime",
+    "message": "planningops-adapter pre-hook baseline executed",
+    "emitted_artifacts": [],
+    "details": {
+      "component": "planningops",
+      "issue_number": 10,
+      "workflow_state": "ready-contract"
+    }
+  },
+  "adapter_post_hook": {
+    "status": "ok",
+    "phase": "after_loop",
+    "adapter": "planningops-adapter",
+    "target_repo": "rather-not-work-on/platform-planningops",
+    "reason_code": "runtime",
+    "message": "planningops-adapter post-hook baseline executed",
+    "emitted_artifacts": [],
+    "details": {
+      "component": "planningops",
+      "issue_number": 10,
+      "last_verdict": "pass"
+    }
+  },
+  "adapter_pre_artifact": "planningops/artifacts/adapter-hooks/2026-03-30/loop-20260330T130120Z-issue-10-adapter-pre.json",
+  "adapter_post_artifact": "planningops/artifacts/adapter-hooks/2026-03-30/loop-20260330T130120Z-issue-10-adapter-post.json",
+  "replenishment_candidates_path": "planningops/artifacts/backlog/issue-10-replenishment-candidates.json",
+  "replenishment_candidates_count": 0,
+  "last_verdict": "pass",
+  "reason_code": "ok",
+  "loop_rc": 0,
+  "verify_rc": 0,
+  "already_processed": false,
+  "idempotency_key": "eef06e2d61f0bfe1b2828c0fff30a5a911b1d0346e47c7d4f32dab3379dbf963",
+  "loop_stdout": "loop completed: verdict=pass reason=ok loop_id=loop-20260330T130120Z-issue-10\nartifacts root: planningops/artifacts/loops/2026-03-30/loop-20260330T130120Z-issue-10",
+  "verify_stdout": "verification result: planningops/artifacts/verification/issue-10-verification.json\nproject payload: planningops/artifacts/verification/issue-10-project-payload.json\nverdict=pass reason=ok replanning_triggered=False",
+  "loop_stderr": "",
+  "verify_stderr": "",
+  "generated_at_utc": "2026-03-30T13:01:20.454904+00:00",
+  "runtime_profile_file": "planningops/config/runtime-profiles.json",
+  "no_feedback": true,
+  "externalized_artifact_files": 15
 }
