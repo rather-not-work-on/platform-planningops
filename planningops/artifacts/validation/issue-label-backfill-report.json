@@ -1,35 +1,35 @@
 {
-  "generated_at_utc": "2026-03-28T14:31:27.527242+00:00",
+  "generated_at_utc": "2026-03-30T13:42:37.572010+00:00",
   "repo": "rather-not-work-on/platform-planningops",
   "rules_path": "planningops/config/issue-quality-rules.json",
   "issues_file": "planningops/artifacts/backlog/projected-issues.json",
   "write_updated_issues_file": "planningops/artifacts/backlog/projected-issues.json",
   "mode": "apply",
-  "issues_in_scope": 3,
-  "issues_with_missing_labels": 3,
-  "issues_applied": 3,
+  "issues_in_scope": 4,
+  "issues_with_missing_labels": 4,
+  "issues_applied": 4,
   "rows": [
     {
       "number": 10,
-      "title": "plan: [10] planningops runner rate-limit guidance",
+      "title": "plan: [10] Freeze monday scheduled delivery queue admission contract",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/10",
       "existing_labels": [],
       "planned_labels": [
         "area/planningops",
         "p2",
         "task",
-        "type/hardening"
+        "type/governance"
       ],
       "apply_status": "applied_local",
       "error": ""
     },
     {
       "number": 20,
-      "title": "plan: [20] planningops supervisor rate-limit guidance summary",
+      "title": "plan: [20] Define monday scheduled delivery queue admission entrypoint",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/20",
       "existing_labels": [],
       "planned_labels": [
-        "area/planningops",
+        "area/runtime",
         "p2",
         "task",
         "type/hardening"
@@ -39,8 +39,22 @@
     },
     {
       "number": 30,
-      "title": "plan: [30] runtime mission wave22 review",
+      "title": "plan: [30] Delegate planningops recurring delivery through monday queue admission",
       "url": "https://github.com/rather-not-work-on/platform-planningops/issues/30",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied_local",
+      "error": ""
+    },
+    {
+      "number": 40,
+      "title": "plan: [40] Review goal-driven autonomy wave 21 scheduled queue admission delegation",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/40",
       "existing_labels": [],
       "planned_labels": [
         "area/planningops",
