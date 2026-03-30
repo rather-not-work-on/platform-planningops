@@ -1,0 +1,26 @@
+{
+  "generated_at_utc": "2026-03-23T15:09:27.550349+00:00",
+  "run_id": "federated-ci-20260323T150925Z-contract",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "reason_taxonomy_version": 12,
+  "delivery_cycle_required": false,
+  "selected_delivery_entrypoint": "-",
+  "delivery_cycle_report_ref": "-",
+  "handoff_required": false,
+  "worker_outcome_handoff_ref": "-",
+  "worker_outcome_handoff_contract_ref": "planningops/contracts/scheduled-worker-outcome-handoff-contract.md",
+  "dequeued_count": 1,
+  "blocked_count": 0,
+  "duplicate_count": 0,
+  "replanning_trigger_count": 0,
+  "dequeued": [
+    {
+      "card_id": "queue-planningops-issue-10",
+      "issue_number": 10
+    }
+  ],
+  "blocked": [],
+  "duplicates": [],
+  "replanning_triggered_cards": []
+}
