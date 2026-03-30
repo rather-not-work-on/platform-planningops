@@ -70,6 +70,10 @@ Replan and replenishment are first-class outputs:
 - `replenishment_candidates_count`
 - optional `backlog_materialization` result when `--auto-materialize-backlog` is enabled
 
+Offline snapshot fallback semantics:
+- when `--offline` is enabled, supervisor must require project-item snapshot fallback and seed the snapshot from `--items-file` or canonical `planningops/artifacts/program/program-manifest.json` when no explicit snapshot file exists yet
+- snapshot-backed rate-limit guidance emitted through cycle or summary artifacts must include `fallback_cause` with one of `rate_limit`, `network`, `auth`, `owner_resolution`, `other`, or `none`
+
 When auto materialization is enabled:
 1. `dry-run` may invoke `planningops/scripts/core/backlog/materialize.py` and attach its report as review evidence.
 2. `apply` may invoke backlog materialization and continue into the next cycle if materialization succeeds.

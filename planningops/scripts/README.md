@@ -348,6 +348,8 @@ Host executable runners, validators, and contract tests for planningops loops.
     - owns the common operator-report, inbox-payload, bundle, and monday goal-completion admission helpers consumed by `federation/run_reflection_goal_completion_handoff_cycle.py`
   - `autonomous_supervisor_loop.py`
     - sources the canonical operator-report, inbox-payload, bundle, and monday goal-completion admission helpers from `supervisor_handoff_common.py`
+    - `--offline` runs now seed `issue_runner_project_items_snapshot` from `--items-file` or canonical `planningops/artifacts/program/program-manifest.json` before forcing snapshot-backed issue intake
+    - snapshot-backed guidance now exposes `fallback_cause` so operator artifacts can distinguish rate limit, network, auth, owner-resolution, and generic live GitHub failures
     - operator handoff artifacts may carry a `federated_ci_summary` snapshot sourced from the canonical latest readiness artifact, plus `priority_headline` / `priority_cta_command` for downstream operator surfaces
     - when that snapshot is blocked, otherwise-`ok` handoffs are downgraded to `degraded` with a federated gate inspection action
     - blocked snapshots also surface canonical `remediation_commands` and summary-validation evidence refs in the markdown and inbox payload surfaces
@@ -500,6 +502,8 @@ Host executable runners, validators, and contract tests for planningops loops.
 - Validation and reporting:
   - `federation/validate_runtime_skeleton_scaffold.py`
   - `backlog_stock_replenishment_guard.py`
+    - normalizes offline snapshot issue refs in either integer or `U<n>` form
+    - synthesizes `Todo` / `Done` from `issue_state` when a snapshot row omits explicit project status
   - `memory_compactor.py`
   - `validate_memory_archive_manifest.py`
   - `validate_contracts.py`
