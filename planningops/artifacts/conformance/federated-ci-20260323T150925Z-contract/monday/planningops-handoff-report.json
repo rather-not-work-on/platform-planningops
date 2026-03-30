@@ -1,0 +1,29 @@
+{
+  "generated_at_utc": "2026-03-23T15:09:27.562406+00:00",
+  "run_id": "federated-ci-20260323T150925Z-contract",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "reason_taxonomy_version": 12,
+  "handoff_validation": {
+    "exit_code": 0,
+    "stdout": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260323T150925Z-contract/monday/handoff-smoke-report.json\nverdict=pass reason_code=ok mismatch_count=0",
+    "stderr": "",
+    "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260323T150925Z-contract/monday/handoff-smoke-report.json",
+    "mismatch_count": 0
+  },
+  "scheduler_execution": {
+    "exit_code": 0,
+    "stdout": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260323T150925Z-contract/monday/scheduler-run-report.json\nkind=scheduler verdict=pass reason_code=ok dequeued=1 blocked=0 duplicates=0",
+    "stderr": "",
+    "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260323T150925Z-contract/monday/scheduler-run-report.json",
+    "dequeued_count": 1,
+    "blocked_count": 0,
+    "duplicate_count": 0
+  },
+  "rollback_trigger": {
+    "triggered": false,
+    "reasons": [],
+    "policy": "trigger when handoff mismatch exists, or no dequeue, or blocked cards > 0"
+  },
+  "queue_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260323T150925Z-contract/monday/queue.from-planningops.json"
+}
