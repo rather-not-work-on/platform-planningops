@@ -1,0 +1,24 @@
+{
+  "queue_items": [
+    {
+      "queue_item_id": "queue-planningops-issue-20",
+      "goal_key": "planningops-handoff-issue-20",
+      "schedule_key": "planningops-handoff",
+      "state": "ready",
+      "idempotency_key": "planningops-handoff:20",
+      "priority_class": "standard",
+      "retry_budget": {
+        "max_attempts": 3,
+        "backoff_profile": "exponential"
+      },
+      "retry_budget_remaining": 3,
+      "attempt_count": 0,
+      "dependency_keys": [],
+      "escalation_policy_ref": "planningops/contracts/escalation-gate-contract.md",
+      "completion_policy_ref": "planningops/contracts/goal-completion-contract.md",
+      "target_repo": "rather-not-work-on/monday",
+      "work_payload_ref": "planningops/artifacts/verification/issue-20-verification.json"
+    }
+  ],
+  "completed_queue_item_ids": []
+}
