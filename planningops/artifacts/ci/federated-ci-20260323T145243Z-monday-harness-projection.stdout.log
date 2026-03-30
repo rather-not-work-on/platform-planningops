@@ -1,0 +1,127 @@
+resolve monday agent harness projection ok
+validate monday agent harness projection status ok
+resolve monday agent harness projection status ok
+validate monday agent harness projection status bundle validation contract ok
+validate monday agent harness projection status bundle status contract ok
+validate monday agent harness projection status bundle status validation contract ok
+resolve monday agent harness projection status bundle status ok
+validate monday agent harness projection status bundle status bundle validation contract ok
+validate monday agent harness projection status bundle status bundle status contract ok
+validate monday agent harness projection status bundle status bundle status validation contract ok
+resolve monday agent harness projection status bundle status bundle status ok
+validate monday agent harness projection status bundle status bundle status bundle validation contract ok
+validate monday agent harness projection status bundle status bundle status bundle status contract ok
+validate monday agent harness projection status bundle status bundle status bundle status validation contract ok
+resolve monday agent harness projection status bundle status bundle status bundle status ok
+{
+  "status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status-bundle.json",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle.schema.json",
+  "output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status-bundle-validation.json",
+  "generated_at_utc": "2026-03-23T14:53:23.209791+00:00",
+  "verdict": "pass",
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "bundle_status_bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status-validation.json",
+  "bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle.json",
+  "resolved_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle.json",
+  "bundle_validation_output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-validation.json",
+  "bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-validation.json",
+  "bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status.json",
+  "bundle_status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-validation.json",
+  "projection_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-bundle.json",
+  "projection_validation_report_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-validation.json",
+  "status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status.json",
+  "status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-validation.json",
+  "mission_id": "mh60-mission",
+  "run_id": "mh60-run",
+  "session_id": "mh60-session",
+  "bundle_ready": true,
+  "bundle_next_step": "none",
+  "status_verdict": "pass",
+  "status_validation_verdict": "pass",
+  "bundle_status_verdict": "pass",
+  "bundle_status_validation_verdict": "pass",
+  "projection_validation_verdict": "pass",
+  "projection_validation_state": "fresh",
+  "status_sidecar_validation_verdict": "pass",
+  "bundle_validation_verdict": "pass",
+  "resolved_status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status-bundle.json"
+}
+{
+  "status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/invalid-status-bundle-status-bundle-status-bundle-status-bundle.json",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle.schema.json",
+  "output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/invalid-status-bundle-status-bundle-status-bundle-status-bundle-validation.json",
+  "generated_at_utc": "2026-03-23T14:53:23.287725+00:00",
+  "verdict": "fail",
+  "error_count": 7,
+  "warning_count": 0,
+  "errors": [
+    "resolved_status_bundle_status_bundle_status_bundle_status_bundle_path must match the validated bundle file path",
+    "ready must match bundle_status_bundle_status_bundle_report.ready",
+    "next_step must match bundle_status_bundle_status_bundle_report.next_step",
+    "bundle_status_bundle_status_bundle_report.bundle_status_bundle_status_bundle_validation_output_path must match bundle_status_bundle_status_bundle_validation_path",
+    "ready must match bundle_status_bundle_status_bundle_validation_report.status_ready",
+    "next_step must match bundle_status_bundle_status_bundle_validation_report.status_next_step",
+    "bundle must match canonical monday harness projection status-bundle-status-bundle-status-bundle-status bundle resolution"
+  ],
+  "warnings": [],
+  "bundle_status_bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-status-validation.json",
+  "bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle.json",
+  "resolved_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle.json",
+  "bundle_validation_output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-bundle-validation.json",
+  "bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-bundle-status-validation.json",
+  "bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status.json",
+  "bundle_status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-bundle-status-validation.json",
+  "projection_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-bundle.json",
+  "projection_validation_report_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-validation.json",
+  "status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status.json",
+  "status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/projection-status-validation.json",
+  "mission_id": "mh60-mission",
+  "run_id": "mh60-run",
+  "session_id": "mh60-session",
+  "bundle_ready": false,
+  "bundle_next_step": "custom remediation",
+  "status_verdict": "pass",
+  "status_validation_verdict": "pass",
+  "bundle_status_verdict": "pass",
+  "bundle_status_validation_verdict": "pass",
+  "projection_validation_verdict": "pass",
+  "projection_validation_state": "fresh",
+  "status_sidecar_validation_verdict": "pass",
+  "bundle_validation_verdict": "pass",
+  "resolved_status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.TtpMylQFm3/wrong-status-bundle-status-bundle-status-bundle-status-bundle.json"
+}
+validate monday agent harness projection status bundle status bundle status bundle status bundle validation contract ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status contract ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status validation contract ok
+resolve monday agent harness projection status bundle status bundle status bundle status bundle status ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle validation contract ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status contract ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve monday agent harness projection status bundle status bundle status bundle status bundle status bundle status ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle validation contract ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle status contract ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle status ok
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle validation contract ok
+doctor monday agent harness projection status bundle status bundle ok
+doctor monday agent harness projection status bundle status bundle status bundle ok
+doctor monday agent harness projection status bundle status bundle status bundle status bundle ok
+doctor monday agent harness projection status bundle status bundle status bundle status bundle status bundle ok
+doctor monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle ok
+gate monday agent harness projection status bundle status bundle ok
+gate monday agent harness projection status bundle status bundle status bundle ok
+gate monday agent harness projection status bundle status bundle status bundle status bundle ok
+gate monday agent harness projection status bundle status bundle status bundle status bundle status bundle ok
+gate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle ok
+doctor monday agent harness projection status bundle ok
+gate monday agent harness projection status bundle ok
+monday agent harness projection bridge ok
+materialize monday agent harness projection surfaces ok
+sync monday agent harness projection latest ok
