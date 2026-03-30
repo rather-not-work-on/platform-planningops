@@ -1,0 +1,77 @@
+{
+  "manifest_version": 1,
+  "program_id": "uap-po-ct-program",
+  "initiative": "unified-personal-agent-platform",
+  "source_plan": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave22-rate-limit-guidance-issue-pack.md",
+  "scope_source_plan": true,
+  "generated_at_utc": "2026-03-22T15:02:46.434680+00:00",
+  "selection_policy": "dedupe_by_plan_item_id_and_target_repo_open_first_then_latest_update",
+  "item_count": 3,
+  "items": [
+    {
+      "plan_item_id": "AN10",
+      "track": "control_plane",
+      "execution_order": 10,
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 10,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/10",
+      "issue_state": "open",
+      "issue_updated_at": "2026-03-22T15:02:46.317266+00:00",
+      "component": "planningops",
+      "workflow_state": "ready_implementation",
+      "loop_profile": "l4_integration_reconcile",
+      "plan_lane": "m3_guardrails",
+      "depends_on": [],
+      "interface_contract_refs": "planningops/contracts/requirements-contract.md",
+      "package_topology_ref": "planningops/README.md",
+      "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+      "file_plan_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md"
+    },
+    {
+      "plan_item_id": "AN20",
+      "track": "control_plane",
+      "execution_order": 20,
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 20,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/20",
+      "issue_state": "open",
+      "issue_updated_at": "2026-03-22T15:02:46.317266+00:00",
+      "component": "planningops",
+      "workflow_state": "ready_implementation",
+      "loop_profile": "l4_integration_reconcile",
+      "plan_lane": "m3_guardrails",
+      "depends_on": [
+        "AN10"
+      ],
+      "interface_contract_refs": "planningops/contracts/requirements-contract.md",
+      "package_topology_ref": "planningops/README.md",
+      "dependency_manifest_ref": "planningops/config/runtime-profiles.json",
+      "file_plan_ref": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-fix-gate-bootstrap-review-findings-plan.md"
+    },
+    {
+      "plan_item_id": "AN30",
+      "track": "control_plane",
+      "execution_order": 30,
+      "target_repo": "rather-not-work-on/platform-planningops",
+      "issue_repo": "rather-not-work-on/platform-planningops",
+      "issue_number": 30,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/30",
+      "issue_state": "open",
+      "issue_updated_at": "2026-03-22T15:02:46.317266+00:00",
+      "component": "planningops",
+      "workflow_state": "review_gate",
+      "loop_profile": "l4_integration_reconcile",
+      "plan_lane": "m3_guardrails",
+      "depends_on": [
+        "AN10",
+        "AN20"
+      ],
+      "interface_contract_refs": "",
+      "package_topology_ref": "",
+      "dependency_manifest_ref": "",
+      "file_plan_ref": ""
+    }
+  ]
+}
