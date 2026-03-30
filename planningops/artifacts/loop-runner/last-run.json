@@ -23,7 +23,7 @@
   },
   "checkpoint_resumed": false,
   "checkpoint_stage_at_start": null,
-  "lock_owner_id": "issue-loop-runner-8437-1774875680",
+  "lock_owner_id": "issue-loop-runner-47407-1774882894",
   "stale_lock_recovered": false,
   "watchdog_report": "planningops/artifacts/loop-runner/watchdog/issue-10.json",
   "final_loop_profile": "L1 Contract-Clarification",
@@ -221,7 +221,7 @@
       "reason_code": "worker_task_pack_ok",
       "report_path": "planningops/artifacts/validation/worker-task-pack-issue-10.json",
       "rc": 0,
-      "stdout": "{\n  \"generated_at_utc\": \"2026-03-30T13:01:20.267209+00:00\",\n  \"runtime_profile_file\": \"planningops/config/runtime-profiles.json\",\n  \"schema_file\": \"planningops/schemas/worker-task-pack.schema.json\",\n  \"task_key\": \"issue-10\",\n  \"issue_number\": 10,\n  \"mode\": \"dry-run\",\n  \"loop_profile\": \"L1 Contract-Clarification\",\n  \"target_repo\": \"rather-not-work-on/platform-planningops\",\n  \"validation_errors\": [],\n  \"worker_task_pack\": {\n    \"version\": \"v1\",\n    \"task_key\": \"issue-10\",\n    \"issue_number\": 10,\n    \"mode\": \"dry-run\",\n    \"loop_profile\": \"L1 Contract-Clarification\",\n    \"runtime_profile\": \"local\",\n    \"worker_policy_kind\": \"parser_diff_dry_run\",\n    \"command\": [\n      \"python3\",\n      \"planningops/scripts/parser_diff_dry_run.py\",\n      \"--run-id\",\n      \"worker-pack-issue-10\",\n      \"--mode\",\n      \"dry-run\"\n    ],\n    \"retry_policy\": {\n      \"max_retries\": 2\n    },\n    \"timeout_ms\": 60000,\n    \"idempotency_key\": \"4b05ce5303926ae5b24d9f8867bb79669f85fba6b6c112326b8fc1bef1ca3380\",\n    \"target_repo\": \"rather-not-work-on/platform-planningops\",\n    \"metadata\": {\n      \"profile_file\": \"planningops/config/runtime-profiles.json\",\n      \"task_key\": \"issue-10\"\n    }\n  },\n  \"verdict\": \"pass\",\n  \"reason\": \"ok\"\n}",
+      "stdout": "{\n  \"generated_at_utc\": \"2026-03-30T15:01:34.067096+00:00\",\n  \"runtime_profile_file\": \"planningops/config/runtime-profiles.json\",\n  \"schema_file\": \"planningops/schemas/worker-task-pack.schema.json\",\n  \"task_key\": \"issue-10\",\n  \"issue_number\": 10,\n  \"mode\": \"dry-run\",\n  \"loop_profile\": \"L1 Contract-Clarification\",\n  \"target_repo\": \"rather-not-work-on/platform-planningops\",\n  \"validation_errors\": [],\n  \"worker_task_pack\": {\n    \"version\": \"v1\",\n    \"task_key\": \"issue-10\",\n    \"issue_number\": 10,\n    \"mode\": \"dry-run\",\n    \"loop_profile\": \"L1 Contract-Clarification\",\n    \"runtime_profile\": \"local\",\n    \"worker_policy_kind\": \"parser_diff_dry_run\",\n    \"command\": [\n      \"python3\",\n      \"planningops/scripts/parser_diff_dry_run.py\",\n      \"--run-id\",\n      \"worker-pack-issue-10\",\n      \"--mode\",\n      \"dry-run\"\n    ],\n    \"retry_policy\": {\n      \"max_retries\": 2\n    },\n    \"timeout_ms\": 60000,\n    \"idempotency_key\": \"4b05ce5303926ae5b24d9f8867bb79669f85fba6b6c112326b8fc1bef1ca3380\",\n    \"target_repo\": \"rather-not-work-on/platform-planningops\",\n    \"metadata\": {\n      \"profile_file\": \"planningops/config/runtime-profiles.json\",\n      \"task_key\": \"issue-10\"\n    }\n  },\n  \"verdict\": \"pass\",\n  \"reason\": \"ok\"\n}",
       "stderr": "",
       "worker_task_pack": {
         "version": "v1",
@@ -273,7 +273,7 @@
     "validation_errors": [],
     "mismatches": []
   },
-  "selection_transition_id": "loop-20260330T130120Z-issue-10-intake-selection",
+  "selection_transition_id": "loop-20260330T150134Z-issue-10-intake-selection",
   "blueprint_refs": {
     "interface_contract_refs": null,
     "package_topology_ref": null,
@@ -310,8 +310,8 @@
       "last_verdict": "pass"
     }
   },
-  "adapter_pre_artifact": "planningops/artifacts/adapter-hooks/2026-03-30/loop-20260330T130120Z-issue-10-adapter-pre.json",
-  "adapter_post_artifact": "planningops/artifacts/adapter-hooks/2026-03-30/loop-20260330T130120Z-issue-10-adapter-post.json",
+  "adapter_pre_artifact": "planningops/artifacts/adapter-hooks/2026-03-30/loop-20260330T150134Z-issue-10-adapter-pre.json",
+  "adapter_post_artifact": "planningops/artifacts/adapter-hooks/2026-03-30/loop-20260330T150134Z-issue-10-adapter-post.json",
   "replenishment_candidates_path": "planningops/artifacts/backlog/issue-10-replenishment-candidates.json",
   "replenishment_candidates_count": 0,
   "last_verdict": "pass",
@@ -319,12 +319,12 @@
   "loop_rc": 0,
   "verify_rc": 0,
   "already_processed": false,
-  "idempotency_key": "eef06e2d61f0bfe1b2828c0fff30a5a911b1d0346e47c7d4f32dab3379dbf963",
-  "loop_stdout": "loop completed: verdict=pass reason=ok loop_id=loop-20260330T130120Z-issue-10\nartifacts root: planningops/artifacts/loops/2026-03-30/loop-20260330T130120Z-issue-10",
+  "idempotency_key": "91c7e3911d6c4224d94103b725a7c9d43820484692f43c655979fb1ee1d05151",
+  "loop_stdout": "loop completed: verdict=pass reason=ok loop_id=loop-20260330T150134Z-issue-10\nartifacts root: planningops/artifacts/loops/2026-03-30/loop-20260330T150134Z-issue-10",
   "verify_stdout": "verification result: planningops/artifacts/verification/issue-10-verification.json\nproject payload: planningops/artifacts/verification/issue-10-project-payload.json\nverdict=pass reason=ok replanning_triggered=False",
   "loop_stderr": "",
   "verify_stderr": "",
-  "generated_at_utc": "2026-03-30T13:01:20.454904+00:00",
+  "generated_at_utc": "2026-03-30T15:01:34.278672+00:00",
   "runtime_profile_file": "planningops/config/runtime-profiles.json",
   "no_feedback": true,
   "externalized_artifact_files": 15
