@@ -1,0 +1,55 @@
+{
+  "generated_at_utc": "2026-03-17T14:03:15.685077+00:00",
+  "repo": "rather-not-work-on/platform-planningops",
+  "rules_path": "planningops/config/issue-quality-rules.json",
+  "issues_file": "planningops/artifacts/backlog/projected-issues-wave25.json",
+  "write_updated_issues_file": "planningops/artifacts/backlog/projected-issues-wave25.json",
+  "mode": "apply",
+  "issues_in_scope": 3,
+  "issues_with_missing_labels": 3,
+  "issues_applied": 3,
+  "rows": [
+    {
+      "number": 10,
+      "title": "plan: [10] planningops supervisor inbox payload sidecar",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/10",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied_local",
+      "error": ""
+    },
+    {
+      "number": 20,
+      "title": "plan: [20] planningops supervisor contract inbox payload output",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/20",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/hardening"
+      ],
+      "apply_status": "applied_local",
+      "error": ""
+    },
+    {
+      "number": 30,
+      "title": "plan: [30] runtime mission wave25 review",
+      "url": "https://github.com/rather-not-work-on/platform-planningops/issues/30",
+      "existing_labels": [],
+      "planned_labels": [
+        "area/planningops",
+        "p2",
+        "task",
+        "type/governance"
+      ],
+      "apply_status": "applied_local",
+      "error": ""
+    }
+  ]
+}

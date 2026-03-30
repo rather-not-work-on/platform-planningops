@@ -1,0 +1,27 @@
+{
+  "generated_at_utc": "2026-03-17T14:05:53.561693+00:00",
+  "program_id": "uap-po-ct-program",
+  "initiative": "unified-personal-agent-platform",
+  "source_plan": "docs/workbench/unified-personal-agent-platform/plans/runtime-mission-wave25-supervisor-inbox-payload-issue-pack.md",
+  "repos": [
+    "rather-not-work-on/platform-planningops",
+    "rather-not-work-on/platform-contracts",
+    "rather-not-work-on/platform-provider-gateway",
+    "rather-not-work-on/platform-observability-gateway",
+    "rather-not-work-on/monday"
+  ],
+  "issues_file": "planningops/artifacts/backlog/projected-issues-wave25.json",
+  "verdict": "pass",
+  "errors": [],
+  "issues_scanned": 3,
+  "filtered_out_count": 0,
+  "item_count": 3,
+  "duplicate_group_count": 0,
+  "duplicate_groups": [],
+  "track_summary": {
+    "control_plane": 3,
+    "federated_runtime": 0,
+    "reconciliation": 0,
+    "unknown": 0
+  }
+}
