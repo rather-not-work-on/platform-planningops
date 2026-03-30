@@ -422,6 +422,42 @@ def is_rate_limit_error(text: str):
     return "rate limit exceeded" in str(text or "").lower()
 
 
+def classify_project_items_error(text: str):
+    lowered = str(text or "").lower()
+    if not lowered:
+        return "none"
+    if "rate limit exceeded" in lowered:
+        return "rate_limit"
+    if any(
+        token in lowered
+        for token in (
+            "could not resolve host",
+            "error connecting to api.github.com",
+            "failed to connect",
+            "connection timed out",
+            "network is unreachable",
+            "temporary failure in name resolution",
+        )
+    ):
+        return "network"
+    if any(
+        token in lowered
+        for token in (
+            "failed to log in",
+            "authentication",
+            "requires authentication",
+            "bad credentials",
+            "token",
+            "not logged in",
+            "401",
+        )
+    ):
+        return "auth"
+    if "unknown owner type" in lowered:
+        return "owner_resolution"
+    return "other"
+
+
 def synthesize_project_items_from_issue_snapshot_rows(rows):
     parsed_rows = []
     plan_item_issue_index = {}
@@ -718,7 +754,29 @@ def build_rate_limit_guidance(
     fallback_used: bool,
     rate_limit_error: str | None,
 ):
+    error_class = classify_project_items_error(rate_limit_error)
     if fallback_used:
+        fallback_reason = "Live GitHub project intake failed; using snapshot-backed dry-runs until live access recovers."
+        if error_class == "rate_limit":
+            fallback_reason = (
+                "GitHub API rate limit forced project item snapshot fallback; "
+                "use snapshot-backed dry-runs only until live quota recovers."
+            )
+        elif error_class == "network":
+            fallback_reason = (
+                "GitHub connectivity failure forced project item snapshot fallback; "
+                "use snapshot-backed dry-runs until network reachability recovers."
+            )
+        elif error_class == "auth":
+            fallback_reason = (
+                "GitHub authentication failure forced project item snapshot fallback; "
+                "re-authenticate before resuming live apply mode."
+            )
+        elif error_class == "owner_resolution":
+            fallback_reason = (
+                "GitHub owner/project resolution failed and forced snapshot fallback; "
+                "verify owner/project identifiers before resuming live apply mode."
+            )
         return {
             "status": "snapshot_fallback_active",
             "recommended_wait_minutes": 15,
@@ -726,11 +784,20 @@ def build_rate_limit_guidance(
             "allowed_modes": ["dry-run", "no-feedback"],
             "blocked_modes": ["apply"],
             "snapshot_path": snapshot_path,
-            "reason": "GitHub API rate limit forced project item snapshot fallback; use snapshot-backed dry-runs only until live quota recovers.",
+            "reason": fallback_reason,
             "raw_error": rate_limit_error,
+            "fallback_cause": error_class,
         }
 
     if rate_limit_error:
+        blocked_reason = (
+            "GitHub project item loading failed and no safe snapshot fallback was available for this mode."
+        )
+        if error_class == "rate_limit":
+            blocked_reason = (
+                "GitHub API rate limit blocked live project item loading and no safe snapshot fallback was "
+                "available for this mode."
+            )
         return {
             "status": "live_api_blocked",
             "recommended_wait_minutes": 15,
@@ -738,8 +805,9 @@ def build_rate_limit_guidance(
             "allowed_modes": [],
             "blocked_modes": [run_mode],
             "snapshot_path": snapshot_path,
-            "reason": "GitHub API rate limit blocked live project item loading and no safe snapshot fallback was available for this mode.",
+            "reason": blocked_reason,
             "raw_error": rate_limit_error,
+            "fallback_cause": error_class,
         }
 
     return {
@@ -751,6 +819,7 @@ def build_rate_limit_guidance(
         "snapshot_path": snapshot_path,
         "reason": "No GitHub API rate-limit guidance required.",
         "raw_error": None,
+        "fallback_cause": "none",
     }
 
 

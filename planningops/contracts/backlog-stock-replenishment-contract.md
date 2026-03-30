@@ -12,6 +12,10 @@ Three queue classes are mandatory:
 Closed issues are never counted as stock, even if stale project fields still show `Todo` or `ready-*`.
 Inventory cards are never counted as stock, even when they remain open for audit or replenishment bookkeeping.
 
+Offline snapshot normalization rules:
+- projected-issue or manifest-backed snapshots may carry issue references in canonical integer form or `U<n>` form; replenishment intake must normalize both to the same issue number
+- when snapshot rows omit explicit project `status`, replenishment intake must synthesize `Todo` or `Done` from `issue_state` before stock classification
+
 ## Execution Kind Semantics
 - Issue body metadata may declare `execution_kind`.
 - Allowed values:

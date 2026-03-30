@@ -287,6 +287,50 @@ def save_json(path: Path, data):
     ARTIFACT_SINK.write_json(path, data)
 
 
+def load_items_rows(path: Path):
+    if not path.exists():
+        return None
+    doc = load_json(path, None)
+    if isinstance(doc, list):
+        return doc
+    if isinstance(doc, dict):
+        items = doc.get("items")
+        if isinstance(items, list):
+            return items
+    return None
+
+
+def seed_issue_runner_snapshot(snapshot_path: Path, items_file: str | None = None):
+    if snapshot_path.exists():
+        return {"status": "existing", "snapshot_path": str(snapshot_path), "seed_source": None, "row_count": None}
+
+    candidate_paths = []
+    if items_file:
+        candidate_paths.append(Path(items_file))
+    candidate_paths.append(Path("planningops/artifacts/program/program-manifest.json"))
+
+    for candidate_path in candidate_paths:
+        rows = load_items_rows(candidate_path)
+        if rows is None:
+            continue
+        save_json(
+            snapshot_path,
+            {
+                "generated_at_utc": now_utc(),
+                "seed_source": str(candidate_path),
+                "items": rows,
+            },
+        )
+        return {
+            "status": "seeded",
+            "snapshot_path": str(snapshot_path),
+            "seed_source": str(candidate_path),
+            "row_count": len(rows),
+        }
+
+    return {"status": "missing_seed_source", "snapshot_path": str(snapshot_path), "seed_source": None, "row_count": 0}
+
+
 def copy_json_sidecar(source: Path, target: Path) -> None:
     save_json(target, load_json(source, {}))
 
@@ -423,16 +467,37 @@ def derive_rate_limit_guidance(loop_result: dict, project_items_source, fallback
     guidance = loop_result.get("rate_limit_guidance")
     if isinstance(guidance, dict):
         return guidance
+    selection_trace = loop_result.get("selection_trace")
+    if isinstance(selection_trace, dict):
+        selection_guidance = selection_trace.get("rate_limit_guidance")
+        if isinstance(selection_guidance, dict):
+            return selection_guidance
 
     if fallback_used:
+        error_text = str(rate_limit_error or "").lower()
+        reason = "Supervisor observed snapshot-backed issue intake from live GitHub load failure."
+        fallback_cause = "other"
+        if "rate limit exceeded" in error_text:
+            reason = "Supervisor observed snapshot-backed issue intake due to GitHub API pressure."
+            fallback_cause = "rate_limit"
+        elif "unknown owner type" in error_text:
+            reason = "Supervisor observed snapshot fallback due to owner/project resolution failure."
+            fallback_cause = "owner_resolution"
+        elif any(token in error_text for token in ("could not resolve host", "error connecting to api.github.com")):
+            reason = "Supervisor observed snapshot fallback due to GitHub network connectivity failure."
+            fallback_cause = "network"
+        elif any(token in error_text for token in ("failed to log in", "authentication", "bad credentials", "token")):
+            reason = "Supervisor observed snapshot fallback due to GitHub authentication failure."
+            fallback_cause = "auth"
         return {
             "status": "snapshot_fallback_active",
             "recommended_wait_minutes": 15,
             "retry_mode": "retry_live_after_cooldown",
             "allowed_modes": ["dry-run", "no-feedback"],
             "blocked_modes": ["apply"],
-            "reason": "Supervisor observed snapshot-backed issue intake due to GitHub API pressure.",
+            "reason": reason,
             "raw_error": rate_limit_error,
+            "fallback_cause": fallback_cause,
         }
 
     if str(loop_result.get("reason_code") or "").strip() == "github_rate_limited":
@@ -444,6 +509,7 @@ def derive_rate_limit_guidance(loop_result: dict, project_items_source, fallback
             "blocked_modes": ["apply"],
             "reason": "Supervisor observed live GitHub rate limiting without safe fallback.",
             "raw_error": rate_limit_error,
+            "fallback_cause": "rate_limit",
         }
 
     return None
@@ -1109,7 +1175,7 @@ def build_issue_runner_command(args):
         "--project-items-snapshot-fallback",
         args.issue_runner_project_items_snapshot_fallback,
     ]
-    if args.mode == "dry-run":
+    if args.mode == "dry-run" or args.offline:
         cmd.append("--no-feedback")
     return cmd
 
@@ -1350,6 +1416,9 @@ def main():
             print("backlog-materialization-contract-file or active-goal-registry is required when auto-materialize-backlog is enabled")
             return 1
         args.backlog_materialization_contract_file = resolved_contract_file
+    if args.offline:
+        args.issue_runner_project_items_snapshot_fallback = "require"
+        seed_issue_runner_snapshot(Path(args.issue_runner_project_items_snapshot), args.items_file)
 
     sequence_rows = None
     if args.loop_result_sequence_file:

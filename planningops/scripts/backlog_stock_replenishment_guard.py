@@ -75,6 +75,9 @@ def parse_issue_ref_to_int(value):
         match = re.match(r"#(\d+)$", stripped)
         if match:
             return int(match.group(1))
+        match = re.match(r"[Uu](\d+)$", stripped)
+        if match:
+            return int(match.group(1))
     return None
 
 
@@ -88,6 +91,18 @@ def parse_context_value(issue_body: str, key: str):
 
 def normalize_workflow_state(value):
     return str(value or "").strip().lower().replace("_", "-")
+
+
+def normalize_status(value, issue_state):
+    status = str(value or "").strip()
+    if status:
+        return status
+    state = str(issue_state or "").strip().upper()
+    if state == "OPEN":
+        return "Todo"
+    if state == "CLOSED":
+        return "Done"
+    return ""
 
 
 def normalize_replenishment_depends(depends_raw):
@@ -247,17 +262,23 @@ def normalize_item(raw):
         issue_number = parse_issue_ref_to_int(raw.get("issue_number"))
         if issue_number is None:
             return None
+        issue_state = str(raw.get("issue_state", ""))
+        open_dependency_count = raw.get("open_dependency_count")
+        if not isinstance(open_dependency_count, int) and isinstance(raw.get("depends_on"), list):
+            parsed_deps = [parse_issue_ref_to_int(dep) for dep in raw.get("depends_on", [])]
+            parsed_deps = [dep for dep in parsed_deps if dep is not None]
+            open_dependency_count = len(parsed_deps)
         return {
             "issue_number": issue_number,
             "issue_repo": str(raw.get("issue_repo")),
-            "status": str(raw.get("status", "")),
+            "status": normalize_status(raw.get("status"), issue_state),
             "workflow_state": normalize_workflow_state(raw.get("workflow_state")),
             "execution_order": int(raw.get("execution_order") or 0),
             "component": str(raw.get("component", "")),
             "initiative": str(raw.get("initiative", "")),
             "issue_body": str(raw.get("issue_body", "")),
-            "issue_state": str(raw.get("issue_state", "")),
-            "open_dependency_count": raw.get("open_dependency_count"),
+            "issue_state": issue_state,
+            "open_dependency_count": open_dependency_count,
             "execution_kind": normalize_execution_kind(raw.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)[0],
         }
 
@@ -273,7 +294,7 @@ def normalize_item(raw):
         return {
             "issue_number": int(raw.get("number")),
             "issue_repo": str(raw.get("repo")),
-            "status": "Todo" if str(raw.get("state", "")).upper() == "OPEN" else "",
+            "status": normalize_status(None, raw.get("state")),
             "workflow_state": normalize_workflow_state(parse_context_value(issue_body, "workflow_state")),
             "execution_order": execution_order,
             "component": parse_context_value(issue_body, "component"),
@@ -292,16 +313,17 @@ def normalize_item(raw):
     issue_repo = content.get("repository")
     if issue_number is None or not issue_repo:
         return None
+    issue_state = str(content.get("state", ""))
     return {
         "issue_number": int(issue_number),
         "issue_repo": str(issue_repo),
-        "status": str(raw.get("status", "")),
+        "status": normalize_status(raw.get("status"), issue_state),
         "workflow_state": normalize_workflow_state(raw.get("workflow_state")),
         "execution_order": int(raw.get("execution_order") or 0),
         "component": str(raw.get("component", "")),
         "initiative": str(raw.get("initiative", "")),
         "issue_body": str(raw.get("issue_body", "")),
-        "issue_state": str(content.get("state", "")),
+        "issue_state": issue_state,
         "open_dependency_count": raw.get("open_dependency_count"),
         "execution_kind": normalize_execution_kind(raw.get("execution_kind"), default=EXECUTION_KIND_EXECUTABLE)[0],
     }
