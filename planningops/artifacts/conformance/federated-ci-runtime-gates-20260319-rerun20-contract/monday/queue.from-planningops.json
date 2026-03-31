@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "card_id": "card-10",
+      "issue_number": 10,
+      "status": "Todo",
+      "depends_on": [],
+      "reason_history": []
+    }
+  ],
+  "completed_issues": []
+}
