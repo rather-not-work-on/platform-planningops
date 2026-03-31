@@ -1,0 +1,20 @@
+{
+  "generated_at_utc": "2026-03-24T06:14:55.477207+00:00",
+  "summary_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260324T061121Z.json",
+  "validation_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T061121Z-summary-validation.json",
+  "summary_present": true,
+  "validation_present": true,
+  "summary_run_id": "federated-ci-20260324T061121Z",
+  "summary_generated_at_utc": "2026-03-24T06:14:55.417562+00:00",
+  "summary_verdict": "pass",
+  "overall_status": "complete",
+  "check_count": 10,
+  "failed_checks": [],
+  "missing_required_checks": [],
+  "validation_verdict": "pass",
+  "validation_state": "fresh",
+  "ready": true,
+  "readiness_status": "ready",
+  "blocking_reasons": [],
+  "next_step": "none"
+}
