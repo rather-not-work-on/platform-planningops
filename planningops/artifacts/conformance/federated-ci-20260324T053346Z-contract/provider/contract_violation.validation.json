@@ -1,0 +1,9 @@
+{
+  "generated_at_utc": "2026-03-24T05:33:47.271834+00:00",
+  "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260324T053346Z-contract/provider/smoke/federated-ci-20260324T053346Z-contract-contract_violation.json",
+  "schema_path": "contracts/c4-provider-invocation-artifact.schema.json",
+  "taxonomy_path": "config/provider-reason-taxonomy.json",
+  "error_count": 0,
+  "errors": [],
+  "verdict": "pass"
+}
