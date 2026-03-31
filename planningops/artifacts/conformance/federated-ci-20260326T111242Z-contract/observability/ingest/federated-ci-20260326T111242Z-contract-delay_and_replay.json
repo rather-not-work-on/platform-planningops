@@ -1,0 +1,55 @@
+{
+  "generated_at_utc": "2026-03-26T11:12:43.981680+00:00",
+  "run_id": "federated-ci-20260326T111242Z-contract",
+  "ingest_profile": "langfuse-local",
+  "scenario": "delay_and_replay",
+  "verdict": "pass",
+  "reason_code": "replay_recovered",
+  "reason_taxonomy_version": 1,
+  "required_errors": [],
+  "continuity_ok": true,
+  "continuity_errors": [],
+  "summary": {
+    "input_event_count": 4,
+    "unique_event_count": 3,
+    "duplicate_count": 1,
+    "replay_detected": true,
+    "continuity_ok": true
+  },
+  "dedupe": {
+    "input_count": 4,
+    "output_count": 3,
+    "duplicate_event_ids": [
+      "evt-002"
+    ]
+  },
+  "events": [
+    {
+      "trace_id": "trace-001",
+      "span_id": "span-001",
+      "run_id": "run-001",
+      "event_id": "evt-001",
+      "sequence_no": 1,
+      "event_time": "2026-02-28T00:00:00Z",
+      "delivery_status": "delivered"
+    },
+    {
+      "trace_id": "trace-001",
+      "span_id": "span-002",
+      "run_id": "run-001",
+      "event_id": "evt-002",
+      "sequence_no": 2,
+      "event_time": "2026-02-28T00:00:02Z",
+      "delivery_status": "delivered"
+    },
+    {
+      "trace_id": "trace-001",
+      "span_id": "span-003",
+      "run_id": "run-001",
+      "event_id": "evt-003",
+      "sequence_no": 3,
+      "event_time": "2026-02-28T00:00:09Z",
+      "delivery_status": "delivered"
+    }
+  ]
+}
