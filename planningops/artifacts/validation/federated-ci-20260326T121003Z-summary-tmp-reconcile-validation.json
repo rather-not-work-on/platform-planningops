@@ -1,0 +1,20 @@
+{
+  "reconcile_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260326T121003Z-summary-tmp-reconcile.json",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/federated-ci-summary-tmp-reconcile.schema.json",
+  "output_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260326T121003Z-summary-tmp-reconcile-validation.json",
+  "generated_at_utc": "2026-03-26T12:10:21.463349+00:00",
+  "verdict": "pass",
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "reconcile_generated_at_utc": "2026-03-26T12:10:21.395091+00:00",
+  "reconcile_run_id": "federated-ci-20260326T121003Z",
+  "reconcile_status": "healthy",
+  "reconcile_restored": false,
+  "reconcile_check_name": "o11y-replay",
+  "reconcile_checkpoint_check_count": 3,
+  "reconcile_summary_check_count": 3,
+  "reconcile_count": 0,
+  "reconcile_restored_check_names": []
+}
