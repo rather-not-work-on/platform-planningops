@@ -1,0 +1,1 @@
+{"transition_id": "federated-ci-runtime-gates-20260319-rerun17-contract-card-10-dequeued", "run_id": "federated-ci-runtime-gates-20260319-rerun17-contract", "card_id": "card-10", "from_state": "Todo", "to_state": "In Progress", "transition_reason": "scheduler.dequeue", "replanning_flag": false, "decided_at_utc": "2026-03-19T11:27:17.145587+00:00"}
