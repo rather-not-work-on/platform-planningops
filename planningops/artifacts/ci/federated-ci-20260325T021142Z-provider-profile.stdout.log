@@ -1,0 +1,4 @@
+provider profile ci check contract ok
+[launcher] dry-run mode: validating runtime profiles only
+report written: runtime-artifacts/launcher/federated-ci-20260325T021142Z-provider.json
+profiles=local,oracle_cloud verdict=pass

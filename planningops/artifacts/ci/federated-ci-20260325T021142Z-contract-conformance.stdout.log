@@ -1,0 +1,3 @@
+contract conformance ci check contract ok
+report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260325T021142Z-contract.json
+check_count=23 assertion_count=10 incompatibility_example=pass verdict=pass
