@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-03-26T12:15:11.925119+00:00",
+  "summary_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T121130Z.json",
+  "summary_run_id": "federated-ci-20260326T121130Z",
+  "summary_generated_at_utc": "2026-03-26T12:15:11.914172+00:00",
+  "summary_verdict": "fail",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/federated-ci-summary.schema.json",
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "verdict": "pass"
+}
