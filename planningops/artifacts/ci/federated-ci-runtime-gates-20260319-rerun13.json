@@ -1,0 +1,80 @@
+{
+  "run_id": "federated-ci-runtime-gates-20260319-rerun13",
+  "started_at_utc": "2026-03-19T11:05:03.290283+00:00",
+  "checks": [
+    {
+      "name": "contract-conformance",
+      "domain": "contract",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-contract-conformance.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-contract-conformance.stderr.log"
+    },
+    {
+      "name": "provider-profile",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-provider-profile.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-provider-profile.stderr.log"
+    },
+    {
+      "name": "provider-gateway-ready",
+      "domain": "infra",
+      "exit_code": 1,
+      "verdict": "fail",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-provider-gateway-ready.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-provider-gateway-ready.stderr.log"
+    },
+    {
+      "name": "o11y-replay",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-o11y-replay.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-o11y-replay.stderr.log"
+    },
+    {
+      "name": "runtime-handoff",
+      "domain": "runtime",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-runtime-handoff.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-runtime-handoff.stderr.log"
+    },
+    {
+      "name": "runtime-operations-ready",
+      "domain": "runtime",
+      "exit_code": 1,
+      "verdict": "fail",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-runtime-operations-ready.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-runtime-gates-20260319-rerun13-runtime-operations-ready.stderr.log"
+    }
+  ],
+  "required_checks": [
+    "contract-conformance",
+    "runtime-handoff",
+    "runtime-operations-ready",
+    "o11y-replay",
+    "provider-profile",
+    "provider-gateway-ready",
+    "loop-guardrails"
+  ],
+  "generated_at_utc": "2026-03-19T11:06:41.267853+00:00",
+  "finished_at_utc": "2026-03-19T11:06:41.267998+00:00",
+  "overall_status": "interrupted",
+  "check_count": 6,
+  "missing_required_checks": [
+    "loop-guardrails"
+  ],
+  "failure_classification": {
+    "count": 2,
+    "domains": [
+      "infra",
+      "runtime"
+    ],
+    "deterministic_rule": "contract-conformance->contract, provider-profile/provider-gateway-ready/o11y-replay->infra, runtime-handoff/runtime-operations-ready->runtime, federated-conformance->federation, loop-guardrails->policy"
+  },
+  "verdict": "fail",
+  "shell_exit_code": 0
+}
