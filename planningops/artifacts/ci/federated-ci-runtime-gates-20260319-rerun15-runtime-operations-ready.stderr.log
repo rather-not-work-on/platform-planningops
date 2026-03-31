@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/assess_runtime_operations_readiness.py", line 16, in <module>
+    from runtime_evidence_contract import load_json as load_json_with_default
+  File "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/runtime_evidence_contract.py", line 6, in <module>
+    from jsonschema_compat import load_validator_exports
+  File "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/jsonschema_compat.py", line 47, in <module>
+    class _FallbackDraft202012Validator:
+  File "/Volumes/T7 Touch/mini/rather-not-work-on/monday/scripts/jsonschema_compat.py", line 48, in _FallbackDraft202012Validator
+    def __init__(self, schema: dict, format_checker: FormatChecker | None = None):
+TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'
