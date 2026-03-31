@@ -1,0 +1,11 @@
+runtime operations ready ci check contract ok
+[launcher] start mode requested
+[launcher] using uvx local backend
+report written: runtime-artifacts/launcher/federated-ci-20260326T112231Z-runtime-operations-ready.json
+profiles=local,oracle_cloud verdict=pass
+
+> @rather-not-work-on/monday@0.0.0 gate:runtime-operations-ready
+> python3 scripts/assess_runtime_operations_readiness.py --require-ready
+
+report written: /Volumes/T7 Touch/mini/rather-not-work-on/monday/runtime-artifacts/validation/runtime-operations-readiness-report.json
+assessment_status=ready baseline_passed=true runtime_operations_ready=true
