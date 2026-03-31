@@ -1,0 +1,26 @@
+{
+  "generated_at_utc": "2026-03-19T11:22:00.467506+00:00",
+  "run_id": "federated-ci-runtime-gates-20260319-rerun16-contract",
+  "verdict": "pass",
+  "delivery_cycle_required": false,
+  "selected_delivery_entrypoint": "-",
+  "delivery_cycle_report_ref": "-",
+  "handoff_required": false,
+  "worker_outcome_handoff_ref": "-",
+  "worker_outcome_handoff_contract_ref": "planningops/contracts/scheduled-worker-outcome-handoff-contract.md",
+  "reason_code": "ok",
+  "reason_taxonomy_version": 12,
+  "dequeued_count": 1,
+  "blocked_count": 0,
+  "duplicate_count": 0,
+  "replanning_trigger_count": 0,
+  "dequeued": [
+    {
+      "card_id": "card-10",
+      "issue_number": 10
+    }
+  ],
+  "blocked": [],
+  "duplicates": [],
+  "replanning_triggered_cards": []
+}
