@@ -1,0 +1,21 @@
+{
+  "generated_at_utc": "2026-03-24T04:57:05.618240+00:00",
+  "bundle_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T045334Z-summary-tmp-reconcile-bundle.json",
+  "artifact_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T045334Z-summary-tmp-reconcile.json",
+  "bundle_generated_at_utc": "2026-03-24T04:57:05.546885+00:00",
+  "bundle_schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/federated-ci-summary-tmp-reconcile-bundle.schema.json",
+  "validation_schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/federated-ci-summary-tmp-reconcile-bundle-validation.schema.json",
+  "reconcile_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T045334Z-summary-tmp-reconcile.json",
+  "reconcile_validation_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T045334Z-summary-tmp-reconcile-validation.json",
+  "run_id": "federated-ci-20260324T045334Z",
+  "reconcile_status": "healthy",
+  "reconcile_check_name": "loop-guardrails-outer-status-bundle-validation",
+  "reconcile_count": 0,
+  "reconcile_validation_verdict": "pass",
+  "output_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T045334Z-summary-tmp-reconcile-bundle-validation.json",
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "verdict": "pass"
+}
