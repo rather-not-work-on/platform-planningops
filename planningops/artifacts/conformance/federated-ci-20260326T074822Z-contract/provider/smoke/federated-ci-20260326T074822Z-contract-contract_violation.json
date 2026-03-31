@@ -1,0 +1,44 @@
+{
+  "generated_at_utc": "2026-03-26T07:48:23.124357+00:00",
+  "run_id": "federated-ci-20260326T074822Z-contract",
+  "routing_profile": "example-local",
+  "scenario": "contract_violation",
+  "verdict": "fail",
+  "reason_code": "contract_violation",
+  "reason_taxonomy_version": 3,
+  "summary": {
+    "attempt_count": 1,
+    "success_count": 0,
+    "failure_count": 1,
+    "total_latency_ms": 10,
+    "total_estimated_cost_usd": 0.0,
+    "fallback_used": false,
+    "selected_provider": null
+  },
+  "attempts": [
+    {
+      "attempt_index": 0,
+      "route_role": "primary",
+      "provider": null,
+      "model": null,
+      "latency_ms": 10,
+      "status": "failed",
+      "validation_status": "invalid",
+      "missing_fields": [
+        "provider",
+        "model"
+      ],
+      "estimated_cost_usd": 0.0,
+      "error_code": "malformed_invocation"
+    }
+  ],
+  "missing_fields": [
+    {
+      "attempt_index": 0,
+      "missing_fields": [
+        "provider",
+        "model"
+      ]
+    }
+  ]
+}
