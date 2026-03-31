@@ -1,0 +1,4 @@
+
+> @rather-not-work-on/monday@0.0.0 gate:runtime-operations-ready
+> python3 scripts/assess_runtime_operations_readiness.py --require-ready
+

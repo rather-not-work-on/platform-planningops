@@ -1,0 +1,21 @@
+federated_python_env contract ok
+federated ci workflow summary contract ok
+federated ci local matrix mode contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.Rv2xB45wWu/federated-summary-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.Rv2xB45wWu/invalid-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary contract ok
+federated ci summary contract doc ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.bEVxReixqP/federated-ci-summary-readiness.json
+readiness_status=ready ready=True
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.bEVxReixqP/federated-ci-summary-readiness.json
+readiness_status=blocked ready=False
+assess federated ci summary readiness ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.wXaatXY0VZ/federated-ci-summary-readiness-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.wXaatXY0VZ/invalid-readiness-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary readiness ok
+doctor federated ci summary ok
+gate federated ci summary ok
