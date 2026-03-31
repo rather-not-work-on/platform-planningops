@@ -1,0 +1,1 @@
+{"transition_id": "federated-ci-20260326T070153Z-contract-queue-planningops-issue-20-dequeued", "run_id": "federated-ci-20260326T070153Z-contract", "queue_item_id": "queue-planningops-issue-20", "from_state": "ready", "to_state": "leased", "transition_reason": "scheduler.dequeue", "replanning_flag": false, "decided_at_utc": "2026-03-26T07:01:55.733788+00:00"}
