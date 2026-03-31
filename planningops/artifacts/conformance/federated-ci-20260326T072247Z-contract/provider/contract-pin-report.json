@@ -1,0 +1,12 @@
+{
+  "generated_at_utc": "2026-03-26T07:22:48.939497+00:00",
+  "verdict": "pass",
+  "pin_path": "config/contract-pin.json",
+  "required_contracts": [
+    "c4-provider-invocation"
+  ],
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": []
+}
