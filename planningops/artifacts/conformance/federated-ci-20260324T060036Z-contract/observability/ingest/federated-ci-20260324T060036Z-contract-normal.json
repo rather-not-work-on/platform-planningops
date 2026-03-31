@@ -1,0 +1,44 @@
+{
+  "generated_at_utc": "2026-03-24T06:00:38.045788+00:00",
+  "run_id": "federated-ci-20260324T060036Z-contract",
+  "ingest_profile": "langfuse-local",
+  "scenario": "normal",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "reason_taxonomy_version": 1,
+  "required_errors": [],
+  "continuity_ok": true,
+  "continuity_errors": [],
+  "summary": {
+    "input_event_count": 2,
+    "unique_event_count": 2,
+    "duplicate_count": 0,
+    "replay_detected": false,
+    "continuity_ok": true
+  },
+  "dedupe": {
+    "input_count": 2,
+    "output_count": 2,
+    "duplicate_event_ids": []
+  },
+  "events": [
+    {
+      "trace_id": "trace-001",
+      "span_id": "span-001",
+      "run_id": "run-001",
+      "event_id": "evt-001",
+      "sequence_no": 1,
+      "event_time": "2026-02-28T00:00:00Z",
+      "delivery_status": "delivered"
+    },
+    {
+      "trace_id": "trace-001",
+      "span_id": "span-002",
+      "run_id": "run-001",
+      "event_id": "evt-002",
+      "sequence_no": 2,
+      "event_time": "2026-02-28T00:00:02Z",
+      "delivery_status": "delivered"
+    }
+  ]
+}
