@@ -1,0 +1,23 @@
+{
+  "bundle_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status-bundle.json",
+  "validation_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status-bundle-validation.json",
+  "bundle_present": true,
+  "validation_present": true,
+  "artifact_file": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status.json",
+  "status_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status.json",
+  "status_validation_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status-validation.json",
+  "nested_bundle_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle.json",
+  "nested_bundle_validation_report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-validation.json",
+  "run_id": "federated-ci-20260324T055954Z",
+  "reconcile_status": "healthy",
+  "check_name": "runtime-handoff",
+  "reconcile_count": 0,
+  "reconcile_validation_verdict": "pass",
+  "bundle_validation_verdict": "pass",
+  "bundle_validation_state": "fresh",
+  "ready": true,
+  "next_step": "none",
+  "generated_at_utc": "2026-03-24T06:00:22.871764+00:00",
+  "output_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status-bundle-status.json",
+  "status_validation_output_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260324T055954Z-summary-tmp-reconcile-bundle-status-bundle-status-bundle-status-bundle-status-validation.json"
+}

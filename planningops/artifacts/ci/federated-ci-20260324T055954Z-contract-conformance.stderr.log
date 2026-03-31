@@ -1,0 +1,10 @@
+unknown argument: Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python
+usage: run_contract_conformance_ci_check.sh [options]
+
+options:
+  --run-id <id>             contract-conformance run id passed to the federated checker
+  --workspace-root <path>   federated workspace root
+  --bootstrap-mode <mode>   cross-repo bootstrap mode
+  --python-bin <path>       python executable used to invoke the conformance checker
+  --print-local-invocation  print the canonical local matrix invocation
+  --help                    show this help text
