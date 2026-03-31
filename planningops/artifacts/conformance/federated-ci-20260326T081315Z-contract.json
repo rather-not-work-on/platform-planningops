@@ -1,0 +1,629 @@
+{
+  "generated_at_utc": "2026-03-26T08:13:17.734805+00:00",
+  "run_id": "federated-ci-20260326T081315Z-contract",
+  "python_bootstrap": {
+    "mode": "auto",
+    "current_python": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+    "managed_python": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+    "bootstrap_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance",
+    "requirements_hash": "05b2320da5b44a6138aa6f16c699b969163f799aa2e519df62d24dffba47b83d",
+    "requirements_files": [
+      "platform-contracts/requirements-dev.txt",
+      "platform-provider-gateway/requirements-dev.txt",
+      "platform-observability-gateway/requirements-dev.txt",
+      "monday/requirements-dev.txt"
+    ],
+    "missing_requirement_files": [],
+    "import_names": [
+      "jsonschema",
+      "rfc3339_validator"
+    ],
+    "missing_modules_current": [],
+    "using_managed_python": true,
+    "manifest_current": true,
+    "preferred_python": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+    "venv_rebuilt": false,
+    "reexec_required": false,
+    "bootstrap_commands": [],
+    "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on"
+  },
+  "workspace_root": "/Volumes/T7 Touch/mini/rather-not-work-on",
+  "run_root": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract",
+  "checks": [
+    {
+      "check_id": "contracts.validate",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_contracts.py",
+        "--root",
+        "."
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "cation.schema.json <- c4-provider-invocation.valid.json\n[PASS] c5-observability-event.schema.json <- c5-observability-event.valid.json\n[PASS] c6-public-status-projection.schema.json <- c6-public-status-projection.valid.json\n[PASS] c7-manual-override-policy.schema.json <- c7-manual-override-policy.valid.json\n[PASS] c8-plan-to-github-projection.schema.json <- c8-plan-to-github-projection.valid.json\n[PASS] consumer-contract-pin-evidence.schema.json <- consumer-contract-pin-evidence.valid.json\n[PASS] contract-bundle-evidence.schema.json <- contract-bundle-evidence.valid.json\n[PASS] runtime-queue-worker-outcome.schema.json <- runtime-queue-worker-outcome.valid.json\n[PASS] runtime-scheduler-lease-lifecycle.schema.json <- runtime-scheduler-lease-lifecycle.valid.json\n[PASS] runtime-scheduler-queue-item.schema.json <- runtime-scheduler-queue-item.valid.json\nreport written: compatibility/reports/latest-validation-report.json\nvalidation passed: all contract fixtures satisfy JSON Schema validation",
+      "stderr_tail": ""
+    },
+    {
+      "check_id": "contracts.semver_classification",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/classify_schema_change.py",
+        "--enforce-expected",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/semver-classification.json",
+        "--output-dir",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/semver-classification.json\nmode=scenario scenario_count=4 mismatch_count=0 overall_bump=major",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/semver-classification.json",
+      "report_exists": true,
+      "report_summary": {
+        "result_count": null,
+        "highest_computed_bump": null
+      }
+    },
+    {
+      "check_id": "contracts.publish_bundle",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/publish_contract_bundle.py",
+        "--bundle-version",
+        "2026.02.28",
+        "--workspace-root",
+        "/Volumes/T7 Touch/mini/rather-not-work-on",
+        "--bundle-output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/contract-bundle.json",
+        "--pin-output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/consumer-contract-pins.json",
+        "--strict"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "bundle report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/contract-bundle.json\npin report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/consumer-contract-pins.json\nbundle_version=2026.02.28 schema_count=13 consumer_count=3 pin_failures=0 verdict=pass",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/contract-bundle.json",
+      "report_exists": true,
+      "report_summary": {
+        "bundle_version": "2026.02.28",
+        "schema_count": 13,
+        "source_repo": "rather-not-work-on/platform-contracts"
+      }
+    },
+    {
+      "check_id": "contracts.publish_and_pin_runbook",
+      "file_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts/compatibility/publish-and-pin-runbook.md",
+      "required_fragment_count": 3,
+      "missing_fragment_count": 0,
+      "missing_fragments": [],
+      "verdict": "pass"
+    },
+    {
+      "check_id": "provider.primary_success",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/litellm_gateway_smoke.py",
+        "--scenario",
+        "primary_success",
+        "--run-id",
+        "federated-ci-20260326T081315Z-contract",
+        "--output-dir",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-primary_success.json\nscenario=primary_success verdict=pass reason_code=ok attempts=1",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-primary_success.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "reason_code": "ok",
+        "routing_profile": "example-local"
+      }
+    },
+    {
+      "check_id": "provider.primary_success_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_provider_smoke_evidence.py",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-primary_success.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/primary_success.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/primary_success.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/primary_success.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "provider.contract_violation_fail_fast",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/litellm_gateway_smoke.py",
+        "--scenario",
+        "contract_violation",
+        "--run-id",
+        "federated-ci-20260326T081315Z-contract",
+        "--output-dir",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke"
+      ],
+      "expected_exit": 1,
+      "exit_code": 1,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-contract_violation.json\nscenario=contract_violation verdict=fail reason_code=contract_violation attempts=1",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-contract_violation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "fail",
+        "reason_code": "contract_violation",
+        "routing_profile": "example-local"
+      }
+    },
+    {
+      "check_id": "provider.contract_violation_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_provider_smoke_evidence.py",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-contract_violation.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/contract_violation.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/contract_violation.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/contract_violation.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "provider.contract_pin",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_contract_pin.py",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/contract-pin-report.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/contract-pin-report.json\nverdict=pass error_count=0 warning_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/contract-pin-report.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0,
+        "warning_count": 0
+      }
+    },
+    {
+      "check_id": "provider.reason_taxonomy_map",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_reason_taxonomy_map.py",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/reason-taxonomy-map.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/reason-taxonomy-map.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/reason-taxonomy-map.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "o11y.normal",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/langfuse_ingest_smoke.py",
+        "--scenario",
+        "normal",
+        "--run-id",
+        "federated-ci-20260326T081315Z-contract",
+        "--output-dir",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest/federated-ci-20260326T081315Z-contract-normal.json\nscenario=normal verdict=pass reason_code=ok continuity_ok=True duplicates=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest/federated-ci-20260326T081315Z-contract-normal.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "reason_code": "ok",
+        "ingest_profile": "langfuse-local"
+      }
+    },
+    {
+      "check_id": "o11y.normal_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_ingest_smoke_evidence.py",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest/federated-ci-20260326T081315Z-contract-normal.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/normal.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/normal.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/normal.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "o11y.delay_and_replay",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/langfuse_ingest_smoke.py",
+        "--scenario",
+        "delay_and_replay",
+        "--run-id",
+        "federated-ci-20260326T081315Z-contract",
+        "--output-dir",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest/federated-ci-20260326T081315Z-contract-delay_and_replay.json\nscenario=delay_and_replay verdict=pass reason_code=replay_recovered continuity_ok=True duplicates=1",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest/federated-ci-20260326T081315Z-contract-delay_and_replay.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "reason_code": "replay_recovered",
+        "ingest_profile": "langfuse-local"
+      }
+    },
+    {
+      "check_id": "o11y.delay_and_replay_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_ingest_smoke_evidence.py",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/ingest/federated-ci-20260326T081315Z-contract-delay_and_replay.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay_and_replay.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay_and_replay.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay_and_replay.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "o11y.contract_pin",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_contract_pin.py",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/contract-pin-report.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/contract-pin-report.json\nverdict=pass error_count=0 warning_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/contract-pin-report.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0,
+        "warning_count": 0
+      }
+    },
+    {
+      "check_id": "o11y.delay_replay_reason_taxonomy_map",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-observability-gateway",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_delay_replay_reason_taxonomy_map.py",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay-replay-reason-taxonomy-map.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay-replay-reason-taxonomy-map.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay-replay-reason-taxonomy-map.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "monday.handoff_mapping",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_handoff_mapping.py",
+        "--run-id",
+        "federated-ci-20260326T081315Z-contract",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff-smoke-report.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff-smoke-report.json\nverdict=pass reason_code=ok mismatch_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff-smoke-report.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "reason_code": "ok",
+        "mismatch_count": 0
+      }
+    },
+    {
+      "check_id": "monday.handoff_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_runtime_evidence.py",
+        "--kind",
+        "handoff",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff-smoke-report.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff.validation.json\nkind=handoff verdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "monday.integration",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/integrate_planningops_handoff.py",
+        "--planningops-last-run",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/loop-runner/last-run.json",
+        "--run-id",
+        "federated-ci-20260326T081315Z-contract",
+        "--handoff-report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/handoff-smoke-report.json",
+        "--queue-out",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/queue.from-planningops.json",
+        "--scheduler-report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/scheduler-run-report.json",
+        "--integration-report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/planningops-handoff-report.json",
+        "--idempotency",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/idempotency.json",
+        "--transition-log",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/scheduler.ndjson"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "integration report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/planningops-handoff-report.json\nverdict=pass reason_code=ok mismatch_count=0 dequeued=1 blocked=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/planningops-handoff-report.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "reason_code": "ok",
+        "queue_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/queue.from-planningops.json"
+      }
+    },
+    {
+      "check_id": "monday.scheduler_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_runtime_evidence.py",
+        "--kind",
+        "scheduler",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/scheduler-run-report.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/scheduler.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/scheduler.validation.json\nkind=scheduler verdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/scheduler.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "monday.integration_validation",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_runtime_evidence.py",
+        "--kind",
+        "integration",
+        "--report",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/planningops-handoff-report.json",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/integration.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/integration.validation.json\nkind=integration verdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/integration.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    },
+    {
+      "check_id": "monday.contract_pin",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_contract_pin.py",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/contract-pin-report.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/contract-pin-report.json\nverdict=pass error_count=0 warning_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/contract-pin-report.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0,
+        "warning_count": 0
+      }
+    },
+    {
+      "check_id": "monday.runtime_integration_runbook",
+      "cwd": "/Volumes/T7 Touch/mini/rather-not-work-on/monday",
+      "command": [
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/runtime-artifacts/tooling/federated-conformance/py314/bin/python",
+        "scripts/validate_runtime_integration_runbook.py",
+        "--output",
+        "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/runtime-integration-runbook.validation.json"
+      ],
+      "expected_exit": 0,
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_tail": "report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/runtime-integration-runbook.validation.json\nverdict=pass error_count=0",
+      "stderr_tail": "",
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/runtime-integration-runbook.validation.json",
+      "report_exists": true,
+      "report_summary": {
+        "verdict": "pass",
+        "error_count": 0
+      }
+    }
+  ],
+  "evidence_assertions": {
+    "bundle_version_consistency": {
+      "versions_by_repo": {
+        "provider": "2026.02.28",
+        "observability": "2026.02.28",
+        "monday": "2026.02.28"
+      },
+      "distinct_versions": [
+        "2026.02.28"
+      ],
+      "resolved_bundle_version": "2026.02.28",
+      "verdict": "pass"
+    },
+    "contract_bundle_published": {
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/contract-bundle.json",
+      "verdict": "pass"
+    },
+    "consumer_pin_evidence": {
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/contracts/consumer-contract-pins.json",
+      "verdict": "pass"
+    },
+    "contracts_runbook_evidence": {
+      "runbook_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-contracts/compatibility/publish-and-pin-runbook.md",
+      "missing_fragment_count": 0,
+      "verdict": "pass"
+    },
+    "provider_evidence": {
+      "primary_reason_code": "ok",
+      "violation_reason_code": "contract_violation",
+      "verdict": "pass"
+    },
+    "provider_reason_taxonomy_evidence": {
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/reason-taxonomy-map.validation.json",
+      "verdict": "pass"
+    },
+    "observability_evidence": {
+      "replay_reason_code": "replay_recovered",
+      "verdict": "pass"
+    },
+    "observability_reason_taxonomy_evidence": {
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/observability/delay-replay-reason-taxonomy-map.validation.json",
+      "verdict": "pass"
+    },
+    "runtime_evidence": {
+      "integration_reason_code": "ok",
+      "verdict": "pass"
+    },
+    "runtime_runbook_evidence": {
+      "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/monday/runtime-integration-runbook.validation.json",
+      "verdict": "pass"
+    }
+  },
+  "incompatibility_example": {
+    "semver_major_example_present": true,
+    "provider_fail_fast_example_present": true,
+    "provider_fail_fast_report": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T081315Z-contract/provider/smoke/federated-ci-20260326T081315Z-contract-contract_violation.json",
+    "verdict": "pass"
+  },
+  "verdict": "pass"
+}
