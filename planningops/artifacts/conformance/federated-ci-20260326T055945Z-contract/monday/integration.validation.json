@@ -1,0 +1,10 @@
+{
+  "generated_at_utc": "2026-03-26T05:59:47.650386+00:00",
+  "kind": "integration",
+  "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260326T055945Z-contract/monday/planningops-handoff-report.json",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/contracts/runtime-integration-evidence.schema.json",
+  "taxonomy_path": "/Volumes/T7 Touch/mini/rather-not-work-on/monday/config/runtime-reason-taxonomy.json",
+  "error_count": 0,
+  "errors": [],
+  "verdict": "pass"
+}
