@@ -1,0 +1,177 @@
+monday agent harness projection ci check contract ok
+monday agent harness projection helper wiring ok
+monday agent harness projection ci suite contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection.sh
+resolve monday agent harness projection ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status.sh
+validate monday agent harness projection status ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status.sh
+resolve monday agent harness projection status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_validation_contract.sh
+validate monday agent harness projection status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_contract.sh
+validate monday agent harness projection status bundle status contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_validation_contract.sh
+validate monday agent harness projection status bundle status validation contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status_bundle_status.sh
+resolve monday agent harness projection status bundle status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_validation_contract.sh
+validate monday agent harness projection status bundle status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_contract.sh
+validate monday agent harness projection status bundle status bundle status contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status validation contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status.sh
+resolve monday agent harness projection status bundle status bundle status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status validation contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status.sh
+resolve monday agent harness projection status bundle status bundle status bundle status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh
+{
+  "status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status-bundle.json",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle.schema.json",
+  "output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status-bundle-validation.json",
+  "generated_at_utc": "2026-03-26T06:32:44.010571+00:00",
+  "verdict": "pass",
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "bundle_status_bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status-validation.json",
+  "bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle.json",
+  "resolved_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle.json",
+  "bundle_validation_output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-validation.json",
+  "bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-validation.json",
+  "bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status.json",
+  "bundle_status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-validation.json",
+  "projection_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-bundle.json",
+  "projection_validation_report_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-validation.json",
+  "status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status.json",
+  "status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-validation.json",
+  "mission_id": "mh60-mission",
+  "run_id": "mh60-run",
+  "session_id": "mh60-session",
+  "bundle_ready": true,
+  "bundle_next_step": "none",
+  "status_verdict": "pass",
+  "status_validation_verdict": "pass",
+  "bundle_status_verdict": "pass",
+  "bundle_status_validation_verdict": "pass",
+  "projection_validation_verdict": "pass",
+  "projection_validation_state": "fresh",
+  "status_sidecar_validation_verdict": "pass",
+  "bundle_validation_verdict": "pass",
+  "resolved_status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status-bundle.json"
+}
+{
+  "status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/invalid-status-bundle-status-bundle-status-bundle-status-bundle.json",
+  "schema_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/monday-agent-harness-projection-status-bundle-status-bundle-status-bundle-status-bundle.schema.json",
+  "output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/invalid-status-bundle-status-bundle-status-bundle-status-bundle-validation.json",
+  "generated_at_utc": "2026-03-26T06:32:44.093334+00:00",
+  "verdict": "fail",
+  "error_count": 7,
+  "warning_count": 0,
+  "errors": [
+    "resolved_status_bundle_status_bundle_status_bundle_status_bundle_path must match the validated bundle file path",
+    "ready must match bundle_status_bundle_status_bundle_report.ready",
+    "next_step must match bundle_status_bundle_status_bundle_report.next_step",
+    "bundle_status_bundle_status_bundle_report.bundle_status_bundle_status_bundle_validation_output_path must match bundle_status_bundle_status_bundle_validation_path",
+    "ready must match bundle_status_bundle_status_bundle_validation_report.status_ready",
+    "next_step must match bundle_status_bundle_status_bundle_validation_report.status_next_step",
+    "bundle must match canonical monday harness projection status-bundle-status-bundle-status-bundle-status bundle resolution"
+  ],
+  "warnings": [],
+  "bundle_status_bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-status-validation.json",
+  "bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle.json",
+  "resolved_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle.json",
+  "bundle_validation_output_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-bundle-validation.json",
+  "bundle_status_bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status.json",
+  "bundle_status_bundle_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-bundle-status-validation.json",
+  "bundle_status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status.json",
+  "bundle_status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-bundle-status-validation.json",
+  "projection_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-bundle.json",
+  "projection_validation_report_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-validation.json",
+  "status_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status.json",
+  "status_validation_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/projection-status-validation.json",
+  "mission_id": "mh60-mission",
+  "run_id": "mh60-run",
+  "session_id": "mh60-session",
+  "bundle_ready": false,
+  "bundle_next_step": "custom remediation",
+  "status_verdict": "pass",
+  "status_validation_verdict": "pass",
+  "bundle_status_verdict": "pass",
+  "bundle_status_validation_verdict": "pass",
+  "projection_validation_verdict": "pass",
+  "projection_validation_state": "fresh",
+  "status_sidecar_validation_verdict": "pass",
+  "bundle_validation_verdict": "pass",
+  "resolved_status_bundle_status_bundle_status_bundle_status_bundle_path": "/private/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.oPntNrYYLF/wrong-status-bundle-status-bundle-status-bundle-status-bundle.json"
+}
+validate monday agent harness projection status bundle status bundle status bundle status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status validation contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status.sh
+resolve monday agent harness projection status bundle status bundle status bundle status bundle status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status validation contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh
+resolve monday agent harness projection status bundle status bundle status bundle status bundle status bundle status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle status contract ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle status validation contract ok
+[monday-harness-projection] planningops/scripts/test_resolve_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status.sh
+resolve monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle status ok
+[monday-harness-projection] planningops/scripts/test_validate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_validation_contract.sh
+validate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle validation contract ok
+[monday-harness-projection] planningops/scripts/test_doctor_monday_agent_harness_projection_status_bundle_status_bundle.sh
+doctor monday agent harness projection status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.sh
+doctor monday agent harness projection status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle.sh
+doctor monday agent harness projection status bundle status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh
+doctor monday agent harness projection status bundle status bundle status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_doctor_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh
+doctor monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_gate_monday_agent_harness_projection_status_bundle_status_bundle.sh
+gate monday agent harness projection status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle.sh
+gate monday agent harness projection status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle.sh
+gate monday agent harness projection status bundle status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh
+gate monday agent harness projection status bundle status bundle status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_gate_monday_agent_harness_projection_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle_status_bundle.sh
+gate monday agent harness projection status bundle status bundle status bundle status bundle status bundle status bundle ok
+[monday-harness-projection] planningops/scripts/test_doctor_monday_agent_harness_projection_status_bundle.sh
+doctor monday agent harness projection status bundle ok
+[monday-harness-projection] planningops/scripts/test_gate_monday_agent_harness_projection_status_bundle.sh
+gate monday agent harness projection status bundle ok
+[monday-harness-projection] planningops/scripts/test_monday_agent_harness_projection_bridge.sh
+monday agent harness projection bridge ok
+[monday-harness-projection] planningops/scripts/test_materialize_monday_agent_harness_projection_surfaces.sh
+materialize monday agent harness projection surfaces ok
+[monday-harness-projection] planningops/scripts/test_sync_monday_agent_harness_projection_latest.sh
+sync monday agent harness projection latest ok
+[monday-harness-projection] sync latest
+summary_run_id=federated-ci-20260326T063147Z
+projection_run_id=federated-ci-20260326T063147Z-monday-harness
+projection_root=../monday/runtime-artifacts/agent-harness

@@ -1,0 +1,86 @@
+{
+  "generated_at_utc": "2026-03-26T06:31:48.570770+00:00",
+  "source_repo": "rather-not-work-on/platform-contracts",
+  "bundle_version": "2026.02.28",
+  "schema_count": 13,
+  "schemas": [
+    {
+      "schema_name": "c1-run-lifecycle.schema.json",
+      "contract_id": "c1-run-lifecycle",
+      "path": "schemas/c1-run-lifecycle.schema.json",
+      "sha256": "2e960d2b93b6630cd12b9dd98c93ad44506201711c9a5a2b68e5442fce9753f2"
+    },
+    {
+      "schema_name": "c2-subtask-handoff.schema.json",
+      "contract_id": "c2-subtask-handoff",
+      "path": "schemas/c2-subtask-handoff.schema.json",
+      "sha256": "b7e51be1a281b8fc8268039e1c4249c41984f8438e80407f04e63ac291fa50be"
+    },
+    {
+      "schema_name": "c3-executor-result.schema.json",
+      "contract_id": "c3-executor-result",
+      "path": "schemas/c3-executor-result.schema.json",
+      "sha256": "d710bd4292e37cafac05597708888336ec20ba23641a8b0448f2e6767758c94e"
+    },
+    {
+      "schema_name": "c4-provider-invocation.schema.json",
+      "contract_id": "c4-provider-invocation",
+      "path": "schemas/c4-provider-invocation.schema.json",
+      "sha256": "eaf2c5200d21fe7752bfcdc854b3afbef25a33da229087369a579c7ccb10b6c6"
+    },
+    {
+      "schema_name": "c5-observability-event.schema.json",
+      "contract_id": "c5-observability-event",
+      "path": "schemas/c5-observability-event.schema.json",
+      "sha256": "0119c4c4478dee80f6494c7e67cba984213f8033058f4a173bc93439892156a4"
+    },
+    {
+      "schema_name": "c6-public-status-projection.schema.json",
+      "contract_id": "c6-public-status-projection",
+      "path": "schemas/c6-public-status-projection.schema.json",
+      "sha256": "ca84da98870e2c4b3adf14a3d9ce8e5ee2f5e73062b53cb345a7cf2477147bb9"
+    },
+    {
+      "schema_name": "c7-manual-override-policy.schema.json",
+      "contract_id": "c7-manual-override-policy",
+      "path": "schemas/c7-manual-override-policy.schema.json",
+      "sha256": "6359a8171edd00a632b9d4439a335b9e00aff57e7e4ef9feb81d05ef320ca406"
+    },
+    {
+      "schema_name": "c8-plan-to-github-projection.schema.json",
+      "contract_id": "c8-plan-to-github-projection",
+      "path": "schemas/c8-plan-to-github-projection.schema.json",
+      "sha256": "6de3741e026131fec83686ddfb3a5dd2108b8591d401b200c23e3507724254c5"
+    },
+    {
+      "schema_name": "consumer-contract-pin-evidence.schema.json",
+      "contract_id": "consumer-contract-pin-evidence",
+      "path": "schemas/consumer-contract-pin-evidence.schema.json",
+      "sha256": "3475b2fe344ad9467cd515d7771b3231d98f93ba15502b6aec8287a528c1f654"
+    },
+    {
+      "schema_name": "contract-bundle-evidence.schema.json",
+      "contract_id": "contract-bundle-evidence",
+      "path": "schemas/contract-bundle-evidence.schema.json",
+      "sha256": "6d4744c9e0325d135e9af9cce2cba1e891647267c74df010b685317f7cb62b2a"
+    },
+    {
+      "schema_name": "runtime-queue-worker-outcome.schema.json",
+      "contract_id": "runtime-queue-worker-outcome",
+      "path": "schemas/runtime-queue-worker-outcome.schema.json",
+      "sha256": "d0c18ba44ea6074cb9e64234906f9f94beec1d5b7f74c4afa734e5678683b724"
+    },
+    {
+      "schema_name": "runtime-scheduler-lease-lifecycle.schema.json",
+      "contract_id": "runtime-scheduler-lease-lifecycle",
+      "path": "schemas/runtime-scheduler-lease-lifecycle.schema.json",
+      "sha256": "04f0cd19b3dcd0cf626af20bcafa0c9aae8f09dc3f6a3c9be7672061f043d993"
+    },
+    {
+      "schema_name": "runtime-scheduler-queue-item.schema.json",
+      "contract_id": "runtime-scheduler-queue-item",
+      "path": "schemas/runtime-scheduler-queue-item.schema.json",
+      "sha256": "15caa148b523c0f1ef57177eb5f333f33fa26c7d0573ed4105bfe6910f41e87a"
+    }
+  ]
+}
