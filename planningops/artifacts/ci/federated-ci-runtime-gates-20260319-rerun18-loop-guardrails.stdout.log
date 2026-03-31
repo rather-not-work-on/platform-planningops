@@ -1,0 +1,100 @@
+federated_python_env contract ok
+federated ci workflow summary contract ok
+federated ci local matrix mode contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.Kt6iADLGDi/federated-summary-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.Kt6iADLGDi/invalid-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary contract ok
+federated ci summary contract doc ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.syiSnaqkuf/federated-ci-summary-readiness.json
+readiness_status=ready ready=True
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.syiSnaqkuf/federated-ci-summary-readiness.json
+readiness_status=blocked ready=False
+assess federated ci summary readiness ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.BWsb50gObM/federated-ci-summary-readiness-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.BWsb50gObM/invalid-readiness-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary readiness ok
+doctor federated ci summary ok
+gate federated ci summary ok
+{
+  "generated_at_utc": "2026-03-19T11:30:41.673146+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-19T11:30:32.115009+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 1,
+          "pass": false,
+          "stdout": "failed to fetch field-list: GraphQL: API rate limit exceeded for user ID 97151887.",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "fail",
+      "reasons": [
+        "schema.check.failed"
+      ]
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-19T11:30:41.668523+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 1,
+          "pass": false,
+          "stdout": "failed to fetch field-list: GraphQL: API rate limit exceeded for user ID 97151887.",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "fail",
+      "reasons": [
+        "schema.check.failed"
+      ]
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "fail",
+  "kpi_source_path": "planningops/fixtures/track1-kpi-baseline-ci.json"
+}
