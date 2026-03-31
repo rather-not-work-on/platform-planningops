@@ -1,0 +1,72 @@
+{
+  "generated_at_utc": "2026-03-26T11:43:26.287832+00:00",
+  "mode": "scenario",
+  "input": "compatibility/fixtures/schema-change-scenarios.json",
+  "before_dir": null,
+  "after_dir": null,
+  "scenario_count": 4,
+  "mismatch_count": 0,
+  "overall_bump": "major",
+  "results": [
+    {
+      "id": "S1",
+      "expected_bump": "minor",
+      "computed_bump": "minor",
+      "rationale": [
+        {
+          "severity": "minor",
+          "change_type": "optional_property_added",
+          "path": "#/properties",
+          "detail": "property added: new_hint"
+        }
+      ],
+      "ok": true,
+      "description": "optional property addition only"
+    },
+    {
+      "id": "S2",
+      "expected_bump": "major",
+      "computed_bump": "major",
+      "rationale": [
+        {
+          "severity": "major",
+          "change_type": "required_removed",
+          "path": "#/required",
+          "detail": "required field removed: run_id"
+        }
+      ],
+      "ok": true,
+      "description": "required key removed"
+    },
+    {
+      "id": "S3",
+      "expected_bump": "minor",
+      "computed_bump": "minor",
+      "rationale": [
+        {
+          "severity": "minor",
+          "change_type": "enum_value_added",
+          "path": "#/properties/status/enum",
+          "detail": "enum values added: ['\"blocked\"']"
+        }
+      ],
+      "ok": true,
+      "description": "enum value added with fallback"
+    },
+    {
+      "id": "S4",
+      "expected_bump": "patch",
+      "computed_bump": "patch",
+      "rationale": [
+        {
+          "severity": "patch",
+          "change_type": "doc_or_non_semantic_update",
+          "path": "#",
+          "detail": "no semantic keyword diff detected"
+        }
+      ],
+      "ok": true,
+      "description": "documentation-only comment update"
+    }
+  ]
+}

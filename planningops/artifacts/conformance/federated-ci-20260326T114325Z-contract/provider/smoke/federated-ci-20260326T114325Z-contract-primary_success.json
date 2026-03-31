@@ -1,0 +1,32 @@
+{
+  "generated_at_utc": "2026-03-26T11:43:26.413472+00:00",
+  "run_id": "federated-ci-20260326T114325Z-contract",
+  "routing_profile": "example-local",
+  "scenario": "primary_success",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "reason_taxonomy_version": 3,
+  "summary": {
+    "attempt_count": 1,
+    "success_count": 1,
+    "failure_count": 0,
+    "total_latency_ms": 220,
+    "total_estimated_cost_usd": 0.0022,
+    "fallback_used": false,
+    "selected_provider": "local-llm"
+  },
+  "attempts": [
+    {
+      "attempt_index": 0,
+      "route_role": "primary",
+      "provider": "local-llm",
+      "model": "gemini-2.5-flash-lite",
+      "latency_ms": 220,
+      "status": "success",
+      "validation_status": "valid",
+      "missing_fields": [],
+      "estimated_cost_usd": 0.0022
+    }
+  ],
+  "missing_fields": []
+}
