@@ -1,0 +1,28 @@
+[launcher] start mode requested
+[launcher] local LiteLLM already running
+report written: runtime-artifacts/launcher/federated-ci-20260324T050828Z-provider-gateway-ready.json
+profiles=local,oracle_cloud verdict=pass
+
+> @rather-not-work-on/platform-provider-gateway@0.0.0 gate:litellm-stack-ready
+> python3 scripts/doctor_litellm_stack.py --assess --require-ready
+
+report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/runtime-artifacts/validation/litellm-stack-readiness-report.json
+verdict=blocked reason_code=litellm_endpoint_unreachable requested_model=gemini-2.5-flash-lite
+litellm stack doctor
+status: blocked
+requested model: gemini-2.5-flash-lite
+endpoint: http://127.0.0.1:4000/v1
+route mode: unavailable
+gateway alias: gateway-default
+primary provider: gemini
+primary target: gemini-2.5-flash-lite
+endpoint probe: unreachable
+synthetic request: not_attempted
+fallback Ollama models: llama3.1:8b
+primary credential env vars: GEMINI_API_KEY, GOOGLE_API_KEY
+reason: litellm_endpoint_unreachable
+detail: <urlopen error [Errno 61] Connection refused>
+next step: start or repair the local LiteLLM stack with `bash scripts/litellm_stack_launcher.sh --mode start`, then rerun python3 scripts/assess_litellm_stack_readiness.py.
+commands:
+  bash scripts/litellm_stack_launcher.sh --mode start
+  python3 scripts/assess_litellm_stack_readiness.py
