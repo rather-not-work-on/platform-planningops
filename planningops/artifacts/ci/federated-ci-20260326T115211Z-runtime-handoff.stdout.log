@@ -1,0 +1,121 @@
+runtime handoff ci check contract ok
+supervisor handoff bridge wiring ok
+autonomous supervisor loop contract tests ok
+integration report written: runtime-artifacts/integration/federated-ci-20260326T115211Z-runtime/planningops-handoff-report.json
+verdict=pass reason_code=ok mismatch_count=0 dequeued=1 blocked=0
+resolve supervisor operator handoff validation regression passed
+resolve supervisor operator handoff bundle ok
+validate supervisor operator handoff bundle ok
+assess supervisor operator handoff bundle readiness ok
+validate supervisor operator handoff bundle readiness ok
+doctor supervisor operator handoff bundle ok
+gate supervisor operator handoff bundle ok
+supervisor handoff to monday status bridge ok
+supervisor handoff to monday goal completion bridge ok
+supervisor handoff to monday goal completion scheduler bridge ok
+worker outcome reflection cycle test passed
+worker outcome reflection cycle scheduler report test passed
+reflection goal completion handoff cycle test passed
+reflection delivery cycle test passed
+scheduled reflection delivery cycle test passed
+reflection cycle orchestration contract ok
+reflection delivery cycle contract ok
+scheduled reflection delivery cycle contract ok
+local delivery cycle orchestration contract ok
+scheduled delivery queue admission contract ok
+scheduled queue admission handoff contract ok
+scheduler-native worker outcome selection contract ok
+scheduled worker outcome handoff contract ok
+reflection action handoff contract ok
+scheduled delivery cycle handoff contract ok
+local delivery cycle entrypoint contract ok
+local operator target resolution contract ok
+local outbox dispatch handoff contract ok
+local dispatch cycle handoff contract ok
+active goal registry contract ok
+goal lifecycle transition contract ok
+supervisor operator handoff contract ok
+validate supervisor operator handoff contract ok
+federated summary written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.n6alyB6yJu/federated-ci-stamped.json
+federated summary written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.n6alyB6yJu/federated-ci-latest.json
+verdict=pass failure_count=0
+federated summary written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.n6alyB6yJu/federated-ci-incomplete-stamped.json
+federated summary written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.n6alyB6yJu/federated-ci-incomplete-latest.json
+verdict=fail failure_count=0
+federated ci summary contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.EvvyTVzFVG/federated-summary-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.EvvyTVzFVG/invalid-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary contract ok
+reconcile federated ci summary tmp ok
+validate federated ci summary tmp reconcile contract ok
+resolve federated ci summary tmp reconcile ok
+doctor federated ci summary tmp reconcile ok
+gate federated ci summary tmp reconcile ok
+validate federated ci summary tmp reconcile bundle ok
+doctor federated ci summary tmp reconcile bundle ok
+gate federated ci summary tmp reconcile bundle ok
+validate federated ci summary tmp reconcile bundle status contract ok
+validate federated ci summary tmp reconcile bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.1hMgBzslBj/federated-ci-summary-readiness.json
+readiness_status=ready ready=True
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.1hMgBzslBj/federated-ci-summary-readiness.json
+readiness_status=blocked ready=False
+assess federated ci summary readiness ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.lRhXxXUnRA/federated-ci-summary-readiness-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.lRhXxXUnRA/invalid-readiness-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary readiness ok
+doctor federated ci summary ok
+gate federated ci summary ok
+uap automation operations summary contract ok
