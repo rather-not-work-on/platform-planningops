@@ -1,0 +1,29 @@
+provider gateway ready ci check contract ok
+[launcher] start mode requested
+[launcher] using uvx local backend
+report written: runtime-artifacts/launcher/federated-ci-20260324T065642Z-provider-gateway-ready.json
+profiles=local,oracle_cloud verdict=pass
+
+> @rather-not-work-on/platform-provider-gateway@0.0.0 gate:litellm-stack-ready
+> python3 scripts/doctor_litellm_stack.py --assess --require-ready
+
+report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-provider-gateway/runtime-artifacts/validation/litellm-stack-readiness-report.json
+verdict=pass reason_code=ok requested_model=gemini-2.5-flash-lite
+litellm stack doctor
+status: pass
+requested model: gemini-2.5-flash-lite
+endpoint: http://127.0.0.1:4000/v1
+route mode: primary
+gateway alias: gateway-default
+primary provider: gemini
+primary target: gemini-2.5-flash-lite
+endpoint probe: pass
+synthetic request: pass
+fallback Ollama models: llama3.1:8b
+primary credential env vars: GEMINI_API_KEY, GOOGLE_API_KEY
+reason: ok
+detail: LiteLLM endpoint served the requested model 'gemini-2.5-flash-lite' successfully.
+next step: LiteLLM stack is healthy; keep the gateway alias and Ollama fallback route aligned.
+commands:
+  bash scripts/litellm_stack_launcher.sh --mode start
+  python3 scripts/assess_litellm_stack_readiness.py
