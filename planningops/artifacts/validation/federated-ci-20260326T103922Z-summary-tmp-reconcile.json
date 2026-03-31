@@ -1,0 +1,15 @@
+{
+  "generated_at_utc": "2026-03-26T10:43:38.878234+00:00",
+  "summary_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T103922Z.tmp.json",
+  "checkpoint_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T103922Z.checkpoint.json",
+  "output_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/federated-ci-20260326T103922Z-summary-tmp-reconcile.json",
+  "run_id": "federated-ci-20260326T103922Z",
+  "check_name": "loop-guardrails-outer-status-bundle-validation",
+  "checkpoint_check_count": 9,
+  "summary_check_count": 9,
+  "restored": false,
+  "status": "healthy",
+  "reasons": [],
+  "reconcile_count": 0,
+  "restored_check_names": []
+}
