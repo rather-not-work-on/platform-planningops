@@ -1,0 +1,1952 @@
+federated_python_env contract ok
+federated ci workflow summary contract ok
+federated ci local matrix mode contract ok
+reconcile federated ci summary tmp ok
+validate federated ci summary tmp reconcile contract ok
+resolve federated ci summary tmp reconcile ok
+validate federated ci summary tmp reconcile bundle ok
+doctor federated ci summary tmp reconcile bundle ok
+gate federated ci summary tmp reconcile bundle ok
+validate federated ci summary tmp reconcile bundle status contract ok
+validate federated ci summary tmp reconcile bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle ok
+doctor federated ci summary tmp reconcile bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status validation contract ok
+resolve federated ci summary tmp reconcile bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle ok
+resolve federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status contract ok
+validate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status validation contract ok
+doctor federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status ok
+gate federated ci summary tmp reconcile bundle status bundle status bundle status bundle status bundle status bundle status bundle ok
+doctor federated ci summary tmp reconcile ok
+gate federated ci summary tmp reconcile ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.tOzSuYoarF/federated-summary-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.tOzSuYoarF/invalid-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary contract ok
+federated ci summary contract doc ok
+plain python compat manifest contract doc ok
+uap automation operations summary contract ok
+validate supervisor operator handoff contract ok
+resolve supervisor operator handoff validation regression passed
+resolve supervisor operator handoff bundle ok
+validate supervisor operator handoff bundle ok
+assess supervisor operator handoff bundle readiness ok
+validate supervisor operator handoff bundle readiness ok
+doctor supervisor operator handoff bundle ok
+gate supervisor operator handoff bundle ok
+supervisor handoff bridge wiring ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.tGCGphKxfO/federated-ci-summary-readiness.json
+readiness_status=ready ready=True
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.tGCGphKxfO/federated-ci-summary-readiness.json
+readiness_status=blocked ready=False
+assess federated ci summary readiness ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.bMlFCqWAxT/federated-ci-summary-readiness-validation.json
+error_count=0 warning_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.bMlFCqWAxT/invalid-readiness-validation.json
+error_count=2 warning_count=0 verdict=fail
+validate federated ci summary readiness ok
+doctor federated ci summary ok
+gate federated ci summary ok
+plain python compat manifest contract ok
+validate plain python compat manifest validation contract ok
+doctor plain python compat manifest ok
+validate plain python compat manifest status contract ok
+validate plain python compat manifest status validation contract ok
+gate plain python compat manifest ok
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+schema path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/schemas/plain-python-compat-manifest.schema.json
+validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-validation.json
+status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+status bundle output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+status bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-validation.json
+verdict: pass
+status validation verdict: pass
+status bundle verdict: pass
+status bundle validation verdict: pass
+entrypoint count: 17
+resolved entrypoint count: 17
+issue-driven entrypoint id: planningops-run-issue-driven-runtime-stack-smoke
+issue-driven resolved path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_issue_driven_runtime_stack_smoke.py
+local entrypoint id: planningops-run-local-runtime-stack-smoke
+local resolved path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/scripts/federation/run_local_runtime_stack_smoke.py
+loop-guardrails step count: 57
+loop-guardrails chain ids: validate-manifest -> validate-manifest-validation-report -> doctor-manifest -> doctor-status-contract -> doctor-status-validation-contract -> test-manifest-gate -> run-manifest-gate -> resolve-status-sidecars -> status-bundle-validation-contract -> doctor-status-bundle -> doctor-status-bundle-status-contract -> doctor-status-bundle-status-validation-contract -> resolve-status-bundle-status-sidecars -> status-bundle-status-bundle-validation-contract -> doctor-status-bundle-status-bundle -> doctor-status-bundle-status-bundle-status-contract -> doctor-status-bundle-status-bundle-status-validation-contract -> resolve-status-bundle-status-bundle-status-sidecars -> status-bundle-status-bundle-status-bundle-validation-contract -> doctor-status-bundle-status-bundle-status-bundle -> doctor-status-bundle-status-bundle-status-bundle-status-contract -> doctor-status-bundle-status-bundle-status-bundle-status-validation-contract -> resolve-status-bundle-status-bundle-status-bundle-status-sidecars -> status-bundle-status-bundle-status-bundle-status-bundle-validation-contract -> doctor-status-bundle-status-bundle-status-bundle-status-bundle -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-contract -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-validation-contract -> resolve-status-bundle-status-bundle-status-bundle-status-bundle-status-sidecars -> status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation-contract -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-contract -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation-contract -> resolve-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-sidecars -> status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation-contract -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-contract -> doctor-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation-contract -> resolve-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-sidecars -> status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation-contract -> test-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-gate -> run-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-gate -> test-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-gate -> run-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-gate -> test-status-bundle-status-bundle-status-bundle-status-bundle-gate -> run-status-bundle-status-bundle-status-bundle-status-bundle-gate -> test-status-bundle-status-bundle-status-bundle-gate -> run-status-bundle-status-bundle-status-bundle-gate -> test-status-bundle-gate -> run-status-bundle-gate -> test-status-bundle-status-bundle-gate -> run-status-bundle-status-bundle-gate -> resolve-manifest -> annotation-contract -> wiring-contract -> surface-inventory-contract -> compat-smoke -> runtime-stack-sequence
+warning count: 0
+error count: 0
+status validation error count: 0
+status bundle validation error count: 0
+errors: none
+warnings: none
+ready: True
+next step: none
+resolve plain python compat manifest status ok
+validate plain python compat manifest status bundle validation contract ok
+doctor plain python compat manifest status bundle ok
+validate plain python compat manifest status bundle status contract ok
+validate plain python compat manifest status bundle status validation contract ok
+resolve plain python compat manifest status bundle status ok
+validate plain python compat manifest status bundle status bundle validation contract ok
+doctor plain python compat manifest status bundle status bundle ok
+validate plain python compat manifest status bundle status bundle status contract ok
+validate plain python compat manifest status bundle status bundle status validation contract ok
+resolve plain python compat manifest status bundle status bundle status ok
+validate plain python compat manifest status bundle status bundle status bundle validation contract ok
+doctor plain python compat manifest status bundle status bundle status bundle ok
+validate plain python compat manifest status bundle status bundle status bundle status contract ok
+validate plain python compat manifest status bundle status bundle status bundle status validation contract ok
+resolve plain python compat manifest status bundle status bundle status bundle status ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle validation contract ok
+doctor plain python compat manifest status bundle status bundle status bundle status bundle ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status contract ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status validation contract ok
+resolve plain python compat manifest status bundle status bundle status bundle status bundle status ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle validation contract ok
+doctor plain python compat manifest status bundle status bundle status bundle status bundle status bundle ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status contract ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve plain python compat manifest status bundle status bundle status bundle status bundle status bundle status ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle validation contract ok
+doctor plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle status contract ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle status validation contract ok
+resolve plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle status ok
+validate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle status bundle validation contract ok
+gate plain python compat manifest status bundle status bundle status bundle status bundle status bundle status bundle ok
+source kind: artifact
+bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json
+bundle status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status.json
+bundle status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation.json
+bundle status bundle status bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status.json
+bundle status bundle status bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle status bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status.json
+bundle status bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status.json
+bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-validation.json
+status bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status.json
+bundle status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-validation.json
+status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+ready: True
+next step: none
+status verdict: pass
+status validation verdict: pass
+bundle status verdict: pass
+bundle status validation verdict: pass
+bundle validation verdict: pass
+warning count: 0
+error count: 0
+errors: none
+warnings: none
+gate plain python compat manifest status bundle status bundle status bundle status bundle status bundle ok
+source kind: artifact
+bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle.json
+bundle status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status.json
+bundle status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-bundle-validation.json
+bundle status bundle status bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status.json
+bundle status bundle status bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle status bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status.json
+bundle status bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status.json
+bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-validation.json
+status bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status.json
+bundle status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-validation.json
+status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+ready: True
+next step: none
+status verdict: pass
+status validation verdict: pass
+bundle status verdict: pass
+bundle status validation verdict: pass
+bundle validation verdict: pass
+warning count: 0
+error count: 0
+errors: none
+warnings: none
+gate plain python compat manifest status bundle status bundle status bundle status bundle ok
+source kind: artifact
+bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle.json
+bundle status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status.json
+bundle status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-bundle-validation.json
+bundle status bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status.json
+bundle status bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status.json
+bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-validation.json
+status bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status.json
+bundle status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-validation.json
+status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+ready: True
+next step: none
+status verdict: pass
+status validation verdict: pass
+bundle status verdict: pass
+bundle status validation verdict: pass
+bundle validation verdict: pass
+warning count: 0
+error count: 0
+errors: none
+warnings: none
+gate plain python compat manifest status bundle status bundle status bundle ok
+source kind: artifact
+bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle.json
+bundle status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status.json
+bundle status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-status-validation.json
+bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-bundle-validation.json
+bundle status bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status.json
+bundle status bundle validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-validation.json
+status bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status.json
+bundle status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-validation.json
+status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+ready: True
+next step: none
+status verdict: pass
+status validation verdict: pass
+bundle status verdict: pass
+bundle status validation verdict: pass
+bundle validation verdict: pass
+warning count: 0
+error count: 0
+errors: none
+warnings: none
+gate plain python compat manifest status bundle ok
+source kind: artifact
+bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+bundle status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status.json
+bundle status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-validation.json
+bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-validation.json
+bundle verdict: pass
+bundle status validation verdict: pass
+bundle validation verdict: pass
+status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+ready: True
+next step: none
+warning count: 0
+error count: 0
+errors: none
+warnings: none
+gate plain python compat manifest status bundle status bundle ok
+source kind: artifact
+bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle.json
+bundle status output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status.json
+bundle status validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-status-validation.json
+bundle validation output path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-bundle-validation.json
+status bundle path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle.json
+bundle status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status.json
+bundle status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-bundle-status-validation.json
+status path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status.json
+status validation path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/plain-python-compat-manifest-status-validation.json
+manifest path: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/config/plain-python-compat-manifest.json
+ready: True
+next step: none
+status verdict: pass
+status validation verdict: pass
+bundle status verdict: pass
+bundle status validation verdict: pass
+bundle validation verdict: pass
+warning count: 0
+error count: 0
+errors: none
+warnings: none
+resolve plain python compat manifest ok
+cross-repo plain python annotation contract ok
+plain python compat manifest wiring ok
+plain python compat manifest surface inventory ok
+cross-repo plain python compat ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.sF1SB0HC1f/issue-driven-runtime-stack-smoke.json
+verdict=pass failure_count=0
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.sF1SB0HC1f/local-runtime-stack-smoke.json
+verdict=pass failure_count=0
+runtime stack smoke sequence contract ok
+{
+  "generated_at_utc": "2026-03-24T05:55:40.828052+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-24T05:55:16.887338+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch --allow-fetch-failure",
+          "rc": 0,
+          "pass": true,
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=200 violation_count=0 verdict=pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-24T05:55:40.823374+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "canonical check passed\nworkbench check passed\ncheck passed for profile 'all'",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch --allow-fetch-failure",
+          "rc": 0,
+          "pass": true,
+          "stdout": "report written: planningops/artifacts/validation/project-field-schema-report.json\nevaluated_items=200 violation_count=0 verdict=pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "pass",
+  "kpi_source_path": "planningops/fixtures/track1-kpi-baseline-ci.json"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.871576+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-24T05:55:40.871294+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": false,
+          "missing_only": true,
+          "reasons": [
+            "kpi.loop_success_rate.missing"
+          ],
+          "metrics": {}
+        }
+      },
+      "verdict": "inconclusive",
+      "reasons": [
+        "kpi.loop_success_rate.missing"
+      ]
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-24T05:55:40.871413+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": false,
+          "missing_only": true,
+          "reasons": [
+            "kpi.loop_success_rate.missing"
+          ],
+          "metrics": {}
+        }
+      },
+      "verdict": "inconclusive",
+      "reasons": [
+        "kpi.loop_success_rate.missing"
+      ]
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "inconclusive",
+  "kpi_source_path": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpz1uk051f/validation/track1-kpi-baseline.json"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.872164+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-24T05:55:40.872053+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": false,
+          "missing_only": true,
+          "reasons": [
+            "kpi.loop_success_rate.missing"
+          ],
+          "metrics": {}
+        }
+      },
+      "verdict": "inconclusive",
+      "reasons": [
+        "kpi.loop_success_rate.missing"
+      ]
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-24T05:55:40.872059+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": false,
+          "missing_only": true,
+          "reasons": [
+            "kpi.loop_success_rate.missing"
+          ],
+          "metrics": {}
+        }
+      },
+      "verdict": "inconclusive",
+      "reasons": [
+        "kpi.loop_success_rate.missing"
+      ]
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "inconclusive",
+  "kpi_source_path": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpz1uk051f/validation/track1-kpi-baseline.json"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.872485+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-24T05:55:40.872391+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-24T05:55:40.872395+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "pass",
+  "kpi_source_path": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpz1uk051f/validation/track1-kpi-baseline.json"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.872846+00:00",
+  "template": false,
+  "runs": [
+    {
+      "run_id": "track1-gate-dryrun-1",
+      "executed_at_utc": "2026-03-24T05:55:40.872733+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    },
+    {
+      "run_id": "track1-gate-dryrun-2",
+      "executed_at_utc": "2026-03-24T05:55:40.872754+00:00",
+      "checks": {
+        "docs_check": {
+          "command": "bash docs/initiatives/unified-personal-agent-platform/00-governance/scripts/uap-docs.sh check --profile all",
+          "rc": 0,
+          "pass": true,
+          "stdout": "docs-pass",
+          "stderr": ""
+        },
+        "schema_check": {
+          "command": "python3 planningops/scripts/validate_project_field_schema.py --fail-on-mismatch",
+          "rc": 0,
+          "pass": true,
+          "stdout": "schema-pass",
+          "stderr": "",
+          "violation_count": 0
+        },
+        "kpi_check": {
+          "pass": true,
+          "missing_only": false,
+          "reasons": [],
+          "metrics": {
+            "loop_success_rate": 0.95,
+            "replan_without_evidence": 0,
+            "schema_drift_recovery_time_p95_hours": 8
+          }
+        }
+      },
+      "verdict": "pass",
+      "reasons": []
+    }
+  ],
+  "reproducibility_match": true,
+  "final_verdict": "pass",
+  "kpi_source_path": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpz1uk051f/kpi-ci.json"
+}
+track1 gate dryrun contract tests ok
+bootstrap two-track backlog contract tests ok
+{
+  "mode": "dry-run",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpesfp5nig/contract.json",
+  "validation_errors": [],
+  "results": [
+    {
+      "plan_item_id": "early",
+      "execution_order": 10,
+      "issue_number": null,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/DRY-RUN-10",
+      "created_issue": true,
+      "dedup_match_state": null,
+      "dedup_strategy": null,
+      "reused_closed_issue": false,
+      "reopened_closed_issue": false,
+      "closed_match_detected": false,
+      "closed_match_issue_number": null,
+      "metadata_sync_required": false,
+      "metadata_sync_action": "none",
+      "field_updates": [
+        "initiative(text)",
+        "target_repo(text)",
+        "execution_order(number)",
+        "status(todo)",
+        "component(planningops)",
+        "workflow_state(ready_contract)",
+        "loop_profile(l1_contract_clarification)",
+        "plan_lane(m1_contract_freeze)"
+      ]
+    },
+    {
+      "plan_item_id": "late",
+      "execution_order": 20,
+      "issue_number": null,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/DRY-RUN-20",
+      "created_issue": true,
+      "dedup_match_state": null,
+      "dedup_strategy": null,
+      "reused_closed_issue": false,
+      "reopened_closed_issue": false,
+      "closed_match_detected": false,
+      "closed_match_issue_number": null,
+      "metadata_sync_required": false,
+      "metadata_sync_action": "none",
+      "field_updates": [
+        "initiative(text)",
+        "target_repo(text)",
+        "execution_order(number)",
+        "status(todo)",
+        "component(planningops)",
+        "workflow_state(ready_contract)",
+        "loop_profile(l1_contract_clarification)",
+        "plan_lane(m1_contract_freeze)"
+      ]
+    }
+  ],
+  "plan_id": "pec-main-order-test",
+  "plan_revision": 2,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/example.md",
+  "items_total": 2,
+  "issues_source": "github_api",
+  "open_issues_scanned": 0,
+  "closed_issues_scanned": 0,
+  "verdict": "pass"
+}
+compile_plan_to_backlog contract tests ok
+{
+  "generated_at_utc": "2026-03-24T05:55:40.983470+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/contract.json",
+  "snapshot_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/snapshot.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "projection-test",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 0,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [],
+  "unexpected": [],
+  "verdict": "pass",
+  "reasons": []
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.984234+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/contract.json",
+  "snapshot_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/snapshot.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "projection-test",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 2,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [
+    {
+      "plan_item_id": "sample-001",
+      "issue_number": 9991,
+      "field": "workflow_state",
+      "expected": "ready_contract",
+      "actual": "in_progress"
+    },
+    {
+      "plan_item_id": "sample-001",
+      "issue_number": 9991,
+      "field": "status",
+      "expected": "todo",
+      "actual": "in_progress"
+    }
+  ],
+  "unexpected": [],
+  "verdict": "fail",
+  "reasons": [
+    "projection_field_mismatch"
+  ]
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.984546+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/contract.json",
+  "snapshot_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/snapshot.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "projection-test",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 1,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [
+    {
+      "plan_item_id": "sample-001",
+      "issue_number": 9991,
+      "field": "plan_lane",
+      "expected": "m1_contract_freeze",
+      "actual": "m2_sync_core"
+    }
+  ],
+  "unexpected": [],
+  "verdict": "fail",
+  "reasons": [
+    "projection_field_mismatch"
+  ]
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.984822+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/contract.json",
+  "snapshot_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/snapshot.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "projection-test",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 0,
+  "actual_items_total": 0,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 1,
+  "mismatch_count": 0,
+  "unexpected_count": 0,
+  "missing": [
+    {
+      "plan_item_id": "sample-001",
+      "execution_order": 1,
+      "expected_target_repo": "rather-not-work-on/platform-planningops"
+    }
+  ],
+  "mismatches": [],
+  "unexpected": [],
+  "verdict": "fail",
+  "reasons": [
+    "projection_item_missing"
+  ]
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.985136+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/contract.json",
+  "snapshot_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/snapshot.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "projection-test",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 1,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [
+    {
+      "plan_item_id": "sample-001",
+      "issue_number": 9991,
+      "field": "blueprint_complete",
+      "expected": true,
+      "actual": false,
+      "missing_refs": [
+        "interface_contract_refs",
+        "package_topology_ref",
+        "dependency_manifest_ref",
+        "file_plan_ref"
+      ]
+    }
+  ],
+  "unexpected": [],
+  "verdict": "fail",
+  "reasons": [
+    "projection_field_mismatch"
+  ]
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:40.985485+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/contract.json",
+  "snapshot_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpozuk4uvp/snapshot.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "projection-test",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 0,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [],
+  "unexpected": [],
+  "verdict": "pass",
+  "reasons": []
+}
+verify_plan_projection contract tests ok
+planning_context contract tests ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.lOB38OlsEM/archive-report.json
+issue_ref=rather-not-work-on/platform-planningops#86 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.lOB38OlsEM/rehydrate-report.json
+checksum_match=true verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.lOB38OlsEM/audit-open-report.json
+inventory_issues=1 violation_count=0 verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.lOB38OlsEM/audit-archived-report.json
+inventory_issues=1 violation_count=0 verdict=pass
+inventory issue lifecycle contract test ok
+report written: /Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/validation/inventory-issue-lifecycle-report.json
+inventory_issues=1 violation_count=0 verdict=pass
+inventory issue lifecycle snapshot audit ok
+{
+  "mode": "dry-run",
+  "contract_file": "planningops/fixtures/plan-execution-contract-sample.json",
+  "validation_errors": [],
+  "results": [
+    {
+      "plan_item_id": "sample-001",
+      "execution_order": 1,
+      "issue_number": null,
+      "issue_url": "https://github.com/rather-not-work-on/platform-planningops/issues/DRY-RUN-1",
+      "created_issue": true,
+      "dedup_match_state": null,
+      "dedup_strategy": null,
+      "reused_closed_issue": false,
+      "reopened_closed_issue": false,
+      "closed_match_detected": false,
+      "closed_match_issue_number": null,
+      "metadata_sync_required": false,
+      "metadata_sync_action": "none",
+      "field_updates": [
+        "initiative(text)",
+        "target_repo(text)",
+        "execution_order(number)",
+        "status(todo)",
+        "component(planningops)",
+        "workflow_state(ready_contract)",
+        "loop_profile(l1_contract_clarification)",
+        "plan_lane(m1_contract_freeze)"
+      ]
+    }
+  ],
+  "plan_id": "sample-pec-plan",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "items_total": 1,
+  "issues_source": "github_api",
+  "open_issues_scanned": 3,
+  "closed_issues_scanned": 0,
+  "verdict": "pass"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.055064+00:00",
+  "contract_file": "planningops/fixtures/plan-execution-contract-sample.json",
+  "snapshot_file": "planningops/fixtures/plan-projection-snapshot-sample.json",
+  "project": {
+    "owner": "rather-not-work-on",
+    "project_number": 2,
+    "initiative": "unified-personal-agent-platform",
+    "limit": 1000
+  },
+  "validation_errors": [],
+  "plan_id": "sample-pec-plan",
+  "plan_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+  "expected_items_total": 1,
+  "project_items_limit_hit": false,
+  "mode": "snapshot",
+  "project_items_scanned": 1,
+  "actual_items_total": 1,
+  "duplicate_plan_item_id_count": 0,
+  "duplicate_plan_item_ids": [],
+  "relevant_duplicate_plan_item_id_count": 0,
+  "relevant_duplicate_plan_item_ids": [],
+  "missing_count": 0,
+  "mismatch_count": 0,
+  "unexpected_count": 0,
+  "missing": [],
+  "mismatches": [],
+  "unexpected": [],
+  "verdict": "pass",
+  "reasons": []
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.097717+00:00",
+  "runtime_profile_file": "planningops/config/runtime-profiles.json",
+  "schema_file": "planningops/schemas/runtime-profiles.schema.json",
+  "validation_errors": [],
+  "warnings": [],
+  "active_profile": "local",
+  "profile_names": [
+    "local",
+    "oracle_cloud"
+  ],
+  "task_override_keys": [
+    "default",
+    "issue-18",
+    "issue-19"
+  ],
+  "verdict": "pass",
+  "reason": "ok"
+}
+meta-plan graph schema contract tests ok
+{
+  "generated_at_utc": "2026-03-24T05:55:42.158130+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpzjkloqi6/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "validation_errors": [],
+  "meta_plan_id": "uap-meta-20260303",
+  "graph_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+  "initiative": "unified-personal-agent-platform",
+  "node_count": 2,
+  "edge_count": 1,
+  "ready_set_count": 1,
+  "ready_set": [
+    "pec-track"
+  ],
+  "blocked_nodes": [
+    {
+      "node_id": "meta-track",
+      "reason": "status=draft"
+    }
+  ],
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  },
+  "verdict": "pass",
+  "reasons": []
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.158740+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpzjkloqi6/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "validation_errors": [],
+  "verdict": "fail",
+  "reasons": [
+    "meta_graph_cycle_detected"
+  ],
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "meta-track",
+        "to": "pec-track",
+        "type": "depends_on"
+      },
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  }
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.159070+00:00",
+  "contract_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpzjkloqi6/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "validation_errors": [
+    "schema: $.meta_plan_graph.nodes[0].target_repo does not match pattern"
+  ],
+  "verdict": "fail",
+  "reasons": [
+    "meta_graph_contract_invalid"
+  ]
+}
+build_meta_plan_graph contract tests ok
+{
+  "generated_at_utc": "2026-03-24T05:55:42.200447+00:00",
+  "mode": "dry-run",
+  "meta_graph_contract": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "meta_graph_output": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-graph.json",
+  "validation_errors": [],
+  "meta_plan_id": "uap-meta-20260303",
+  "graph_revision": 1,
+  "initiative": "unified-personal-agent-platform",
+  "node_count": 2,
+  "edge_count": 1,
+  "ready_set_count": 1,
+  "ready_set": [
+    "pec-track"
+  ],
+  "selected_node_ids": [
+    "pec-track"
+  ],
+  "skipped_ready_node_ids": [],
+  "blocked_nodes": [
+    {
+      "node_id": "meta-track",
+      "reason": "status=draft"
+    }
+  ],
+  "execution_rows": [
+    {
+      "node_id": "pec-track",
+      "execution_order": 1,
+      "component": "planningops",
+      "status_before": "ready",
+      "pipeline_command_count": 3,
+      "command_results": [
+        {
+          "command": "bash planningops/scripts/test_meta_plan_graph_schema_contract.sh",
+          "rc": null,
+          "verdict": "simulated",
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/compile_plan_to_backlog.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --output planningops/artifacts/validation/plan-compile-report.json",
+          "rc": null,
+          "verdict": "simulated",
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/verify_plan_projection.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --snapshot-file planningops/fixtures/plan-projection-snapshot-sample.json --strict --output planningops/artifacts/validation/plan-projection-report.json",
+          "rc": null,
+          "verdict": "simulated",
+          "stdout": "",
+          "stderr": ""
+        }
+      ],
+      "node_verdict": "simulated",
+      "reason": "dry_run_pipeline_not_executed"
+    }
+  ],
+  "failure_count": 0,
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  },
+  "verdict": "pass",
+  "reasons": [
+    "dry_run_only"
+  ]
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.201119+00:00",
+  "mode": "apply",
+  "meta_graph_contract": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "meta_graph_output": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-graph.json",
+  "validation_errors": [],
+  "meta_plan_id": "uap-meta-20260303",
+  "graph_revision": 1,
+  "initiative": "unified-personal-agent-platform",
+  "node_count": 2,
+  "edge_count": 1,
+  "ready_set_count": 1,
+  "ready_set": [
+    "pec-track"
+  ],
+  "selected_node_ids": [
+    "pec-track"
+  ],
+  "skipped_ready_node_ids": [],
+  "blocked_nodes": [
+    {
+      "node_id": "meta-track",
+      "reason": "status=draft"
+    }
+  ],
+  "execution_rows": [
+    {
+      "node_id": "pec-track",
+      "execution_order": 1,
+      "component": "planningops",
+      "status_before": "ready",
+      "pipeline_command_count": 3,
+      "command_results": [
+        {
+          "command": "bash planningops/scripts/test_meta_plan_graph_schema_contract.sh",
+          "rc": 0,
+          "verdict": "pass",
+          "stdout": "ok",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/compile_plan_to_backlog.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --output planningops/artifacts/validation/plan-compile-report.json",
+          "rc": 0,
+          "verdict": "pass",
+          "stdout": "ok",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/verify_plan_projection.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --snapshot-file planningops/fixtures/plan-projection-snapshot-sample.json --strict --output planningops/artifacts/validation/plan-projection-report.json",
+          "rc": 0,
+          "verdict": "pass",
+          "stdout": "ok",
+          "stderr": ""
+        }
+      ],
+      "node_verdict": "pass",
+      "reason": "pipeline_pass"
+    }
+  ],
+  "failure_count": 0,
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  },
+  "verdict": "pass",
+  "reasons": []
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.201487+00:00",
+  "mode": "apply",
+  "meta_graph_contract": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "meta_graph_output": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-graph.json",
+  "validation_errors": [],
+  "meta_plan_id": "uap-meta-20260303",
+  "graph_revision": 1,
+  "initiative": "unified-personal-agent-platform",
+  "node_count": 2,
+  "edge_count": 1,
+  "ready_set_count": 1,
+  "ready_set": [
+    "pec-track"
+  ],
+  "selected_node_ids": [
+    "pec-track"
+  ],
+  "skipped_ready_node_ids": [],
+  "blocked_nodes": [
+    {
+      "node_id": "meta-track",
+      "reason": "status=draft"
+    }
+  ],
+  "execution_rows": [
+    {
+      "node_id": "pec-track",
+      "execution_order": 1,
+      "component": "planningops",
+      "status_before": "ready",
+      "pipeline_command_count": 3,
+      "command_results": [
+        {
+          "command": "bash planningops/scripts/test_meta_plan_graph_schema_contract.sh",
+          "rc": 0,
+          "verdict": "pass",
+          "stdout": "ok",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/compile_plan_to_backlog.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --output planningops/artifacts/validation/plan-compile-report.json",
+          "rc": 1,
+          "verdict": "fail",
+          "stdout": "",
+          "stderr": "simulated failure"
+        }
+      ],
+      "node_verdict": "fail",
+      "reason": "pipeline_command_failed"
+    }
+  ],
+  "failure_count": 1,
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  },
+  "verdict": "fail",
+  "reasons": [
+    "node_pipeline_failure"
+  ]
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.201949+00:00",
+  "mode": "apply",
+  "meta_graph_contract": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "meta_graph_output": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-graph.json",
+  "validation_errors": [],
+  "verdict": "fail",
+  "reasons": [
+    "meta_graph_cycle_detected"
+  ],
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "meta-track",
+        "to": "pec-track",
+        "type": "depends_on"
+      },
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  }
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.202492+00:00",
+  "mode": "apply",
+  "meta_graph_contract": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-contract.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "meta_graph_output": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp7cfwqhqk/meta-graph.json",
+  "validation_errors": [
+    "schema: $.meta_plan_graph.nodes[0].component invalid enum value: invalid_component"
+  ],
+  "verdict": "fail",
+  "reasons": [
+    "meta_graph_contract_invalid"
+  ]
+}
+meta_plan_orchestrator contract tests ok
+{
+  "generated_at_utc": "2026-03-24T05:55:42.238328+00:00",
+  "contract_file": "planningops/fixtures/meta-plan-graph-sample.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "validation_errors": [],
+  "meta_plan_id": "uap-meta-20260303",
+  "graph_revision": 1,
+  "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+  "initiative": "unified-personal-agent-platform",
+  "node_count": 2,
+  "edge_count": 1,
+  "ready_set_count": 1,
+  "ready_set": [
+    "pec-track"
+  ],
+  "blocked_nodes": [
+    {
+      "node_id": "meta-track",
+      "reason": "status=draft"
+    }
+  ],
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  },
+  "verdict": "pass",
+  "reasons": []
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:42.275624+00:00",
+  "mode": "dry-run",
+  "meta_graph_contract": "planningops/fixtures/meta-plan-graph-sample.json",
+  "schema_file": "planningops/schemas/meta-plan-graph.schema.json",
+  "meta_graph_output": "planningops/artifacts/meta-plan/meta-graph.json",
+  "validation_errors": [],
+  "meta_plan_id": "uap-meta-20260303",
+  "graph_revision": 1,
+  "initiative": "unified-personal-agent-platform",
+  "node_count": 2,
+  "edge_count": 1,
+  "ready_set_count": 1,
+  "ready_set": [
+    "pec-track"
+  ],
+  "selected_node_ids": [
+    "pec-track"
+  ],
+  "skipped_ready_node_ids": [],
+  "blocked_nodes": [
+    {
+      "node_id": "meta-track",
+      "reason": "status=draft"
+    }
+  ],
+  "execution_rows": [
+    {
+      "node_id": "pec-track",
+      "execution_order": 1,
+      "component": "planningops",
+      "status_before": "ready",
+      "pipeline_command_count": 3,
+      "command_results": [
+        {
+          "command": "bash planningops/scripts/test_meta_plan_graph_schema_contract.sh",
+          "rc": null,
+          "verdict": "simulated",
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/compile_plan_to_backlog.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --output planningops/artifacts/validation/plan-compile-report.json",
+          "rc": null,
+          "verdict": "simulated",
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "python3 planningops/scripts/verify_plan_projection.py --contract-file planningops/fixtures/plan-execution-contract-sample.json --snapshot-file planningops/fixtures/plan-projection-snapshot-sample.json --strict --output planningops/artifacts/validation/plan-projection-report.json",
+          "rc": null,
+          "verdict": "simulated",
+          "stdout": "",
+          "stderr": ""
+        }
+      ],
+      "node_verdict": "simulated",
+      "reason": "dry_run_pipeline_not_executed"
+    }
+  ],
+  "failure_count": 0,
+  "meta_plan_graph": {
+    "meta_plan_id": "uap-meta-20260303",
+    "graph_revision": 1,
+    "source_of_truth": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+    "initiative": "unified-personal-agent-platform",
+    "nodes": [
+      {
+        "node_id": "pec-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-auto-executable-plans-contract-and-runner-plan.md",
+        "execution_order": 1,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "planningops",
+        "workflow_state": "ready_implementation",
+        "loop_profile": "l3_implementation_tdd",
+        "status": "ready",
+        "last_verdict": "unknown",
+        "last_reason": "not_executed"
+      },
+      {
+        "node_id": "meta-track",
+        "plan_path": "docs/workbench/unified-personal-agent-platform/plans/2026-03-03-plan-meta-plan-orchestration-and-governance-plan.md",
+        "execution_order": 2,
+        "target_repo": "rather-not-work-on/platform-planningops",
+        "component": "orchestrator",
+        "workflow_state": "ready_contract",
+        "loop_profile": "l1_contract_clarification",
+        "status": "draft",
+        "last_verdict": "unknown",
+        "last_reason": "waiting_for_dependency"
+      }
+    ],
+    "edges": [
+      {
+        "from": "pec-track",
+        "to": "meta-track",
+        "type": "depends_on"
+      }
+    ],
+    "policy": {
+      "wip_limit": 2,
+      "strict_dependency_gate": true,
+      "strict_projection_gate": true
+    }
+  },
+  "verdict": "pass",
+  "reasons": [
+    "dry_run_only"
+  ]
+}
+validate_project_field_schema loop-profile matrix contract ok
+module README contract ok
+report written: planningops/artifacts/validation/repo-boundary-report.test.json
+violation_count=0 verdict=pass
+repo boundary contract ok
+report written: planningops/artifacts/validation/script-role-report.test.json
+violation_count=0 verdict=pass
+script role contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.OKkI5dMeUy/conformance.json
+check_count=23 assertion_count=10 incompatibility_example=pass verdict=pass
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.OKkI5dMeUy/conformance.json
+check_count=23 assertion_count=10 incompatibility_example=pass verdict=pass
+cross repo conformance run-root reuse contract ok
+report written: planningops/artifacts/validation/issue-quality-valid.test.json
+issues_in_scope=1 violation_count=0 verdict=pass
+report written: planningops/artifacts/validation/issue-quality-invalid.test.json
+issues_in_scope=1 violation_count=1 verdict=fail
+issue quality contract test ok
+report written: planningops/artifacts/validation/issue-quality-report.json
+issues_in_scope=3 violation_count=0 verdict=pass
+normalize_ready_implementation_blueprint_refs contract ok
+issue_loop_runner multi-repo intake trace ok
+ralph_loop_local worker policy contract smoke ok
+{
+  "generated_at_utc": "2026-03-24T05:55:46.593039+00:00",
+  "runtime_profile_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp62ojy_yt/runtime-profiles.json",
+  "schema_file": "planningops/schemas/worker-task-pack.schema.json",
+  "task_key": "issue-7",
+  "issue_number": 7,
+  "mode": "dry-run",
+  "loop_profile": "L3 Implementation-TDD",
+  "target_repo": "rather-not-work-on/platform-planningops",
+  "validation_errors": [],
+  "worker_task_pack": {
+    "version": "v1",
+    "task_key": "issue-7",
+    "issue_number": 7,
+    "mode": "dry-run",
+    "loop_profile": "L3 Implementation-TDD",
+    "runtime_profile": "local",
+    "worker_policy_kind": "python_script",
+    "command": [
+      "python3",
+      "planningops/scripts/parser_diff_dry_run.py",
+      "--run-id",
+      "worker-pack-issue-7",
+      "--mode",
+      "dry-run"
+    ],
+    "retry_policy": {
+      "max_retries": 2
+    },
+    "timeout_ms": 45000,
+    "idempotency_key": "5c45544db59faa00356f0b795aa76ddd6d2dc1269fa3921d32cb49261785063a",
+    "target_repo": "rather-not-work-on/platform-planningops",
+    "metadata": {
+      "profile_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp62ojy_yt/runtime-profiles.json",
+      "task_key": "issue-7"
+    }
+  },
+  "verdict": "pass",
+  "reason": "ok"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:46.593861+00:00",
+  "runtime_profile_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp62ojy_yt/runtime-profiles.json",
+  "schema_file": "planningops/schemas/worker-task-pack.schema.json",
+  "task_key": "issue-7",
+  "issue_number": 7,
+  "mode": "apply",
+  "loop_profile": "L3 Implementation-TDD",
+  "target_repo": "rather-not-work-on/platform-planningops",
+  "validation_errors": [
+    "unknown worker policy kind: unknown_kind"
+  ],
+  "verdict": "fail",
+  "reason": "worker_policy_render_failed"
+}
+validate_worker_task_pack contract smoke ok
+{
+  "generated_at_utc": "2026-03-24T05:55:46.629453+00:00",
+  "runtime_profile_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpcczk2ik9/runtime-profiles.json",
+  "schema_file": "planningops/schemas/runtime-profiles.schema.json",
+  "validation_errors": [],
+  "warnings": [],
+  "active_profile": "local",
+  "profile_names": [
+    "local"
+  ],
+  "task_override_keys": [
+    "default"
+  ],
+  "verdict": "pass",
+  "reason": "ok"
+}
+{
+  "generated_at_utc": "2026-03-24T05:55:46.630050+00:00",
+  "runtime_profile_file": "/var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmpcczk2ik9/runtime-profiles.json",
+  "schema_file": "planningops/schemas/runtime-profiles.schema.json",
+  "validation_errors": [
+    "schema: $.profiles.local unexpected key: nanoclaw_endpoint",
+    "schema: $.profiles.local.planner_policy.engine_hint minLength violation",
+    "schema: $.task_overrides.default.worker_policy.kind invalid enum value: unknown",
+    "active_profile 'missing' is not defined in profiles",
+    "profile 'local' planner_policy.engine_hint must be a non-empty string",
+    "task_overrides.default.runtime_profile 'missing' is not defined",
+    "task_overrides.default.worker_policy.kind must be parser_diff_dry_run, python_script, or shell"
+  ],
+  "warnings": [],
+  "active_profile": "missing",
+  "profile_names": [
+    "local"
+  ],
+  "task_override_keys": [
+    "default"
+  ],
+  "verdict": "fail",
+  "reason": "runtime_profiles_invalid"
+}
+validate_runtime_profiles contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.Zfo4UhMXdI/issue-driven-mission-smoke.json
+verdict=pass reason_code=issue_mission_smoke_ok
+issue-driven mission smoke contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.8rOfI8hvsr/issue-driven-runtime-stack-smoke.json
+verdict=pass failure_count=0
+issue-driven runtime stack smoke contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.hQqTn7fg21/local-runtime-stack-smoke.json
+verdict=pass failure_count=0
+local runtime stack smoke contract ok
+report written: /var/folders/sd/d2r84lw564dbdjbkbggr7pnh0000gn/T/tmp.Fw1rE6fgad/wave14-oracle-rehearsal.json
+verdict=pass portability_gap_count=0
+wave14 oracle rehearsal contract ok
+loop checkpoint resume contract smoke ok
+lease lock watchdog contract smoke ok
+escalation gate contract smoke ok
