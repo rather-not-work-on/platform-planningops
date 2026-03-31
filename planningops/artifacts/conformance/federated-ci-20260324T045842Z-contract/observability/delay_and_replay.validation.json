@@ -1,0 +1,10 @@
+{
+  "generated_at_utc": "2026-03-24T04:58:44.548720+00:00",
+  "report_path": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/conformance/federated-ci-20260324T045842Z-contract/observability/ingest/federated-ci-20260324T045842Z-contract-delay_and_replay.json",
+  "report_schema_path": "contracts/c5-observability-ingest-smoke-artifact.schema.json",
+  "event_schema_path": "contracts/c5-observability-ingest-contract.schema.json",
+  "taxonomy_path": "config/observability-reason-taxonomy.json",
+  "error_count": 0,
+  "errors": [],
+  "verdict": "pass"
+}

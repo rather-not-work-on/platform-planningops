@@ -1,0 +1,8 @@
+{
+  "generated_at_utc": "2026-03-24T04:58:44.112416+00:00",
+  "verdict": "pass",
+  "map_path": "config/provider-reason-taxonomy-map.json",
+  "taxonomy_path": "config/provider-reason-taxonomy.json",
+  "error_count": 0,
+  "errors": []
+}
