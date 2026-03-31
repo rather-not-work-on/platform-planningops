@@ -1,0 +1,15 @@
+{
+  "generated_at_utc": "2026-03-19T12:33:55.998523+00:00",
+  "verdict": "pass",
+  "pin_path": "contracts/contract-pin.json",
+  "required_contracts": [
+    "c1-run-lifecycle",
+    "c2-subtask-handoff",
+    "c3-executor-result",
+    "c8-plan-to-github-projection"
+  ],
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": []
+}
