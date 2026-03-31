@@ -1,0 +1,88 @@
+{
+  "run_id": "federated-ci-20260326T061313Z",
+  "started_at_utc": "2026-03-26T06:13:13.695620+00:00",
+  "checks": [
+    {
+      "name": "contract-conformance",
+      "domain": "contract",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-contract-conformance.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-contract-conformance.stderr.log"
+    },
+    {
+      "name": "provider-profile",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-provider-profile.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-provider-profile.stderr.log"
+    },
+    {
+      "name": "provider-gateway-ready",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-provider-gateway-ready.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-provider-gateway-ready.stderr.log"
+    },
+    {
+      "name": "o11y-replay",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-o11y-replay.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-o11y-replay.stderr.log"
+    },
+    {
+      "name": "runtime-handoff",
+      "domain": "runtime",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-runtime-handoff.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-runtime-handoff.stderr.log"
+    },
+    {
+      "name": "runtime-operations-ready",
+      "domain": "runtime",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-runtime-operations-ready.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-runtime-operations-ready.stderr.log"
+    },
+    {
+      "name": "monday-harness-projection",
+      "domain": "runtime",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-monday-harness-projection.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-monday-harness-projection.stderr.log"
+    },
+    {
+      "name": "loop-guardrails",
+      "domain": "policy",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-loop-guardrails.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-loop-guardrails.stderr.log"
+    },
+    {
+      "name": "loop-guardrails-outer-status-resolve",
+      "domain": "policy",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-loop-guardrails-outer-status-resolve.stdout.log",
+      "stderr_log": "/Volumes/T7 Touch/mini/rather-not-work-on/platform-planningops/planningops/artifacts/ci/federated-ci-20260326T061313Z-loop-guardrails-outer-status-resolve.stderr.log"
+    }
+  ],
+  "required_checks": [
+    "contract-conformance",
+    "provider-gateway-ready",
+    "runtime-handoff",
+    "runtime-operations-ready",
+    "monday-harness-projection",
+    "o11y-replay",
+    "provider-profile",
+    "loop-guardrails"
+  ]
+}

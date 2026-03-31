@@ -1,0 +1,12 @@
+{
+  "generated_at_utc": "2026-03-26T06:13:15.531671+00:00",
+  "contract_path": "config/runtime-integration-runbook-contract.json",
+  "runbook_path": "docs/runbook/runtime-integration-runbook.md",
+  "contract_version": 1,
+  "missing_sections": [],
+  "missing_fragments": [],
+  "missing_artifacts": [],
+  "error_count": 0,
+  "errors": [],
+  "verdict": "pass"
+}
