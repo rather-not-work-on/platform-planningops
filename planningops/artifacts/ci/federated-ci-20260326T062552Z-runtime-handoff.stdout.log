@@ -1,0 +1,20 @@
+runtime handoff ci check contract ok
+supervisor handoff bridge wiring ok
+autonomous supervisor loop contract tests ok
+integration report written: runtime-artifacts/integration/federated-ci-20260326T062552Z-runtime/planningops-handoff-report.json
+verdict=pass reason_code=ok mismatch_count=0 dequeued=1 blocked=0
+resolve supervisor operator handoff validation regression passed
+resolve supervisor operator handoff bundle ok
+validate supervisor operator handoff bundle ok
+doctor supervisor operator handoff bundle ok
+gate supervisor operator handoff bundle ok
+supervisor handoff to monday status bridge ok
+supervisor handoff to monday goal completion bridge ok
+supervisor handoff to monday goal completion scheduler bridge ok
+worker outcome reflection cycle scheduler report test passed
+reflection goal completion handoff cycle test passed
+reflection delivery cycle test passed
+scheduled reflection delivery cycle test passed
+reflection cycle orchestration contract ok
+reflection delivery cycle contract ok
+scheduled reflection delivery cycle contract ok
