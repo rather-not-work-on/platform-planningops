@@ -4,35 +4,11 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
-from datetime import datetime, timezone
 from pathlib import Path
 import sys
 from typing import Any
 
-
-DETERMINISTIC_RULE = (
-    "contract-conformance->contract, "
-    "provider-profile/provider-gateway-ready/o11y-replay->infra, "
-    "runtime-handoff/runtime-operations-ready->runtime, "
-    "federated-conformance->federation, "
-    "loop-guardrails->policy"
-)
-
-
-def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def load_json(path: Path, default: dict[str, Any] | None = None) -> dict[str, Any]:
-    if not path.exists():
-        return {} if default is None else dict(default)
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def write_json(path: Path, doc: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(doc, ensure_ascii=True, indent=2), encoding="utf-8")
+from federated_ci_runtime_state import build_check_record, finalize_summary_doc, load_json, write_json
 
 
 def load_validator_module():
@@ -61,17 +37,16 @@ def command_append_check(args: argparse.Namespace) -> int:
     summary_path = Path(args.summary)
     doc = load_json(summary_path, default={"checks": []})
     checks = list(doc.get("checks") or [])
-    check = {
-        "name": args.name,
-        "domain": args.domain,
-        "exit_code": args.exit_code,
-        "verdict": "pass" if args.exit_code == 0 else "fail",
-        "stdout_log": args.stdout_log,
-        "stderr_log": args.stderr_log,
-    }
-    if args.result is not None:
-        check["result"] = args.result
-    checks.append(check)
+    checks.append(
+        build_check_record(
+            name=args.name,
+            domain=args.domain,
+            exit_code=args.exit_code,
+            stdout_log=args.stdout_log,
+            stderr_log=args.stderr_log,
+            result=args.result,
+        )
+    )
     doc["checks"] = checks
     write_json(summary_path, doc)
     return 0
@@ -79,31 +54,12 @@ def command_append_check(args: argparse.Namespace) -> int:
 
 def command_finalize(args: argparse.Namespace) -> int:
     summary_path = Path(args.summary)
-    doc = load_json(summary_path, default={"checks": [], "required_checks": []})
-    checks = list(doc.get("checks") or [])
-    required_checks = list(doc.get("required_checks") or [])
-    check_names = [str(check.get("name") or "") for check in checks]
-    failures = [check for check in checks if check.get("verdict") == "fail"]
-    missing_required = [name for name in required_checks if name not in check_names]
-    overall_status = args.status
-
-    doc["generated_at_utc"] = now_utc()
-    doc["finished_at_utc"] = now_utc()
-    doc["overall_status"] = overall_status
-    doc["check_count"] = len(checks)
-    doc["missing_required_checks"] = missing_required
-    doc["failure_classification"] = {
-        "count": len(failures),
-        "domains": sorted({failure.get("domain") for failure in failures}),
-        "deterministic_rule": DETERMINISTIC_RULE,
-    }
-    doc["verdict"] = (
-        "pass"
-        if overall_status == "complete" and not failures and not missing_required
-        else "fail"
+    doc = finalize_summary_doc(
+        load_json(summary_path, default={"checks": [], "required_checks": []}),
+        status=args.status,
+        shell_exit_code=args.shell_exit_code,
     )
-    if args.shell_exit_code is not None:
-        doc["shell_exit_code"] = args.shell_exit_code
+    failures = [check for check in list(doc.get("checks") or []) if check.get("verdict") == "fail"]
 
     stamped_path = Path(args.stamped_path)
     latest_path = Path(args.latest_path)
