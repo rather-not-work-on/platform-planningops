@@ -1,0 +1,1 @@
+federated summary readiness validation failed: ['canonical latest readiness must reference latest summary path: planningops/artifacts/ci/federated-ci-summary.json', 'canonical latest readiness must reference latest summary validation path: planningops/artifacts/validation/federated-ci-summary-validation.json']

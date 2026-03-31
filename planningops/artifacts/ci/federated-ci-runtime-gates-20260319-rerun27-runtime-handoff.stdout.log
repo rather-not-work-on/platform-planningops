@@ -1,0 +1,4 @@
+integration report written: runtime-artifacts/integration/federated-ci-runtime-gates-20260319-rerun27-runtime/planningops-handoff-report.json
+verdict=pass reason_code=ok mismatch_count=0 dequeued=1 blocked=0
+supervisor handoff to monday status bridge ok
+supervisor handoff to monday goal completion bridge ok
