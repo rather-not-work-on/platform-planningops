@@ -112,6 +112,11 @@ Promote a repeatable operator entrypoint:
   - optionally runs direct monday profile smoke
   - stores one stamped local operator report
 
+Current deliverables:
+
+- `planningops/scripts/run_monday_local_operator_stack.py`
+- `planningops/runtime-artifacts/local/monday-local-operator-stack/<run-id>.json`
+
 ### Phase 2. Codex-to-monday handoff packet
 
 Add a stable packet for Codex-originated local mission execution:
