@@ -27,6 +27,7 @@ DEFAULT_CI_ROOT = WORKSPACE_ROOT / "planningops/artifacts/ci"
 DEFAULT_VALIDATION_ROOT = WORKSPACE_ROOT / "planningops/artifacts/validation"
 DEFAULT_CONFORMANCE_ROOT = WORKSPACE_ROOT / "planningops/artifacts/conformance"
 DEFAULT_LOCAL_OPERATOR_STACK_ROOT = WORKSPACE_ROOT / "planningops/runtime-artifacts/local/monday-local-operator-stack"
+DEFAULT_MONDAY_CONSUMER_ROOT = WORKSPACE_ROOT.parent / "monday" / "runtime-artifacts/integration/planningops-local-operator-inbox"
 
 LATEST_GAP_CHOICES = (
     "readiness_missing",
@@ -48,6 +49,9 @@ LOCAL_OPERATOR_READINESS_CHOICES = ("ready", "bootstrap_required", "blocked", "u
 LOCAL_OPERATOR_STEP_STATUS_CHOICES = ("pass", "fail", "planned", "skipped", "report_only", "unknown", "missing")
 LOCAL_INBOX_PAYLOAD_SOURCE_CHOICES = ("all", "latest", "stamped")
 LOCAL_INBOX_PAYLOAD_STATUS_CHOICES = ("ready", "blocked")
+MONDAY_CONSUMER_MODE_CHOICES = ("dry-run", "apply")
+MONDAY_CONSUMER_VERDICT_CHOICES = ("pass", "fail", "blocked")
+MONDAY_CONSUMER_STATUS_CHOICES = ("ready_to_launch", "blocked")
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -372,6 +376,32 @@ class LocalInboxPayloadRecord:
     queue_lines: list[str]
     target_lines: list[str]
     dependency_states: dict[str, str]
+
+
+@dataclass(frozen=True)
+class MondayConsumerReportRecord:
+    run_id: str
+    report_path: str
+    generated_at_utc: str
+    bridge_id: str | None
+    mode: str | None
+    verdict: str | None
+    reason_code: str | None
+    consumer_status: str | None
+    can_launch: bool | None
+    planner_profile: str | None
+    launch_mode: str | None
+    local_model_route: str | None
+    local_validation_snapshot_status: str | None
+    block_reasons: list[str]
+    command_args: list[str]
+    execution_attempted: bool | None
+    execution_exit_code: int | None
+    runtime_report_verdict: str | None
+    runtime_report_reason_code: str | None
+    has_launch_request: bool
+    has_mission_file: bool
+    has_runtime_report: bool
 
 
 def resolve_root(path_text: str, default: Path) -> Path:
@@ -881,6 +911,14 @@ def is_local_inbox_payload_document(doc: dict[str, Any]) -> bool:
     return isinstance(doc.get("bridge_id"), str) and isinstance(doc.get("payload"), dict)
 
 
+def is_monday_consumer_report_document(doc: dict[str, Any]) -> bool:
+    return (
+        isinstance(doc.get("run_id"), str)
+        and isinstance(doc.get("artifact_paths"), dict)
+        and isinstance(doc.get("launch_request"), dict)
+    )
+
+
 def build_local_validation_dependency_state(
     *,
     raw_path: Any,
@@ -1177,6 +1215,170 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
             f"{', '.join(f'{key}={value}' for key, value in record.dependency_states.items())} | "
             f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.attachment_count} | "
             f"{record.generated_at_utc} |"
+        )
+    return "\n".join(lines)
+
+
+def build_monday_consumer_report_record(
+    *,
+    report_path: Path,
+    report_doc: dict[str, Any],
+) -> MondayConsumerReportRecord:
+    artifact_paths = report_doc.get("artifact_paths") if isinstance(report_doc.get("artifact_paths"), dict) else {}
+    launch_request = report_doc.get("launch_request") if isinstance(report_doc.get("launch_request"), dict) else {}
+    execution = report_doc.get("execution") if isinstance(report_doc.get("execution"), dict) else {}
+    runtime_report_summary = (
+        report_doc.get("runtime_report_summary") if isinstance(report_doc.get("runtime_report_summary"), dict) else {}
+    )
+    launch_request_path = resolve_artifact_path(artifact_paths.get("launch_request_path"))
+    mission_file_path = resolve_artifact_path(artifact_paths.get("mission_file_path"))
+    runtime_report_path = resolve_artifact_path(artifact_paths.get("runtime_report_path"))
+    execution_attempted = execution.get("attempted") if isinstance(execution.get("attempted"), bool) else None
+    execution_exit_code = execution.get("exit_code") if isinstance(execution.get("exit_code"), int) else None
+    return MondayConsumerReportRecord(
+        run_id=str(report_doc.get("run_id")),
+        report_path=str(report_path.resolve()),
+        generated_at_utc=str(report_doc.get("generated_at_utc") or ""),
+        bridge_id=normalize_optional_string(report_doc.get("bridge_id")),
+        mode=normalize_optional_string(report_doc.get("mode")),
+        verdict=normalize_optional_string(report_doc.get("verdict")),
+        reason_code=normalize_optional_string(report_doc.get("reason_code")),
+        consumer_status=normalize_optional_string(report_doc.get("consumer_status")),
+        can_launch=launch_request.get("can_launch") if isinstance(launch_request.get("can_launch"), bool) else None,
+        planner_profile=normalize_optional_string(launch_request.get("planner_profile")),
+        launch_mode=normalize_optional_string(launch_request.get("launch_mode")),
+        local_model_route=normalize_optional_string(launch_request.get("local_model_route")),
+        local_validation_snapshot_status=normalize_optional_string(launch_request.get("local_validation_snapshot_status")),
+        block_reasons=normalize_string_list(launch_request.get("block_reasons")),
+        command_args=normalize_string_list(launch_request.get("runtime_command_args")),
+        execution_attempted=execution_attempted,
+        execution_exit_code=execution_exit_code,
+        runtime_report_verdict=normalize_optional_string(runtime_report_summary.get("verdict")),
+        runtime_report_reason_code=normalize_optional_string(runtime_report_summary.get("reason_code")),
+        has_launch_request=launch_request_path.exists() if launch_request_path is not None else False,
+        has_mission_file=mission_file_path.exists() if mission_file_path is not None else False,
+        has_runtime_report=runtime_report_path.exists() if runtime_report_path is not None else False,
+    )
+
+
+def discover_monday_consumer_report_records(*, consumer_root: Path) -> list[MondayConsumerReportRecord]:
+    if not consumer_root.exists():
+        return []
+    records: list[MondayConsumerReportRecord] = []
+    for path in sorted(consumer_root.glob("*/consumer-report.json")):
+        if any(part.startswith(".") or part.startswith("._") for part in path.parts):
+            continue
+        try:
+            doc = load_json(path)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not is_monday_consumer_report_document(doc):
+            continue
+        records.append(build_monday_consumer_report_record(report_path=path, report_doc=doc))
+    records.sort(
+        key=lambda record: (
+            record.generated_at_utc,
+            record.run_id,
+            record.report_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def filter_monday_consumer_report_records(
+    *,
+    records: list[MondayConsumerReportRecord],
+    run_id_prefix: str | None = None,
+    mode: str | None = None,
+    verdict: str | None = None,
+    reason_code: str | None = None,
+    consumer_status: str | None = None,
+    can_launch: str | None = None,
+    planner_profile: str | None = None,
+    launch_mode: str | None = None,
+    local_model_route: str | None = None,
+    has_runtime_report: str | None = None,
+    execution_attempted: str | None = None,
+) -> list[MondayConsumerReportRecord]:
+    filtered = records
+    if run_id_prefix:
+        filtered = [record for record in filtered if record.run_id.startswith(run_id_prefix)]
+    if mode:
+        filtered = [record for record in filtered if record.mode == mode]
+    if verdict:
+        filtered = [record for record in filtered if record.verdict == verdict]
+    if reason_code:
+        filtered = [record for record in filtered if record.reason_code == reason_code]
+    if consumer_status:
+        filtered = [record for record in filtered if record.consumer_status == consumer_status]
+    if can_launch is not None:
+        expected = can_launch == "yes"
+        filtered = [record for record in filtered if record.can_launch is expected]
+    if planner_profile:
+        filtered = [record for record in filtered if record.planner_profile == planner_profile]
+    if launch_mode:
+        filtered = [record for record in filtered if record.launch_mode == launch_mode]
+    if local_model_route:
+        filtered = [record for record in filtered if record.local_model_route == local_model_route]
+    if has_runtime_report is not None:
+        expected = has_runtime_report == "yes"
+        filtered = [record for record in filtered if record.has_runtime_report is expected]
+    if execution_attempted is not None:
+        expected = execution_attempted == "yes"
+        filtered = [record for record in filtered if record.execution_attempted is expected]
+    return filtered
+
+
+def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord]) -> str:
+    lines = [
+        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.run_id,
+                    str(record.mode or ""),
+                    str(record.verdict or ""),
+                    str(record.reason_code or ""),
+                    str(record.consumer_status or ""),
+                    "" if record.can_launch is None else ("yes" if record.can_launch else "no"),
+                    str(record.planner_profile or ""),
+                    str(record.launch_mode or ""),
+                    str(record.local_model_route or ""),
+                    (
+                        ""
+                        if record.execution_attempted is None
+                        else ("yes" if record.execution_attempted else "no")
+                    ),
+                    "" if record.execution_exit_code is None else str(record.execution_exit_code),
+                    str(record.runtime_report_verdict or ""),
+                    "yes" if record.has_runtime_report else "no",
+                    ",".join(record.block_reasons),
+                    record.generated_at_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRecord]) -> str:
+    lines = [
+        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| `{record.run_id}` | {record.mode or ''} | {record.verdict or ''} | {record.reason_code or ''} | "
+            f"{record.consumer_status or ''} | "
+            f"{'' if record.can_launch is None else ('yes' if record.can_launch else 'no')} | "
+            f"{record.planner_profile or ''} | {record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{'' if record.execution_attempted is None else ('yes' if record.execution_attempted else 'no')} | "
+            f"{'' if record.execution_exit_code is None else record.execution_exit_code} | "
+            f"{record.runtime_report_verdict or ''} | "
+            f"{'yes' if record.has_runtime_report else 'no'} | "
+            f"{', '.join(record.block_reasons)} | {record.generated_at_utc} |"
         )
     return "\n".join(lines)
 
@@ -3837,6 +4039,25 @@ def parse_args() -> argparse.Namespace:
     local_inbox_payload_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     local_inbox_payload_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
 
+    monday_consumer_parser = subparsers.add_parser(
+        "monday-consumer-report",
+        help="list monday-owned planningops local inbox consumer reports",
+    )
+    monday_consumer_parser.add_argument("--run-id-prefix", default=None)
+    monday_consumer_parser.add_argument("--mode", choices=MONDAY_CONSUMER_MODE_CHOICES, default=None)
+    monday_consumer_parser.add_argument("--verdict", choices=MONDAY_CONSUMER_VERDICT_CHOICES, default=None)
+    monday_consumer_parser.add_argument("--reason-code", default=None)
+    monday_consumer_parser.add_argument("--consumer-status", choices=MONDAY_CONSUMER_STATUS_CHOICES, default=None)
+    monday_consumer_parser.add_argument("--can-launch", choices=["yes", "no"], default=None)
+    monday_consumer_parser.add_argument("--planner-profile", default=None)
+    monday_consumer_parser.add_argument("--launch-mode", default=None)
+    monday_consumer_parser.add_argument("--local-model-route", default=None)
+    monday_consumer_parser.add_argument("--has-runtime-report", choices=["yes", "no"], default=None)
+    monday_consumer_parser.add_argument("--execution-attempted", choices=["yes", "no"], default=None)
+    monday_consumer_parser.add_argument("--limit", type=int, default=20)
+    monday_consumer_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    monday_consumer_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -3861,6 +4082,7 @@ def main() -> int:
     args = parse_args()
     local_root = resolve_root(getattr(args, "local_root", str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT)), DEFAULT_LOCAL_OPERATOR_STACK_ROOT)
     validation_root = resolve_root(getattr(args, "validation_root", str(DEFAULT_VALIDATION_ROOT)), DEFAULT_VALIDATION_ROOT)
+    consumer_root = resolve_root(getattr(args, "consumer_root", str(DEFAULT_MONDAY_CONSUMER_ROOT)), DEFAULT_MONDAY_CONSUMER_ROOT)
     if args.command == "local-validation-freshness":
         local_validation_records = discover_local_validation_freshness_records(validation_root=validation_root)
         local_validation_records = filter_local_validation_freshness_records(
@@ -3902,6 +4124,32 @@ def main() -> int:
             print(render_local_inbox_payload_markdown(inbox_payload_records))
             return 0
         print(render_local_inbox_payload_table(inbox_payload_records))
+        return 0
+
+    if args.command == "monday-consumer-report":
+        consumer_records = discover_monday_consumer_report_records(consumer_root=consumer_root)
+        consumer_records = filter_monday_consumer_report_records(
+            records=consumer_records,
+            run_id_prefix=args.run_id_prefix,
+            mode=args.mode,
+            verdict=args.verdict,
+            reason_code=args.reason_code,
+            consumer_status=args.consumer_status,
+            can_launch=args.can_launch,
+            planner_profile=args.planner_profile,
+            launch_mode=args.launch_mode,
+            local_model_route=args.local_model_route,
+            has_runtime_report=args.has_runtime_report,
+            execution_attempted=args.execution_attempted,
+        )
+        consumer_records = consumer_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in consumer_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_monday_consumer_report_markdown(consumer_records))
+            return 0
+        print(render_monday_consumer_report_table(consumer_records))
         return 0
 
     if args.command == "local-operator-stack":

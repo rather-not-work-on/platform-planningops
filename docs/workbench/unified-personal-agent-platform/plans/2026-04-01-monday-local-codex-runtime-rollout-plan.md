@@ -147,6 +147,7 @@ Current deliverables:
 - `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/launch-request.json`
 - `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/mission.json`
 - `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/consumer-report.json`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py monday-consumer-report` exposes a monday-native apply/result view over dry-run, apply-pass, and blocked consumer reports
 - monday now consumes the promoted inbox payload as structured input and materializes native runtime command argv without reparsing day-packet markdown
 - monday consumer regression now covers:
   - ready dry-run packet materialization
@@ -215,5 +216,5 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. decide whether the inbox payload bridge and the monday-native consumer report should be schema-validated against monday-owned contracts
-2. add a dedicated query/report surface for the monday-native consumer report if operators need an apply/result view separate from the planningops-owned `local-inbox-payload` surface
-3. decide whether the consumer's runtime input overrides should stay regression-only or be promoted into a reviewed operator-facing escape hatch
+2. decide whether the consumer's runtime input overrides should stay regression-only or be promoted into a reviewed operator-facing escape hatch
+3. decide whether launch-request, runtime-report, or consumer-report freshness should be mirrored back into planningops-owned validation artifacts
