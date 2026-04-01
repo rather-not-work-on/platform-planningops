@@ -103,6 +103,12 @@ class HealthSummaryRecord:
     latest_alert_timestamp_utc: str | None
     latest_alert_failed_checks: list[str]
     latest_alert_reasons: list[str]
+    failure_domain_counts: dict[str, int]
+    latest_failure_run_id: str | None
+    latest_failure_source_kind: str | None
+    latest_failure_health_status: str | None
+    latest_failure_timestamp_utc: str | None
+    latest_failure_domains: list[str]
 
 
 def resolve_root(path_text: str, default: Path) -> Path:
@@ -566,6 +572,11 @@ def build_health_summary_records(
     for family_name, family_records in grouped.items():
         latest_record = family_records[0]
         latest_alert = next((record for record in family_records if record.health_status != "healthy"), None)
+        latest_failure = next((record for record in family_records if record.failure_domains), None)
+        domain_counts: dict[str, int] = {}
+        for record in family_records:
+            for domain in record.failure_domains:
+                domain_counts[domain] = domain_counts.get(domain, 0) + 1
         summaries.append(
             HealthSummaryRecord(
                 family=family_name,
@@ -584,6 +595,12 @@ def build_health_summary_records(
                 latest_alert_timestamp_utc=None if latest_alert is None else latest_alert.timestamp_utc,
                 latest_alert_failed_checks=[] if latest_alert is None else latest_alert.failed_checks,
                 latest_alert_reasons=[] if latest_alert is None else latest_alert.health_reasons,
+                failure_domain_counts={key: domain_counts[key] for key in sorted(domain_counts)},
+                latest_failure_run_id=None if latest_failure is None else latest_failure.run_id,
+                latest_failure_source_kind=None if latest_failure is None else latest_failure.source_kind,
+                latest_failure_health_status=None if latest_failure is None else latest_failure.health_status,
+                latest_failure_timestamp_utc=None if latest_failure is None else latest_failure.timestamp_utc,
+                latest_failure_domains=[] if latest_failure is None else latest_failure.failure_domains,
             )
         )
     summaries.sort(key=lambda record: (record.latest_run_timestamp_utc, record.family), reverse=True)
@@ -592,7 +609,7 @@ def build_health_summary_records(
 
 def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
     lines = [
-        "family\truns\thealthy\tdegraded\tblocked\tunknown\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_alert_failed_checks\tlatest_timestamp",
+        "family\truns\thealthy\tdegraded\tblocked\tunknown\tdomain_counts\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_failure_run\tlatest_failure_domains\tlatest_timestamp",
     ]
     for record in records:
         lines.append(
@@ -604,11 +621,13 @@ def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
                     str(record.degraded_count),
                     str(record.blocked_count),
                     str(record.unknown_count),
+                    ",".join(f"{key}={value}" for key, value in record.failure_domain_counts.items()),
                     record.latest_run_id,
                     record.latest_run_health_status,
                     record.latest_alert_run_id or "",
                     record.latest_alert_health_status or "",
-                    ",".join(record.latest_alert_failed_checks),
+                    record.latest_failure_run_id or "",
+                    ",".join(record.latest_failure_domains),
                     record.latest_run_timestamp_utc,
                 ]
             )
@@ -618,15 +637,17 @@ def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
 
 def render_health_summary_markdown(records: list[HealthSummaryRecord]) -> str:
     lines = [
-        "| family | runs | healthy | degraded | blocked | unknown | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_alert_failed_checks | latest_timestamp |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- |",
+        "| family | runs | healthy | degraded | blocked | unknown | domain_counts | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_failure_run | latest_failure_domains | latest_timestamp |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
             f"| {record.family} | {record.run_count} | {record.healthy_count} | {record.degraded_count} | "
-            f"{record.blocked_count} | {record.unknown_count} | `{record.latest_run_id}` | "
-            f"{record.latest_run_health_status} | `{record.latest_alert_run_id or ''}` | "
-            f"{record.latest_alert_health_status or ''} | {', '.join(record.latest_alert_failed_checks)} | "
+            f"{record.blocked_count} | {record.unknown_count} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.failure_domain_counts.items())} | "
+            f"`{record.latest_run_id}` | {record.latest_run_health_status} | `{record.latest_alert_run_id or ''}` | "
+            f"{record.latest_alert_health_status or ''} | `{record.latest_failure_run_id or ''}` | "
+            f"{', '.join(record.latest_failure_domains)} | "
             f"{record.latest_run_timestamp_utc} |"
         )
     return "\n".join(lines)
@@ -1270,6 +1291,7 @@ def parse_args() -> argparse.Namespace:
         choices=["healthy", "degraded", "blocked", "unknown"],
         default=None,
     )
+    health_summary_parser.add_argument("--has-failure-domain", default=None)
     health_summary_parser.add_argument("--limit", type=int, default=20)
     health_summary_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     health_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
@@ -1350,6 +1372,10 @@ def main() -> int:
         if args.has_health_status:
             bucket_name = f"{args.has_health_status}_count"
             summaries = [record for record in summaries if getattr(record, bucket_name) > 0]
+        if args.has_failure_domain:
+            summaries = [
+                record for record in summaries if record.failure_domain_counts.get(args.has_failure_domain, 0) > 0
+            ]
         summaries = summaries[: args.limit]
         if args.format == "json":
             print(json.dumps({"records": [asdict(record) for record in summaries]}, ensure_ascii=True, indent=2))
