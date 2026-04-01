@@ -233,6 +233,23 @@ class TriageFeedRecord:
     target_records: list[TriageTargetRecord]
 
 
+@dataclass(frozen=True)
+class TriageBriefRecord:
+    source_kind: str
+    target_limit: int
+    attention_family_count: int
+    active_family_count: int
+    lagging_family_count: int
+    clear_family_count: int
+    newest_failing_family: str | None
+    newest_failing_run_id: str | None
+    newest_failing_triage_status: str | None
+    newest_recovered_family: str | None
+    newest_recovered_run_id: str | None
+    queue_lines: list[str]
+    target_lines: list[str]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -1410,6 +1427,102 @@ def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
     return "\n\n".join(sections)
 
 
+def build_triage_brief_record(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+    target_limit: int,
+) -> TriageBriefRecord:
+    feed = build_triage_feed_record(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+        target_limit=target_limit,
+    )
+    overview = feed.overview
+    queue_lines = [
+        (
+            f"{queue.priority_bucket}: targets={queue.target_count} "
+            f"newest={queue.newest_target_family}/{queue.newest_target_run_id} "
+            f"domains={','.join(f'{key}={value}' for key, value in queue.target_domain_counts.items())}"
+        )
+        for queue in feed.queue_records
+    ]
+    target_lines = [
+        (
+            f"[{target.priority_bucket}/{target.target_kind}] "
+            f"{target.family} -> {target.target_run_id} "
+            f"domains={','.join(target.target_domains)}"
+        )
+        for target in feed.target_records
+    ]
+    return TriageBriefRecord(
+        source_kind=source_kind,
+        target_limit=target_limit,
+        attention_family_count=overview.triage_status_counts.get("active", 0) + overview.triage_status_counts.get("lagging", 0),
+        active_family_count=overview.triage_status_counts.get("active", 0),
+        lagging_family_count=overview.triage_status_counts.get("lagging", 0),
+        clear_family_count=overview.triage_status_counts.get("clear", 0),
+        newest_failing_family=overview.newest_failing_family,
+        newest_failing_run_id=overview.newest_failing_run_id,
+        newest_failing_triage_status=overview.newest_failing_triage_status,
+        newest_recovered_family=overview.newest_recovered_family,
+        newest_recovered_run_id=overview.newest_recovered_run_id,
+        queue_lines=queue_lines,
+        target_lines=target_lines,
+    )
+
+
+def render_triage_brief_table(record: TriageBriefRecord) -> str:
+    sections = [
+        f"source_kind\t{record.source_kind}",
+        f"target_limit\t{record.target_limit}",
+        (
+            f"attention\tfamilies={record.attention_family_count},active={record.active_family_count},"
+            f"lagging={record.lagging_family_count},clear={record.clear_family_count}"
+        ),
+        (
+            f"newest_failing\t{record.newest_failing_family or ''}\t"
+            f"{record.newest_failing_run_id or ''}\t{record.newest_failing_triage_status or ''}"
+        ),
+        "queue",
+        *record.queue_lines,
+        "targets",
+        *record.target_lines,
+    ]
+    return "\n".join(sections)
+
+
+def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
+    lines = [
+        "## Triage Brief",
+        f"- source_kind: `{record.source_kind}`",
+        f"- top target window: `{record.target_limit}`",
+        (
+            f"- attention families: `{record.attention_family_count}` "
+            f"(`active={record.active_family_count}`, `lagging={record.lagging_family_count}`, `clear={record.clear_family_count}`)"
+        ),
+        (
+            f"- newest failing pointer: `{record.newest_failing_family or ''}` / "
+            f"`{record.newest_failing_run_id or ''}` ({record.newest_failing_triage_status or 'none'})"
+        ),
+    ]
+    if record.newest_recovered_family or record.newest_recovered_run_id:
+        lines.append(
+            f"- newest recovered pointer: `{record.newest_recovered_family or ''}` / `{record.newest_recovered_run_id or ''}`"
+        )
+    lines.append("")
+    lines.append("### Queue")
+    lines.extend(f"- {line}" for line in record.queue_lines)
+    lines.append("")
+    lines.append("### Top Targets")
+    lines.extend(f"{index}. {line}" for index, line in enumerate(record.target_lines, start=1))
+    return "\n".join(lines)
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -2168,6 +2281,19 @@ def parse_args() -> argparse.Namespace:
     triage_feed_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_feed_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_feed_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    triage_brief_parser = subparsers.add_parser(
+        "triage-brief",
+        help="show a concise operator summary derived from the triage feed surface",
+    )
+    triage_brief_parser.add_argument("--family", default=None)
+    triage_brief_parser.add_argument("--run-id-prefix", default=None)
+    triage_brief_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    triage_brief_parser.add_argument("--target-limit", type=int, default=3)
+    triage_brief_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
+    triage_brief_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    triage_brief_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    triage_brief_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -2414,6 +2540,23 @@ def main() -> int:
             print(render_triage_feed_markdown(record))
             return 0
         print(render_triage_feed_table(record))
+        return 0
+
+    if args.command == "triage-brief":
+        record = build_triage_brief_record(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+            target_limit=args.target_limit,
+        )
+        if args.format == "json":
+            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_triage_brief_markdown(record))
+            return 0
+        print(render_triage_brief_table(record))
         return 0
 
     if args.command == "reconcile-status":
