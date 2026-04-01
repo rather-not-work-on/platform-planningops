@@ -2139,6 +2139,142 @@ path.write_text(payload, encoding="utf-8")
 )
 PY
 
+mkdir -p "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z"
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json" <<'JSON'
+{
+  "planner_profile": "local_ollama",
+  "launch_mode": "direct",
+  "local_model_route": "direct_local_ollama"
+}
+JSON
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json" <<'JSON'
+{
+  "consumer_status": "blocked"
+}
+JSON
+
+cat >"$VALIDATION_DIR/monday-local-inbox-launch-request.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:31:00+00:00",
+  "run_id": "planningops-local-inbox-consumer-20260401T103000Z",
+  "artifact_family": "monday_local_inbox_launch_request",
+  "artifact_kind": "request",
+  "contract_ref": "planningops/contracts/monday-local-inbox-validation-mirror-contract.md",
+  "artifact_paths": {
+    "latest_mirror_path": "$VALIDATION_DIR/monday-local-inbox-launch-request.json",
+    "stamped_mirror_path": "$VALIDATION_DIR/planningops-local-inbox-consumer-20260401T103000Z-monday-local-inbox-launch-request.json",
+    "source_artifact_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json",
+    "source_launch_request_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json",
+    "source_runtime_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/local-runtime-smoke.json",
+    "source_consumer_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json"
+  },
+  "mirror": {
+    "source_artifact_present": true,
+    "bridge_id": "monday-local-inbox-20260401T084500Z",
+    "mode": "apply",
+    "consumer_verdict": "blocked",
+    "consumer_status": "blocked",
+    "planner_profile": "local_ollama",
+    "launch_mode": "direct",
+    "local_model_route": "direct_local_ollama",
+    "has_runtime_input_overrides": false,
+    "override_kinds": [],
+    "validation_dependency_paths": {
+      "monday_local_operator_inbox_payload": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json"
+    },
+    "payload": {
+      "planner_profile": "local_ollama",
+      "launch_mode": "direct",
+      "local_model_route": "direct_local_ollama"
+    }
+  }
+}
+JSON
+
+cp "$VALIDATION_DIR/monday-local-inbox-launch-request.json" \
+  "$VALIDATION_DIR/planningops-local-inbox-consumer-20260401T103000Z-monday-local-inbox-launch-request.json"
+
+cat >"$VALIDATION_DIR/monday-local-inbox-runtime-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:32:00+00:00",
+  "run_id": "planningops-local-inbox-consumer-20260401T103000Z",
+  "artifact_family": "monday_local_inbox_runtime_report",
+  "artifact_kind": "report",
+  "contract_ref": "planningops/contracts/monday-local-inbox-validation-mirror-contract.md",
+  "artifact_paths": {
+    "latest_mirror_path": "$VALIDATION_DIR/monday-local-inbox-runtime-report.json",
+    "stamped_mirror_path": "$VALIDATION_DIR/planningops-local-inbox-consumer-20260401T103000Z-monday-local-inbox-runtime-report.json",
+    "source_artifact_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/local-runtime-smoke.json",
+    "source_launch_request_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json",
+    "source_runtime_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/local-runtime-smoke.json",
+    "source_consumer_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json"
+  },
+  "mirror": {
+    "source_artifact_present": false,
+    "bridge_id": "monday-local-inbox-20260401T084500Z",
+    "mode": "apply",
+    "consumer_verdict": "blocked",
+    "consumer_status": "blocked",
+    "planner_profile": "local_ollama",
+    "launch_mode": "direct",
+    "local_model_route": "direct_local_ollama",
+    "has_runtime_input_overrides": false,
+    "override_kinds": [],
+    "validation_dependency_paths": {
+      "monday_local_operator_inbox_payload": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json",
+      "monday_local_inbox_launch_request": "$VALIDATION_DIR/monday-local-inbox-launch-request.json"
+    },
+    "payload": null
+  }
+}
+JSON
+
+cp "$VALIDATION_DIR/monday-local-inbox-runtime-report.json" \
+  "$VALIDATION_DIR/planningops-local-inbox-consumer-20260401T103000Z-monday-local-inbox-runtime-report.json"
+
+cat >"$VALIDATION_DIR/monday-local-inbox-consumer-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:33:00+00:00",
+  "run_id": "planningops-local-inbox-consumer-20260401T103000Z",
+  "artifact_family": "monday_local_inbox_consumer_report",
+  "artifact_kind": "report",
+  "contract_ref": "planningops/contracts/monday-local-inbox-validation-mirror-contract.md",
+  "artifact_paths": {
+    "latest_mirror_path": "$VALIDATION_DIR/monday-local-inbox-consumer-report.json",
+    "stamped_mirror_path": "$VALIDATION_DIR/planningops-local-inbox-consumer-20260401T103000Z-monday-local-inbox-consumer-report.json",
+    "source_artifact_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json",
+    "source_launch_request_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json",
+    "source_runtime_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/local-runtime-smoke.json",
+    "source_consumer_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json"
+  },
+  "mirror": {
+    "source_artifact_present": true,
+    "bridge_id": "monday-local-inbox-20260401T084500Z",
+    "mode": "apply",
+    "consumer_verdict": "blocked",
+    "consumer_status": "blocked",
+    "planner_profile": "local_ollama",
+    "launch_mode": "direct",
+    "local_model_route": "direct_local_ollama",
+    "has_runtime_input_overrides": false,
+    "override_kinds": [],
+    "validation_dependency_paths": {
+      "monday_local_operator_inbox_payload": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json",
+      "monday_local_inbox_launch_request": "$VALIDATION_DIR/monday-local-inbox-launch-request.json",
+      "monday_local_inbox_runtime_report": "$VALIDATION_DIR/monday-local-inbox-runtime-report.json"
+    },
+    "payload": {
+      "consumer_status": "blocked"
+    }
+  }
+}
+JSON
+
+cp "$VALIDATION_DIR/monday-local-inbox-consumer-report.json" \
+  "$VALIDATION_DIR/planningops-local-inbox-consumer-20260401T103000Z-monday-local-inbox-consumer-report.json"
+
 python3 "$QUERY_PATH" handoff-report \
   --format json \
   --ci-root "$CI_DIR" \
@@ -2163,6 +2299,24 @@ assert record["local_operator_summary"] == (
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
 assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
+assert record["local_validation_snapshot_status"] == "present", record
+assert record["local_validation_snapshot_summary"] == "total=8 promotable=4 blocked=4 stale=1", record
+assert record["local_validation_summary_lines"] == [
+    "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
+    "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
+    "monday_local_mission_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=operator_handoff_report=current,monday_local_operator_stack_report=current",
+    "monday_local_operator_day_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
+    "monday_local_operator_inbox_payload: freshness=fresh promotability=promotable dependencies=monday_local_operator_day_packet=current,monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
+    "monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+    "monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
+], record
+assert record["local_validation_action_lines"] == [
+    "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)",
+    "local-validation: repair monday_local_mission_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)",
+    "local-validation: repair monday_local_operator_day_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)",
+    "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
+], record
 assert record["queue_lines"] == [
     "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1",
     "lagging: targets=1 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint=1,readiness=1,reconcile=1",
@@ -2181,6 +2335,8 @@ assert "## Operator Handoff Report" in record["markdown"], record
 assert "### Snapshot" in record["markdown"], record
 assert "### Local Runtime" in record["markdown"], record
 assert "### Local Validation" in record["markdown"], record
+assert "snapshot status: `present`" in record["markdown"], record
+assert "snapshot summary: `total=8 promotable=4 blocked=4 stale=1`" in record["markdown"], record
 assert "### Local Validation Actions" in record["markdown"], record
 assert "### Queue" in record["markdown"], record
 assert "### Top Targets" in record["markdown"], record
@@ -2212,12 +2368,17 @@ assert record["local_operator_summary"] == (
     "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
+assert record["local_validation_snapshot_status"] == "present", record
+assert record["local_validation_snapshot_summary"] == "total=8 promotable=4 blocked=4 stale=1", record
 assert record["local_validation_summary_lines"] == [
     "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
     "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
     "monday_local_mission_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=operator_handoff_report=current,monday_local_operator_stack_report=current",
     "monday_local_operator_day_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
     "monday_local_operator_inbox_payload: freshness=fresh promotability=promotable dependencies=monday_local_operator_day_packet=current,monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
+    "monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+    "monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
 ], record
 assert record["immediate_action_lines"] == [
     "local-runtime: Expose Codex and add a direct local LLM profile.",
@@ -2261,17 +2422,23 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
         "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
         "stack=skipped direct=skipped mode=both reason=readiness_blocked"
     ), doc
+    assert doc["record"]["local_validation_snapshot_status"] == "present", doc
+    assert doc["record"]["local_validation_snapshot_summary"] == "total=8 promotable=4 blocked=4 stale=1", doc
     assert doc["record"]["local_validation_summary_lines"] == [
         "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
         "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
         "monday_local_mission_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=operator_handoff_report=current,monday_local_operator_stack_report=current",
         "monday_local_operator_day_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
         "monday_local_operator_inbox_payload: freshness=fresh promotability=promotable dependencies=monday_local_operator_day_packet=current,monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
+        "monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+        "monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+        "monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
     ], doc
     assert doc["record"]["local_validation_action_lines"] == [
         "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)",
         "local-validation: repair monday_local_mission_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)",
         "local-validation: repair monday_local_operator_day_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)",
+        "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
     ], doc
     assert doc["record"]["immediate_action_lines"] == [
         "local-runtime: Expose Codex and add a direct local LLM profile.",
@@ -2721,9 +2888,12 @@ assert [record["artifact_family"] for record in records] == [
     "monday_local_mission_packet",
     "monday_local_operator_day_packet",
     "monday_local_operator_inbox_payload",
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
 ], records
 
-local_operator, handoff, mission, day_packet, inbox_payload = records
+local_operator, handoff, mission, day_packet, inbox_payload, launch_request, runtime_report, consumer_report = records
 
 assert local_operator["freshness_state"] == "fresh", local_operator
 assert local_operator["promotability_status"] == "promotable", local_operator
@@ -2764,6 +2934,33 @@ assert inbox_payload["dependency_states"] == {
     "monday_local_operator_stack_report": "current",
 }, inbox_payload
 assert inbox_payload["reasons"] == [], inbox_payload
+
+assert launch_request["freshness_state"] == "fresh", launch_request
+assert launch_request["promotability_status"] == "promotable", launch_request
+assert launch_request["promoted_id"] == "planningops-local-inbox-consumer-20260401T103000Z", launch_request
+assert launch_request["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+}, launch_request
+assert launch_request["reasons"] == [], launch_request
+
+assert runtime_report["freshness_state"] == "fresh", runtime_report
+assert runtime_report["promotability_status"] == "blocked", runtime_report
+assert runtime_report["promoted_id"] == "planningops-local-inbox-consumer-20260401T103000Z", runtime_report
+assert runtime_report["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+    "monday_local_inbox_launch_request": "current",
+}, runtime_report
+assert runtime_report["reasons"] == ["source_artifact_missing"], runtime_report
+
+assert consumer_report["freshness_state"] == "fresh", consumer_report
+assert consumer_report["promotability_status"] == "promotable", consumer_report
+assert consumer_report["promoted_id"] == "planningops-local-inbox-consumer-20260401T103000Z", consumer_report
+assert consumer_report["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+    "monday_local_inbox_launch_request": "current",
+    "monday_local_inbox_runtime_report": "current",
+}, consumer_report
+assert consumer_report["reasons"] == [], consumer_report
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
@@ -2782,6 +2979,7 @@ assert [record["artifact_family"] for record in records] == [
     "operator_handoff_report",
     "monday_local_mission_packet",
     "monday_local_operator_day_packet",
+    "monday_local_inbox_runtime_report",
 ], records
 PY
 
