@@ -71,6 +71,38 @@ cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun26.json" <<'JSON'
 }
 JSON
 
+cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun27.json" <<'JSON'
+{
+  "run_id": "federated-ci-runtime-gates-20260319-rerun27",
+  "started_at_utc": "2026-03-19T00:00:30+00:00",
+  "generated_at_utc": "2026-03-19T00:10:30+00:00",
+  "finished_at_utc": "2026-03-19T00:10:30+00:00",
+  "checks": [
+    {
+      "name": "runtime-handoff",
+      "domain": "runtime",
+      "exit_code": 1,
+      "verdict": "fail",
+      "stdout_log": "/tmp/runtime.stdout.log",
+      "stderr_log": "/tmp/runtime.stderr.log"
+    }
+  ],
+  "required_checks": [
+    "runtime-handoff"
+  ],
+  "overall_status": "complete",
+  "check_count": 1,
+  "missing_required_checks": [],
+  "failure_classification": {
+    "count": 1,
+    "domains": ["runtime"],
+    "deterministic_rule": "demo"
+  },
+  "verdict": "fail",
+  "shell_exit_code": 1
+}
+JSON
+
 cat >"$CI_DIR/federated-ci-summary.json" <<'JSON'
 {
   "run_id": "federated-ci-runtime-gates-20260319-rerun26",
@@ -148,16 +180,35 @@ Path(sys.argv[1]).write_bytes(b"\x00\xffappledouble")
 PY
 
 touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun26-summary-validation.json"
-touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun26-summary-readiness.json"
+cat >"$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun26-summary-readiness.json" <<'JSON'
+{
+  "summary_run_id": "federated-ci-runtime-gates-20260319-rerun26",
+  "readiness_status": "ready",
+  "ready": true,
+  "blocking_reasons": []
+}
+JSON
 touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun26-summary-readiness-validation.json"
 touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun26-summary-tmp-reconcile.json"
 touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun26-summary-tmp-reconcile-validation.json"
+touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun27-summary-validation.json"
+cat >"$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun27-summary-readiness.json" <<'JSON'
+{
+  "summary_run_id": "federated-ci-runtime-gates-20260319-rerun27",
+  "readiness_status": "blocked",
+  "ready": false,
+  "blocking_reasons": ["summary_verdict_fail"]
+}
+JSON
+touch "$VALIDATION_DIR/federated-ci-runtime-gates-20260319-rerun27-summary-readiness-validation.json"
 touch "$VALIDATION_DIR/federated-ci-summary-validation.json"
 touch "$CONFORMANCE_DIR/federated-ci-runtime-gates-20260319-rerun26-contract.json"
 
 RUNS_OUTPUT="$TMP_DIR/runs.json"
 CHECKS_OUTPUT="$TMP_DIR/checks.json"
 CHECKS_AUTO_OUTPUT="$TMP_DIR/checks-auto.json"
+FAILED_OUTPUT="$TMP_DIR/failed.json"
+LATEST_OUTPUT="$TMP_DIR/latest.json"
 
 python3 "$QUERY_PATH" runs \
   --family federated-ci-runtime-gates \
@@ -173,25 +224,81 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 records = doc["records"]
-assert len(records) == 2, records
+assert len(records) == 3, records
 assert records[0]["source_kind"] == "latest", records
-assert records[1]["source_kind"] == "stamped", records
+assert records[1]["run_id"] == "federated-ci-runtime-gates-20260319-rerun27", records
+assert records[2]["source_kind"] == "stamped", records
 
 latest = records[0]
-stamped = records[1]
+failed = records[1]
+stamped = records[2]
 
 assert latest["has_summary_validation"] is True, latest
 assert latest["has_readiness"] is False, latest
+assert latest["readiness_status"] == "missing", latest
 assert latest["has_conformance_contract"] is True, latest
+
+assert failed["verdict"] == "fail", failed
+assert failed["source_kind"] == "stamped", failed
+assert failed["readiness_status"] == "blocked", failed
+assert failed["ready"] is False, failed
+assert failed["failed_checks"] == ["runtime-handoff"], failed
+assert failed["failure_domains"] == ["runtime"], failed
 
 assert stamped["run_id"] == "federated-ci-runtime-gates-20260319-rerun26", stamped
 assert stamped["family"] == "federated-ci-runtime-gates", stamped
 assert stamped["has_summary_validation"] is True, stamped
 assert stamped["has_readiness"] is True, stamped
+assert stamped["readiness_status"] == "ready", stamped
+assert stamped["ready"] is True, stamped
 assert stamped["has_readiness_validation"] is True, stamped
 assert stamped["has_reconcile_report"] is True, stamped
 assert stamped["has_reconcile_validation"] is True, stamped
 assert stamped["has_conformance_contract"] is True, stamped
+PY
+
+python3 "$QUERY_PATH" runs \
+  --family federated-ci-runtime-gates \
+  --source-kind stamped \
+  --readiness-status blocked \
+  --failed-check runtime-handoff \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$FAILED_OUTPUT"
+
+python3 - <<'PY' "$FAILED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["run_id"] == "federated-ci-runtime-gates-20260319-rerun27", records
+assert records[0]["readiness_status"] == "blocked", records
+assert records[0]["failed_checks"] == ["runtime-handoff"], records
+PY
+
+python3 "$QUERY_PATH" runs \
+  --family federated-ci-runtime-gates \
+  --source-kind latest \
+  --readiness-status missing \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$LATEST_OUTPUT"
+
+python3 - <<'PY' "$LATEST_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["source_kind"] == "latest", records
+assert records[0]["readiness_status"] == "missing", records
 PY
 
 python3 "$QUERY_PATH" checks \
