@@ -483,6 +483,9 @@ TRIAGE_SUMMARY_ACTIVE_OUTPUT="$TMP_DIR/triage-summary-active.json"
 TRIAGE_SUMMARY_ALL_OUTPUT="$TMP_DIR/triage-summary-all.json"
 TRIAGE_OVERVIEW_OUTPUT="$TMP_DIR/triage-overview.json"
 TRIAGE_OVERVIEW_ALL_OUTPUT="$TMP_DIR/triage-overview-all.json"
+TRIAGE_TARGETS_OUTPUT="$TMP_DIR/triage-targets.json"
+TRIAGE_TARGETS_LAGGING_OUTPUT="$TMP_DIR/triage-targets-lagging.json"
+TRIAGE_TARGETS_ALL_OUTPUT="$TMP_DIR/triage-targets-all.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1197,6 +1200,97 @@ assert record["newest_failing_alert_domains"] == ["readiness", "reconcile"], rec
 assert record["newest_recovered_family"] is None, record
 assert record["newest_recovered_run_id"] is None, record
 assert record["newest_recovered_source_kind"] is None, record
+PY
+
+python3 "$QUERY_PATH" triage-targets \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_TARGETS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_TARGETS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["family"] for record in records] == [
+    "federated-ci-local",
+    "federated-ci-runtime-gates",
+], records
+
+local, runtime = records
+assert local["priority_bucket"] == "active", local
+assert local["target_kind"] == "latest-gap", local
+assert local["triage_status"] == "active", local
+assert local["target_run_id"] == "federated-ci-local-20260301", local
+assert local["target_source_kind"] == "stamped", local
+assert local["target_health_status"] == "unknown", local
+assert local["target_domains"] == ["checkpoint", "readiness", "reconcile"], local
+assert local["target_reasons"] == [
+    "readiness_missing",
+    "reconcile_unknown",
+    "reconcile_artifact_missing",
+    "reconcile_validation_missing",
+    "checkpoint_missing",
+], local
+
+assert runtime["priority_bucket"] == "lagging", runtime
+assert runtime["target_kind"] == "latest-alert-follow-up", runtime
+assert runtime["triage_status"] == "lagging", runtime
+assert runtime["target_run_id"] == "federated-ci-runtime-gates-20260319-rerun29", runtime
+assert runtime["target_source_kind"] == "stamped", runtime
+assert runtime["target_health_status"] == "unknown", runtime
+assert runtime["target_domains"] == ["checkpoint", "readiness", "reconcile"], runtime
+assert runtime["target_reasons"] == ["checkpoint_missing", "reconcile_unknown"], runtime
+PY
+
+python3 "$QUERY_PATH" triage-targets \
+  --triage-status lagging \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_TARGETS_LAGGING_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_TARGETS_LAGGING_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["family"] == "federated-ci-runtime-gates", record
+assert record["priority_bucket"] == "lagging", record
+assert record["target_kind"] == "latest-alert-follow-up", record
+assert record["target_run_id"] == "federated-ci-runtime-gates-20260319-rerun29", record
+assert record["target_domains"] == ["checkpoint", "readiness", "reconcile"], record
+PY
+
+python3 "$QUERY_PATH" triage-targets \
+  --source-kind all \
+  --has-target-domain checkpoint \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_TARGETS_ALL_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_TARGETS_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["family"] == "federated-ci-local", record
+assert record["priority_bucket"] == "active", record
+assert record["target_kind"] == "latest-gap", record
+assert record["target_run_id"] == "federated-ci-local-20260301", record
+assert record["target_domains"] == ["checkpoint", "readiness", "reconcile"], record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \

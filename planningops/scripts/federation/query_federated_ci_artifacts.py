@@ -189,6 +189,26 @@ class TriageOverviewRecord:
     newest_recovered_timestamp_utc: str | None
 
 
+@dataclass(frozen=True)
+class TriageTargetRecord:
+    priority_bucket: str
+    target_kind: str
+    family: str
+    triage_status: str
+    alert_alignment: str
+    latest_run_id: str
+    latest_run_source_kind: str
+    latest_run_health_status: str
+    latest_run_timestamp_utc: str
+    target_run_id: str
+    target_source_kind: str
+    target_health_status: str
+    target_timestamp_utc: str
+    target_domains: list[str]
+    target_reasons: list[str]
+    target_failed_checks: list[str]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -1102,6 +1122,117 @@ def render_triage_overview_markdown(record: TriageOverviewRecord) -> str:
     )
 
 
+def build_triage_target_records(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+) -> list[TriageTargetRecord]:
+    triage_records = build_operator_triage_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    active_targets: list[TriageTargetRecord] = []
+    lagging_targets: list[TriageTargetRecord] = []
+
+    for record in triage_records:
+        if record.triage_status == "clear":
+            continue
+        if record.triage_status == "active":
+            target_record = TriageTargetRecord(
+                priority_bucket="active",
+                target_kind="latest-gap",
+                family=record.family,
+                triage_status=record.triage_status,
+                alert_alignment=record.alert_alignment,
+                latest_run_id=record.latest_run_id,
+                latest_run_source_kind=record.latest_run_source_kind,
+                latest_run_health_status=record.latest_run_health_status,
+                latest_run_timestamp_utc=record.latest_run_timestamp_utc,
+                target_run_id=record.latest_run_id,
+                target_source_kind=record.latest_run_source_kind,
+                target_health_status=record.latest_run_health_status,
+                target_timestamp_utc=record.latest_run_timestamp_utc,
+                target_domains=record.latest_gap_domains,
+                target_reasons=record.latest_gap_reasons,
+                target_failed_checks=record.latest_alert_failed_checks if record.alert_alignment == "current" else [],
+            )
+            active_targets.append(target_record)
+            continue
+        if record.latest_alert_run_id is None or record.latest_alert_source_kind is None or record.latest_alert_health_status is None:
+            continue
+        lagging_targets.append(
+            TriageTargetRecord(
+                priority_bucket="lagging",
+                target_kind="latest-alert-follow-up",
+                family=record.family,
+                triage_status=record.triage_status,
+                alert_alignment=record.alert_alignment,
+                latest_run_id=record.latest_run_id,
+                latest_run_source_kind=record.latest_run_source_kind,
+                latest_run_health_status=record.latest_run_health_status,
+                latest_run_timestamp_utc=record.latest_run_timestamp_utc,
+                target_run_id=record.latest_alert_run_id,
+                target_source_kind=record.latest_alert_source_kind,
+                target_health_status=record.latest_alert_health_status,
+                target_timestamp_utc=record.latest_alert_timestamp_utc or record.latest_run_timestamp_utc,
+                target_domains=record.latest_alert_domains,
+                target_reasons=record.latest_alert_reasons,
+                target_failed_checks=record.latest_alert_failed_checks,
+            )
+        )
+    return active_targets + lagging_targets
+
+
+def render_triage_targets_table(records: list[TriageTargetRecord]) -> str:
+    lines = [
+        "priority_bucket\ttarget_kind\tfamily\ttriage_status\talert_alignment\ttarget_run\ttarget_source\ttarget_health\ttarget_domains\ttarget_reasons\ttarget_failed_checks\tlatest_run\tlatest_source\tlatest_health\tlatest_timestamp",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.priority_bucket,
+                    record.target_kind,
+                    record.family,
+                    record.triage_status,
+                    record.alert_alignment,
+                    record.target_run_id,
+                    record.target_source_kind,
+                    record.target_health_status,
+                    ",".join(record.target_domains),
+                    ",".join(record.target_reasons),
+                    ",".join(record.target_failed_checks),
+                    record.latest_run_id,
+                    record.latest_run_source_kind,
+                    record.latest_run_health_status,
+                    record.latest_run_timestamp_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_triage_targets_markdown(records: list[TriageTargetRecord]) -> str:
+    lines = [
+        "| priority_bucket | target_kind | family | triage_status | alert_alignment | target_run | target_source | target_health | target_domains | target_reasons | target_failed_checks | latest_run | latest_source | latest_health | latest_timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.priority_bucket} | {record.target_kind} | {record.family} | {record.triage_status} | "
+            f"{record.alert_alignment} | `{record.target_run_id}` | {record.target_source_kind} | "
+            f"{record.target_health_status} | {', '.join(record.target_domains)} | "
+            f"{', '.join(record.target_reasons)} | {', '.join(record.target_failed_checks)} | "
+            f"`{record.latest_run_id}` | {record.latest_run_source_kind} | {record.latest_run_health_status} | "
+            f"{record.latest_run_timestamp_utc} |"
+        )
+    return "\n".join(lines)
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -1817,6 +1948,21 @@ def parse_args() -> argparse.Namespace:
     triage_overview_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_overview_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_overview_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    triage_targets_parser = subparsers.add_parser(
+        "triage-targets",
+        help="show actionable triage targets with active gaps first and lagging alert follow-ups after",
+    )
+    triage_targets_parser.add_argument("--family", default=None)
+    triage_targets_parser.add_argument("--run-id-prefix", default=None)
+    triage_targets_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    triage_targets_parser.add_argument("--triage-status", choices=["active", "lagging"], default=None)
+    triage_targets_parser.add_argument("--has-target-domain", default=None)
+    triage_targets_parser.add_argument("--limit", type=int, default=20)
+    triage_targets_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    triage_targets_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    triage_targets_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    triage_targets_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -2002,6 +2148,27 @@ def main() -> int:
             print(render_triage_overview_markdown(record))
             return 0
         print(render_triage_overview_table(record))
+        return 0
+
+    if args.command == "triage-targets":
+        target_records = build_triage_target_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+        )
+        if args.triage_status:
+            target_records = [record for record in target_records if record.triage_status == args.triage_status]
+        if args.has_target_domain:
+            target_records = [record for record in target_records if args.has_target_domain in record.target_domains]
+        target_records = target_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in target_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_triage_targets_markdown(target_records))
+            return 0
+        print(render_triage_targets_table(target_records))
         return 0
 
     if args.command == "reconcile-status":
