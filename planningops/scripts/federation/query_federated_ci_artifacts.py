@@ -261,6 +261,11 @@ class TriageFeedRecord:
     queue_records: list[TriageQueueRecord]
     target_records: list[TriageTargetRecord]
     local_operator_record: LocalOperatorStackRecord | None
+    cross_repo_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_summary: str | None
+    monday_source_validation_status: str | None
+    monday_source_validation_summary: str | None
+    cross_repo_validation_action_line: str | None
 
 
 @dataclass(frozen=True)
@@ -3647,6 +3652,9 @@ def build_triage_feed_record(
     *,
     records: list[SummaryRecord],
     local_records: list[LocalOperatorStackRecord] | None,
+    validation_root: Path,
+    consumer_root: Path,
+    monday_validation_root: Path,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -3671,8 +3679,24 @@ def build_triage_feed_record(
         source_kind=source_kind,
     )[:target_limit]
     local_operator_record = None
+    cross_repo_validation_snapshot_status = None
+    cross_repo_validation_snapshot_summary = None
+    monday_source_validation_status = None
+    monday_source_validation_summary = None
+    cross_repo_validation_action_line = None
     if family is None and run_id_prefix is None and local_records is not None:
         local_operator_record = select_latest_local_operator_stack_record(local_records)
+        cross_repo_validation_record = build_cross_repo_validation_report_record(
+            validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
+        )
+        cross_repo_validation_snapshot_status = cross_repo_validation_record.cross_repo_snapshot_status
+        cross_repo_validation_snapshot_summary = cross_repo_validation_record.cross_repo_snapshot_summary
+        monday_source_validation_status = cross_repo_validation_record.monday_source_validation_status
+        monday_source_validation_summary = cross_repo_validation_record.monday_source_validation_summary
+        if cross_repo_validation_record.cross_repo_action_lines:
+            cross_repo_validation_action_line = cross_repo_validation_record.cross_repo_action_lines[0]
     return TriageFeedRecord(
         source_kind=source_kind,
         target_limit=target_limit,
@@ -3680,6 +3704,11 @@ def build_triage_feed_record(
         queue_records=queue_records,
         target_records=target_records,
         local_operator_record=local_operator_record,
+        cross_repo_validation_snapshot_status=cross_repo_validation_snapshot_status,
+        cross_repo_validation_snapshot_summary=cross_repo_validation_snapshot_summary,
+        monday_source_validation_status=monday_source_validation_status,
+        monday_source_validation_summary=monday_source_validation_summary,
+        cross_repo_validation_action_line=cross_repo_validation_action_line,
     )
 
 
@@ -3690,6 +3719,17 @@ def render_triage_feed_table(record: TriageFeedRecord) -> str:
         "overview",
         render_triage_overview_table(record.overview),
     ]
+    if record.cross_repo_validation_snapshot_status is not None:
+        sections.extend(
+            [
+                f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
+                f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary or ''}",
+                f"monday_source_validation_status\t{record.monday_source_validation_status or ''}",
+                f"monday_source_validation_summary\t{record.monday_source_validation_summary or ''}",
+            ]
+        )
+        if record.cross_repo_validation_action_line is not None:
+            sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
     if record.local_operator_record is not None:
         local_record = record.local_operator_record
         sections.extend(
@@ -3720,6 +3760,18 @@ def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
         f"## Triage Feed\n\n- source_kind: `{record.source_kind}`\n- target_limit: `{record.target_limit}`",
         "### Overview\n\n" + render_triage_overview_markdown(record.overview),
     ]
+    if record.cross_repo_validation_snapshot_status is not None:
+        cross_repo_lines = [
+            "### Cross-Repo Validation",
+            "",
+            f"- snapshot status: `{record.cross_repo_validation_snapshot_status}`",
+            f"- snapshot summary: `{record.cross_repo_validation_snapshot_summary or ''}`",
+            f"- monday source validation status: `{record.monday_source_validation_status or ''}`",
+            f"- monday source validation summary: `{record.monday_source_validation_summary or ''}`",
+        ]
+        if record.cross_repo_validation_action_line is not None:
+            cross_repo_lines.append(f"- next action: {record.cross_repo_validation_action_line}")
+        sections.append("\n".join(cross_repo_lines))
     if record.local_operator_record is not None:
         local_record = record.local_operator_record
         local_lines = [
@@ -3748,6 +3800,9 @@ def build_triage_brief_record(
     *,
     records: list[SummaryRecord],
     local_records: list[LocalOperatorStackRecord] | None,
+    validation_root: Path,
+    consumer_root: Path,
+    monday_validation_root: Path,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -3756,6 +3811,9 @@ def build_triage_brief_record(
     feed = build_triage_feed_record(
         records=records,
         local_records=local_records,
+        validation_root=validation_root,
+        consumer_root=consumer_root,
+        monday_validation_root=monday_validation_root,
         family=family,
         run_id_prefix=run_id_prefix,
         source_kind=source_kind,
@@ -3854,6 +3912,9 @@ def build_triage_report_record(
     *,
     records: list[SummaryRecord],
     local_records: list[LocalOperatorStackRecord] | None,
+    validation_root: Path,
+    consumer_root: Path,
+    monday_validation_root: Path,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -3862,6 +3923,9 @@ def build_triage_report_record(
     brief = build_triage_brief_record(
         records=records,
         local_records=local_records,
+        validation_root=validation_root,
+        consumer_root=consumer_root,
+        monday_validation_root=monday_validation_root,
         family=family,
         run_id_prefix=run_id_prefix,
         source_kind=source_kind,
@@ -3948,6 +4012,8 @@ def build_handoff_report_record(
     records: list[SummaryRecord],
     local_records: list[LocalOperatorStackRecord] | None,
     validation_root: Path,
+    consumer_root: Path,
+    monday_validation_root: Path,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -3956,6 +4022,9 @@ def build_handoff_report_record(
     triage_report = build_triage_report_record(
         records=records,
         local_records=local_records,
+        validation_root=validation_root,
+        consumer_root=consumer_root,
+        monday_validation_root=monday_validation_root,
         family=family,
         run_id_prefix=run_id_prefix,
         source_kind=source_kind,
@@ -5078,6 +5147,8 @@ def parse_args() -> argparse.Namespace:
     triage_feed_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_feed_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     triage_feed_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+    triage_feed_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    triage_feed_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
     triage_brief_parser = subparsers.add_parser(
         "triage-brief",
@@ -5092,6 +5163,8 @@ def parse_args() -> argparse.Namespace:
     triage_brief_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_brief_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     triage_brief_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+    triage_brief_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    triage_brief_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
     triage_report_parser = subparsers.add_parser(
         "triage-report",
@@ -5106,6 +5179,8 @@ def parse_args() -> argparse.Namespace:
     triage_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     triage_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+    triage_report_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    triage_report_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
     handoff_report_parser = subparsers.add_parser(
         "handoff-report",
@@ -5120,6 +5195,8 @@ def parse_args() -> argparse.Namespace:
     handoff_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     handoff_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     handoff_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+    handoff_report_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    handoff_report_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
     write_handoff_report_parser = subparsers.add_parser(
         "write-handoff-report",
@@ -5136,6 +5213,8 @@ def parse_args() -> argparse.Namespace:
     write_handoff_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     write_handoff_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     write_handoff_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+    write_handoff_report_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    write_handoff_report_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
     local_validation_parser = subparsers.add_parser(
         "local-validation-freshness",
@@ -5615,6 +5694,9 @@ def main() -> int:
         record = build_triage_feed_record(
             records=records,
             local_records=local_records,
+            validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -5634,6 +5716,9 @@ def main() -> int:
         record = build_triage_brief_record(
             records=records,
             local_records=local_records,
+            validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -5653,6 +5738,9 @@ def main() -> int:
         record = build_triage_report_record(
             records=records,
             local_records=local_records,
+            validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -5673,6 +5761,8 @@ def main() -> int:
             records=records,
             local_records=local_records,
             validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -5693,6 +5783,8 @@ def main() -> int:
             records=records,
             local_records=local_records,
             validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
