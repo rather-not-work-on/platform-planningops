@@ -489,6 +489,8 @@ TRIAGE_TARGETS_ALL_OUTPUT="$TMP_DIR/triage-targets-all.json"
 TRIAGE_QUEUE_OUTPUT="$TMP_DIR/triage-queue.json"
 TRIAGE_QUEUE_LAGGING_OUTPUT="$TMP_DIR/triage-queue-lagging.json"
 TRIAGE_QUEUE_ALL_OUTPUT="$TMP_DIR/triage-queue-all.json"
+TRIAGE_FEED_OUTPUT="$TMP_DIR/triage-feed.json"
+TRIAGE_FEED_ALL_OUTPUT="$TMP_DIR/triage-feed-all.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1378,6 +1380,61 @@ assert record["newest_target_source_kind"] == "latest", record
 assert record["newest_target_kind"] == "latest-gap", record
 assert record["target_kind_counts"] == {"latest-gap": 2}, record
 assert record["target_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
+PY
+
+python3 "$QUERY_PATH" triage-feed \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_FEED_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_FEED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["source_kind"] == "stamped", record
+assert record["target_limit"] == 3, record
+assert record["overview"]["triage_status_counts"] == {"active": 1, "lagging": 1}, record
+assert [queue["priority_bucket"] for queue in record["queue_records"]] == ["active", "lagging"], record
+assert [target["family"] for target in record["target_records"]] == [
+    "federated-ci-local",
+    "federated-ci-runtime-gates",
+], record
+assert record["target_records"][0]["priority_bucket"] == "active", record
+assert record["target_records"][1]["priority_bucket"] == "lagging", record
+PY
+
+python3 "$QUERY_PATH" triage-feed \
+  --source-kind all \
+  --target-limit 1 \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_FEED_ALL_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_FEED_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["source_kind"] == "all", record
+assert record["target_limit"] == 1, record
+assert record["overview"]["triage_status_counts"] == {"active": 2}, record
+assert len(record["queue_records"]) == 1, record
+queue = record["queue_records"][0]
+assert queue["priority_bucket"] == "active", queue
+assert queue["target_count"] == 2, queue
+assert queue["newest_target_family"] == "federated-ci-runtime-gates", queue
+assert len(record["target_records"]) == 1, record
+target = record["target_records"][0]
+assert target["family"] == "federated-ci-runtime-gates", target
+assert target["priority_bucket"] == "active", target
+assert target["target_source_kind"] == "latest", target
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
