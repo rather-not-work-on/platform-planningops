@@ -46,6 +46,8 @@ LATEST_GAP_CHOICES = (
 LOCAL_OPERATOR_VERDICT_CHOICES = ("pass", "fail", "planned")
 LOCAL_OPERATOR_READINESS_CHOICES = ("ready", "bootstrap_required", "blocked", "unknown")
 LOCAL_OPERATOR_STEP_STATUS_CHOICES = ("pass", "fail", "planned", "skipped", "report_only", "unknown", "missing")
+LOCAL_INBOX_PAYLOAD_SOURCE_CHOICES = ("all", "latest", "stamped")
+LOCAL_INBOX_PAYLOAD_STATUS_CHOICES = ("ready", "blocked")
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -339,6 +341,36 @@ class LocalValidationFreshnessRecord:
     latest_path: str
     stamped_path: str | None
     reasons: list[str]
+    dependency_states: dict[str, str]
+
+
+@dataclass(frozen=True)
+class LocalInboxPayloadRecord:
+    bridge_id: str
+    source_kind: str
+    payload_path: str
+    generated_at_utc: str
+    title: str | None
+    status: str | None
+    needs_human_attention: bool | None
+    message_class_hint: str | None
+    retry_mode: str | None
+    operator_action: str | None
+    planner_profile: str | None
+    launch_mode: str | None
+    local_model_route: str | None
+    local_validation_snapshot_status: str | None
+    day_packet_id: str | None
+    mission_packet_id: str | None
+    mission_objective: str | None
+    first_action_command: str | None
+    monday_runtime_entrypoint_command: str | None
+    rollback_command: str | None
+    attachment_count: int
+    local_validation_action_lines: list[str]
+    immediate_actions: list[str]
+    queue_lines: list[str]
+    target_lines: list[str]
     dependency_states: dict[str, str]
 
 
@@ -642,6 +674,17 @@ def normalize_artifact_path(path_text: Any) -> str | None:
     return None if path is None else str(path)
 
 
+def normalize_optional_string(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip()
+    return normalized or None
+
+
+def normalize_string_list(values: Any) -> list[str]:
+    return [str(value) for value in list(values or []) if str(value).strip()]
+
+
 def build_local_operator_stack_record(*, local_root: Path, report_path: Path, report_doc: dict[str, Any]) -> LocalOperatorStackRecord:
     run_id = str(report_doc.get("run_id"))
     expected_detail_dir = (local_root / run_id).resolve()
@@ -830,6 +873,14 @@ def resolve_nested_artifact_path(doc: dict[str, Any], *keys: str) -> Path | None
     return resolve_artifact_path(resolve_nested_value(doc, *keys))
 
 
+def source_kind_for_local_inbox_payload_path(path: Path) -> str:
+    return "latest" if path.name == "monday-local-operator-inbox-payload.json" else "stamped"
+
+
+def is_local_inbox_payload_document(doc: dict[str, Any]) -> bool:
+    return isinstance(doc.get("bridge_id"), str) and isinstance(doc.get("payload"), dict)
+
+
 def build_local_validation_dependency_state(
     *,
     raw_path: Any,
@@ -945,6 +996,189 @@ def build_local_operator_validation_freshness_record(*, validation_root: Path) -
         reasons=freshness_reasons + promotability_reasons,
         dependency_states=dependency_states,
     )
+
+
+def build_local_inbox_payload_record(
+    *,
+    validation_root: Path,
+    payload_path: Path,
+    payload_doc: dict[str, Any],
+) -> LocalInboxPayloadRecord:
+    payload = payload_doc.get("payload") if isinstance(payload_doc.get("payload"), dict) else {}
+    source_artifacts = payload.get("source_artifacts") if isinstance(payload.get("source_artifacts"), dict) else {}
+    dependency_states: dict[str, str] = {}
+    dependency_states["monday_local_operator_day_packet"] = build_local_validation_dependency_state(
+        raw_path=source_artifacts.get("day_packet_path"),
+        expected_path=validation_root / "monday-local-operator-day-packet.json",
+    )[0]
+    dependency_states["monday_local_mission_packet"] = build_local_validation_dependency_state(
+        raw_path=source_artifacts.get("mission_packet_path"),
+        expected_path=validation_root / "monday-local-mission-packet.json",
+    )[0]
+    dependency_states["operator_handoff_report"] = build_local_validation_dependency_state(
+        raw_path=source_artifacts.get("handoff_report_path"),
+        expected_path=validation_root / "operator-handoff-report.json",
+    )[0]
+    dependency_states["monday_local_operator_stack_report"] = build_local_validation_dependency_state(
+        raw_path=source_artifacts.get("local_operator_report_path"),
+        expected_path=validation_root / "monday-local-operator-stack-report.json",
+    )[0]
+    return LocalInboxPayloadRecord(
+        bridge_id=str(payload_doc.get("bridge_id")),
+        source_kind=source_kind_for_local_inbox_payload_path(payload_path),
+        payload_path=str(payload_path.resolve()),
+        generated_at_utc=str(payload_doc.get("generated_at_utc") or ""),
+        title=normalize_optional_string(payload.get("title")),
+        status=normalize_optional_string(payload.get("status")),
+        needs_human_attention=(
+            payload.get("needs_human_attention") if isinstance(payload.get("needs_human_attention"), bool) else None
+        ),
+        message_class_hint=normalize_optional_string(payload.get("message_class_hint")),
+        retry_mode=normalize_optional_string(payload.get("retry_mode")),
+        operator_action=normalize_optional_string(payload.get("operator_action")),
+        planner_profile=normalize_optional_string(payload.get("planner_profile")),
+        launch_mode=normalize_optional_string(payload.get("launch_mode")),
+        local_model_route=normalize_optional_string(payload.get("local_model_route")),
+        local_validation_snapshot_status=normalize_optional_string(payload.get("local_validation_snapshot_status")),
+        day_packet_id=normalize_optional_string(payload.get("day_packet_id")),
+        mission_packet_id=normalize_optional_string(payload.get("mission_packet_id")),
+        mission_objective=normalize_optional_string(payload.get("mission_objective")),
+        first_action_command=normalize_optional_string(payload.get("first_action_command")),
+        monday_runtime_entrypoint_command=normalize_optional_string(payload.get("monday_runtime_entrypoint_command")),
+        rollback_command=normalize_optional_string(payload.get("rollback_command")),
+        attachment_count=len(normalize_string_list(payload.get("attachments"))),
+        local_validation_action_lines=normalize_string_list(payload.get("local_validation_action_lines")),
+        immediate_actions=normalize_string_list(payload.get("immediate_actions")),
+        queue_lines=normalize_string_list(payload.get("queue_lines")),
+        target_lines=normalize_string_list(payload.get("target_lines")),
+        dependency_states=dependency_states,
+    )
+
+
+def discover_local_inbox_payload_records(*, validation_root: Path) -> list[LocalInboxPayloadRecord]:
+    paths: list[Path] = []
+    latest_path = validation_root / "monday-local-operator-inbox-payload.json"
+    if latest_path.exists():
+        paths.append(latest_path)
+    paths.extend(sorted(validation_root.glob("*-monday-local-operator-inbox-payload.json")))
+
+    records: list[LocalInboxPayloadRecord] = []
+    for path in paths:
+        if path.name.startswith(".") or path.name.startswith("._"):
+            continue
+        try:
+            doc = load_json(path)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not is_local_inbox_payload_document(doc):
+            continue
+        records.append(build_local_inbox_payload_record(validation_root=validation_root, payload_path=path, payload_doc=doc))
+    records.sort(
+        key=lambda record: (
+            record.generated_at_utc,
+            record.bridge_id,
+            1 if record.source_kind == "latest" else 0,
+            record.payload_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def filter_local_inbox_payload_records(
+    *,
+    records: list[LocalInboxPayloadRecord],
+    bridge_id_prefix: str | None = None,
+    source_kind: str = "latest",
+    status: str | None = None,
+    message_class_hint: str | None = None,
+    needs_human_attention: str | None = None,
+    launch_mode: str | None = None,
+    local_model_route: str | None = None,
+    local_validation_snapshot_status: str | None = None,
+    has_dependency_state: str | None = None,
+) -> list[LocalInboxPayloadRecord]:
+    filtered = records
+    if bridge_id_prefix:
+        filtered = [record for record in filtered if record.bridge_id.startswith(bridge_id_prefix)]
+    if source_kind != "all":
+        filtered = [record for record in filtered if record.source_kind == source_kind]
+    if status:
+        filtered = [record for record in filtered if record.status == status]
+    if message_class_hint:
+        filtered = [record for record in filtered if record.message_class_hint == message_class_hint]
+    if needs_human_attention is not None:
+        expected = needs_human_attention == "yes"
+        filtered = [record for record in filtered if record.needs_human_attention is expected]
+    if launch_mode:
+        filtered = [record for record in filtered if record.launch_mode == launch_mode]
+    if local_model_route:
+        filtered = [record for record in filtered if record.local_model_route == local_model_route]
+    if local_validation_snapshot_status:
+        filtered = [
+            record
+            for record in filtered
+            if record.local_validation_snapshot_status == local_validation_snapshot_status
+        ]
+    if has_dependency_state:
+        filtered = [
+            record
+            for record in filtered
+            if has_dependency_state in record.dependency_states.values()
+        ]
+    return filtered
+
+
+def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> str:
+    lines = [
+        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tvalidation_snapshot\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.bridge_id,
+                    record.source_kind,
+                    str(record.status or ""),
+                    (
+                        ""
+                        if record.needs_human_attention is None
+                        else ("yes" if record.needs_human_attention else "no")
+                    ),
+                    str(record.message_class_hint or ""),
+                    str(record.retry_mode or ""),
+                    str(record.planner_profile or ""),
+                    str(record.launch_mode or ""),
+                    str(record.local_model_route or ""),
+                    str(record.local_validation_snapshot_status or ""),
+                    ",".join(f"{key}={value}" for key, value in record.dependency_states.items()),
+                    str(len(record.immediate_actions)),
+                    str(len(record.target_lines)),
+                    str(record.attachment_count),
+                    record.generated_at_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) -> str:
+    lines = [
+        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| `{record.bridge_id}` | {record.source_kind} | {record.status or ''} | "
+            f"{'' if record.needs_human_attention is None else ('yes' if record.needs_human_attention else 'no')} | "
+            f"{record.message_class_hint or ''} | {record.retry_mode or ''} | {record.planner_profile or ''} | "
+            f"{record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{record.local_validation_snapshot_status or ''} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.dependency_states.items())} | "
+            f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.attachment_count} | "
+            f"{record.generated_at_utc} |"
+        )
+    return "\n".join(lines)
 
 
 def build_handoff_validation_freshness_record(*, validation_root: Path) -> LocalValidationFreshnessRecord:
@@ -3582,6 +3816,27 @@ def parse_args() -> argparse.Namespace:
     local_validation_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     local_validation_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
 
+    local_inbox_payload_parser = subparsers.add_parser(
+        "local-inbox-payload",
+        help="list promoted monday local inbox payload bridge artifacts",
+    )
+    local_inbox_payload_parser.add_argument("--bridge-id-prefix", default=None)
+    local_inbox_payload_parser.add_argument(
+        "--source-kind",
+        choices=LOCAL_INBOX_PAYLOAD_SOURCE_CHOICES,
+        default="latest",
+    )
+    local_inbox_payload_parser.add_argument("--status", choices=LOCAL_INBOX_PAYLOAD_STATUS_CHOICES, default=None)
+    local_inbox_payload_parser.add_argument("--message-class-hint", default=None)
+    local_inbox_payload_parser.add_argument("--needs-human-attention", choices=["yes", "no"], default=None)
+    local_inbox_payload_parser.add_argument("--launch-mode", default=None)
+    local_inbox_payload_parser.add_argument("--local-model-route", default=None)
+    local_inbox_payload_parser.add_argument("--local-validation-snapshot-status", default=None)
+    local_inbox_payload_parser.add_argument("--has-dependency-state", choices=["current", "stale", "missing"], default=None)
+    local_inbox_payload_parser.add_argument("--limit", type=int, default=20)
+    local_inbox_payload_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    local_inbox_payload_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -3623,6 +3878,30 @@ def main() -> int:
             print(render_local_validation_freshness_markdown(local_validation_records))
             return 0
         print(render_local_validation_freshness_table(local_validation_records))
+        return 0
+
+    if args.command == "local-inbox-payload":
+        inbox_payload_records = discover_local_inbox_payload_records(validation_root=validation_root)
+        inbox_payload_records = filter_local_inbox_payload_records(
+            records=inbox_payload_records,
+            bridge_id_prefix=args.bridge_id_prefix,
+            source_kind=args.source_kind,
+            status=args.status,
+            message_class_hint=args.message_class_hint,
+            needs_human_attention=args.needs_human_attention,
+            launch_mode=args.launch_mode,
+            local_model_route=args.local_model_route,
+            local_validation_snapshot_status=args.local_validation_snapshot_status,
+            has_dependency_state=args.has_dependency_state,
+        )
+        inbox_payload_records = inbox_payload_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in inbox_payload_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_local_inbox_payload_markdown(inbox_payload_records))
+            return 0
+        print(render_local_inbox_payload_table(inbox_payload_records))
         return 0
 
     if args.command == "local-operator-stack":

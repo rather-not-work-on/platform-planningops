@@ -140,6 +140,7 @@ Current deliverables:
 - `planningops/artifacts/validation/monday-local-operator-inbox-payload.json`
 - `planningops/artifacts/validation/<bridge-id>-monday-local-operator-inbox-payload.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now includes the promoted inbox payload bridge family in the same promotion lane
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload` exposes a payload-first operator view for latest/stamped inbox payload artifacts without going through `handoff-report`
 - `monday/contracts/planningops-local-operator-inbox-consumer-contract.md`
 - `monday/scripts/consume_planningops_local_operator_inbox_payload.py`
 - `monday/scripts/test_consume_planningops_local_operator_inbox_payload.sh`
@@ -214,5 +215,5 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. decide whether the inbox payload bridge and the monday-native consumer report should be schema-validated against monday-owned contracts
-2. add a dedicated query/report surface for the promoted inbox payload bridge or monday consumer report if operators need a payload-first view separate from `handoff-report`
+2. add a dedicated query/report surface for the monday-native consumer report if operators need an apply/result view separate from the planningops-owned `local-inbox-payload` surface
 3. decide whether the consumer's runtime input overrides should stay regression-only or be promoted into a reviewed operator-facing escape hatch

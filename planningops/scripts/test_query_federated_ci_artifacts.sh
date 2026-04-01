@@ -652,6 +652,9 @@ HANDOFF_WRITE_OUTPUT="$TMP_DIR/handoff-write.json"
 LOCAL_VALIDATION_OUTPUT="$TMP_DIR/local-validation-freshness.json"
 LOCAL_VALIDATION_BLOCKED_OUTPUT="$TMP_DIR/local-validation-freshness-blocked.json"
 LOCAL_VALIDATION_STALE_OUTPUT="$TMP_DIR/local-validation-freshness-stale.json"
+LOCAL_INBOX_PAYLOAD_OUTPUT="$TMP_DIR/local-inbox-payload.json"
+LOCAL_INBOX_PAYLOAD_ALL_OUTPUT="$TMP_DIR/local-inbox-payload-all.json"
+LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT="$TMP_DIR/local-inbox-payload-filtered.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
 LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
 LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
@@ -2037,6 +2040,15 @@ cat >"$VALIDATION_DIR/monday-local-operator-inbox-payload.json" <<'JSON'
       "local-validation: repair monday_local_mission_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)",
       "local-validation: repair monday_local_operator_day_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)"
     ],
+    "queue_lines": [
+      "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1"
+    ],
+    "target_lines": [
+      "[active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile"
+    ],
+    "immediate_actions": [
+      "local-runtime: Expose Codex and add a direct local LLM profile."
+    ],
     "attachments": [
       "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-inbox-payload.json",
       "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-day-packet.json",
@@ -2080,6 +2092,38 @@ doc["payload"]["source_artifacts"]["local_operator_report_path"] = str((validati
 payload = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
 path.write_text(payload, encoding="utf-8")
 (validation_dir / "monday-local-inbox-20260401T084500Z-monday-local-operator-inbox-payload.json").write_text(payload, encoding="utf-8")
+(validation_dir / "monday-local-inbox-20260331T235959Z-monday-local-operator-inbox-payload.json").write_text(
+    json.dumps(
+        {
+            **doc,
+            "generated_at_utc": "2026-03-31T23:59:59+00:00",
+            "bridge_id": "monday-local-inbox-20260331T235959Z",
+            "artifact_paths": {
+                **doc["artifact_paths"],
+                "stamped_payload_path": str(
+                    (validation_dir / "monday-local-inbox-20260331T235959Z-monday-local-operator-inbox-payload.json").resolve()
+                ),
+            },
+            "payload": {
+                **doc["payload"],
+                "status": "ready",
+                "recommended_wait_minutes": 0,
+                "retry_mode": "none",
+                "needs_human_attention": False,
+                "message_class_hint": "status_update",
+                "local_model_route": "direct_local_lmstudio",
+                "local_validation_snapshot_status": "fresh",
+                "local_validation_action_lines": [],
+                "immediate_actions": [
+                    "launch monday local runtime via local_lmstudio"
+                ],
+            },
+        },
+        ensure_ascii=True,
+        indent=2,
+    ) + "\n",
+    encoding="utf-8",
+)
 PY
 
 python3 "$QUERY_PATH" handoff-report \
@@ -2746,6 +2790,94 @@ record = records[0]
 assert record["artifact_family"] == "operator_handoff_report", record
 assert record["freshness_state"] == "stale", record
 assert record["reasons"] == ["stamped_missing"], record
+PY
+
+python3 "$QUERY_PATH" local-inbox-payload \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_INBOX_PAYLOAD_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_INBOX_PAYLOAD_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["bridge_id"] == "monday-local-inbox-20260401T084500Z", record
+assert record["source_kind"] == "latest", record
+assert record["status"] == "blocked", record
+assert record["needs_human_attention"] is True, record
+assert record["message_class_hint"] == "decision_request", record
+assert record["retry_mode"] == "manual_recheck", record
+assert record["planner_profile"] == "local_ollama", record
+assert record["launch_mode"] == "direct", record
+assert record["local_model_route"] == "direct_local_ollama", record
+assert record["local_validation_snapshot_status"] == "present", record
+assert record["attachment_count"] == 5, record
+assert len(record["local_validation_action_lines"]) == 3, record
+assert len(record["immediate_actions"]) == 1, record
+assert len(record["queue_lines"]) == 1, record
+assert len(record["target_lines"]) == 1, record
+assert record["dependency_states"] == {
+    "monday_local_operator_day_packet": "current",
+    "monday_local_mission_packet": "current",
+    "operator_handoff_report": "current",
+    "monday_local_operator_stack_report": "current",
+}, record
+PY
+
+python3 "$QUERY_PATH" local-inbox-payload \
+  --source-kind all \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_INBOX_PAYLOAD_ALL_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_INBOX_PAYLOAD_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["bridge_id"] for record in records] == [
+    "monday-local-inbox-20260401T084500Z",
+    "monday-local-inbox-20260401T084500Z",
+    "monday-local-inbox-20260331T235959Z",
+], records
+assert [record["source_kind"] for record in records] == [
+    "latest",
+    "stamped",
+    "stamped",
+], records
+PY
+
+python3 "$QUERY_PATH" local-inbox-payload \
+  --source-kind stamped \
+  --status ready \
+  --needs-human-attention no \
+  --local-model-route direct_local_lmstudio \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["bridge_id"] == "monday-local-inbox-20260331T235959Z", record
+assert record["source_kind"] == "stamped", record
+assert record["status"] == "ready", record
+assert record["needs_human_attention"] is False, record
+assert record["message_class_hint"] == "status_update", record
+assert record["retry_mode"] == "none", record
+assert record["local_model_route"] == "direct_local_lmstudio", record
+assert record["local_validation_snapshot_status"] == "fresh", record
+assert record["immediate_actions"] == ["launch monday local runtime via local_lmstudio"], record
 PY
 
 echo "query federated ci artifacts ok"
