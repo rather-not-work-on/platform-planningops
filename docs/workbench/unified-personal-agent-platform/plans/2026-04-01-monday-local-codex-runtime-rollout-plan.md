@@ -124,6 +124,10 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py write-handoff-report`
 - `planningops/artifacts/validation/operator-handoff-report.json`
 - `planningops/artifacts/validation/<report-id>-operator-handoff-report.json`
+- `planningops/contracts/monday-local-mission-packet-contract.md`
+- `planningops/scripts/write_monday_local_mission_packet.py`
+- `planningops/artifacts/validation/monday-local-mission-packet.json`
+- `planningops/artifacts/validation/<packet-id>-monday-local-mission-packet.json`
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -185,6 +189,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. add a Codex-to-monday mission packet contract so local operator prompts become reproducible inputs
-2. add a validation freshness surface so local operator stamped/latest mirrors and handoff packets can be promoted with the same evidence-first rules as federated CI summaries
-3. decide whether handoff promotion should also emit an inbox-ready day packet or stay as a reusable validation-sidecar primitive
+1. add a validation freshness surface so local operator stamped/latest mirrors, handoff packets, and mission packets can be promoted with the same evidence-first rules as federated CI summaries
+2. decide whether mission packet promotion should also emit an inbox-ready day packet or stay as a reusable validation-sidecar primitive
+3. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
