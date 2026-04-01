@@ -26,6 +26,21 @@ DEFAULT_CI_ROOT = WORKSPACE_ROOT / "planningops/artifacts/ci"
 DEFAULT_VALIDATION_ROOT = WORKSPACE_ROOT / "planningops/artifacts/validation"
 DEFAULT_CONFORMANCE_ROOT = WORKSPACE_ROOT / "planningops/artifacts/conformance"
 
+LATEST_GAP_CHOICES = (
+    "readiness_missing",
+    "readiness_blocked",
+    "failed_checks_present",
+    "missing_required_checks",
+    "reconcile_restored",
+    "reconcile_unknown",
+    "reconcile_artifact_missing",
+    "reconcile_artifact_stale",
+    "reconcile_validation_missing",
+    "reconcile_validation_stale",
+    "checkpoint_missing",
+    "checkpoint_invalid",
+)
+
 
 @dataclass(frozen=True)
 class SummaryRecord:
@@ -93,6 +108,9 @@ class HealthSummaryRecord:
     latest_run_source_kind: str
     latest_run_health_status: str
     latest_run_timestamp_utc: str
+    latest_gap_status: str
+    latest_gap_count: int
+    latest_gap_reasons: list[str]
     healthy_count: int
     degraded_count: int
     blocked_count: int
@@ -554,6 +572,35 @@ def render_health_scan_markdown(records: list[SummaryRecord]) -> str:
     return "\n".join(lines)
 
 
+def build_latest_gap_reasons(record: SummaryRecord) -> list[str]:
+    reasons: list[str] = []
+    if record.readiness_status == "missing":
+        reasons.append("readiness_missing")
+    elif record.readiness_status == "blocked":
+        reasons.append("readiness_blocked")
+    if record.failed_checks:
+        reasons.append("failed_checks_present")
+    if record.missing_required_checks:
+        reasons.append("missing_required_checks")
+    if record.reconcile_status == "restored":
+        reasons.append("reconcile_restored")
+    elif record.reconcile_status == "unknown":
+        reasons.append("reconcile_unknown")
+    if record.reconcile_artifact_state == "missing":
+        reasons.append("reconcile_artifact_missing")
+    elif record.reconcile_artifact_state == "stale":
+        reasons.append("reconcile_artifact_stale")
+    if record.reconcile_validation_state == "missing":
+        reasons.append("reconcile_validation_missing")
+    elif record.reconcile_validation_state == "stale":
+        reasons.append("reconcile_validation_stale")
+    if record.checkpoint_state == "missing":
+        reasons.append("checkpoint_missing")
+    elif record.checkpoint_state == "invalid":
+        reasons.append("checkpoint_invalid")
+    return reasons
+
+
 def build_health_summary_records(
     *,
     records: list[SummaryRecord],
@@ -574,6 +621,7 @@ def build_health_summary_records(
     summaries: list[HealthSummaryRecord] = []
     for family_name, family_records in grouped.items():
         latest_record = family_records[0]
+        latest_gap_reasons = build_latest_gap_reasons(latest_record)
         latest_alert = next((record for record in family_records if record.health_status != "healthy"), None)
         latest_failure = next((record for record in family_records if record.failure_domains), None)
         domain_counts: dict[str, int] = {}
@@ -598,6 +646,9 @@ def build_health_summary_records(
                 latest_run_source_kind=latest_record.source_kind,
                 latest_run_health_status=latest_record.health_status,
                 latest_run_timestamp_utc=latest_record.timestamp_utc,
+                latest_gap_status="clear" if not latest_gap_reasons else "attention",
+                latest_gap_count=len(latest_gap_reasons),
+                latest_gap_reasons=latest_gap_reasons,
                 healthy_count=sum(1 for record in family_records if record.health_status == "healthy"),
                 degraded_count=sum(1 for record in family_records if record.health_status == "degraded"),
                 blocked_count=sum(1 for record in family_records if record.health_status == "blocked"),
@@ -629,7 +680,7 @@ def build_health_summary_records(
 
 def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
     lines = [
-        "family\truns\thealthy\tdegraded\tblocked\tunknown\treadiness_counts\treconcile_artifact_counts\treconcile_validation_counts\tdomain_counts\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_failure_run\tlatest_failure_domains\tlatest_timestamp",
+        "family\truns\thealthy\tdegraded\tblocked\tunknown\tlatest_gap_status\tlatest_gap_count\tlatest_gap_reasons\treadiness_counts\treconcile_artifact_counts\treconcile_validation_counts\tdomain_counts\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_failure_run\tlatest_failure_domains\tlatest_timestamp",
     ]
     for record in records:
         lines.append(
@@ -641,6 +692,9 @@ def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
                     str(record.degraded_count),
                     str(record.blocked_count),
                     str(record.unknown_count),
+                    record.latest_gap_status,
+                    str(record.latest_gap_count),
+                    ",".join(record.latest_gap_reasons),
                     ",".join(f"{key}={value}" for key, value in record.readiness_status_counts.items()),
                     ",".join(f"{key}={value}" for key, value in record.reconcile_artifact_state_counts.items()),
                     ",".join(f"{key}={value}" for key, value in record.reconcile_validation_state_counts.items()),
@@ -660,13 +714,14 @@ def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
 
 def render_health_summary_markdown(records: list[HealthSummaryRecord]) -> str:
     lines = [
-        "| family | runs | healthy | degraded | blocked | unknown | readiness_counts | reconcile_artifact_counts | reconcile_validation_counts | domain_counts | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_failure_run | latest_failure_domains | latest_timestamp |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| family | runs | healthy | degraded | blocked | unknown | latest_gap_status | latest_gap_count | latest_gap_reasons | readiness_counts | reconcile_artifact_counts | reconcile_validation_counts | domain_counts | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_failure_run | latest_failure_domains | latest_timestamp |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
             f"| {record.family} | {record.run_count} | {record.healthy_count} | {record.degraded_count} | "
-            f"{record.blocked_count} | {record.unknown_count} | "
+            f"{record.blocked_count} | {record.unknown_count} | {record.latest_gap_status} | "
+            f"{record.latest_gap_count} | {', '.join(record.latest_gap_reasons)} | "
             f"{', '.join(f'{key}={value}' for key, value in record.readiness_status_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.reconcile_artifact_state_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.reconcile_validation_state_counts.items())} | "
@@ -1333,6 +1388,16 @@ def parse_args() -> argparse.Namespace:
         choices=["fresh", "stale", "missing"],
         default=None,
     )
+    health_summary_parser.add_argument(
+        "--latest-gap-status",
+        choices=["clear", "attention"],
+        default=None,
+    )
+    health_summary_parser.add_argument(
+        "--has-latest-gap",
+        choices=LATEST_GAP_CHOICES,
+        default=None,
+    )
     health_summary_parser.add_argument("--limit", type=int, default=20)
     health_summary_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     health_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
@@ -1408,6 +1473,10 @@ def main() -> int:
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
         )
+        if args.latest_gap_status:
+            summaries = [record for record in summaries if record.latest_gap_status == args.latest_gap_status]
+        if args.has_latest_gap:
+            summaries = [record for record in summaries if args.has_latest_gap in record.latest_gap_reasons]
         if args.latest_health_status:
             summaries = [record for record in summaries if record.latest_run_health_status == args.latest_health_status]
         if args.has_health_status:
