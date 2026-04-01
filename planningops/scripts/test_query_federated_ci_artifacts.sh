@@ -29,8 +29,9 @@ CI_DIR="$TMP_DIR/ci"
 VALIDATION_DIR="$TMP_DIR/validation"
 CONFORMANCE_DIR="$TMP_DIR/conformance"
 LOCAL_OPERATOR_DIR="$TMP_DIR/local-operator-stack"
+MONDAY_CONSUMER_DIR="$TMP_DIR/monday/runtime-artifacts/integration/planningops-local-operator-inbox"
 mkdir -p "$CI_DIR" "$VALIDATION_DIR" "$CONFORMANCE_DIR"
-mkdir -p "$LOCAL_OPERATOR_DIR"
+mkdir -p "$LOCAL_OPERATOR_DIR" "$MONDAY_CONSUMER_DIR"
 
 cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun26.json" <<'JSON'
 {
@@ -655,6 +656,9 @@ LOCAL_VALIDATION_STALE_OUTPUT="$TMP_DIR/local-validation-freshness-stale.json"
 LOCAL_INBOX_PAYLOAD_OUTPUT="$TMP_DIR/local-inbox-payload.json"
 LOCAL_INBOX_PAYLOAD_ALL_OUTPUT="$TMP_DIR/local-inbox-payload-all.json"
 LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT="$TMP_DIR/local-inbox-payload-filtered.json"
+MONDAY_CONSUMER_OUTPUT="$TMP_DIR/monday-consumer-report.json"
+MONDAY_CONSUMER_FILTERED_OUTPUT="$TMP_DIR/monday-consumer-report-filtered.json"
+MONDAY_CONSUMER_BLOCKED_OUTPUT="$TMP_DIR/monday-consumer-report-blocked.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
 LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
 LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
@@ -2878,6 +2882,286 @@ assert record["retry_mode"] == "none", record
 assert record["local_model_route"] == "direct_local_lmstudio", record
 assert record["local_validation_snapshot_status"] == "fresh", record
 assert record["immediate_actions"] == ["launch monday local runtime via local_lmstudio"], record
+PY
+
+mkdir -p \
+  "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z" \
+  "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z" \
+  "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z"
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/launch-request.json" <<JSON
+{
+  "source_bridge_id": "monday-local-inbox-20260401T084500Z",
+  "source_day_packet_id": "monday-local-day-20260401T083000Z",
+  "source_mission_packet_id": "monday-local-mission-20260401T080000Z",
+  "mission_objective": "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+  "planner_profile": "local_ollama",
+  "launch_mode": "direct",
+  "local_model_route": "direct_local_ollama",
+  "first_action_command": "python3 planningops/scripts/run_monday_local_operator_stack.py --execution-mode direct --direct-profile local_ollama --probe-endpoints on --run-id monday-local-mission-20260401T080000Z",
+  "monday_runtime_entrypoint_command": "cd ../monday && python3 scripts/run_local_runtime_smoke.py --profile local_ollama --run-id monday-local-mission-20260401T080000Z",
+  "rollback_command": "cd ../platform-provider-gateway && bash scripts/litellm_stack_launcher.sh --mode start",
+  "recommended_wait_minutes": 0,
+  "needs_human_attention": false,
+  "local_validation_snapshot_status": "fresh",
+  "local_validation_summary_lines": [],
+  "local_validation_action_lines": [],
+  "can_launch": true,
+  "block_reasons": [],
+  "runtime_command_args": [
+    "python3",
+    "scripts/run_local_runtime_smoke.py",
+    "--profile",
+    "local_ollama"
+  ],
+  "source_artifacts": {
+    "day_packet_path": "$VALIDATION_DIR/monday-local-operator-day-packet.json",
+    "mission_packet_path": "$VALIDATION_DIR/monday-local-mission-packet.json",
+    "handoff_report_path": "$VALIDATION_DIR/operator-handoff-report.json",
+    "local_operator_report_path": "$VALIDATION_DIR/monday-local-operator-stack-report.json"
+  }
+}
+JSON
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/mission.json" <<'JSON'
+{
+  "missionId": "monday-local-mission-20260401T080000Z",
+  "objective": "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile"
+}
+JSON
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/consumer-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:10:00+00:00",
+  "run_id": "planningops-local-inbox-consumer-20260401T101000Z",
+  "consumer_contract_ref": "contracts/planningops-local-operator-inbox-consumer-contract.md",
+  "source_bridge_path": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json",
+  "bridge_id": "monday-local-inbox-20260401T084500Z",
+  "mode": "dry-run",
+  "verdict": "pass",
+  "reason_code": "dry_run",
+  "consumer_status": "ready_to_launch",
+  "artifact_paths": {
+    "launch_request_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/launch-request.json",
+    "mission_file_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/mission.json",
+    "runtime_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/local-runtime-smoke.json",
+    "report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/consumer-report.json"
+  },
+  "launch_request": $(cat "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/launch-request.json")
+}
+JSON
+
+cp "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/launch-request.json" \
+  "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/launch-request.json"
+cp "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/mission.json" \
+  "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/mission.json"
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/local-runtime-smoke.json" <<'JSON'
+{
+  "verdict": "pass",
+  "reason_code": "ok"
+}
+JSON
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/consumer-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:20:00+00:00",
+  "run_id": "planningops-local-inbox-consumer-20260401T102000Z",
+  "consumer_contract_ref": "contracts/planningops-local-operator-inbox-consumer-contract.md",
+  "source_bridge_path": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json",
+  "bridge_id": "monday-local-inbox-20260401T084500Z",
+  "mode": "apply",
+  "verdict": "pass",
+  "reason_code": "ok",
+  "consumer_status": "ready_to_launch",
+  "artifact_paths": {
+    "launch_request_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/launch-request.json",
+    "mission_file_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/mission.json",
+    "runtime_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/local-runtime-smoke.json",
+    "report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/consumer-report.json"
+  },
+  "launch_request": $(cat "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/launch-request.json"),
+  "execution": {
+    "attempted": true,
+    "command_args": [
+      "python3",
+      "scripts/run_local_runtime_smoke.py",
+      "--profile",
+      "local_ollama"
+    ],
+    "exit_code": 0,
+    "stdout": "runtime ok",
+    "stderr": ""
+  },
+  "runtime_report_summary": {
+    "verdict": "pass",
+    "reason_code": "ok",
+    "report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/local-runtime-smoke.json"
+  }
+}
+JSON
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json" <<JSON
+{
+  "source_bridge_id": "monday-local-inbox-20260401T084500Z",
+  "source_day_packet_id": "monday-local-day-20260401T083000Z",
+  "source_mission_packet_id": "monday-local-mission-20260401T080000Z",
+  "mission_objective": "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+  "planner_profile": "local_ollama",
+  "launch_mode": "direct",
+  "local_model_route": "direct_local_ollama",
+  "first_action_command": "python3 planningops/scripts/run_monday_local_operator_stack.py --execution-mode direct --direct-profile local_ollama --probe-endpoints on --run-id monday-local-mission-20260401T080000Z",
+  "monday_runtime_entrypoint_command": "cd ../monday && python3 scripts/run_local_runtime_smoke.py --profile local_ollama --run-id monday-local-mission-20260401T080000Z",
+  "rollback_command": "cd ../platform-provider-gateway && bash scripts/litellm_stack_launcher.sh --mode start",
+  "recommended_wait_minutes": 5,
+  "needs_human_attention": true,
+  "local_validation_snapshot_status": "present",
+  "local_validation_summary_lines": [
+    "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing"
+  ],
+  "local_validation_action_lines": [
+    "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
+  ],
+  "can_launch": false,
+  "block_reasons": [
+    "payload_status=blocked",
+    "needs_human_attention",
+    "local_validation_actions_present"
+  ],
+  "runtime_command_args": [
+    "python3",
+    "scripts/run_local_runtime_smoke.py",
+    "--profile",
+    "local_ollama"
+  ],
+  "source_artifacts": {
+    "day_packet_path": "$VALIDATION_DIR/monday-local-operator-day-packet.json",
+    "mission_packet_path": "$VALIDATION_DIR/monday-local-mission-packet.json",
+    "handoff_report_path": "$VALIDATION_DIR/operator-handoff-report.json",
+    "local_operator_report_path": "$VALIDATION_DIR/monday-local-operator-stack-report.json"
+  }
+}
+JSON
+
+cp "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T101000Z/mission.json" \
+  "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/mission.json"
+
+cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:30:00+00:00",
+  "run_id": "planningops-local-inbox-consumer-20260401T103000Z",
+  "consumer_contract_ref": "contracts/planningops-local-operator-inbox-consumer-contract.md",
+  "source_bridge_path": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json",
+  "bridge_id": "monday-local-inbox-20260401T084500Z",
+  "mode": "apply",
+  "verdict": "blocked",
+  "reason_code": "launch_blocked",
+  "consumer_status": "blocked",
+  "artifact_paths": {
+    "launch_request_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json",
+    "mission_file_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/mission.json",
+    "runtime_report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/local-runtime-smoke.json",
+    "report_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json"
+  },
+  "launch_request": $(cat "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json"),
+  "execution": {
+    "attempted": false,
+    "command_args": [
+      "python3",
+      "scripts/run_local_runtime_smoke.py",
+      "--profile",
+      "local_ollama"
+    ]
+  }
+}
+JSON
+
+python3 "$QUERY_PATH" monday-consumer-report \
+  --format json \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["run_id"] for record in records] == [
+    "planningops-local-inbox-consumer-20260401T103000Z",
+    "planningops-local-inbox-consumer-20260401T102000Z",
+    "planningops-local-inbox-consumer-20260401T101000Z",
+], records
+blocked, passed_apply, dry_run = records
+assert blocked["verdict"] == "blocked", blocked
+assert blocked["consumer_status"] == "blocked", blocked
+assert blocked["can_launch"] is False, blocked
+assert blocked["execution_attempted"] is False, blocked
+assert blocked["has_runtime_report"] is False, blocked
+assert blocked["block_reasons"] == [
+    "payload_status=blocked",
+    "needs_human_attention",
+    "local_validation_actions_present",
+], blocked
+
+assert passed_apply["verdict"] == "pass", passed_apply
+assert passed_apply["mode"] == "apply", passed_apply
+assert passed_apply["execution_attempted"] is True, passed_apply
+assert passed_apply["execution_exit_code"] == 0, passed_apply
+assert passed_apply["has_runtime_report"] is True, passed_apply
+assert passed_apply["runtime_report_verdict"] == "pass", passed_apply
+assert passed_apply["runtime_report_reason_code"] == "ok", passed_apply
+
+assert dry_run["mode"] == "dry-run", dry_run
+assert dry_run["verdict"] == "pass", dry_run
+assert dry_run["reason_code"] == "dry_run", dry_run
+assert dry_run["can_launch"] is True, dry_run
+assert dry_run["execution_attempted"] is None, dry_run
+assert dry_run["has_launch_request"] is True, dry_run
+assert dry_run["has_mission_file"] is True, dry_run
+assert dry_run["has_runtime_report"] is False, dry_run
+PY
+
+python3 "$QUERY_PATH" monday-consumer-report \
+  --mode apply \
+  --verdict pass \
+  --has-runtime-report yes \
+  --execution-attempted yes \
+  --format json \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_FILTERED_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_FILTERED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["run_id"] == "planningops-local-inbox-consumer-20260401T102000Z", record
+assert record["runtime_report_verdict"] == "pass", record
+assert record["reason_code"] == "ok", record
+PY
+
+python3 "$QUERY_PATH" monday-consumer-report \
+  --consumer-status blocked \
+  --can-launch no \
+  --format json \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_BLOCKED_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_BLOCKED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["run_id"] == "planningops-local-inbox-consumer-20260401T103000Z", record
+assert record["verdict"] == "blocked", record
+assert record["execution_attempted"] is False, record
 PY
 
 echo "query federated ci artifacts ok"
