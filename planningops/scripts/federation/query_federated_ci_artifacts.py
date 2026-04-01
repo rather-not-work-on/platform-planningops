@@ -479,6 +479,8 @@ class LocalInboxPayloadRecord:
     attachment_count: int
     monday_validation_summary_lines: list[str]
     monday_validation_action_lines: list[str]
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
     local_validation_action_lines: list[str]
     immediate_actions: list[str]
     queue_lines: list[str]
@@ -507,6 +509,8 @@ class MondayConsumerReportRecord:
     command_args: list[str]
     monday_validation_summary_lines: list[str]
     monday_validation_action_lines: list[str]
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
     has_runtime_input_overrides: bool
     override_kinds: list[str]
     planner_runtime_config_path: str | None
@@ -1231,6 +1235,15 @@ def build_local_inbox_payload_record(
         for action in (build_local_validation_action_line(record) for record in monday_validation_records)
         if action is not None
     ]
+    cross_repo_validation_packet_report_id = None
+    cross_repo_validation_packet_path = None
+    packet_record = select_current_cross_repo_validation_packet_record(
+        validation_root=validation_root,
+        bridge_id=bridge_id,
+    )
+    if packet_record is not None:
+        cross_repo_validation_packet_report_id = packet_record.report_id
+        cross_repo_validation_packet_path = packet_record.report_path
     return LocalInboxPayloadRecord(
         bridge_id=bridge_id,
         source_kind=source_kind_for_local_inbox_payload_path(payload_path),
@@ -1259,6 +1272,8 @@ def build_local_inbox_payload_record(
         attachment_count=len(normalize_string_list(payload.get("attachments"))),
         monday_validation_summary_lines=monday_validation_summary_lines,
         monday_validation_action_lines=monday_validation_action_lines,
+        cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=cross_repo_validation_packet_path,
         local_validation_action_lines=normalize_string_list(payload.get("local_validation_action_lines")),
         immediate_actions=normalize_string_list(payload.get("immediate_actions")),
         queue_lines=normalize_string_list(payload.get("queue_lines")),
@@ -1343,7 +1358,7 @@ def filter_local_inbox_payload_records(
 
 def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> str:
     lines = [
-        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tvalidation_snapshot\tmonday_validation_snapshot\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
+        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tvalidation_snapshot\tmonday_validation_snapshot\tcross_repo_packet_report_id\tcross_repo_packet_path\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -1364,6 +1379,8 @@ def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> 
                     str(record.local_model_route or ""),
                     str(record.local_validation_snapshot_status or ""),
                     record.monday_validation_snapshot_status,
+                    str(record.cross_repo_validation_packet_report_id or ""),
+                    str(record.cross_repo_validation_packet_path or ""),
                     ",".join(f"{key}={value}" for key, value in record.dependency_states.items()),
                     str(len(record.immediate_actions)),
                     str(len(record.target_lines)),
@@ -1377,8 +1394,8 @@ def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> 
 
 def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) -> str:
     lines = [
-        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | monday_validation_snapshot | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
+        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
     ]
     for record in records:
         lines.append(
@@ -1388,6 +1405,8 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
             f"{record.launch_mode or ''} | {record.local_model_route or ''} | "
             f"{record.local_validation_snapshot_status or ''} | "
             f"{record.monday_validation_snapshot_status} | "
+            f"{record.cross_repo_validation_packet_report_id or ''} | "
+            f"{record.cross_repo_validation_packet_path or ''} | "
             f"{', '.join(f'{key}={value}' for key, value in record.dependency_states.items())} | "
             f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.attachment_count} | "
             f"{record.generated_at_utc} |"
@@ -1439,6 +1458,15 @@ def build_monday_consumer_report_record(
         for action in (build_local_validation_action_line(record) for record in monday_validation_records)
         if action is not None
     ]
+    cross_repo_validation_packet_report_id = None
+    cross_repo_validation_packet_path = None
+    packet_record = select_current_cross_repo_validation_packet_record(
+        validation_root=validation_root,
+        consumer_run_id=str(report_doc.get("run_id")),
+    )
+    if packet_record is not None:
+        cross_repo_validation_packet_report_id = packet_record.report_id
+        cross_repo_validation_packet_path = packet_record.report_path
     return MondayConsumerReportRecord(
         run_id=str(report_doc.get("run_id")),
         report_path=str(report_path.resolve()),
@@ -1459,6 +1487,8 @@ def build_monday_consumer_report_record(
         command_args=normalize_string_list(launch_request.get("runtime_command_args")),
         monday_validation_summary_lines=monday_validation_summary_lines,
         monday_validation_action_lines=monday_validation_action_lines,
+        cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=cross_repo_validation_packet_path,
         has_runtime_input_overrides=bool(override_kinds),
         override_kinds=override_kinds,
         planner_runtime_config_path=planner_runtime_config_path,
@@ -1557,7 +1587,7 @@ def filter_monday_consumer_report_records(
 
 def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\tmonday_validation_snapshot\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
+        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\tmonday_validation_snapshot\tcross_repo_packet_report_id\tcross_repo_packet_path\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -1573,6 +1603,8 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
                     str(record.launch_mode or ""),
                     str(record.local_model_route or ""),
                     record.monday_validation_snapshot_status,
+                    str(record.cross_repo_validation_packet_report_id or ""),
+                    str(record.cross_repo_validation_packet_path or ""),
                     "yes" if record.has_runtime_input_overrides else "no",
                     ",".join(record.override_kinds),
                     (
@@ -1593,8 +1625,8 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
 
 def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | monday_validation_snapshot | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
+        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
@@ -1603,6 +1635,8 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{'' if record.can_launch is None else ('yes' if record.can_launch else 'no')} | "
             f"{record.planner_profile or ''} | {record.launch_mode or ''} | {record.local_model_route or ''} | "
             f"{record.monday_validation_snapshot_status} | "
+            f"{record.cross_repo_validation_packet_report_id or ''} | "
+            f"{record.cross_repo_validation_packet_path or ''} | "
             f"{'yes' if record.has_runtime_input_overrides else 'no'} | "
             f"{', '.join(record.override_kinds)} | "
             f"{'' if record.execution_attempted is None else ('yes' if record.execution_attempted else 'no')} | "
@@ -4914,6 +4948,28 @@ def select_cross_repo_validation_packet_record(
         return None
     narrowed = [record for record in matches if record.source_kind == source_kind]
     return narrowed[0] if narrowed else None
+
+
+def select_current_cross_repo_validation_packet_record(
+    *,
+    validation_root: Path,
+    bridge_id: str | None = None,
+    consumer_run_id: str | None = None,
+) -> CrossRepoValidationPacketRecord | None:
+    packet_record = select_cross_repo_validation_packet_record(
+        records=discover_cross_repo_validation_packet_records(validation_root=validation_root),
+        report_id=None,
+        source_kind="latest",
+    )
+    if packet_record is None:
+        return None
+    if not (packet_record.cross_repo_action_lines or packet_record.monday_validation_report_action_lines):
+        return None
+    if bridge_id is not None and packet_record.latest_payload_bridge_id == bridge_id:
+        return packet_record
+    if consumer_run_id is not None and packet_record.latest_consumer_run_id == consumer_run_id:
+        return packet_record
+    return None
 
 
 def render_cross_repo_validation_packet_table(record: CrossRepoValidationPacketRecord) -> str:
