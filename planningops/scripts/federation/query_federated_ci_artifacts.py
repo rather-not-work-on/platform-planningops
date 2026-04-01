@@ -64,6 +64,8 @@ LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_inbox_launch_request",
     "monday_local_inbox_runtime_report",
     "monday_local_inbox_consumer_report",
+    "monday_local_inbox_bridge_schema_validation",
+    "monday_local_inbox_consumer_schema_validation",
 )
 LOCAL_VALIDATION_FRESHNESS_CHOICES = ("fresh", "stale", "missing")
 LOCAL_VALIDATION_PROMOTABILITY_CHOICES = ("promotable", "blocked")
@@ -2169,6 +2171,174 @@ def build_monday_local_inbox_consumer_report_validation_freshness_record(
     )
 
 
+def build_monday_validation_report_mirror_freshness_record(
+    *,
+    validation_root: Path,
+    artifact_family: str,
+    latest_filename: str,
+    expected_report_kind: str,
+    dependency_filenames: dict[str, str],
+) -> LocalValidationFreshnessRecord:
+    latest_path = (validation_root / latest_filename).resolve()
+    latest_doc = load_optional_json(latest_path)
+    freshness_reasons: list[str] = []
+    promotability_reasons: list[str] = []
+    dependency_states: dict[str, str] = {}
+    stamped_path: Path | None = None
+    promoted_id: str | None = None
+    generated_at_utc: str | None = None
+
+    if latest_doc is not None:
+        promoted_id = normalize_optional_string(latest_doc.get("report_id"))
+        generated_at_utc = normalize_optional_string(latest_doc.get("generated_at_utc"))
+        if promoted_id is None:
+            promotability_reasons.append("missing_report_id")
+        if normalize_optional_string(latest_doc.get("artifact_family")) != artifact_family:
+            promotability_reasons.append("artifact_family_mismatch")
+        if normalize_optional_string(latest_doc.get("artifact_kind")) != "validation":
+            promotability_reasons.append("artifact_kind_mismatch")
+        if normalize_optional_string(latest_doc.get("contract_ref")) is None:
+            promotability_reasons.append("missing_contract_ref")
+
+        latest_mirror_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "latest_mirror_path")
+        stamped_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "stamped_mirror_path")
+        source_report_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "source_report_path")
+        if latest_mirror_path != latest_path:
+            freshness_reasons.append("latest_path_mismatch")
+
+        mirror = resolve_nested_value(latest_doc, "mirror")
+        if not isinstance(mirror, dict):
+            promotability_reasons.append("missing_mirror")
+        else:
+            source_report_present = mirror.get("source_report_present")
+            if not isinstance(source_report_present, bool):
+                promotability_reasons.append("missing_source_report_present")
+            else:
+                actual_source_exists = source_report_path.exists() if source_report_path is not None else False
+                if source_report_path is None:
+                    promotability_reasons.append("missing_source_report_path")
+                elif source_report_present != actual_source_exists:
+                    promotability_reasons.append("source_report_state_mismatch")
+                if not actual_source_exists:
+                    promotability_reasons.append("source_report_missing")
+
+            if normalize_optional_string(mirror.get("report_kind")) != expected_report_kind:
+                promotability_reasons.append("report_kind_mismatch")
+
+            report_verdict = normalize_optional_string(mirror.get("report_verdict"))
+            if report_verdict is None:
+                promotability_reasons.append("missing_report_verdict")
+            elif report_verdict != "pass":
+                promotability_reasons.append("validation_verdict_fail")
+
+            error_count = mirror.get("error_count")
+            if not isinstance(error_count, int):
+                promotability_reasons.append("missing_error_count")
+            elif error_count > 0:
+                promotability_reasons.append("validation_errors_present")
+
+            warning_count = mirror.get("warning_count")
+            if not isinstance(warning_count, int):
+                promotability_reasons.append("missing_warning_count")
+
+            artifact_exists = mirror.get("artifact_exists")
+            if not isinstance(artifact_exists, bool):
+                promotability_reasons.append("missing_artifact_exists")
+            elif not artifact_exists:
+                promotability_reasons.append("validated_artifact_missing")
+
+            schema_exists = mirror.get("schema_exists")
+            if not isinstance(schema_exists, bool):
+                promotability_reasons.append("missing_schema_exists")
+            elif not schema_exists:
+                promotability_reasons.append("validation_schema_missing")
+
+            if source_report_present and not isinstance(mirror.get("payload"), dict):
+                promotability_reasons.append("missing_payload")
+
+            validation_dependency_paths = mirror.get("validation_dependency_paths")
+            if dependency_filenames and not isinstance(validation_dependency_paths, dict):
+                promotability_reasons.append("missing_validation_dependency_paths")
+            elif isinstance(validation_dependency_paths, dict):
+                for dependency_family, dependency_filename in dependency_filenames.items():
+                    dependency_state, dependency_reason = build_local_validation_dependency_state(
+                        raw_path=validation_dependency_paths.get(dependency_family),
+                        expected_path=validation_root / dependency_filename,
+                    )
+                    dependency_states[dependency_family] = dependency_state
+                    if dependency_reason == "dependency_path_missing":
+                        promotability_reasons.append(f"missing_{dependency_family}_path")
+                    elif dependency_reason == "dependency_missing":
+                        promotability_reasons.append(f"{dependency_family}_dependency_missing")
+                    elif dependency_reason == "dependency_stale":
+                        promotability_reasons.append(f"{dependency_family}_dependency_stale")
+
+        if stamped_path is not None and stamped_path.exists():
+            stamped_doc = load_optional_json(stamped_path)
+            if stamped_doc is None:
+                freshness_reasons.append("stamped_invalid_json")
+            else:
+                if normalize_optional_string(stamped_doc.get("report_id")) != promoted_id:
+                    freshness_reasons.append("stamped_report_id_mismatch")
+                stamped_latest_path = resolve_nested_artifact_path(stamped_doc, "artifact_paths", "latest_mirror_path")
+                stamped_stamped_path = resolve_nested_artifact_path(stamped_doc, "artifact_paths", "stamped_mirror_path")
+                if stamped_latest_path != latest_path:
+                    freshness_reasons.append("stamped_latest_path_mismatch")
+                if stamped_stamped_path != stamped_path.resolve():
+                    freshness_reasons.append("stamped_path_mismatch")
+
+    freshness_state, promotability_status = classify_local_validation_states(
+        latest_path=latest_path,
+        latest_doc=latest_doc,
+        stamped_path=stamped_path,
+        freshness_reasons=freshness_reasons,
+        promotability_reasons=promotability_reasons,
+        dependency_states=dependency_states,
+    )
+    return LocalValidationFreshnessRecord(
+        artifact_family=artifact_family,
+        artifact_kind="validation",
+        promoted_id=promoted_id,
+        generated_at_utc=generated_at_utc,
+        freshness_state=freshness_state,
+        promotability_status=promotability_status,
+        latest_path=str(latest_path),
+        stamped_path=None if stamped_path is None else str(stamped_path.resolve()),
+        reasons=freshness_reasons + promotability_reasons,
+        dependency_states=dependency_states,
+    )
+
+
+def build_monday_bridge_validation_mirror_freshness_record(
+    *,
+    validation_root: Path,
+) -> LocalValidationFreshnessRecord:
+    return build_monday_validation_report_mirror_freshness_record(
+        validation_root=validation_root,
+        artifact_family="monday_local_inbox_bridge_schema_validation",
+        latest_filename="monday-local-inbox-bridge-schema-validation.json",
+        expected_report_kind="bridge",
+        dependency_filenames={
+            "monday_local_operator_inbox_payload": "monday-local-operator-inbox-payload.json",
+        },
+    )
+
+
+def build_monday_consumer_validation_mirror_freshness_record(
+    *,
+    validation_root: Path,
+) -> LocalValidationFreshnessRecord:
+    return build_monday_validation_report_mirror_freshness_record(
+        validation_root=validation_root,
+        artifact_family="monday_local_inbox_consumer_schema_validation",
+        latest_filename="monday-local-inbox-consumer-schema-validation.json",
+        expected_report_kind="consumer-report",
+        dependency_filenames={
+            "monday_local_inbox_consumer_report": "monday-local-inbox-consumer-report.json",
+        },
+    )
+
+
 def discover_local_validation_freshness_records(*, validation_root: Path) -> list[LocalValidationFreshnessRecord]:
     records = [
         build_local_operator_validation_freshness_record(validation_root=validation_root),
@@ -2195,6 +2365,18 @@ def discover_local_validation_freshness_records(*, validation_root: Path) -> lis
         stamped_glob="*-monday-local-inbox-consumer-report.json",
     ):
         records.append(build_monday_local_inbox_consumer_report_validation_freshness_record(validation_root=validation_root))
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-bridge-schema-validation.json",
+        stamped_glob="*-monday-local-inbox-bridge-schema-validation.json",
+    ):
+        records.append(build_monday_bridge_validation_mirror_freshness_record(validation_root=validation_root))
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-consumer-schema-validation.json",
+        stamped_glob="*-monday-local-inbox-consumer-schema-validation.json",
+    ):
+        records.append(build_monday_consumer_validation_mirror_freshness_record(validation_root=validation_root))
     return records
 
 
