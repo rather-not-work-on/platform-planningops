@@ -1544,7 +1544,8 @@ python3 "$QUERY_PATH" triage-feed \
   --format json \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
-  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_FEED_OUTPUT"
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_FEED_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_FEED_OUTPUT"
 import json
@@ -1561,6 +1562,11 @@ assert [target["family"] for target in record["target_records"]] == [
     "federated-ci-local",
     "federated-ci-runtime-gates",
 ], record
+assert record["local_operator_record"]["run_id"] == "monday-local-operator-stack-20260401T060524Z", record
+assert record["local_operator_record"]["verdict"] == "fail", record
+assert record["local_operator_record"]["readiness_status"] == "blocked", record
+assert record["local_operator_record"]["stack_status"] == "skipped", record
+assert record["local_operator_record"]["direct_status"] == "skipped", record
 assert record["target_records"][0]["priority_bucket"] == "active", record
 assert record["target_records"][1]["priority_bucket"] == "lagging", record
 PY
@@ -1571,7 +1577,8 @@ python3 "$QUERY_PATH" triage-feed \
   --format json \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
-  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_FEED_ALL_OUTPUT"
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_FEED_ALL_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_FEED_ALL_OUTPUT"
 import json
@@ -1593,13 +1600,15 @@ target = record["target_records"][0]
 assert target["family"] == "federated-ci-runtime-gates", target
 assert target["priority_bucket"] == "active", target
 assert target["target_source_kind"] == "latest", target
+assert record["local_operator_record"]["run_id"] == "monday-local-operator-stack-20260401T060524Z", record
 PY
 
 python3 "$QUERY_PATH" triage-brief \
   --format json \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
-  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_BRIEF_OUTPUT"
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_BRIEF_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_BRIEF_OUTPUT"
 import json
@@ -1617,6 +1626,12 @@ assert record["clear_family_count"] == 0, record
 assert record["newest_failing_family"] == "federated-ci-runtime-gates", record
 assert record["newest_failing_run_id"] == "federated-ci-runtime-gates-20260319-rerun30", record
 assert record["newest_failing_triage_status"] == "lagging", record
+assert record["local_operator_record"]["run_id"] == "monday-local-operator-stack-20260401T060524Z", record
+assert record["local_operator_summary"] == (
+    "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
+    "stack=skipped direct=skipped mode=both reason=readiness_blocked"
+), record
+assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
 assert record["queue_lines"] == [
     "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1",
     "lagging: targets=1 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint=1,readiness=1,reconcile=1",
@@ -1633,7 +1648,8 @@ python3 "$QUERY_PATH" triage-brief \
   --format json \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
-  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_BRIEF_ALL_OUTPUT"
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_BRIEF_ALL_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_BRIEF_ALL_OUTPUT"
 import json
@@ -1651,6 +1667,10 @@ assert record["clear_family_count"] == 0, record
 assert record["newest_failing_family"] == "federated-ci-runtime-gates", record
 assert record["newest_failing_run_id"] == "federated-ci-runtime-gates-20260319-rerun26", record
 assert record["newest_failing_triage_status"] == "active", record
+assert record["local_operator_summary"] == (
+    "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
+    "stack=skipped direct=skipped mode=both reason=readiness_blocked"
+), record
 assert record["queue_lines"] == [
     "active: targets=2 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun26 domains=checkpoint=1,readiness=2,reconcile=2",
 ], record
@@ -1663,7 +1683,8 @@ python3 "$QUERY_PATH" triage-report \
   --format json \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
-  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_REPORT_OUTPUT"
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_REPORT_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_REPORT_OUTPUT"
 import json
@@ -1678,6 +1699,12 @@ assert record["headline"] == "Federated CI triage report: 2 attention families",
 assert record["attention_summary"] == "active=1, lagging=1, clear=0", record
 assert record["newest_failing_summary"] == "federated-ci-runtime-gates / federated-ci-runtime-gates-20260319-rerun30 / lagging", record
 assert record["newest_recovered_summary"] is None, record
+assert record["local_operator_record"]["run_id"] == "monday-local-operator-stack-20260401T060524Z", record
+assert record["local_operator_summary"] == (
+    "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
+    "stack=skipped direct=skipped mode=both reason=readiness_blocked"
+), record
+assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
 assert record["queue_lines"] == [
     "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1",
     "lagging: targets=1 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint=1,readiness=1,reconcile=1",
@@ -1687,6 +1714,9 @@ assert record["target_lines"] == [
     "[lagging/latest-alert-follow-up] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint,readiness,reconcile",
 ], record
 assert "## Federated CI Triage Report" in record["markdown"], record
+assert "### Local Operator Stack" not in record["markdown"], record
+assert "local operator:" in record["markdown"], record
+assert "local operator next step:" in record["markdown"], record
 assert "### Queue" in record["markdown"], record
 assert "### Top Targets" in record["markdown"], record
 PY
@@ -1697,7 +1727,8 @@ python3 "$QUERY_PATH" triage-report \
   --format json \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
-  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_REPORT_ALL_OUTPUT"
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_REPORT_ALL_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_REPORT_ALL_OUTPUT"
 import json
@@ -1712,6 +1743,10 @@ assert record["headline"] == "Federated CI triage report: 2 attention families",
 assert record["attention_summary"] == "active=2, lagging=0, clear=0", record
 assert record["newest_failing_summary"] == "federated-ci-runtime-gates / federated-ci-runtime-gates-20260319-rerun26 / active", record
 assert record["newest_recovered_summary"] is None, record
+assert record["local_operator_summary"] == (
+    "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
+    "stack=skipped direct=skipped mode=both reason=readiness_blocked"
+), record
 assert record["queue_lines"] == [
     "active: targets=2 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun26 domains=checkpoint=1,readiness=2,reconcile=2",
 ], record
@@ -1719,6 +1754,7 @@ assert record["target_lines"] == [
     "[active/latest-gap] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun26 domains=readiness,reconcile",
 ], record
 assert "source_kind: `all`" in record["markdown"], record
+assert "local operator:" in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \

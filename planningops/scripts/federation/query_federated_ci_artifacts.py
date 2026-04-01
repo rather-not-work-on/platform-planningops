@@ -236,6 +236,7 @@ class TriageFeedRecord:
     overview: TriageOverviewRecord
     queue_records: list[TriageQueueRecord]
     target_records: list[TriageTargetRecord]
+    local_operator_record: LocalOperatorStackRecord | None
 
 
 @dataclass(frozen=True)
@@ -251,6 +252,9 @@ class TriageBriefRecord:
     newest_failing_triage_status: str | None
     newest_recovered_family: str | None
     newest_recovered_run_id: str | None
+    local_operator_record: LocalOperatorStackRecord | None
+    local_operator_summary: str | None
+    local_operator_next_step: str | None
     queue_lines: list[str]
     target_lines: list[str]
 
@@ -263,6 +267,9 @@ class TriageReportRecord:
     attention_summary: str
     newest_failing_summary: str
     newest_recovered_summary: str | None
+    local_operator_record: LocalOperatorStackRecord | None
+    local_operator_summary: str | None
+    local_operator_next_step: str | None
     queue_lines: list[str]
     target_lines: list[str]
     markdown: str
@@ -723,6 +730,34 @@ def render_local_operator_stack_markdown(records: list[LocalOperatorStackRecord]
             f"{'present' if record.has_detail_dir else 'missing'} | {record.generated_at_utc} |"
         )
     return "\n".join(lines)
+
+
+def select_latest_local_operator_stack_record(
+    records: list[LocalOperatorStackRecord],
+) -> LocalOperatorStackRecord | None:
+    if not records:
+        return None
+    executed_records = [record for record in records if record.verdict != "planned"]
+    if executed_records:
+        return executed_records[0]
+    return records[0]
+
+
+def build_local_operator_summary(record: LocalOperatorStackRecord | None) -> str | None:
+    if record is None:
+        return None
+    return (
+        f"{record.run_id} verdict={record.verdict or 'unknown'} "
+        f"readiness={record.readiness_status} stack={record.stack_status} "
+        f"direct={record.direct_status} mode={record.execution_mode or 'unknown'} "
+        f"reason={record.reason_code or 'unknown'}"
+    )
+
+
+def build_local_operator_next_step(record: LocalOperatorStackRecord | None) -> str | None:
+    if record is None or not record.recommended_next_steps:
+        return None
+    return record.recommended_next_steps[0]
 
 
 def build_summary_health_fields(
@@ -1582,6 +1617,7 @@ def render_triage_queue_markdown(records: list[TriageQueueRecord]) -> str:
 def build_triage_feed_record(
     *,
     records: list[SummaryRecord],
+    local_records: list[LocalOperatorStackRecord] | None,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -1605,12 +1641,16 @@ def build_triage_feed_record(
         run_id_prefix=run_id_prefix,
         source_kind=source_kind,
     )[:target_limit]
+    local_operator_record = None
+    if family is None and run_id_prefix is None and local_records is not None:
+        local_operator_record = select_latest_local_operator_stack_record(local_records)
     return TriageFeedRecord(
         source_kind=source_kind,
         target_limit=target_limit,
         overview=overview,
         queue_records=queue_records,
         target_records=target_records,
+        local_operator_record=local_operator_record,
     )
 
 
@@ -1620,11 +1660,29 @@ def render_triage_feed_table(record: TriageFeedRecord) -> str:
         f"target_limit\t{record.target_limit}",
         "overview",
         render_triage_overview_table(record.overview),
+    ]
+    if record.local_operator_record is not None:
+        local_record = record.local_operator_record
+        sections.extend(
+            [
+                "local_operator",
+                (
+                    "run_id\tverdict\treadiness\tstack\tdirect\texecution_mode\treason_code\tgenerated_at_utc\n"
+                    f"{local_record.run_id}\t{local_record.verdict or ''}\t{local_record.readiness_status}\t"
+                    f"{local_record.stack_status}\t{local_record.direct_status}\t"
+                    f"{local_record.execution_mode or ''}\t{local_record.reason_code or ''}\t"
+                    f"{local_record.generated_at_utc}"
+                ),
+            ]
+        )
+    sections.extend(
+        [
         "queue",
         render_triage_queue_table(record.queue_records),
         "targets",
         render_triage_targets_table(record.target_records),
-    ]
+        ]
+    )
     return "\n".join(sections)
 
 
@@ -1632,15 +1690,35 @@ def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
     sections = [
         f"## Triage Feed\n\n- source_kind: `{record.source_kind}`\n- target_limit: `{record.target_limit}`",
         "### Overview\n\n" + render_triage_overview_markdown(record.overview),
-        "### Queue\n\n" + render_triage_queue_markdown(record.queue_records),
-        "### Targets\n\n" + render_triage_targets_markdown(record.target_records),
     ]
+    if record.local_operator_record is not None:
+        local_record = record.local_operator_record
+        local_lines = [
+            "### Local Operator Stack",
+            "",
+            f"- run_id: `{local_record.run_id}`",
+            f"- verdict: `{local_record.verdict or ''}`",
+            f"- readiness: `{local_record.readiness_status}`",
+            f"- stack/direct: `{local_record.stack_status}` / `{local_record.direct_status}`",
+            f"- execution_mode: `{local_record.execution_mode or ''}`",
+            f"- reason_code: `{local_record.reason_code or ''}`",
+        ]
+        if local_record.recommended_next_steps:
+            local_lines.append(f"- next_step: {local_record.recommended_next_steps[0]}")
+        sections.append("\n".join(local_lines))
+    sections.extend(
+        [
+            "### Queue\n\n" + render_triage_queue_markdown(record.queue_records),
+            "### Targets\n\n" + render_triage_targets_markdown(record.target_records),
+        ]
+    )
     return "\n\n".join(sections)
 
 
 def build_triage_brief_record(
     *,
     records: list[SummaryRecord],
+    local_records: list[LocalOperatorStackRecord] | None,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -1648,6 +1726,7 @@ def build_triage_brief_record(
 ) -> TriageBriefRecord:
     feed = build_triage_feed_record(
         records=records,
+        local_records=local_records,
         family=family,
         run_id_prefix=run_id_prefix,
         source_kind=source_kind,
@@ -1682,6 +1761,9 @@ def build_triage_brief_record(
         newest_failing_triage_status=overview.newest_failing_triage_status,
         newest_recovered_family=overview.newest_recovered_family,
         newest_recovered_run_id=overview.newest_recovered_run_id,
+        local_operator_record=feed.local_operator_record,
+        local_operator_summary=build_local_operator_summary(feed.local_operator_record),
+        local_operator_next_step=build_local_operator_next_step(feed.local_operator_record),
         queue_lines=queue_lines,
         target_lines=target_lines,
     )
@@ -1699,11 +1781,12 @@ def render_triage_brief_table(record: TriageBriefRecord) -> str:
             f"newest_failing\t{record.newest_failing_family or ''}\t"
             f"{record.newest_failing_run_id or ''}\t{record.newest_failing_triage_status or ''}"
         ),
-        "queue",
-        *record.queue_lines,
-        "targets",
-        *record.target_lines,
     ]
+    if record.local_operator_summary is not None:
+        sections.append(f"local_operator\t{record.local_operator_summary}")
+    if record.local_operator_next_step is not None:
+        sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines])
     return "\n".join(sections)
 
 
@@ -1725,6 +1808,10 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
         lines.append(
             f"- newest recovered pointer: `{record.newest_recovered_family or ''}` / `{record.newest_recovered_run_id or ''}`"
         )
+    if record.local_operator_summary is not None:
+        lines.append(f"- local operator: `{record.local_operator_summary}`")
+    if record.local_operator_next_step is not None:
+        lines.append(f"- local operator next step: {record.local_operator_next_step}")
     lines.append("")
     lines.append("### Queue")
     lines.extend(f"- {line}" for line in record.queue_lines)
@@ -1737,6 +1824,7 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
 def build_triage_report_record(
     *,
     records: list[SummaryRecord],
+    local_records: list[LocalOperatorStackRecord] | None,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -1744,6 +1832,7 @@ def build_triage_report_record(
 ) -> TriageReportRecord:
     brief = build_triage_brief_record(
         records=records,
+        local_records=local_records,
         family=family,
         run_id_prefix=run_id_prefix,
         source_kind=source_kind,
@@ -1773,6 +1862,10 @@ def build_triage_report_record(
         markdown_lines.append(
             f"- newest recovered pointer: `{brief.newest_recovered_family or ''}` / `{brief.newest_recovered_run_id or ''}`"
         )
+    if brief.local_operator_summary is not None:
+        markdown_lines.append(f"- local operator: `{brief.local_operator_summary}`")
+    if brief.local_operator_next_step is not None:
+        markdown_lines.append(f"- local operator next step: {brief.local_operator_next_step}")
     markdown_lines.extend(
         [
             "",
@@ -1790,6 +1883,9 @@ def build_triage_report_record(
         attention_summary=attention_summary,
         newest_failing_summary=newest_failing_summary,
         newest_recovered_summary=newest_recovered_summary,
+        local_operator_record=brief.local_operator_record,
+        local_operator_summary=brief.local_operator_summary,
+        local_operator_next_step=brief.local_operator_next_step,
         queue_lines=brief.queue_lines,
         target_lines=brief.target_lines,
         markdown="\n".join(markdown_lines),
@@ -1806,6 +1902,10 @@ def render_triage_report_table(record: TriageReportRecord) -> str:
     ]
     if record.newest_recovered_summary is not None:
         sections.append(f"newest_recovered\t{record.newest_recovered_summary}")
+    if record.local_operator_summary is not None:
+        sections.append(f"local_operator\t{record.local_operator_summary}")
+    if record.local_operator_next_step is not None:
+        sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines])
     return "\n".join(sections)
 
@@ -2572,6 +2672,7 @@ def parse_args() -> argparse.Namespace:
     triage_feed_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_feed_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_feed_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+    triage_feed_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
 
     triage_brief_parser = subparsers.add_parser(
         "triage-brief",
@@ -2585,6 +2686,7 @@ def parse_args() -> argparse.Namespace:
     triage_brief_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_brief_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_brief_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+    triage_brief_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
 
     triage_report_parser = subparsers.add_parser(
         "triage-report",
@@ -2598,6 +2700,7 @@ def parse_args() -> argparse.Namespace:
     triage_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+    triage_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
 
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
@@ -2874,8 +2977,10 @@ def main() -> int:
         return 0
 
     if args.command == "triage-feed":
+        local_records = discover_local_operator_stack_records(local_root=local_root)
         record = build_triage_feed_record(
             records=records,
+            local_records=local_records,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -2891,8 +2996,10 @@ def main() -> int:
         return 0
 
     if args.command == "triage-brief":
+        local_records = discover_local_operator_stack_records(local_root=local_root)
         record = build_triage_brief_record(
             records=records,
+            local_records=local_records,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -2908,8 +3015,10 @@ def main() -> int:
         return 0
 
     if args.command == "triage-report":
+        local_records = discover_local_operator_stack_records(local_root=local_root)
         record = build_triage_report_record(
             records=records,
+            local_records=local_records,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
