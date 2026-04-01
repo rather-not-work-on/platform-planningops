@@ -13,6 +13,10 @@ LOCAL_OPERATOR_REPORT="$VALIDATION_DIR/monday-local-operator-stack-report.json"
 OUTPUT_PATH="$TMP_DIR/mission-packet-output.json"
 STDOUT_PATH="$TMP_DIR/mission-packet-stdout.json"
 PACKET_ID="monday-local-mission-20260401T080000Z"
+LEGACY_HANDOFF_REPORT="$VALIDATION_DIR/operator-handoff-report-legacy.json"
+LEGACY_OUTPUT_PATH="$TMP_DIR/mission-packet-legacy-output.json"
+LEGACY_STDOUT_PATH="$TMP_DIR/mission-packet-legacy-stdout.json"
+LEGACY_PACKET_ID="monday-local-mission-20260401T080100Z"
 
 mkdir -p "$VALIDATION_DIR"
 
@@ -47,6 +51,33 @@ cat >"$HANDOFF_REPORT" <<'JSON'
       "local-runtime: Expose Codex and add a direct local LLM profile.",
       "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
       "follow-up: [lagging/latest-alert-follow-up] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint,readiness,reconcile"
+    ],
+    "local_validation_records": [
+      {
+        "artifact_family": "monday_local_operator_stack_report",
+        "artifact_kind": "report",
+        "promoted_id": "monday-local-operator-stack-20260401T060524Z",
+        "freshness_state": "fresh",
+        "promotability_status": "promotable",
+        "reasons": [],
+        "dependency_states": {}
+      },
+      {
+        "artifact_family": "operator_handoff_report",
+        "artifact_kind": "report",
+        "promoted_id": "operator-handoff-20260401T070000Z",
+        "freshness_state": "stale",
+        "promotability_status": "blocked",
+        "reasons": ["stamped_missing"],
+        "dependency_states": {}
+      }
+    ],
+    "local_validation_summary_lines": [
+      "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
+      "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing"
+    ],
+    "local_validation_action_lines": [
+      "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
     ],
     "markdown": "## Operator Handoff Report"
   }
@@ -120,6 +151,10 @@ assert "planner_profile" in contract_text, contract_text
 assert "local_model_route" in contract_text, contract_text
 assert "expected_evidence_outputs" in contract_text, contract_text
 assert "rollback_command" in contract_text, contract_text
+assert "local_validation_snapshot_status" in contract_text, contract_text
+assert "local_validation_records" in contract_text, contract_text
+assert "local_validation_summary_lines" in contract_text, contract_text
+assert "local_validation_action_lines" in contract_text, contract_text
 
 for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert doc["packet_id"] == packet_id, doc
@@ -148,6 +183,18 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert mission["source_artifacts"]["local_operator_report_path"] == str((validation_dir / "monday-local-operator-stack-report.json").resolve()), mission
     assert mission["immediate_actions"][0] == "local-runtime: Expose Codex and add a direct local LLM profile.", mission
     assert mission["target_lines"][0].startswith("[active/latest-gap] federated-ci-local"), mission
+    assert mission["local_validation_snapshot_status"] == "present", mission
+    assert [record["artifact_family"] for record in mission["local_validation_records"]] == [
+        "monday_local_operator_stack_report",
+        "operator_handoff_report",
+    ], mission
+    assert mission["local_validation_summary_lines"] == [
+        "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
+        "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
+    ], mission
+    assert mission["local_validation_action_lines"] == [
+        "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
+    ], mission
     assert str(latest_path) in mission["expected_evidence_outputs"], mission
     assert str(stamped_path) in mission["expected_evidence_outputs"], mission
     assert any(path.endswith(f"{packet_id}.json") for path in mission["expected_evidence_outputs"]), mission
@@ -157,6 +204,57 @@ assert stdout_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).reso
 assert output_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), output_doc
 assert latest_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), latest_doc
 assert stamped_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), stamped_doc
+PY
+
+cat >"$LEGACY_HANDOFF_REPORT" <<'JSON'
+{
+  "generated_at_utc": "2026-04-01T07:01:00+00:00",
+  "report_id": "operator-handoff-20260401T070100Z",
+  "artifact_paths": {
+    "latest_report_path": "/tmp/operator-handoff-report.json",
+    "stamped_report_path": "/tmp/operator-handoff-20260401T070100Z-report.json",
+    "output_path": null
+  },
+  "record": {
+    "source_kind": "stamped",
+    "target_limit": 1,
+    "headline": "Operator handoff report: 1 attention family",
+    "attention_summary": "active=1, lagging=0, clear=0",
+    "newest_failing_summary": "federated-ci-local / federated-ci-local-20260301 / active",
+    "newest_recovered_summary": null,
+    "local_operator_record": null,
+    "local_operator_summary": "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked stack=skipped direct=skipped mode=both reason=readiness_blocked",
+    "local_operator_next_step": "Expose Codex and add a direct local LLM profile.",
+    "queue_lines": [],
+    "target_lines": [
+      "[active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile"
+    ],
+    "immediate_action_lines": [
+      "local-runtime: Expose Codex and add a direct local LLM profile."
+    ],
+    "markdown": "## Operator Handoff Report"
+  }
+}
+JSON
+
+python3 planningops/scripts/write_monday_local_mission_packet.py \
+  --validation-root "$VALIDATION_DIR" \
+  --handoff-report "$LEGACY_HANDOFF_REPORT" \
+  --local-operator-report "$LOCAL_OPERATOR_REPORT" \
+  --packet-id "$LEGACY_PACKET_ID" \
+  --output "$LEGACY_OUTPUT_PATH" >"$LEGACY_STDOUT_PATH"
+
+python3 - <<'PY' "$LEGACY_STDOUT_PATH"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+mission = doc["mission_packet"]
+assert mission["local_validation_snapshot_status"] == "missing", mission
+assert mission["local_validation_records"] == [], mission
+assert mission["local_validation_summary_lines"] == [], mission
+assert mission["local_validation_action_lines"] == [], mission
 PY
 
 echo "write monday local mission packet ok"

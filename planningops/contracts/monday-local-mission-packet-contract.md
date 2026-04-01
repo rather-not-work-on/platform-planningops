@@ -62,6 +62,10 @@ Top-level required fields:
 14. `target_lines`
 15. `source_artifacts.handoff_report_path`
 16. `source_artifacts.local_operator_report_path`
+17. `local_validation_snapshot_status`
+18. `local_validation_records`
+19. `local_validation_summary_lines`
+20. `local_validation_action_lines`
 
 Optional fields:
 - `attention_summary`
@@ -79,6 +83,7 @@ Optional fields:
    - if no direct profile is present, fall back to `local_ollama`
 3. `mission_objective` must come from the promoted handoff surface, not from prompt-local inference.
 4. `expected_evidence_outputs` must point at deterministic artifact paths that the chosen launch path is expected to refresh.
+5. local validation snapshot fields must be carried forward from the promoted handoff packet when present; otherwise the mission packet must emit `local_validation_snapshot_status=missing` with empty local validation collections.
 
 ## Command Rules
 
@@ -104,6 +109,11 @@ Every packet must also name the mission-run evidence it expects next:
 - latest + stamped mission packet paths
 - the local operator runtime aggregate path keyed by `packet_id`
 - the stamped local operator validation mirror keyed by `packet_id`
+
+Every packet must also preserve the current local validation snapshot:
+- machine-readable local validation records when the promoted handoff packet already has them
+- operator-facing local validation summary/action lines
+- an explicit missing marker when the upstream handoff packet does not yet provide the snapshot
 
 ## Failure Rules
 

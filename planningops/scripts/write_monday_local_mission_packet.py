@@ -49,6 +49,26 @@ def require_dict(doc: object, label: str) -> dict:
     return doc
 
 
+def normalize_string_list(raw_values: object) -> list[str]:
+    return [str(value) for value in list(raw_values or []) if str(value).strip()]
+
+
+def normalize_local_validation_records(raw_values: object) -> list[dict]:
+    records: list[dict] = []
+    for value in list(raw_values or []):
+        if isinstance(value, dict):
+            records.append(value)
+    return records
+
+
+def build_local_validation_snapshot(handoff_record: dict) -> tuple[str, list[dict], list[str], list[str]]:
+    records = normalize_local_validation_records(handoff_record.get("local_validation_records"))
+    summary_lines = normalize_string_list(handoff_record.get("local_validation_summary_lines"))
+    action_lines = normalize_string_list(handoff_record.get("local_validation_action_lines"))
+    snapshot_status = "present" if records or summary_lines or action_lines else "missing"
+    return snapshot_status, records, summary_lines, action_lines
+
+
 def build_mission_objective(handoff_record: dict) -> str:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     if target_lines:
@@ -172,6 +192,12 @@ def main() -> int:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     mission_objective = build_mission_objective(handoff_record)
     primary_action = immediate_actions[0] if immediate_actions else (target_lines[0] if target_lines else mission_objective)
+    (
+        local_validation_snapshot_status,
+        local_validation_records,
+        local_validation_summary_lines,
+        local_validation_action_lines,
+    ) = build_local_validation_snapshot(handoff_record)
 
     expected_evidence_outputs = [
         str(latest_packet_path.resolve()),
@@ -201,6 +227,10 @@ def main() -> int:
         "primary_action": primary_action,
         "immediate_actions": immediate_actions,
         "target_lines": target_lines,
+        "local_validation_snapshot_status": local_validation_snapshot_status,
+        "local_validation_records": local_validation_records,
+        "local_validation_summary_lines": local_validation_summary_lines,
+        "local_validation_action_lines": local_validation_action_lines,
         "preflight_command": preflight_command,
         "monday_runtime_entrypoint_command": monday_runtime_entrypoint_command,
         "rollback_command": rollback_command,
