@@ -25,6 +25,7 @@ WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_CI_ROOT = WORKSPACE_ROOT / "planningops/artifacts/ci"
 DEFAULT_VALIDATION_ROOT = WORKSPACE_ROOT / "planningops/artifacts/validation"
 DEFAULT_CONFORMANCE_ROOT = WORKSPACE_ROOT / "planningops/artifacts/conformance"
+DEFAULT_LOCAL_OPERATOR_STACK_ROOT = WORKSPACE_ROOT / "planningops/runtime-artifacts/local/monday-local-operator-stack"
 
 LATEST_GAP_CHOICES = (
     "readiness_missing",
@@ -40,6 +41,10 @@ LATEST_GAP_CHOICES = (
     "checkpoint_missing",
     "checkpoint_invalid",
 )
+
+LOCAL_OPERATOR_VERDICT_CHOICES = ("pass", "fail", "planned")
+LOCAL_OPERATOR_READINESS_CHOICES = ("ready", "bootstrap_required", "blocked", "unknown")
+LOCAL_OPERATOR_STEP_STATUS_CHOICES = ("pass", "fail", "planned", "skipped", "report_only", "unknown", "missing")
 
 
 @dataclass(frozen=True)
@@ -261,6 +266,29 @@ class TriageReportRecord:
     queue_lines: list[str]
     target_lines: list[str]
     markdown: str
+
+
+@dataclass(frozen=True)
+class LocalOperatorStackRecord:
+    run_id: str
+    report_path: str
+    expected_detail_dir: str
+    detail_dir: str | None
+    has_detail_dir: bool
+    generated_at_utc: str
+    verdict: str | None
+    reason_code: str | None
+    execution_mode: str | None
+    direct_profile: str | None
+    dry_run: bool | None
+    readiness_status: str
+    readiness_step_status: str
+    readiness_report_path: str | None
+    stack_status: str
+    stack_report_path: str | None
+    direct_status: str
+    direct_report_path: str | None
+    recommended_next_steps: list[str]
 
 
 def resolve_root(path_text: str, default: Path) -> Path:
@@ -525,6 +553,176 @@ def discover_summary_records(
         reverse=True,
     )
     return records
+
+
+def is_local_operator_stack_document(doc: dict[str, Any]) -> bool:
+    return (
+        isinstance(doc.get("run_id"), str)
+        and isinstance(doc.get("readiness"), dict)
+        and isinstance(doc.get("stack_smoke"), dict)
+        and isinstance(doc.get("direct_smoke"), dict)
+    )
+
+
+def extract_local_operator_status(raw_doc: Any) -> str:
+    if not isinstance(raw_doc, dict):
+        return "missing"
+    raw_status = raw_doc.get("status")
+    if isinstance(raw_status, str) and raw_status.strip():
+        return raw_status
+    return "unknown"
+
+
+def normalize_artifact_path(path_text: Any) -> str | None:
+    path = resolve_artifact_path(path_text)
+    return None if path is None else str(path)
+
+
+def build_local_operator_stack_record(*, local_root: Path, report_path: Path, report_doc: dict[str, Any]) -> LocalOperatorStackRecord:
+    run_id = str(report_doc.get("run_id"))
+    expected_detail_dir = (local_root / run_id).resolve()
+    detail_dir = expected_detail_dir if expected_detail_dir.is_dir() else None
+    readiness_doc = report_doc.get("readiness") if isinstance(report_doc.get("readiness"), dict) else {}
+    readiness_step_doc = readiness_doc.get("step") if isinstance(readiness_doc.get("step"), dict) else None
+    stack_doc = report_doc.get("stack_smoke") if isinstance(report_doc.get("stack_smoke"), dict) else {}
+    direct_doc = report_doc.get("direct_smoke") if isinstance(report_doc.get("direct_smoke"), dict) else {}
+    raw_readiness_status = readiness_doc.get("status") if isinstance(readiness_doc, dict) else None
+    readiness_status = (
+        str(raw_readiness_status)
+        if isinstance(raw_readiness_status, str) and raw_readiness_status.strip()
+        else "unknown"
+    )
+    return LocalOperatorStackRecord(
+        run_id=run_id,
+        report_path=str(report_path.resolve()),
+        expected_detail_dir=str(expected_detail_dir),
+        detail_dir=None if detail_dir is None else str(detail_dir),
+        has_detail_dir=detail_dir is not None,
+        generated_at_utc=str(report_doc.get("generated_at_utc") or ""),
+        verdict=str(report_doc.get("verdict")) if isinstance(report_doc.get("verdict"), str) else None,
+        reason_code=str(report_doc.get("reason_code")) if isinstance(report_doc.get("reason_code"), str) else None,
+        execution_mode=str(report_doc.get("execution_mode")) if isinstance(report_doc.get("execution_mode"), str) else None,
+        direct_profile=(
+            str(report_doc.get("direct_profile"))
+            if isinstance(report_doc.get("direct_profile"), str) and str(report_doc.get("direct_profile")).strip()
+            else None
+        ),
+        dry_run=report_doc.get("dry_run") if isinstance(report_doc.get("dry_run"), bool) else None,
+        readiness_status=readiness_status,
+        readiness_step_status=extract_local_operator_status(readiness_step_doc),
+        readiness_report_path=normalize_artifact_path(readiness_doc.get("report_path")),
+        stack_status=extract_local_operator_status(stack_doc),
+        stack_report_path=normalize_artifact_path(stack_doc.get("report_path")),
+        direct_status=extract_local_operator_status(direct_doc),
+        direct_report_path=normalize_artifact_path(direct_doc.get("report_path")),
+        recommended_next_steps=[str(step) for step in list(report_doc.get("recommended_next_steps") or [])],
+    )
+
+
+def discover_local_operator_stack_records(*, local_root: Path) -> list[LocalOperatorStackRecord]:
+    if not local_root.exists():
+        return []
+    records: list[LocalOperatorStackRecord] = []
+    for path in sorted(local_root.glob("*.json")):
+        if path.name.startswith(".") or path.name.startswith("._"):
+            continue
+        try:
+            doc = load_json(path)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not is_local_operator_stack_document(doc):
+            continue
+        records.append(build_local_operator_stack_record(local_root=local_root, report_path=path, report_doc=doc))
+    records.sort(
+        key=lambda record: (
+            record.generated_at_utc,
+            record.run_id,
+            record.report_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def filter_local_operator_stack_records(
+    *,
+    records: list[LocalOperatorStackRecord],
+    run_id_prefix: str | None = None,
+    verdict: str | None = None,
+    reason_code: str | None = None,
+    execution_mode: str | None = None,
+    direct_profile: str | None = None,
+    readiness_status: str | None = None,
+    readiness_step_status: str | None = None,
+    stack_status: str | None = None,
+    direct_status: str | None = None,
+    has_detail_dir: str | None = None,
+) -> list[LocalOperatorStackRecord]:
+    filtered = records
+    if run_id_prefix:
+        filtered = [record for record in filtered if record.run_id.startswith(run_id_prefix)]
+    if verdict:
+        filtered = [record for record in filtered if record.verdict == verdict]
+    if reason_code:
+        filtered = [record for record in filtered if record.reason_code == reason_code]
+    if execution_mode:
+        filtered = [record for record in filtered if record.execution_mode == execution_mode]
+    if direct_profile:
+        filtered = [record for record in filtered if record.direct_profile == direct_profile]
+    if readiness_status:
+        filtered = [record for record in filtered if record.readiness_status == readiness_status]
+    if readiness_step_status:
+        filtered = [record for record in filtered if record.readiness_step_status == readiness_step_status]
+    if stack_status:
+        filtered = [record for record in filtered if record.stack_status == stack_status]
+    if direct_status:
+        filtered = [record for record in filtered if record.direct_status == direct_status]
+    if has_detail_dir is not None:
+        expected = has_detail_dir == "yes"
+        filtered = [record for record in filtered if record.has_detail_dir is expected]
+    return filtered
+
+
+def render_local_operator_stack_table(records: list[LocalOperatorStackRecord]) -> str:
+    lines = [
+        "run_id\tverdict\treason_code\treadiness\treadiness_step\tstack\tdirect\texecution_mode\tdirect_profile\tdry_run\thas_detail_dir\tgenerated_at_utc",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.run_id,
+                    str(record.verdict or ""),
+                    str(record.reason_code or ""),
+                    record.readiness_status,
+                    record.readiness_step_status,
+                    record.stack_status,
+                    record.direct_status,
+                    str(record.execution_mode or ""),
+                    str(record.direct_profile or ""),
+                    str(record.dry_run if record.dry_run is not None else ""),
+                    "yes" if record.has_detail_dir else "no",
+                    record.generated_at_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_local_operator_stack_markdown(records: list[LocalOperatorStackRecord]) -> str:
+    lines = [
+        "| run_id | verdict | reason_code | readiness | readiness_step | stack | direct | execution_mode | direct_profile | dry_run | detail_dir | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| `{record.run_id}` | {record.verdict or ''} | {record.reason_code or ''} | "
+            f"{record.readiness_status} | {record.readiness_step_status} | {record.stack_status} | "
+            f"{record.direct_status} | {record.execution_mode or ''} | {record.direct_profile or ''} | "
+            f"{record.dry_run if record.dry_run is not None else ''} | "
+            f"{'present' if record.has_detail_dir else 'missing'} | {record.generated_at_utc} |"
+        )
+    return "\n".join(lines)
 
 
 def build_summary_health_fields(
@@ -2400,14 +2598,58 @@ def parse_args() -> argparse.Namespace:
     triage_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    local_operator_parser = subparsers.add_parser(
+        "local-operator-stack",
+        help="list planningops-owned monday local operator stack aggregate reports",
+    )
+    local_operator_parser.add_argument("--run-id-prefix", default=None)
+    local_operator_parser.add_argument("--verdict", choices=LOCAL_OPERATOR_VERDICT_CHOICES, default=None)
+    local_operator_parser.add_argument("--reason-code", default=None)
+    local_operator_parser.add_argument("--execution-mode", choices=["stack", "direct", "both"], default=None)
+    local_operator_parser.add_argument("--direct-profile", choices=["local_ollama", "local_lmstudio"], default=None)
+    local_operator_parser.add_argument("--readiness-status", choices=LOCAL_OPERATOR_READINESS_CHOICES, default=None)
+    local_operator_parser.add_argument("--readiness-step-status", choices=LOCAL_OPERATOR_STEP_STATUS_CHOICES, default=None)
+    local_operator_parser.add_argument("--stack-status", choices=LOCAL_OPERATOR_STEP_STATUS_CHOICES, default=None)
+    local_operator_parser.add_argument("--direct-status", choices=LOCAL_OPERATOR_STEP_STATUS_CHOICES, default=None)
+    local_operator_parser.add_argument("--has-detail-dir", choices=["yes", "no"], default=None)
+    local_operator_parser.add_argument("--limit", type=int, default=20)
+    local_operator_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    local_operator_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    ci_root = resolve_root(args.ci_root, DEFAULT_CI_ROOT)
-    validation_root = resolve_root(args.validation_root, DEFAULT_VALIDATION_ROOT)
-    conformance_root = resolve_root(args.conformance_root, DEFAULT_CONFORMANCE_ROOT)
+    local_root = resolve_root(getattr(args, "local_root", str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT)), DEFAULT_LOCAL_OPERATOR_STACK_ROOT)
+    if args.command == "local-operator-stack":
+        local_records = discover_local_operator_stack_records(local_root=local_root)
+        local_records = filter_local_operator_stack_records(
+            records=local_records,
+            run_id_prefix=args.run_id_prefix,
+            verdict=args.verdict,
+            reason_code=args.reason_code,
+            execution_mode=args.execution_mode,
+            direct_profile=args.direct_profile,
+            readiness_status=args.readiness_status,
+            readiness_step_status=args.readiness_step_status,
+            stack_status=args.stack_status,
+            direct_status=args.direct_status,
+            has_detail_dir=args.has_detail_dir,
+        )
+        local_records = local_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in local_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_local_operator_stack_markdown(local_records))
+            return 0
+        print(render_local_operator_stack_table(local_records))
+        return 0
+
+    ci_root = resolve_root(getattr(args, "ci_root", str(DEFAULT_CI_ROOT)), DEFAULT_CI_ROOT)
+    validation_root = resolve_root(getattr(args, "validation_root", str(DEFAULT_VALIDATION_ROOT)), DEFAULT_VALIDATION_ROOT)
+    conformance_root = resolve_root(getattr(args, "conformance_root", str(DEFAULT_CONFORMANCE_ROOT)), DEFAULT_CONFORMANCE_ROOT)
     records = discover_summary_records(
         ci_root=ci_root,
         validation_root=validation_root,

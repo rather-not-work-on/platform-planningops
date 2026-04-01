@@ -116,6 +116,7 @@ Current deliverables:
 
 - `planningops/scripts/run_monday_local_operator_stack.py`
 - `planningops/runtime-artifacts/local/monday-local-operator-stack/<run-id>.json`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-operator-stack`
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -177,6 +178,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. add a single planningops wrapper that runs readiness then launches federated local smoke
-2. stamp a local operator report artifact family under `planningops/artifacts/validation`
+1. lift the local operator stack view into shared operator feed and report surfaces
+2. decide whether local operator evidence should stay in `runtime-artifacts/local` or gain a validation mirror for promotion workflows
 3. add a Codex-to-monday mission packet contract so local operator prompts become reproducible inputs
