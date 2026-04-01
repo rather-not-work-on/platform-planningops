@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -345,6 +346,19 @@ def resolve_artifact_path(path_text: Any) -> Path | None:
     if not isinstance(path_text, str) or not path_text.strip():
         return None
     return Path(path_text).expanduser().resolve()
+
+
+def now_utc() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def utc_timestamp_slug() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def write_json(path: Path, doc: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 
 
 def build_reconcile_validation_path(report_path: Path | None) -> Path | None:
@@ -2022,6 +2036,26 @@ def render_handoff_report_markdown(record: HandoffReportRecord) -> str:
     return record.markdown
 
 
+def build_handoff_artifact_document(
+    *,
+    record: HandoffReportRecord,
+    report_id: str,
+    latest_report_path: Path,
+    stamped_report_path: Path,
+    output_path: Path | None,
+) -> dict[str, Any]:
+    return {
+        "generated_at_utc": now_utc(),
+        "report_id": report_id,
+        "artifact_paths": {
+            "latest_report_path": str(latest_report_path.resolve()),
+            "stamped_report_path": str(stamped_report_path.resolve()),
+            "output_path": None if output_path is None else str(output_path.resolve()),
+        },
+        "record": asdict(record),
+    }
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -2824,6 +2858,22 @@ def parse_args() -> argparse.Namespace:
     handoff_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     handoff_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
 
+    write_handoff_report_parser = subparsers.add_parser(
+        "write-handoff-report",
+        help="write a handoff-friendly operator report into latest + stamped validation artifacts",
+    )
+    write_handoff_report_parser.add_argument("--family", default=None)
+    write_handoff_report_parser.add_argument("--run-id-prefix", default=None)
+    write_handoff_report_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    write_handoff_report_parser.add_argument("--target-limit", type=int, default=3)
+    write_handoff_report_parser.add_argument("--report-id", default=None)
+    write_handoff_report_parser.add_argument("--output", default=None)
+    write_handoff_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="json")
+    write_handoff_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    write_handoff_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    write_handoff_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+    write_handoff_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -3167,6 +3217,40 @@ def main() -> int:
         )
         if args.format == "json":
             print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_handoff_report_markdown(record))
+            return 0
+        print(render_handoff_report_table(record))
+        return 0
+
+    if args.command == "write-handoff-report":
+        local_records = discover_local_operator_stack_records(local_root=local_root)
+        record = build_handoff_report_record(
+            records=records,
+            local_records=local_records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+            target_limit=args.target_limit,
+        )
+        report_id = args.report_id or f"operator-handoff-{utc_timestamp_slug()}"
+        latest_report_path = validation_root / "operator-handoff-report.json"
+        stamped_report_path = validation_root / f"{report_id}-operator-handoff-report.json"
+        output_path = resolve_optional_path(args.output)
+        doc = build_handoff_artifact_document(
+            record=record,
+            report_id=report_id,
+            latest_report_path=latest_report_path,
+            stamped_report_path=stamped_report_path,
+            output_path=output_path,
+        )
+        write_json(latest_report_path, doc)
+        write_json(stamped_report_path, doc)
+        if output_path is not None:
+            write_json(output_path, doc)
+        if args.format == "json":
+            print(json.dumps(doc, ensure_ascii=True, indent=2))
             return 0
         if args.format == "markdown":
             print(render_handoff_report_markdown(record))
