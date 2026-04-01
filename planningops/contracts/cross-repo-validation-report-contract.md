@@ -58,9 +58,11 @@ Each promoted report must include:
 - preserve the full rendered record under `record`
 - allow an optional `--output` path for ad hoc export without skipping latest/stamped promotion
 - once the latest/stamped pair exists, `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` must expose the packet as `cross_repo_validation_report`
+- once the latest/stamped pair exists, `planningops/scripts/federation/query_federated_ci_artifacts.py cross-repo-validation-packet` must expose the promoted packet directly from validation artifacts without recomputing source roots
 
 ## Verification
 
 - `python3 planningops/scripts/federation/query_federated_ci_artifacts.py write-cross-repo-validation-report --validation-root <validation-root> --consumer-root <consumer-root> --monday-validation-root <monday-validation-root>`
+- `python3 planningops/scripts/federation/query_federated_ci_artifacts.py cross-repo-validation-packet --validation-root <validation-root>`
 - `python3 planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness --artifact-family cross_repo_validation_report --validation-root <validation-root>`
 - `bash planningops/scripts/test_query_federated_ci_artifacts.sh`

@@ -191,6 +191,7 @@ Current deliverables:
 - the dedicated cross-repo validation packet is now promotion-ready as a stamped validation artifact instead of staying query-only
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now tracks the promoted `cross_repo_validation_report` packet as its own validation family once the latest/stamped artifact pair exists
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report` now carry the same cross-repo validation snapshot and monday source validation summary that `triage-feed` already exposes
+- `planningops/scripts/federation/query_federated_ci_artifacts.py cross-repo-validation-packet` now exposes the promoted latest/stamped packet directly from `planningops/artifacts/validation` so operators can read immutable evidence without recomputing source roots
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -252,6 +253,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether the dedicated `cross_repo_validation_report` family needs a first-class operator packet surface beyond `local-validation-freshness`
-2. decide whether the cross-repo snapshot should stay summary-only in triage surfaces or grow a dedicated actions/details section outside `cross-repo-validation-report`
+1. decide whether the cross-repo snapshot should stay summary-only in triage surfaces or grow a dedicated actions/details section outside `cross-repo-validation-packet`
+2. decide whether `handoff-report` or a new operator packet should point to the promoted `cross-repo-validation-packet` explicitly when cross-repo validation is the blocking lane
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
