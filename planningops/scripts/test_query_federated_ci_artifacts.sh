@@ -682,6 +682,8 @@ MONDAY_VALIDATION_MIRROR_WRITE_OUTPUT="$TMP_DIR/monday-validation-report-mirror-
 CROSS_REPO_VALIDATION_REPORT_OUTPUT="$TMP_DIR/cross-repo-validation-report.json"
 CROSS_REPO_VALIDATION_PACKET_OUTPUT="$TMP_DIR/cross-repo-validation-packet.json"
 CROSS_REPO_VALIDATION_PACKET_STAMPED_OUTPUT="$TMP_DIR/cross-repo-validation-packet-stamped.json"
+LOCAL_INBOX_PAYLOAD_WITH_CROSS_REPO_PACKET_OUTPUT="$TMP_DIR/local-inbox-payload-with-cross-repo-packet.json"
+MONDAY_CONSUMER_WITH_CROSS_REPO_PACKET_OUTPUT="$TMP_DIR/monday-consumer-report-with-cross-repo-packet.json"
 CROSS_REPO_VALIDATION_WRITE_OUTPUT="$TMP_DIR/cross-repo-validation-write.json"
 CROSS_REPO_VALIDATION_WRITE_STDOUT="$TMP_DIR/cross-repo-validation-write-stdout.json"
 LOCAL_VALIDATION_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/local-validation-freshness-with-monday-validation.json"
@@ -3872,11 +3874,15 @@ for record in (latest, stamped_current):
     assert record["monday_validation_action_lines"] == [
         "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)"
     ], record
+    assert record["cross_repo_validation_packet_report_id"] is None, record
+    assert record["cross_repo_validation_packet_path"] is None, record
 
 assert stamped_old["monday_validation_snapshot_status"] == "missing", stamped_old
 assert stamped_old["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", stamped_old
 assert stamped_old["monday_validation_summary_lines"] == [], stamped_old
 assert stamped_old["monday_validation_action_lines"] == [], stamped_old
+assert stamped_old["cross_repo_validation_packet_report_id"] is None, stamped_old
+assert stamped_old["cross_repo_validation_packet_path"] is None, stamped_old
 PY
 
 python3 "$QUERY_PATH" monday-consumer-report \
@@ -3908,6 +3914,8 @@ assert blocked["monday_validation_summary_lines"] == [
 assert blocked["monday_validation_action_lines"] == [
     "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)"
 ], blocked
+assert blocked["cross_repo_validation_packet_report_id"] is None, blocked
+assert blocked["cross_repo_validation_packet_path"] is None, blocked
 
 for record in (passed_apply, dry_run):
     assert record["monday_validation_snapshot_status"] == "fresh", record
@@ -3916,6 +3924,8 @@ for record in (passed_apply, dry_run):
         "monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current"
     ], record
     assert record["monday_validation_action_lines"] == [], record
+    assert record["cross_repo_validation_packet_report_id"] is None, record
+    assert record["cross_repo_validation_packet_path"] is None, record
 PY
 
 python3 "$QUERY_PATH" handoff-report \
@@ -4129,6 +4139,50 @@ assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validat
 assert "### Cross-Repo Validation Packet" in record["markdown"], record
 assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in record["markdown"], record
 assert "detail packet path: `" in record["markdown"], record
+PY
+
+python3 "$QUERY_PATH" local-inbox-payload \
+  --source-kind all \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_INBOX_PAYLOAD_WITH_CROSS_REPO_PACKET_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_INBOX_PAYLOAD_WITH_CROSS_REPO_PACKET_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+latest, stamped_current, stamped_old = records
+
+for record in (latest, stamped_current):
+    assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
+    assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
+
+assert stamped_old["cross_repo_validation_packet_report_id"] is None, stamped_old
+assert stamped_old["cross_repo_validation_packet_path"] is None, stamped_old
+PY
+
+python3 "$QUERY_PATH" monday-consumer-report \
+  --format json \
+  --validation-root "$VALIDATION_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_WITH_CROSS_REPO_PACKET_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_WITH_CROSS_REPO_PACKET_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+blocked, passed_apply, dry_run = records
+
+assert blocked["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", blocked
+assert blocked["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), blocked
+
+for record in (passed_apply, dry_run):
+    assert record["cross_repo_validation_packet_report_id"] is None, record
+    assert record["cross_repo_validation_packet_path"] is None, record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
