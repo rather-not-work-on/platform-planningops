@@ -3,7 +3,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SUMMARY_HELPER="${ROOT_DIR}/planningops/scripts/federation/federated_ci_summary.py"
-READINESS_HELPER="${ROOT_DIR}/planningops/scripts/assess_federated_ci_summary_readiness.py"
 
 RUN_ID=""
 CONTRACT_CONFORMANCE_RESULT=""
@@ -249,20 +248,31 @@ python3 "${SUMMARY_HELPER}" finalize \
 summary_rc=$?
 set -e
 
-if [[ -f "${STAMPED_PATH}" && -f "${STAMPED_VALIDATION_PATH}" ]]; then
-  python3 "${READINESS_HELPER}" \
-    --summary "${STAMPED_PATH}" \
-    --validation-report "${STAMPED_VALIDATION_PATH}" \
-    --output "${STAMPED_READINESS_PATH}" \
-    --validation-output "${STAMPED_READINESS_VALIDATION_PATH}"
-fi
+write_readiness_artifact() {
+  local summary_path="$1"
+  local validation_path="$2"
+  local output_path="$3"
+  local validation_output_path="$4"
 
-if [[ -f "${LATEST_PATH}" && -f "${LATEST_VALIDATION_PATH}" ]]; then
-  python3 "${READINESS_HELPER}" \
-    --summary "${LATEST_PATH}" \
-    --validation-report "${LATEST_VALIDATION_PATH}" \
-    --output "${LATEST_READINESS_PATH}" \
-    --validation-output "${LATEST_READINESS_VALIDATION_PATH}"
-fi
+  if [[ -f "${summary_path}" && -f "${validation_path}" ]]; then
+    python3 "${SUMMARY_HELPER}" write-readiness \
+      --summary "${summary_path}" \
+      --validation-report "${validation_path}" \
+      --output "${output_path}" \
+      --validation-output "${validation_output_path}"
+  fi
+}
+
+write_readiness_artifact \
+  "${STAMPED_PATH}" \
+  "${STAMPED_VALIDATION_PATH}" \
+  "${STAMPED_READINESS_PATH}" \
+  "${STAMPED_READINESS_VALIDATION_PATH}"
+
+write_readiness_artifact \
+  "${LATEST_PATH}" \
+  "${LATEST_VALIDATION_PATH}" \
+  "${LATEST_READINESS_PATH}" \
+  "${LATEST_READINESS_VALIDATION_PATH}"
 
 exit "${summary_rc}"

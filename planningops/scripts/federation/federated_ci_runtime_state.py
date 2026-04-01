@@ -100,6 +100,12 @@ class FederatedCISummaryArtifactWritePlan:
     latest_validation_output: Path | None
 
 
+@dataclass(frozen=True)
+class FederatedCIReadinessArtifactWritePlan:
+    output_path: Path
+    validation_output: Path
+
+
 def build_check_record(
     *,
     name: str,
@@ -148,6 +154,17 @@ def build_summary_artifact_write_plan(
         latest_path=latest_path,
         stamped_validation_output=stamped_validation_output,
         latest_validation_output=latest_validation_output,
+    )
+
+
+def build_readiness_artifact_write_plan(
+    *,
+    output_path: Path,
+    validation_output: Path,
+) -> FederatedCIReadinessArtifactWritePlan:
+    return FederatedCIReadinessArtifactWritePlan(
+        output_path=output_path,
+        validation_output=validation_output,
     )
 
 
@@ -309,3 +326,25 @@ def write_summary_artifacts(
         validator_module.write_json(plan.latest_validation_output, latest_report)
 
     return stamped_report, latest_report
+
+
+def build_readiness_report(status_doc: dict[str, Any], *, generated_at_utc: str | None = None) -> dict[str, Any]:
+    return {
+        "generated_at_utc": generated_at_utc or now_utc(),
+        **status_doc,
+    }
+
+
+def write_readiness_artifacts(
+    readiness_doc: dict[str, Any],
+    *,
+    plan: FederatedCIReadinessArtifactWritePlan,
+    validator_module: Any,
+    schema_path: Path,
+) -> dict[str, Any]:
+    schema_doc = validator_module.load_json(schema_path)
+    validation_report = validator_module.build_report(plan.output_path, schema_path, readiness_doc, schema_doc)
+    validator_module.write_json(plan.validation_output, validation_report)
+    if validation_report["verdict"] == "pass":
+        write_json(plan.output_path, readiness_doc)
+    return validation_report
