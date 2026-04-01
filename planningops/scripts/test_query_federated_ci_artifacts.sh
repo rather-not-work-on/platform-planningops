@@ -481,6 +481,8 @@ OPERATOR_TRIAGE_ACTIVE_OUTPUT="$TMP_DIR/operator-triage-active.json"
 TRIAGE_SUMMARY_OUTPUT="$TMP_DIR/triage-summary.json"
 TRIAGE_SUMMARY_ACTIVE_OUTPUT="$TMP_DIR/triage-summary-active.json"
 TRIAGE_SUMMARY_ALL_OUTPUT="$TMP_DIR/triage-summary-all.json"
+TRIAGE_OVERVIEW_OUTPUT="$TMP_DIR/triage-overview.json"
+TRIAGE_OVERVIEW_ALL_OUTPUT="$TMP_DIR/triage-overview-all.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1136,6 +1138,65 @@ assert record["newest_run_source_kind"] == "latest", record
 assert record["alert_alignment_counts"] == {"current": 2}, record
 assert record["latest_gap_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
 assert record["latest_alert_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
+PY
+
+python3 "$QUERY_PATH" triage-overview \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_OVERVIEW_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_OVERVIEW_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["total_families"] == 2, record
+assert record["triage_status_counts"] == {"active": 1, "lagging": 1}, record
+assert record["alert_alignment_counts"] == {"current": 1, "lagging": 1}, record
+assert record["latest_gap_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, record
+assert record["latest_alert_domain_counts"] == {"checkpoint": 2, "readiness": 2, "reconcile": 2}, record
+assert record["newest_failing_family"] == "federated-ci-runtime-gates", record
+assert record["newest_failing_run_id"] == "federated-ci-runtime-gates-20260319-rerun30", record
+assert record["newest_failing_source_kind"] == "stamped", record
+assert record["newest_failing_triage_status"] == "lagging", record
+assert record["newest_failing_gap_domains"] == [], record
+assert record["newest_failing_alert_domains"] == ["checkpoint", "readiness", "reconcile"], record
+assert record["newest_recovered_family"] is None, record
+assert record["newest_recovered_run_id"] is None, record
+assert record["newest_recovered_source_kind"] is None, record
+PY
+
+python3 "$QUERY_PATH" triage-overview \
+  --source-kind all \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_OVERVIEW_ALL_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_OVERVIEW_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["total_families"] == 2, record
+assert record["triage_status_counts"] == {"active": 2}, record
+assert record["alert_alignment_counts"] == {"current": 2}, record
+assert record["latest_gap_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
+assert record["latest_alert_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
+assert record["newest_failing_family"] == "federated-ci-runtime-gates", record
+assert record["newest_failing_run_id"] == "federated-ci-runtime-gates-20260319-rerun26", record
+assert record["newest_failing_source_kind"] == "latest", record
+assert record["newest_failing_triage_status"] == "active", record
+assert record["newest_failing_gap_domains"] == ["readiness", "reconcile"], record
+assert record["newest_failing_alert_domains"] == ["readiness", "reconcile"], record
+assert record["newest_recovered_family"] is None, record
+assert record["newest_recovered_run_id"] is None, record
+assert record["newest_recovered_source_kind"] is None, record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
