@@ -167,8 +167,29 @@ JSON
 cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun26.checkpoint.json" <<'JSON'
 {
   "run_id": "federated-ci-runtime-gates-20260319-rerun26",
-  "checks": [],
-  "required_checks": []
+  "started_at_utc": "2026-03-19T00:00:00+00:00",
+  "checks": [
+    {
+      "name": "contract-conformance",
+      "domain": "contract",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/tmp/contract.stdout.log",
+      "stderr_log": "/tmp/contract.stderr.log"
+    },
+    {
+      "name": "loop-guardrails",
+      "domain": "policy",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/tmp/policy.stdout.log",
+      "stderr_log": "/tmp/policy.stderr.log"
+    }
+  ],
+  "required_checks": [
+    "contract-conformance",
+    "loop-guardrails"
+  ]
 }
 JSON
 
@@ -209,6 +230,11 @@ CHECKS_OUTPUT="$TMP_DIR/checks.json"
 CHECKS_AUTO_OUTPUT="$TMP_DIR/checks-auto.json"
 FAILED_OUTPUT="$TMP_DIR/failed.json"
 LATEST_OUTPUT="$TMP_DIR/latest.json"
+RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
+RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
+RESTORED_SUMMARY_PATH="$TMP_DIR/federated-ci-runtime-gates-20260319-rerun27.tmp-query.json"
+RESTORED_CHECKPOINT_PATH="$TMP_DIR/federated-ci-runtime-gates-20260319-rerun27.checkpoint.json"
+RESTORED_PREVIOUS_PATH="$TMP_DIR/federated-ci-runtime-gates-20260319-rerun27-summary-tmp-reconcile.json"
 
 python3 "$QUERY_PATH" runs \
   --family federated-ci-runtime-gates \
@@ -299,6 +325,98 @@ records = doc["records"]
 assert len(records) == 1, records
 assert records[0]["source_kind"] == "latest", records
 assert records[0]["readiness_status"] == "missing", records
+PY
+
+python3 "$QUERY_PATH" reconcile-status \
+  --run-id federated-ci-runtime-gates-20260319-rerun26 \
+  --source-kind stamped \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$RECONCILE_HEALTHY_OUTPUT"
+
+python3 - <<'PY' "$RECONCILE_HEALTHY_OUTPUT" "$CI_DIR/federated-ci-runtime-gates-20260319-rerun26.checkpoint.json"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["run_id"] == "federated-ci-runtime-gates-20260319-rerun26", record
+assert record["source_kind"] == "stamped", record
+assert record["status"] == "healthy", record
+assert record["restored"] is False, record
+assert record["reconcile_count"] == 0, record
+assert record["reasons"] == [], record
+assert record["restored_check_names"] == [], record
+assert record["checkpoint_path"] == str(Path(sys.argv[2]).resolve()), record
+assert record["summary_check_count"] == 2, record
+assert record["checkpoint_check_count"] == 2, record
+PY
+
+cat >"$RESTORED_SUMMARY_PATH" <<'JSON'
+{
+  "checks": []
+}
+JSON
+
+cat >"$RESTORED_CHECKPOINT_PATH" <<'JSON'
+{
+  "run_id": "federated-ci-runtime-gates-20260319-rerun27",
+  "started_at_utc": "2026-03-19T00:00:30+00:00",
+  "checks": [
+    {
+      "name": "runtime-handoff",
+      "domain": "runtime",
+      "exit_code": 1,
+      "verdict": "fail",
+      "stdout_log": "/tmp/runtime.stdout.log",
+      "stderr_log": "/tmp/runtime.stderr.log"
+    }
+  ],
+  "required_checks": [
+    "runtime-handoff"
+  ]
+}
+JSON
+
+cat >"$RESTORED_PREVIOUS_PATH" <<'JSON'
+{
+  "run_id": "federated-ci-runtime-gates-20260319-rerun27",
+  "restored_check_names": [
+    "contract-conformance"
+  ]
+}
+JSON
+
+python3 "$QUERY_PATH" reconcile-status \
+  --summary "$RESTORED_SUMMARY_PATH" \
+  --checkpoint "$RESTORED_CHECKPOINT_PATH" \
+  --previous-report "$RESTORED_PREVIOUS_PATH" \
+  --check-name runtime-handoff \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$RECONCILE_RESTORED_OUTPUT"
+
+python3 - <<'PY' "$RECONCILE_RESTORED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["run_id"] == "federated-ci-runtime-gates-20260319-rerun27", record
+assert record["status"] == "restored", record
+assert record["restored"] is True, record
+assert "summary_missing_run_id" in record["reasons"], record
+assert "summary_missing_started_at_utc" in record["reasons"], record
+assert "summary_missing_required_checks" in record["reasons"], record
+assert record["check_name"] == "runtime-handoff", record
+assert record["reconcile_count"] == 2, record
+assert record["restored_check_names"] == ["contract-conformance", "runtime-handoff"], record
+assert record["summary_check_count"] == 0, record
+assert record["checkpoint_check_count"] == 1, record
 PY
 
 python3 "$QUERY_PATH" checks \
