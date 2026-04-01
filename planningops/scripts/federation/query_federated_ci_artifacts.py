@@ -67,6 +67,7 @@ LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_inbox_consumer_report",
     "monday_local_inbox_bridge_schema_validation",
     "monday_local_inbox_consumer_schema_validation",
+    "cross_repo_validation_report",
 )
 LOCAL_VALIDATION_FRESHNESS_CHOICES = ("fresh", "stale", "missing")
 LOCAL_VALIDATION_PROMOTABILITY_CHOICES = ("promotable", "blocked")
@@ -2488,6 +2489,139 @@ def build_monday_consumer_validation_mirror_freshness_record(
     )
 
 
+def build_cross_repo_validation_report_validation_freshness_record(
+    *,
+    validation_root: Path,
+) -> LocalValidationFreshnessRecord:
+    latest_path = (validation_root / "cross-repo-validation-report.json").resolve()
+    latest_doc = load_optional_json(latest_path)
+    freshness_reasons: list[str] = []
+    promotability_reasons: list[str] = []
+    dependency_states: dict[str, str] = {}
+    stamped_path: Path | None = None
+    promoted_id: str | None = None
+    generated_at_utc: str | None = None
+    dependency_filenames = {
+        "monday_local_inbox_launch_request": "monday-local-inbox-launch-request.json",
+        "monday_local_inbox_runtime_report": "monday-local-inbox-runtime-report.json",
+        "monday_local_inbox_consumer_report": "monday-local-inbox-consumer-report.json",
+        "monday_local_inbox_bridge_schema_validation": "monday-local-inbox-bridge-schema-validation.json",
+        "monday_local_inbox_consumer_schema_validation": "monday-local-inbox-consumer-schema-validation.json",
+    }
+
+    if latest_doc is not None:
+        promoted_id = normalize_optional_string(latest_doc.get("report_id"))
+        generated_at_utc = normalize_optional_string(latest_doc.get("generated_at_utc"))
+        if promoted_id is None:
+            promotability_reasons.append("missing_report_id")
+
+        contract_ref = normalize_optional_string(latest_doc.get("contract_ref"))
+        if contract_ref is None:
+            promotability_reasons.append("missing_contract_ref")
+        elif contract_ref != CROSS_REPO_VALIDATION_REPORT_CONTRACT_REF:
+            promotability_reasons.append("contract_ref_mismatch")
+
+        latest_report_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "latest_report_path")
+        stamped_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "stamped_report_path")
+        if latest_report_path != latest_path:
+            freshness_reasons.append("latest_path_mismatch")
+
+        record_doc = resolve_nested_value(latest_doc, "record")
+        if not isinstance(record_doc, dict):
+            promotability_reasons.append("missing_record")
+        else:
+            required_strings = {
+                "headline": "missing_headline",
+                "cross_repo_snapshot_status": "missing_cross_repo_snapshot_status",
+                "cross_repo_snapshot_summary": "missing_cross_repo_snapshot_summary",
+                "monday_source_validation_status": "missing_monday_source_validation_status",
+                "monday_source_validation_summary": "missing_monday_source_validation_summary",
+                "markdown": "missing_markdown",
+            }
+            for field_name, reason in required_strings.items():
+                value = record_doc.get(field_name)
+                if not isinstance(value, str) or not value.strip():
+                    promotability_reasons.append(reason)
+
+            cross_repo_validation_records = record_doc.get("cross_repo_validation_records")
+            if not isinstance(cross_repo_validation_records, list):
+                promotability_reasons.append("missing_cross_repo_validation_records")
+            else:
+                records_by_family: dict[str, dict[str, Any]] = {}
+                for item in cross_repo_validation_records:
+                    if not isinstance(item, dict):
+                        continue
+                    artifact_family = normalize_optional_string(item.get("artifact_family"))
+                    if artifact_family is None or artifact_family in records_by_family:
+                        continue
+                    records_by_family[artifact_family] = item
+
+                for dependency_family, dependency_filename in dependency_filenames.items():
+                    dependency_record = records_by_family.get(dependency_family)
+                    if dependency_record is None:
+                        dependency_states[dependency_family] = "missing"
+                        promotability_reasons.append(f"missing_{dependency_family}_record")
+                        continue
+
+                    dependency_state, dependency_reason = build_local_validation_dependency_state(
+                        raw_path=dependency_record.get("latest_path"),
+                        expected_path=validation_root / dependency_filename,
+                    )
+                    dependency_states[dependency_family] = dependency_state
+                    if dependency_reason == "dependency_path_missing":
+                        promotability_reasons.append(f"missing_{dependency_family}_path")
+                    elif dependency_reason == "dependency_missing":
+                        promotability_reasons.append(f"{dependency_family}_dependency_missing")
+                    elif dependency_reason == "dependency_stale":
+                        promotability_reasons.append(f"{dependency_family}_dependency_stale")
+
+            if not isinstance(record_doc.get("cross_repo_summary_lines"), list):
+                promotability_reasons.append("missing_cross_repo_summary_lines")
+            if not isinstance(record_doc.get("monday_validation_report_records"), list):
+                promotability_reasons.append("missing_monday_validation_report_records")
+            if not isinstance(record_doc.get("monday_validation_report_lines"), list):
+                promotability_reasons.append("missing_monday_validation_report_lines")
+
+        if stamped_path is not None and stamped_path.exists():
+            stamped_doc = load_optional_json(stamped_path)
+            if stamped_doc is None:
+                freshness_reasons.append("stamped_invalid_json")
+            else:
+                if normalize_optional_string(stamped_doc.get("report_id")) != promoted_id:
+                    freshness_reasons.append("stamped_report_id_mismatch")
+                stamped_latest_path = resolve_nested_artifact_path(stamped_doc, "artifact_paths", "latest_report_path")
+                stamped_stamped_path = resolve_nested_artifact_path(
+                    stamped_doc,
+                    "artifact_paths",
+                    "stamped_report_path",
+                )
+                if stamped_latest_path != latest_path:
+                    freshness_reasons.append("stamped_latest_path_mismatch")
+                if stamped_stamped_path != stamped_path.resolve():
+                    freshness_reasons.append("stamped_path_mismatch")
+
+    freshness_state, promotability_status = classify_local_validation_states(
+        latest_path=latest_path,
+        latest_doc=latest_doc,
+        stamped_path=stamped_path,
+        freshness_reasons=freshness_reasons,
+        promotability_reasons=promotability_reasons,
+        dependency_states=dependency_states,
+    )
+    return LocalValidationFreshnessRecord(
+        artifact_family="cross_repo_validation_report",
+        artifact_kind="report",
+        promoted_id=promoted_id,
+        generated_at_utc=generated_at_utc,
+        freshness_state=freshness_state,
+        promotability_status=promotability_status,
+        latest_path=str(latest_path),
+        stamped_path=None if stamped_path is None else str(stamped_path.resolve()),
+        reasons=freshness_reasons + promotability_reasons,
+        dependency_states=dependency_states,
+    )
+
+
 def resolve_monday_validation_bridge_id(
     *,
     validation_root: Path,
@@ -2656,6 +2790,12 @@ def discover_local_validation_freshness_records(*, validation_root: Path) -> lis
         stamped_glob="*-monday-local-inbox-consumer-schema-validation.json",
     ):
         records.append(build_monday_consumer_validation_mirror_freshness_record(validation_root=validation_root))
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="cross-repo-validation-report.json",
+        stamped_glob="*-cross-repo-validation-report.json",
+    ):
+        records.append(build_cross_repo_validation_report_validation_freshness_record(validation_root=validation_root))
     return records
 
 

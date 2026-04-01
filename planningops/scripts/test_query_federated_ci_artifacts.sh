@@ -660,6 +660,8 @@ LOCAL_VALIDATION_BLOCKED_OUTPUT="$TMP_DIR/local-validation-freshness-blocked.jso
 LOCAL_VALIDATION_STALE_OUTPUT="$TMP_DIR/local-validation-freshness-stale.json"
 LOCAL_VALIDATION_MIRROR_WRITE_OUTPUT="$TMP_DIR/local-validation-mirror-write.json"
 LOCAL_VALIDATION_WITH_CONSUMER_OUTPUT="$TMP_DIR/local-validation-freshness-with-consumer.json"
+LOCAL_VALIDATION_WITH_CROSS_REPO_REPORT_OUTPUT="$TMP_DIR/local-validation-freshness-with-cross-repo-report.json"
+LOCAL_VALIDATION_CROSS_REPO_REPORT_OUTPUT="$TMP_DIR/local-validation-cross-repo-report.json"
 LOCAL_VALIDATION_RUNTIME_BLOCKED_OUTPUT="$TMP_DIR/local-validation-runtime-blocked.json"
 LOCAL_INBOX_PAYLOAD_OUTPUT="$TMP_DIR/local-inbox-payload.json"
 LOCAL_INBOX_PAYLOAD_ALL_OUTPUT="$TMP_DIR/local-inbox-payload-all.json"
@@ -4003,6 +4005,66 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
         "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
         "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)",
     ], doc
+PY
+
+python3 "$QUERY_PATH" local-validation-freshness \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_VALIDATION_WITH_CROSS_REPO_REPORT_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_WITH_CROSS_REPO_REPORT_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["artifact_family"] for record in records] == [
+    "monday_local_operator_stack_report",
+    "operator_handoff_report",
+    "monday_local_mission_packet",
+    "monday_local_operator_day_packet",
+    "monday_local_operator_inbox_payload",
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
+    "monday_local_inbox_bridge_schema_validation",
+    "monday_local_inbox_consumer_schema_validation",
+    "cross_repo_validation_report",
+], records
+
+cross_repo_report = records[10]
+assert cross_repo_report["freshness_state"] == "fresh", cross_repo_report
+assert cross_repo_report["promotability_status"] == "promotable", cross_repo_report
+assert cross_repo_report["promoted_id"] == "cross-repo-validation-20260401T110000Z", cross_repo_report
+assert cross_repo_report["dependency_states"] == {
+    "monday_local_inbox_launch_request": "current",
+    "monday_local_inbox_runtime_report": "current",
+    "monday_local_inbox_consumer_report": "current",
+    "monday_local_inbox_bridge_schema_validation": "current",
+    "monday_local_inbox_consumer_schema_validation": "current",
+}, cross_repo_report
+assert cross_repo_report["reasons"] == [], cross_repo_report
+PY
+
+python3 "$QUERY_PATH" local-validation-freshness \
+  --artifact-family cross_repo_validation_report \
+  --promotability-status promotable \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_VALIDATION_CROSS_REPO_REPORT_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_CROSS_REPO_REPORT_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["artifact_family"] == "cross_repo_validation_report", record
+assert record["freshness_state"] == "fresh", record
+assert record["promotability_status"] == "promotable", record
+assert record["reasons"] == [], record
 PY
 
 python3 "$QUERY_PATH" triage-feed \
