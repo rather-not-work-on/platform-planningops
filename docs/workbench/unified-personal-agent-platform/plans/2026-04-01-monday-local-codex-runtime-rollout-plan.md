@@ -117,6 +117,7 @@ Current deliverables:
 - `planningops/scripts/run_monday_local_operator_stack.py`
 - `planningops/runtime-artifacts/local/monday-local-operator-stack/<run-id>.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-operator-stack`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report` now carry the latest local operator stack pointer
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -178,6 +179,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. lift the local operator stack view into shared operator feed and report surfaces
-2. decide whether local operator evidence should stay in `runtime-artifacts/local` or gain a validation mirror for promotion workflows
+1. decide whether local operator evidence should stay in `runtime-artifacts/local` or gain a validation mirror for promotion workflows
+2. add a day-level operator handoff report that fuses federated CI triage and local operator runtime status into one markdown packet
 3. add a Codex-to-monday mission packet contract so local operator prompts become reproducible inputs
