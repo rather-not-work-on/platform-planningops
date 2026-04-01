@@ -478,6 +478,9 @@ HEALTH_SUMMARY_LATEST_RUNTIME_OUTPUT="$TMP_DIR/health-summary-latest-runtime.jso
 OPERATOR_TRIAGE_OUTPUT="$TMP_DIR/operator-triage.json"
 OPERATOR_TRIAGE_LAGGING_OUTPUT="$TMP_DIR/operator-triage-lagging.json"
 OPERATOR_TRIAGE_ACTIVE_OUTPUT="$TMP_DIR/operator-triage-active.json"
+TRIAGE_SUMMARY_OUTPUT="$TMP_DIR/triage-summary.json"
+TRIAGE_SUMMARY_ACTIVE_OUTPUT="$TMP_DIR/triage-summary-active.json"
+TRIAGE_SUMMARY_ALL_OUTPUT="$TMP_DIR/triage-summary-all.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1047,6 +1050,92 @@ assert record["latest_run_id"] == "federated-ci-runtime-gates-20260319-rerun26",
 assert record["latest_run_source_kind"] == "latest", record
 assert record["latest_gap_domains"] == ["readiness", "reconcile"], record
 assert record["latest_alert_domains"] == ["readiness", "reconcile"], record
+PY
+
+python3 "$QUERY_PATH" triage-summary \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_SUMMARY_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_SUMMARY_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["triage_status"] for record in records] == [
+    "lagging",
+    "active",
+], records
+
+lagging, active = records
+assert lagging["family_count"] == 1, lagging
+assert lagging["families"] == ["federated-ci-runtime-gates"], lagging
+assert lagging["newest_family"] == "federated-ci-runtime-gates", lagging
+assert lagging["newest_run_id"] == "federated-ci-runtime-gates-20260319-rerun30", lagging
+assert lagging["newest_run_source_kind"] == "stamped", lagging
+assert lagging["alert_alignment_counts"] == {"lagging": 1}, lagging
+assert lagging["latest_gap_domain_counts"] == {}, lagging
+assert lagging["latest_alert_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, lagging
+
+assert active["family_count"] == 1, active
+assert active["families"] == ["federated-ci-local"], active
+assert active["newest_family"] == "federated-ci-local", active
+assert active["newest_run_id"] == "federated-ci-local-20260301", active
+assert active["newest_run_source_kind"] == "stamped", active
+assert active["alert_alignment_counts"] == {"current": 1}, active
+assert active["latest_gap_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, active
+assert active["latest_alert_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, active
+PY
+
+python3 "$QUERY_PATH" triage-summary \
+  --triage-status active \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_SUMMARY_ACTIVE_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_SUMMARY_ACTIVE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["triage_status"] == "active", records
+assert records[0]["families"] == ["federated-ci-local"], records
+PY
+
+python3 "$QUERY_PATH" triage-summary \
+  --source-kind all \
+  --triage-status active \
+  --has-latest-gap-domain reconcile \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_SUMMARY_ALL_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_SUMMARY_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["triage_status"] == "active", record
+assert record["family_count"] == 2, record
+assert record["families"] == ["federated-ci-runtime-gates", "federated-ci-local"], record
+assert record["newest_family"] == "federated-ci-runtime-gates", record
+assert record["newest_run_id"] == "federated-ci-runtime-gates-20260319-rerun26", record
+assert record["newest_run_source_kind"] == "latest", record
+assert record["alert_alignment_counts"] == {"current": 2}, record
+assert record["latest_gap_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
+assert record["latest_alert_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \

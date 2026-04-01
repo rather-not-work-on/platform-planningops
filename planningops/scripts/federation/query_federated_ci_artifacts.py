@@ -155,6 +155,20 @@ class OperatorTriageRecord:
     latest_failure_domains: list[str]
 
 
+@dataclass(frozen=True)
+class TriageSummaryRecord:
+    triage_status: str
+    family_count: int
+    families: list[str]
+    newest_family: str
+    newest_run_id: str
+    newest_run_source_kind: str
+    newest_run_timestamp_utc: str
+    alert_alignment_counts: dict[str, int]
+    latest_gap_domain_counts: dict[str, int]
+    latest_alert_domain_counts: dict[str, int]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -889,6 +903,94 @@ def render_operator_triage_markdown(records: list[OperatorTriageRecord]) -> str:
     return "\n".join(lines)
 
 
+def build_triage_summary_records(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+) -> list[TriageSummaryRecord]:
+    triage_records = build_operator_triage_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    grouped: dict[str, list[OperatorTriageRecord]] = {}
+    for record in triage_records:
+        grouped.setdefault(record.triage_status, []).append(record)
+
+    summaries: list[TriageSummaryRecord] = []
+    for triage_status, bucket_records in grouped.items():
+        newest = bucket_records[0]
+        alert_alignment_counts: dict[str, int] = {}
+        latest_gap_domain_counts: dict[str, int] = {}
+        latest_alert_domain_counts: dict[str, int] = {}
+        for record in bucket_records:
+            alert_alignment_counts[record.alert_alignment] = alert_alignment_counts.get(record.alert_alignment, 0) + 1
+            for domain in record.latest_gap_domains:
+                latest_gap_domain_counts[domain] = latest_gap_domain_counts.get(domain, 0) + 1
+            for domain in record.latest_alert_domains:
+                latest_alert_domain_counts[domain] = latest_alert_domain_counts.get(domain, 0) + 1
+        summaries.append(
+            TriageSummaryRecord(
+                triage_status=triage_status,
+                family_count=len(bucket_records),
+                families=[record.family for record in bucket_records],
+                newest_family=newest.family,
+                newest_run_id=newest.latest_run_id,
+                newest_run_source_kind=newest.latest_run_source_kind,
+                newest_run_timestamp_utc=newest.latest_run_timestamp_utc,
+                alert_alignment_counts={key: alert_alignment_counts[key] for key in sorted(alert_alignment_counts)},
+                latest_gap_domain_counts={key: latest_gap_domain_counts[key] for key in sorted(latest_gap_domain_counts)},
+                latest_alert_domain_counts={key: latest_alert_domain_counts[key] for key in sorted(latest_alert_domain_counts)},
+            )
+        )
+    summaries.sort(key=lambda record: (record.newest_run_timestamp_utc, record.triage_status), reverse=True)
+    return summaries
+
+
+def render_triage_summary_table(records: list[TriageSummaryRecord]) -> str:
+    lines = [
+        "triage_status\tfamily_count\tfamilies\tnewest_family\tnewest_run\tnewest_source\talert_alignment_counts\tlatest_gap_domain_counts\tlatest_alert_domain_counts\tnewest_timestamp",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.triage_status,
+                    str(record.family_count),
+                    ",".join(record.families),
+                    record.newest_family,
+                    record.newest_run_id,
+                    record.newest_run_source_kind,
+                    ",".join(f"{key}={value}" for key, value in record.alert_alignment_counts.items()),
+                    ",".join(f"{key}={value}" for key, value in record.latest_gap_domain_counts.items()),
+                    ",".join(f"{key}={value}" for key, value in record.latest_alert_domain_counts.items()),
+                    record.newest_run_timestamp_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_triage_summary_markdown(records: list[TriageSummaryRecord]) -> str:
+    lines = [
+        "| triage_status | family_count | families | newest_family | newest_run | newest_source | alert_alignment_counts | latest_gap_domain_counts | latest_alert_domain_counts | newest_timestamp |",
+        "| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.triage_status} | {record.family_count} | {', '.join(record.families)} | "
+            f"{record.newest_family} | `{record.newest_run_id}` | {record.newest_run_source_kind} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.alert_alignment_counts.items())} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.latest_gap_domain_counts.items())} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.latest_alert_domain_counts.items())} | "
+            f"{record.newest_run_timestamp_utc} |"
+        )
+    return "\n".join(lines)
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -1576,6 +1678,22 @@ def parse_args() -> argparse.Namespace:
     operator_triage_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     operator_triage_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     operator_triage_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    triage_summary_parser = subparsers.add_parser(
+        "triage-summary",
+        help="show bucketed counts and newest families for operator triage statuses",
+    )
+    triage_summary_parser.add_argument("--family", default=None)
+    triage_summary_parser.add_argument("--run-id-prefix", default=None)
+    triage_summary_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    triage_summary_parser.add_argument("--triage-status", choices=["clear", "active", "lagging"], default=None)
+    triage_summary_parser.add_argument("--has-latest-gap-domain", default=None)
+    triage_summary_parser.add_argument("--has-latest-alert-domain", default=None)
+    triage_summary_parser.add_argument("--limit", type=int, default=20)
+    triage_summary_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    triage_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    triage_summary_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    triage_summary_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -1714,6 +1832,37 @@ def main() -> int:
             print(render_operator_triage_markdown(triage_records))
             return 0
         print(render_operator_triage_table(triage_records))
+        return 0
+
+    if args.command == "triage-summary":
+        summaries = build_triage_summary_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+        )
+        if args.triage_status:
+            summaries = [record for record in summaries if record.triage_status == args.triage_status]
+        if args.has_latest_gap_domain:
+            summaries = [
+                record
+                for record in summaries
+                if record.latest_gap_domain_counts.get(args.has_latest_gap_domain, 0) > 0
+            ]
+        if args.has_latest_alert_domain:
+            summaries = [
+                record
+                for record in summaries
+                if record.latest_alert_domain_counts.get(args.has_latest_alert_domain, 0) > 0
+            ]
+        summaries = summaries[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in summaries]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_triage_summary_markdown(summaries))
+            return 0
+        print(render_triage_summary_table(summaries))
         return 0
 
     if args.command == "reconcile-status":
