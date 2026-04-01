@@ -149,12 +149,18 @@ Current deliverables:
 - `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/consumer-report.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py monday-consumer-report` exposes a monday-native apply/result view over dry-run, apply-pass, and blocked consumer reports
 - `planningops/scripts/federation/query_federated_ci_artifacts.py monday-consumer-report` now also exposes `runtime_input_overrides` usage for audit; overrides remain regression-only and are not yet promoted to an operator-facing escape hatch
+- `monday/contracts/planningops-local-operator-inbox-payload-bridge.schema.json`
+- `monday/contracts/planningops-local-operator-inbox-consumer-report.schema.json`
+- `monday/scripts/validate_planningops_local_operator_inbox_artifacts.py`
+- `monday/scripts/test_validate_planningops_local_operator_inbox_artifacts.sh`
+- monday local CI now validates the promoted inbox payload bridge and monday-native consumer report against monday-owned schemas before merge
 - monday now consumes the promoted inbox payload as structured input and materializes native runtime command argv without reparsing day-packet markdown
 - monday consumer regression now covers:
   - ready dry-run packet materialization
   - ready apply-time local runtime smoke through `scripts/run_local_runtime_smoke.py`
   - blocked apply-time fail-closed behavior
 - explicit `--planner-runtime-config` and `--runtime-profile-file` passthrough can pin deterministic apply-time runtime inputs for local regression
+- `monday/scripts/run_local_runtime_smoke.py` now records the reviewed `--planner-runtime-config` override in smoke evidence instead of rejecting the consumer-produced argv
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -216,6 +222,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether the inbox payload bridge and the monday-native consumer report should be schema-validated against monday-owned contracts
-2. decide whether launch-request, runtime-report, or consumer-report freshness should be mirrored back into planningops-owned validation artifacts
+1. decide whether launch-request, runtime-report, or consumer-report freshness should be mirrored back into planningops-owned validation artifacts
+2. decide whether monday-owned schema validation reports should stay monday-side only or also surface through planningops query/report views
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
