@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QUERY_PATH="$ROOT_DIR/scripts/federation/query_federated_ci_artifacts.py"
+WRITE_LOCAL_INBOX_VALIDATION_MIRROR_PATH="$ROOT_DIR/scripts/write_monday_local_inbox_validation_mirror.py"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -653,6 +654,9 @@ HANDOFF_WRITE_OUTPUT="$TMP_DIR/handoff-write.json"
 LOCAL_VALIDATION_OUTPUT="$TMP_DIR/local-validation-freshness.json"
 LOCAL_VALIDATION_BLOCKED_OUTPUT="$TMP_DIR/local-validation-freshness-blocked.json"
 LOCAL_VALIDATION_STALE_OUTPUT="$TMP_DIR/local-validation-freshness-stale.json"
+LOCAL_VALIDATION_MIRROR_WRITE_OUTPUT="$TMP_DIR/local-validation-mirror-write.json"
+LOCAL_VALIDATION_WITH_CONSUMER_OUTPUT="$TMP_DIR/local-validation-freshness-with-consumer.json"
+LOCAL_VALIDATION_RUNTIME_BLOCKED_OUTPUT="$TMP_DIR/local-validation-runtime-blocked.json"
 LOCAL_INBOX_PAYLOAD_OUTPUT="$TMP_DIR/local-inbox-payload.json"
 LOCAL_INBOX_PAYLOAD_ALL_OUTPUT="$TMP_DIR/local-inbox-payload-all.json"
 LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT="$TMP_DIR/local-inbox-payload-filtered.json"
@@ -3235,6 +3239,100 @@ assert [record["run_id"] for record in records] == [
     "planningops-local-inbox-consumer-20260401T101000Z",
 ], records
 assert all(record["has_runtime_input_overrides"] is False for record in records), records
+PY
+
+python3 "$WRITE_LOCAL_INBOX_VALIDATION_MIRROR_PATH" \
+  --validation-root "$VALIDATION_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$LOCAL_VALIDATION_MIRROR_WRITE_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_MIRROR_WRITE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["run_id"] == "planningops-local-inbox-consumer-20260401T103000Z", doc
+assert [record["artifact_family"] for record in doc["records"]] == [
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
+], doc
+PY
+
+python3 "$QUERY_PATH" local-validation-freshness \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_VALIDATION_WITH_CONSUMER_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_WITH_CONSUMER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["artifact_family"] for record in records] == [
+    "monday_local_operator_stack_report",
+    "operator_handoff_report",
+    "monday_local_mission_packet",
+    "monday_local_operator_day_packet",
+    "monday_local_operator_inbox_payload",
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
+], records
+
+launch_request = records[5]
+runtime_report = records[6]
+consumer_report = records[7]
+
+assert launch_request["freshness_state"] == "fresh", launch_request
+assert launch_request["promotability_status"] == "promotable", launch_request
+assert launch_request["promoted_id"] == "planningops-local-inbox-consumer-20260401T103000Z", launch_request
+assert launch_request["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+}, launch_request
+assert launch_request["reasons"] == [], launch_request
+
+assert runtime_report["freshness_state"] == "fresh", runtime_report
+assert runtime_report["promotability_status"] == "blocked", runtime_report
+assert runtime_report["promoted_id"] == "planningops-local-inbox-consumer-20260401T103000Z", runtime_report
+assert runtime_report["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+    "monday_local_inbox_launch_request": "current",
+}, runtime_report
+assert runtime_report["reasons"] == ["source_artifact_missing"], runtime_report
+
+assert consumer_report["freshness_state"] == "fresh", consumer_report
+assert consumer_report["promotability_status"] == "promotable", consumer_report
+assert consumer_report["promoted_id"] == "planningops-local-inbox-consumer-20260401T103000Z", consumer_report
+assert consumer_report["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+    "monday_local_inbox_launch_request": "current",
+    "monday_local_inbox_runtime_report": "current",
+}, consumer_report
+assert consumer_report["reasons"] == [], consumer_report
+PY
+
+python3 "$QUERY_PATH" local-validation-freshness \
+  --artifact-family monday_local_inbox_runtime_report \
+  --promotability-status blocked \
+  --has-reason source_artifact_missing \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_VALIDATION_RUNTIME_BLOCKED_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_RUNTIME_BLOCKED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["artifact_family"] == "monday_local_inbox_runtime_report", record
+assert record["freshness_state"] == "fresh", record
+assert record["promotability_status"] == "blocked", record
+assert record["reasons"] == ["source_artifact_missing"], record
 PY
 
 echo "query federated ci artifacts ok"
