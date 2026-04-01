@@ -29,6 +29,7 @@ DEFAULT_CONFORMANCE_ROOT = WORKSPACE_ROOT / "planningops/artifacts/conformance"
 DEFAULT_LOCAL_OPERATOR_STACK_ROOT = WORKSPACE_ROOT / "planningops/runtime-artifacts/local/monday-local-operator-stack"
 DEFAULT_MONDAY_CONSUMER_ROOT = WORKSPACE_ROOT.parent / "monday" / "runtime-artifacts/integration/planningops-local-operator-inbox"
 DEFAULT_MONDAY_VALIDATION_ROOT = WORKSPACE_ROOT.parent / "monday" / "runtime-artifacts/validation"
+CROSS_REPO_VALIDATION_REPORT_CONTRACT_REF = "planningops/contracts/cross-repo-validation-report-contract.md"
 
 LATEST_GAP_CHOICES = (
     "readiness_missing",
@@ -4388,6 +4389,27 @@ def build_handoff_artifact_document(
     }
 
 
+def build_cross_repo_validation_artifact_document(
+    *,
+    record: CrossRepoValidationReportRecord,
+    report_id: str,
+    latest_report_path: Path,
+    stamped_report_path: Path,
+    output_path: Path | None,
+) -> dict[str, Any]:
+    return {
+        "generated_at_utc": now_utc(),
+        "report_id": report_id,
+        "contract_ref": CROSS_REPO_VALIDATION_REPORT_CONTRACT_REF,
+        "artifact_paths": {
+            "latest_report_path": str(latest_report_path.resolve()),
+            "stamped_report_path": str(stamped_report_path.resolve()),
+            "output_path": None if output_path is None else str(output_path.resolve()),
+        },
+        "record": asdict(record),
+    }
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -5299,6 +5321,17 @@ def parse_args() -> argparse.Namespace:
     cross_repo_validation_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
     cross_repo_validation_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
+    write_cross_repo_validation_parser = subparsers.add_parser(
+        "write-cross-repo-validation-report",
+        help="write the cross-repo monday inbox validation report into latest + stamped validation artifacts",
+    )
+    write_cross_repo_validation_parser.add_argument("--report-id", default=None)
+    write_cross_repo_validation_parser.add_argument("--output", default=None)
+    write_cross_repo_validation_parser.add_argument("--format", choices=["table", "json", "markdown"], default="json")
+    write_cross_repo_validation_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    write_cross_repo_validation_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    write_cross_repo_validation_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -5432,6 +5465,36 @@ def main() -> int:
         )
         if args.format == "json":
             print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_cross_repo_validation_report_markdown(record))
+            return 0
+        print(render_cross_repo_validation_report_table(record))
+        return 0
+
+    if args.command == "write-cross-repo-validation-report":
+        record = build_cross_repo_validation_report_record(
+            validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
+        )
+        report_id = args.report_id or f"cross-repo-validation-{utc_timestamp_slug()}"
+        latest_report_path = validation_root / "cross-repo-validation-report.json"
+        stamped_report_path = validation_root / f"{report_id}-cross-repo-validation-report.json"
+        output_path = resolve_optional_path(args.output)
+        doc = build_cross_repo_validation_artifact_document(
+            record=record,
+            report_id=report_id,
+            latest_report_path=latest_report_path,
+            stamped_report_path=stamped_report_path,
+            output_path=output_path,
+        )
+        write_json(latest_report_path, doc)
+        write_json(stamped_report_path, doc)
+        if output_path is not None:
+            write_json(output_path, doc)
+        if args.format == "json":
+            print(json.dumps(doc, ensure_ascii=True, indent=2))
             return 0
         if args.format == "markdown":
             print(render_cross_repo_validation_report_markdown(record))
