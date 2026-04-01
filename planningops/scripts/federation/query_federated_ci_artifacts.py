@@ -32,6 +32,10 @@ class SummaryRecord:
     shell_exit_code: int | None
     missing_required_checks: list[str]
     failure_domains: list[str]
+    failed_checks: list[str]
+    readiness_status: str
+    ready: bool | None
+    blocking_reasons: list[str]
     has_summary_validation: bool
     has_readiness: bool
     has_readiness_validation: bool
@@ -49,6 +53,15 @@ def resolve_root(path_text: str, default: Path) -> Path:
 
 def source_kind_for_summary_path(path: Path) -> str:
     return "latest" if path.name == "federated-ci-summary.json" else "stamped"
+
+
+def load_optional_json(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        return load_json(path)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
 
 
 def build_sidecar_paths(
@@ -87,11 +100,12 @@ def build_summary_record(
         validation_root=validation_root,
         conformance_root=conformance_root,
     )
-    failures = [
-        str(check.get("domain"))
-        for check in list(summary_doc.get("checks") or [])
-        if check.get("verdict") == "fail" and isinstance(check.get("domain"), str)
-    ]
+    failing_checks = [check for check in list(summary_doc.get("checks") or []) if check.get("verdict") == "fail"]
+    failures = [str(check.get("domain")) for check in failing_checks if isinstance(check.get("domain"), str)]
+    failed_checks = [str(check.get("name") or "unknown") for check in failing_checks]
+    readiness_doc = load_optional_json(sidecars["readiness"])
+    raw_readiness_status = readiness_doc.get("readiness_status") if isinstance(readiness_doc, dict) else None
+    raw_ready = readiness_doc.get("ready") if isinstance(readiness_doc, dict) else None
     return SummaryRecord(
         run_id=run_id,
         family=infer_family_from_run_id(run_id),
@@ -104,6 +118,18 @@ def build_summary_record(
         shell_exit_code=summary_doc.get("shell_exit_code"),
         missing_required_checks=[str(name) for name in list(summary_doc.get("missing_required_checks") or [])],
         failure_domains=sorted(set(failures)),
+        failed_checks=failed_checks,
+        readiness_status=(
+            str(raw_readiness_status)
+            if isinstance(raw_readiness_status, str) and raw_readiness_status.strip()
+            else ("unknown" if sidecars["readiness"].exists() else "missing")
+        ),
+        ready=raw_ready if isinstance(raw_ready, bool) else None,
+        blocking_reasons=(
+            [str(reason) for reason in list(readiness_doc.get("blocking_reasons") or [])]
+            if isinstance(readiness_doc, dict)
+            else []
+        ),
         has_summary_validation=sidecars["summary_validation"].exists(),
         has_readiness=sidecars["readiness"].exists(),
         has_readiness_validation=sidecars["readiness_validation"].exists(),
@@ -155,7 +181,7 @@ def discover_summary_records(
 
 def render_runs_table(records: list[SummaryRecord]) -> str:
     lines = [
-        "family\trun_id\tsource\tverdict\tstatus\tchecks\ttimestamp",
+        "family\trun_id\tsource\tverdict\treadiness\tfailed_checks\tstatus\tchecks\ttimestamp",
     ]
     for record in records:
         lines.append(
@@ -165,6 +191,8 @@ def render_runs_table(records: list[SummaryRecord]) -> str:
                     record.run_id,
                     record.source_kind,
                     str(record.verdict or ""),
+                    record.readiness_status,
+                    ",".join(record.failed_checks),
                     str(record.overall_status or ""),
                     str(record.check_count if record.check_count is not None else ""),
                     record.timestamp_utc,
@@ -176,13 +204,14 @@ def render_runs_table(records: list[SummaryRecord]) -> str:
 
 def render_runs_markdown(records: list[SummaryRecord]) -> str:
     lines = [
-        "| family | run_id | source | verdict | status | checks | timestamp |",
-        "| --- | --- | --- | --- | --- | ---: | --- |",
+        "| family | run_id | source | verdict | readiness | failed_checks | status | checks | timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
     ]
     for record in records:
         lines.append(
             f"| {record.family} | `{record.run_id}` | {record.source_kind} | "
-            f"{record.verdict or ''} | {record.overall_status or ''} | "
+            f"{record.verdict or ''} | {record.readiness_status} | "
+            f"{', '.join(record.failed_checks)} | {record.overall_status or ''} | "
             f"{record.check_count if record.check_count is not None else ''} | {record.timestamp_utc} |"
         )
     return "\n".join(lines)
@@ -238,8 +267,11 @@ def parse_args() -> argparse.Namespace:
     runs_parser = subparsers.add_parser("runs", help="list indexed federated CI summaries")
     runs_parser.add_argument("--family", default=None)
     runs_parser.add_argument("--run-id-prefix", default=None)
+    runs_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="all")
     runs_parser.add_argument("--verdict", choices=["pass", "fail"], default=None)
     runs_parser.add_argument("--status", choices=["complete", "interrupted"], default=None)
+    runs_parser.add_argument("--readiness-status", choices=["ready", "blocked", "missing", "unknown"], default=None)
+    runs_parser.add_argument("--failed-check", default=None)
     runs_parser.add_argument("--limit", type=int, default=20)
     runs_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     runs_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
@@ -273,10 +305,16 @@ def main() -> int:
             filtered = [record for record in filtered if record.family == args.family]
         if args.run_id_prefix:
             filtered = [record for record in filtered if record.run_id.startswith(args.run_id_prefix)]
+        if args.source_kind != "all":
+            filtered = [record for record in filtered if record.source_kind == args.source_kind]
         if args.verdict:
             filtered = [record for record in filtered if record.verdict == args.verdict]
         if args.status:
             filtered = [record for record in filtered if record.overall_status == args.status]
+        if args.readiness_status:
+            filtered = [record for record in filtered if record.readiness_status == args.readiness_status]
+        if args.failed_check:
+            filtered = [record for record in filtered if args.failed_check in record.failed_checks]
         filtered = filtered[: args.limit]
         if args.format == "json":
             print(json.dumps({"records": [asdict(record) for record in filtered]}, ensure_ascii=True, indent=2))
