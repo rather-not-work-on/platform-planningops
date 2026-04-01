@@ -276,6 +276,23 @@ class TriageReportRecord:
 
 
 @dataclass(frozen=True)
+class HandoffReportRecord:
+    source_kind: str
+    target_limit: int
+    headline: str
+    attention_summary: str
+    newest_failing_summary: str
+    newest_recovered_summary: str | None
+    local_operator_record: LocalOperatorStackRecord | None
+    local_operator_summary: str | None
+    local_operator_next_step: str | None
+    queue_lines: list[str]
+    target_lines: list[str]
+    immediate_action_lines: list[str]
+    markdown: str
+
+
+@dataclass(frozen=True)
 class LocalOperatorStackRecord:
     run_id: str
     report_path: str
@@ -1914,6 +1931,97 @@ def render_triage_report_markdown(record: TriageReportRecord) -> str:
     return record.markdown
 
 
+def build_handoff_report_record(
+    *,
+    records: list[SummaryRecord],
+    local_records: list[LocalOperatorStackRecord] | None,
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+    target_limit: int,
+) -> HandoffReportRecord:
+    triage_report = build_triage_report_record(
+        records=records,
+        local_records=local_records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+        target_limit=target_limit,
+    )
+    headline = f"Operator handoff report: {triage_report.headline.removeprefix('Federated CI triage report: ')}"
+    immediate_action_lines: list[str] = []
+    if triage_report.local_operator_next_step is not None:
+        immediate_action_lines.append(f"local-runtime: {triage_report.local_operator_next_step}")
+    if triage_report.target_lines:
+        immediate_action_lines.append(f"triage-target: {triage_report.target_lines[0]}")
+    if len(triage_report.target_lines) > 1:
+        immediate_action_lines.append(f"follow-up: {triage_report.target_lines[1]}")
+
+    markdown_lines = [
+        "## Operator Handoff Report",
+        "",
+        "### Snapshot",
+        f"- headline: {headline}",
+        f"- source_kind: `{triage_report.source_kind}`",
+        f"- top target window: `{triage_report.target_limit}`",
+        f"- attention families: `{triage_report.attention_summary}`",
+        f"- newest failing pointer: {triage_report.newest_failing_summary}",
+    ]
+    if triage_report.newest_recovered_summary is not None:
+        markdown_lines.append(f"- newest recovered pointer: {triage_report.newest_recovered_summary}")
+    markdown_lines.extend(["", "### Local Runtime"])
+    if triage_report.local_operator_summary is None:
+        markdown_lines.append("- local operator: unavailable")
+    else:
+        markdown_lines.append(f"- local operator: `{triage_report.local_operator_summary}`")
+    if triage_report.local_operator_next_step is not None:
+        markdown_lines.append(f"- local operator next step: {triage_report.local_operator_next_step}")
+    markdown_lines.extend(["", "### Queue", *[f"- {line}" for line in triage_report.queue_lines]])
+    markdown_lines.extend(
+        ["", "### Top Targets", *[f"{index}. {line}" for index, line in enumerate(triage_report.target_lines, start=1)]]
+    )
+    markdown_lines.extend(
+        ["", "### Immediate Actions", *[f"{index}. {line}" for index, line in enumerate(immediate_action_lines, start=1)]]
+    )
+    return HandoffReportRecord(
+        source_kind=triage_report.source_kind,
+        target_limit=triage_report.target_limit,
+        headline=headline,
+        attention_summary=triage_report.attention_summary,
+        newest_failing_summary=triage_report.newest_failing_summary,
+        newest_recovered_summary=triage_report.newest_recovered_summary,
+        local_operator_record=triage_report.local_operator_record,
+        local_operator_summary=triage_report.local_operator_summary,
+        local_operator_next_step=triage_report.local_operator_next_step,
+        queue_lines=triage_report.queue_lines,
+        target_lines=triage_report.target_lines,
+        immediate_action_lines=immediate_action_lines,
+        markdown="\n".join(markdown_lines),
+    )
+
+
+def render_handoff_report_table(record: HandoffReportRecord) -> str:
+    sections = [
+        f"headline\t{record.headline}",
+        f"source_kind\t{record.source_kind}",
+        f"target_limit\t{record.target_limit}",
+        f"attention_summary\t{record.attention_summary}",
+        f"newest_failing\t{record.newest_failing_summary}",
+    ]
+    if record.newest_recovered_summary is not None:
+        sections.append(f"newest_recovered\t{record.newest_recovered_summary}")
+    if record.local_operator_summary is not None:
+        sections.append(f"local_operator\t{record.local_operator_summary}")
+    if record.local_operator_next_step is not None:
+        sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines, "immediate_actions", *record.immediate_action_lines])
+    return "\n".join(sections)
+
+
+def render_handoff_report_markdown(record: HandoffReportRecord) -> str:
+    return record.markdown
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -2702,6 +2810,20 @@ def parse_args() -> argparse.Namespace:
     triage_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     triage_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
 
+    handoff_report_parser = subparsers.add_parser(
+        "handoff-report",
+        help="show a handoff-friendly operator report combining triage state and local runtime status",
+    )
+    handoff_report_parser.add_argument("--family", default=None)
+    handoff_report_parser.add_argument("--run-id-prefix", default=None)
+    handoff_report_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    handoff_report_parser.add_argument("--target-limit", type=int, default=3)
+    handoff_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
+    handoff_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    handoff_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    handoff_report_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+    handoff_report_parser.add_argument("--local-root", default=str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -3031,6 +3153,25 @@ def main() -> int:
             print(render_triage_report_markdown(record))
             return 0
         print(render_triage_report_table(record))
+        return 0
+
+    if args.command == "handoff-report":
+        local_records = discover_local_operator_stack_records(local_root=local_root)
+        record = build_handoff_report_record(
+            records=records,
+            local_records=local_records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+            target_limit=args.target_limit,
+        )
+        if args.format == "json":
+            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_handoff_report_markdown(record))
+            return 0
+        print(render_handoff_report_table(record))
         return 0
 
     if args.command == "reconcile-status":
