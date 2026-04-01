@@ -10,9 +10,11 @@ from typing import Any
 
 from federated_ci_runtime_state import (
     build_check_record,
+    build_summary_artifact_write_plan,
     finalize_summary_doc,
     initialize_summary_doc,
     load_json,
+    write_summary_artifacts,
     write_json,
 )
 
@@ -67,22 +69,25 @@ def command_finalize(args: argparse.Namespace) -> int:
     )
     failures = [check for check in list(doc.get("checks") or []) if check.get("verdict") == "fail"]
 
-    stamped_path = Path(args.stamped_path)
-    latest_path = Path(args.latest_path)
-    write_json(stamped_path, doc)
-    write_json(latest_path, doc)
-
     validator = load_validator_module()
     schema_path = Path(__file__).resolve().parents[2] / "schemas" / "federated-ci-summary.schema.json"
-    schema_doc = validator.load_json(schema_path)
-
-    stamped_report = validator.build_report(stamped_path, schema_path, doc, schema_doc)
-    latest_report = validator.build_report(latest_path, schema_path, doc, schema_doc)
-
-    if args.stamped_validation_output is not None:
-        validator.write_json(Path(args.stamped_validation_output), stamped_report)
-    if args.latest_validation_output is not None:
-        validator.write_json(Path(args.latest_validation_output), latest_report)
+    stamped_path = Path(args.stamped_path)
+    latest_path = Path(args.latest_path)
+    stamped_report, latest_report = write_summary_artifacts(
+        doc,
+        plan=build_summary_artifact_write_plan(
+            stamped_path=stamped_path,
+            latest_path=latest_path,
+            stamped_validation_output=None
+            if args.stamped_validation_output is None
+            else Path(args.stamped_validation_output),
+            latest_validation_output=None
+            if args.latest_validation_output is None
+            else Path(args.latest_validation_output),
+        ),
+        validator_module=validator,
+        schema_path=schema_path,
+    )
 
     if stamped_report["verdict"] != "pass":
         print(f"federated stamped summary validation failed: {stamped_report['errors']}", file=sys.stderr)
