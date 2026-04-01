@@ -353,6 +353,14 @@ class HandoffReportRecord:
     monday_validation_records: list[LocalValidationFreshnessRecord]
     monday_validation_summary_lines: list[str]
     monday_validation_action_lines: list[str]
+    cross_repo_validation_snapshot_status: str
+    cross_repo_validation_snapshot_summary: str
+    monday_source_validation_status: str
+    monday_source_validation_summary: str
+    cross_repo_validation_action_line: str | None
+    cross_repo_validation_detail_lines: list[str]
+    monday_source_validation_report_lines: list[str]
+    cross_repo_validation_action_lines: list[str]
     cross_repo_validation_packet_report_id: str | None
     cross_repo_validation_packet_path: str | None
     queue_lines: list[str]
@@ -4605,13 +4613,30 @@ def build_handoff_report_record(
         for action in (build_local_validation_action_line(record) for record in monday_validation_records)
         if action is not None
     ]
-    cross_repo_validation_packet_report_id = None
-    cross_repo_validation_packet_path = None
     cross_repo_validation_record = build_cross_repo_validation_report_record(
         validation_root=validation_root,
         consumer_root=consumer_root,
         monday_validation_root=monday_validation_root,
     )
+    cross_repo_validation_snapshot_status = cross_repo_validation_record.cross_repo_snapshot_status
+    cross_repo_validation_snapshot_summary = cross_repo_validation_record.cross_repo_snapshot_summary
+    monday_source_validation_status = cross_repo_validation_record.monday_source_validation_status
+    monday_source_validation_summary = cross_repo_validation_record.monday_source_validation_summary
+    cross_repo_validation_action_line = None
+    cross_repo_validation_detail_lines = [
+        f"mirror: {line}" for line in cross_repo_validation_record.cross_repo_summary_lines
+    ]
+    monday_source_validation_report_lines = [
+        f"source: {line}" for line in cross_repo_validation_record.monday_validation_report_lines
+    ]
+    cross_repo_validation_action_lines = [
+        *cross_repo_validation_record.cross_repo_action_lines,
+        *cross_repo_validation_record.monday_validation_report_action_lines,
+    ]
+    if cross_repo_validation_record.cross_repo_action_lines:
+        cross_repo_validation_action_line = cross_repo_validation_record.cross_repo_action_lines[0]
+    cross_repo_validation_packet_report_id = None
+    cross_repo_validation_packet_path = None
     if (
         cross_repo_validation_record.cross_repo_action_lines
         or cross_repo_validation_record.monday_validation_report_action_lines
@@ -4681,6 +4706,18 @@ def build_handoff_report_record(
                 *[f"{index}. {line}" for index, line in enumerate(monday_validation_action_lines, start=1)],
             ]
         )
+    markdown_lines.extend(
+        [
+            "",
+            "### Cross-Repo Validation",
+            f"- snapshot status: `{cross_repo_validation_snapshot_status}`",
+            f"- snapshot summary: `{cross_repo_validation_snapshot_summary}`",
+            f"- monday source validation status: `{monday_source_validation_status}`",
+            f"- monday source validation summary: `{monday_source_validation_summary}`",
+        ]
+    )
+    if cross_repo_validation_action_line is not None:
+        markdown_lines.append(f"- next action: {cross_repo_validation_action_line}")
     cross_repo_validation_packet_lines: list[str] = []
     if cross_repo_validation_packet_report_id is not None:
         cross_repo_validation_packet_lines.append(
@@ -4690,6 +4727,26 @@ def build_handoff_report_record(
         cross_repo_validation_packet_lines.append(f"- detail packet path: `{cross_repo_validation_packet_path}`")
     if cross_repo_validation_packet_lines:
         markdown_lines.extend(["", "### Cross-Repo Validation Packet", *cross_repo_validation_packet_lines])
+    if cross_repo_validation_detail_lines or monday_source_validation_report_lines:
+        markdown_lines.extend(
+            [
+                "",
+                "### Cross-Repo Validation Details",
+                *[f"- {line}" for line in cross_repo_validation_detail_lines],
+                *[f"- {line}" for line in monday_source_validation_report_lines],
+            ]
+        )
+    if cross_repo_validation_action_lines:
+        markdown_lines.extend(
+            [
+                "",
+                "### Cross-Repo Validation Actions",
+                *[
+                    f"{index}. {line}"
+                    for index, line in enumerate(cross_repo_validation_action_lines, start=1)
+                ],
+            ]
+        )
     if local_validation_action_lines:
         markdown_lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
     markdown_lines.extend(["", "### Queue", *[f"- {line}" for line in triage_report.queue_lines]])
@@ -4719,6 +4776,14 @@ def build_handoff_report_record(
         monday_validation_records=monday_validation_records,
         monday_validation_summary_lines=monday_validation_summary_lines,
         monday_validation_action_lines=monday_validation_action_lines,
+        cross_repo_validation_snapshot_status=cross_repo_validation_snapshot_status,
+        cross_repo_validation_snapshot_summary=cross_repo_validation_snapshot_summary,
+        monday_source_validation_status=monday_source_validation_status,
+        monday_source_validation_summary=monday_source_validation_summary,
+        cross_repo_validation_action_line=cross_repo_validation_action_line,
+        cross_repo_validation_detail_lines=cross_repo_validation_detail_lines,
+        monday_source_validation_report_lines=monday_source_validation_report_lines,
+        cross_repo_validation_action_lines=cross_repo_validation_action_lines,
         cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
         cross_repo_validation_packet_path=cross_repo_validation_packet_path,
         queue_lines=triage_report.queue_lines,
@@ -4751,6 +4816,22 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         sections.extend(["monday_validation", *record.monday_validation_summary_lines])
     if record.monday_validation_action_lines:
         sections.extend(["monday_validation_actions", *record.monday_validation_action_lines])
+    sections.extend(
+        [
+            f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
+            f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary}",
+            f"monday_source_validation_status\t{record.monday_source_validation_status}",
+            f"monday_source_validation_summary\t{record.monday_source_validation_summary}",
+        ]
+    )
+    if record.cross_repo_validation_action_line is not None:
+        sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
+    if record.cross_repo_validation_detail_lines:
+        sections.extend(["cross_repo_validation_details", *record.cross_repo_validation_detail_lines])
+    if record.monday_source_validation_report_lines:
+        sections.extend(["monday_source_validation_reports", *record.monday_source_validation_report_lines])
+    if record.cross_repo_validation_action_lines:
+        sections.extend(["cross_repo_validation_actions", *record.cross_repo_validation_action_lines])
     if record.cross_repo_validation_packet_report_id is not None:
         sections.append(
             f"cross_repo_validation_packet_report_id\t{record.cross_repo_validation_packet_report_id}"
