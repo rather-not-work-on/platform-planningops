@@ -180,6 +180,7 @@ Current deliverables:
 - `planningops/artifacts/validation/<report-id>-monday-local-inbox-consumer-schema-validation.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now picks up mirrored monday-owned bridge and consumer schema validation verdicts when they are promoted into planningops validation
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries a dedicated monday schema validation snapshot/summary/actions section when those mirrored verdicts are present
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload` now carries a bridge-aware monday schema validation snapshot/summary/actions view for the current inbox payload without routing through `handoff-report`
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -241,6 +242,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether mirrored monday schema validation verdicts should also surface in `local-inbox-payload` or another payload-first operator packet
-2. decide whether monday validation verdicts need a dedicated cross-repo validation report surface beyond `handoff-report` and `local-validation-freshness`
+1. decide whether monday validation verdicts need a dedicated cross-repo validation report surface beyond `handoff-report`, `local-inbox-payload`, and `local-validation-freshness`
+2. decide whether `monday-consumer-report` should also fold mirrored schema validation status into its apply/result-first surface
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage

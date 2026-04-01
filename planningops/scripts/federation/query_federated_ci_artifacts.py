@@ -379,6 +379,8 @@ class LocalInboxPayloadRecord:
     launch_mode: str | None
     local_model_route: str | None
     local_validation_snapshot_status: str | None
+    monday_validation_snapshot_status: str
+    monday_validation_snapshot_summary: str
     day_packet_id: str | None
     mission_packet_id: str | None
     mission_objective: str | None
@@ -386,6 +388,8 @@ class LocalInboxPayloadRecord:
     monday_runtime_entrypoint_command: str | None
     rollback_command: str | None
     attachment_count: int
+    monday_validation_summary_lines: list[str]
+    monday_validation_action_lines: list[str]
     local_validation_action_lines: list[str]
     immediate_actions: list[str]
     queue_lines: list[str]
@@ -1087,6 +1091,7 @@ def build_local_inbox_payload_record(
     payload_path: Path,
     payload_doc: dict[str, Any],
 ) -> LocalInboxPayloadRecord:
+    bridge_id = str(payload_doc.get("bridge_id"))
     payload = payload_doc.get("payload") if isinstance(payload_doc.get("payload"), dict) else {}
     source_artifacts = payload.get("source_artifacts") if isinstance(payload.get("source_artifacts"), dict) else {}
     dependency_states: dict[str, str] = {}
@@ -1106,8 +1111,23 @@ def build_local_inbox_payload_record(
         raw_path=source_artifacts.get("local_operator_report_path"),
         expected_path=validation_root / "monday-local-operator-stack-report.json",
     )[0]
+    monday_validation_records = discover_monday_validation_records_for_bridge(
+        validation_root=validation_root,
+        bridge_id=bridge_id,
+    )
+    monday_validation_snapshot_status, monday_validation_snapshot_summary = build_local_validation_snapshot(
+        monday_validation_records
+    )
+    monday_validation_summary_lines = [
+        build_local_validation_summary_line(record) for record in monday_validation_records
+    ]
+    monday_validation_action_lines = [
+        action
+        for action in (build_local_validation_action_line(record) for record in monday_validation_records)
+        if action is not None
+    ]
     return LocalInboxPayloadRecord(
-        bridge_id=str(payload_doc.get("bridge_id")),
+        bridge_id=bridge_id,
         source_kind=source_kind_for_local_inbox_payload_path(payload_path),
         payload_path=str(payload_path.resolve()),
         generated_at_utc=str(payload_doc.get("generated_at_utc") or ""),
@@ -1123,6 +1143,8 @@ def build_local_inbox_payload_record(
         launch_mode=normalize_optional_string(payload.get("launch_mode")),
         local_model_route=normalize_optional_string(payload.get("local_model_route")),
         local_validation_snapshot_status=normalize_optional_string(payload.get("local_validation_snapshot_status")),
+        monday_validation_snapshot_status=monday_validation_snapshot_status,
+        monday_validation_snapshot_summary=monday_validation_snapshot_summary,
         day_packet_id=normalize_optional_string(payload.get("day_packet_id")),
         mission_packet_id=normalize_optional_string(payload.get("mission_packet_id")),
         mission_objective=normalize_optional_string(payload.get("mission_objective")),
@@ -1130,6 +1152,8 @@ def build_local_inbox_payload_record(
         monday_runtime_entrypoint_command=normalize_optional_string(payload.get("monday_runtime_entrypoint_command")),
         rollback_command=normalize_optional_string(payload.get("rollback_command")),
         attachment_count=len(normalize_string_list(payload.get("attachments"))),
+        monday_validation_summary_lines=monday_validation_summary_lines,
+        monday_validation_action_lines=monday_validation_action_lines,
         local_validation_action_lines=normalize_string_list(payload.get("local_validation_action_lines")),
         immediate_actions=normalize_string_list(payload.get("immediate_actions")),
         queue_lines=normalize_string_list(payload.get("queue_lines")),
@@ -1214,7 +1238,7 @@ def filter_local_inbox_payload_records(
 
 def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> str:
     lines = [
-        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tvalidation_snapshot\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
+        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tvalidation_snapshot\tmonday_validation_snapshot\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -1234,6 +1258,7 @@ def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> 
                     str(record.launch_mode or ""),
                     str(record.local_model_route or ""),
                     str(record.local_validation_snapshot_status or ""),
+                    record.monday_validation_snapshot_status,
                     ",".join(f"{key}={value}" for key, value in record.dependency_states.items()),
                     str(len(record.immediate_actions)),
                     str(len(record.target_lines)),
@@ -1247,8 +1272,8 @@ def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> 
 
 def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) -> str:
     lines = [
-        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
+        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | monday_validation_snapshot | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
     ]
     for record in records:
         lines.append(
@@ -1257,6 +1282,7 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
             f"{record.message_class_hint or ''} | {record.retry_mode or ''} | {record.planner_profile or ''} | "
             f"{record.launch_mode or ''} | {record.local_model_route or ''} | "
             f"{record.local_validation_snapshot_status or ''} | "
+            f"{record.monday_validation_snapshot_status} | "
             f"{', '.join(f'{key}={value}' for key, value in record.dependency_states.items())} | "
             f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.attachment_count} | "
             f"{record.generated_at_utc} |"
@@ -2342,6 +2368,78 @@ def build_monday_consumer_validation_mirror_freshness_record(
             "monday_local_inbox_consumer_report": "monday-local-inbox-consumer-report.json",
         },
     )
+
+
+def resolve_monday_validation_bridge_id(
+    *,
+    validation_root: Path,
+    artifact_family: str,
+) -> str | None:
+    latest_filename_by_family = {
+        "monday_local_inbox_bridge_schema_validation": "monday-local-inbox-bridge-schema-validation.json",
+        "monday_local_inbox_consumer_schema_validation": "monday-local-inbox-consumer-schema-validation.json",
+    }
+    latest_filename = latest_filename_by_family.get(artifact_family)
+    if latest_filename is None:
+        return None
+
+    latest_doc = load_optional_json((validation_root / latest_filename).resolve())
+    if latest_doc is None:
+        return None
+    source_report_doc = resolve_nested_value(latest_doc, "mirror", "payload")
+    if not isinstance(source_report_doc, dict):
+        return None
+    artifact_path = resolve_artifact_path(source_report_doc.get("artifact_path"))
+    if artifact_path is None:
+        return None
+    artifact_doc = load_optional_json(artifact_path)
+    if artifact_doc is None:
+        return None
+    if artifact_family == "monday_local_inbox_bridge_schema_validation":
+        if not is_local_inbox_payload_document(artifact_doc):
+            return None
+        return normalize_optional_string(artifact_doc.get("bridge_id"))
+    if artifact_family == "monday_local_inbox_consumer_schema_validation":
+        if not is_monday_consumer_report_document(artifact_doc):
+            return None
+        return normalize_optional_string(artifact_doc.get("bridge_id"))
+    return None
+
+
+def discover_monday_validation_records_for_bridge(
+    *,
+    validation_root: Path,
+    bridge_id: str,
+) -> list[LocalValidationFreshnessRecord]:
+    candidates = [
+        (
+            "monday_local_inbox_bridge_schema_validation",
+            "monday-local-inbox-bridge-schema-validation.json",
+            "*-monday-local-inbox-bridge-schema-validation.json",
+            build_monday_bridge_validation_mirror_freshness_record,
+        ),
+        (
+            "monday_local_inbox_consumer_schema_validation",
+            "monday-local-inbox-consumer-schema-validation.json",
+            "*-monday-local-inbox-consumer-schema-validation.json",
+            build_monday_consumer_validation_mirror_freshness_record,
+        ),
+    ]
+    records: list[LocalValidationFreshnessRecord] = []
+    for artifact_family, latest_filename, stamped_glob, builder in candidates:
+        if not has_promoted_local_validation_artifact(
+            validation_root=validation_root,
+            latest_filename=latest_filename,
+            stamped_glob=stamped_glob,
+        ):
+            continue
+        if resolve_monday_validation_bridge_id(
+            validation_root=validation_root,
+            artifact_family=artifact_family,
+        ) != bridge_id:
+            continue
+        records.append(builder(validation_root=validation_root))
+    return records
 
 
 def discover_local_validation_freshness_records(*, validation_root: Path) -> list[LocalValidationFreshnessRecord]:
