@@ -28,6 +28,7 @@ DEFAULT_VALIDATION_ROOT = WORKSPACE_ROOT / "planningops/artifacts/validation"
 DEFAULT_CONFORMANCE_ROOT = WORKSPACE_ROOT / "planningops/artifacts/conformance"
 DEFAULT_LOCAL_OPERATOR_STACK_ROOT = WORKSPACE_ROOT / "planningops/runtime-artifacts/local/monday-local-operator-stack"
 DEFAULT_MONDAY_CONSUMER_ROOT = WORKSPACE_ROOT.parent / "monday" / "runtime-artifacts/integration/planningops-local-operator-inbox"
+DEFAULT_MONDAY_VALIDATION_ROOT = WORKSPACE_ROOT.parent / "monday" / "runtime-artifacts/validation"
 
 LATEST_GAP_CHOICES = (
     "readiness_missing",
@@ -52,6 +53,8 @@ LOCAL_INBOX_PAYLOAD_STATUS_CHOICES = ("ready", "blocked")
 MONDAY_CONSUMER_MODE_CHOICES = ("dry-run", "apply")
 MONDAY_CONSUMER_VERDICT_CHOICES = ("pass", "fail", "blocked")
 MONDAY_CONSUMER_STATUS_CHOICES = ("ready_to_launch", "blocked")
+MONDAY_VALIDATION_KIND_CHOICES = ("bridge", "consumer-report")
+MONDAY_VALIDATION_VERDICT_CHOICES = ("pass", "fail")
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -409,6 +412,22 @@ class MondayConsumerReportRecord:
     has_launch_request: bool
     has_mission_file: bool
     has_runtime_report: bool
+
+
+@dataclass(frozen=True)
+class MondayValidationReportRecord:
+    kind: str
+    report_path: str
+    generated_at_utc: str
+    verdict: str | None
+    error_count: int
+    warning_count: int
+    artifact_path: str | None
+    schema_path: str | None
+    artifact_exists: bool
+    schema_exists: bool
+    errors: list[str]
+    warnings: list[str]
 
 
 def resolve_root(path_text: str, default: Path) -> Path:
@@ -926,6 +945,16 @@ def is_monday_consumer_report_document(doc: dict[str, Any]) -> bool:
     )
 
 
+def is_monday_validation_report_document(doc: dict[str, Any]) -> bool:
+    return (
+        doc.get("kind") in MONDAY_VALIDATION_KIND_CHOICES
+        and isinstance(doc.get("artifact_path"), str)
+        and isinstance(doc.get("schema_path"), str)
+        and isinstance(doc.get("errors"), list)
+        and isinstance(doc.get("warnings"), list)
+    )
+
+
 def build_local_validation_dependency_state(
     *,
     raw_path: Any,
@@ -1411,6 +1440,136 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{record.runtime_report_verdict or ''} | "
             f"{'yes' if record.has_runtime_report else 'no'} | "
             f"{', '.join(record.block_reasons)} | {record.generated_at_utc} |"
+        )
+    return "\n".join(lines)
+
+
+def build_monday_validation_report_record(
+    *,
+    report_path: Path,
+    report_doc: dict[str, Any],
+) -> MondayValidationReportRecord:
+    artifact_path = resolve_artifact_path(report_doc.get("artifact_path"))
+    schema_path = resolve_artifact_path(report_doc.get("schema_path"))
+    errors = normalize_string_list(report_doc.get("errors"))
+    warnings = normalize_string_list(report_doc.get("warnings"))
+    raw_error_count = report_doc.get("error_count")
+    raw_warning_count = report_doc.get("warning_count")
+    error_count = raw_error_count if isinstance(raw_error_count, int) else len(errors)
+    warning_count = raw_warning_count if isinstance(raw_warning_count, int) else len(warnings)
+    return MondayValidationReportRecord(
+        kind=str(report_doc.get("kind")),
+        report_path=str(report_path.resolve()),
+        generated_at_utc=str(report_doc.get("generated_at_utc") or ""),
+        verdict=normalize_optional_string(report_doc.get("verdict")),
+        error_count=error_count,
+        warning_count=warning_count,
+        artifact_path=None if artifact_path is None else str(artifact_path),
+        schema_path=None if schema_path is None else str(schema_path),
+        artifact_exists=artifact_path.exists() if artifact_path is not None else False,
+        schema_exists=schema_path.exists() if schema_path is not None else False,
+        errors=errors,
+        warnings=warnings,
+    )
+
+
+def discover_monday_validation_report_records(*, validation_root: Path) -> list[MondayValidationReportRecord]:
+    if not validation_root.exists():
+        return []
+    records: list[MondayValidationReportRecord] = []
+    for path in sorted(validation_root.glob("planningops-local-operator-inbox*-validation-report.json")):
+        if any(part.startswith(".") or part.startswith("._") for part in path.parts):
+            continue
+        try:
+            doc = load_json(path)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not is_monday_validation_report_document(doc):
+            continue
+        records.append(build_monday_validation_report_record(report_path=path, report_doc=doc))
+    records.sort(
+        key=lambda record: (
+            record.generated_at_utc,
+            record.kind,
+            record.report_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def filter_monday_validation_report_records(
+    *,
+    records: list[MondayValidationReportRecord],
+    kind: str | None = None,
+    verdict: str | None = None,
+    has_errors: str | None = None,
+    has_warnings: str | None = None,
+    artifact_exists: str | None = None,
+    schema_exists: str | None = None,
+    has_message: str | None = None,
+) -> list[MondayValidationReportRecord]:
+    filtered = records
+    if kind:
+        filtered = [record for record in filtered if record.kind == kind]
+    if verdict:
+        filtered = [record for record in filtered if record.verdict == verdict]
+    if has_errors is not None:
+        expected = has_errors == "yes"
+        filtered = [record for record in filtered if (record.error_count > 0) is expected]
+    if has_warnings is not None:
+        expected = has_warnings == "yes"
+        filtered = [record for record in filtered if (record.warning_count > 0) is expected]
+    if artifact_exists is not None:
+        expected = artifact_exists == "yes"
+        filtered = [record for record in filtered if record.artifact_exists is expected]
+    if schema_exists is not None:
+        expected = schema_exists == "yes"
+        filtered = [record for record in filtered if record.schema_exists is expected]
+    if has_message:
+        needle = has_message.lower()
+        filtered = [
+            record
+            for record in filtered
+            if any(needle in message.lower() for message in [*record.errors, *record.warnings])
+        ]
+    return filtered
+
+
+def render_monday_validation_report_table(records: list[MondayValidationReportRecord]) -> str:
+    lines = [
+        "kind\tverdict\terror_count\twarning_count\tartifact_exists\tschema_exists\treport_path\tartifact_path\tschema_path\tgenerated_at_utc",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.kind,
+                    str(record.verdict or ""),
+                    str(record.error_count),
+                    str(record.warning_count),
+                    "yes" if record.artifact_exists else "no",
+                    "yes" if record.schema_exists else "no",
+                    record.report_path,
+                    str(record.artifact_path or ""),
+                    str(record.schema_path or ""),
+                    record.generated_at_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_monday_validation_report_markdown(records: list[MondayValidationReportRecord]) -> str:
+    lines = [
+        "| kind | verdict | error_count | warning_count | artifact_exists | schema_exists | report_path | artifact_path | schema_path | generated_at_utc |",
+        "| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.kind} | {record.verdict or ''} | {record.error_count} | {record.warning_count} | "
+            f"{'yes' if record.artifact_exists else 'no'} | {'yes' if record.schema_exists else 'no'} | "
+            f"`{record.report_path}` | `{record.artifact_path or ''}` | `{record.schema_path or ''}` | {record.generated_at_utc} |"
         )
     return "\n".join(lines)
 
@@ -4281,6 +4440,21 @@ def parse_args() -> argparse.Namespace:
     monday_consumer_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     monday_consumer_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
 
+    monday_validation_parser = subparsers.add_parser(
+        "monday-validation-report",
+        help="list monday-owned inbox schema validation reports",
+    )
+    monday_validation_parser.add_argument("--kind", choices=MONDAY_VALIDATION_KIND_CHOICES, default=None)
+    monday_validation_parser.add_argument("--verdict", choices=MONDAY_VALIDATION_VERDICT_CHOICES, default=None)
+    monday_validation_parser.add_argument("--has-errors", choices=["yes", "no"], default=None)
+    monday_validation_parser.add_argument("--has-warnings", choices=["yes", "no"], default=None)
+    monday_validation_parser.add_argument("--artifact-exists", choices=["yes", "no"], default=None)
+    monday_validation_parser.add_argument("--schema-exists", choices=["yes", "no"], default=None)
+    monday_validation_parser.add_argument("--has-message", default=None)
+    monday_validation_parser.add_argument("--limit", type=int, default=20)
+    monday_validation_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    monday_validation_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -4306,6 +4480,10 @@ def main() -> int:
     local_root = resolve_root(getattr(args, "local_root", str(DEFAULT_LOCAL_OPERATOR_STACK_ROOT)), DEFAULT_LOCAL_OPERATOR_STACK_ROOT)
     validation_root = resolve_root(getattr(args, "validation_root", str(DEFAULT_VALIDATION_ROOT)), DEFAULT_VALIDATION_ROOT)
     consumer_root = resolve_root(getattr(args, "consumer_root", str(DEFAULT_MONDAY_CONSUMER_ROOT)), DEFAULT_MONDAY_CONSUMER_ROOT)
+    monday_validation_root = resolve_root(
+        getattr(args, "monday_validation_root", str(DEFAULT_MONDAY_VALIDATION_ROOT)),
+        DEFAULT_MONDAY_VALIDATION_ROOT,
+    )
     if args.command == "local-validation-freshness":
         local_validation_records = discover_local_validation_freshness_records(validation_root=validation_root)
         local_validation_records = filter_local_validation_freshness_records(
@@ -4375,6 +4553,28 @@ def main() -> int:
             print(render_monday_consumer_report_markdown(consumer_records))
             return 0
         print(render_monday_consumer_report_table(consumer_records))
+        return 0
+
+    if args.command == "monday-validation-report":
+        validation_records = discover_monday_validation_report_records(validation_root=monday_validation_root)
+        validation_records = filter_monday_validation_report_records(
+            records=validation_records,
+            kind=args.kind,
+            verdict=args.verdict,
+            has_errors=args.has_errors,
+            has_warnings=args.has_warnings,
+            artifact_exists=args.artifact_exists,
+            schema_exists=args.schema_exists,
+            has_message=args.has_message,
+        )
+        validation_records = validation_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in validation_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_monday_validation_report_markdown(validation_records))
+            return 0
+        print(render_monday_validation_report_table(validation_records))
         return 0
 
     if args.command == "local-operator-stack":

@@ -31,8 +31,9 @@ VALIDATION_DIR="$TMP_DIR/validation"
 CONFORMANCE_DIR="$TMP_DIR/conformance"
 LOCAL_OPERATOR_DIR="$TMP_DIR/local-operator-stack"
 MONDAY_CONSUMER_DIR="$TMP_DIR/monday/runtime-artifacts/integration/planningops-local-operator-inbox"
+MONDAY_VALIDATION_DIR="$TMP_DIR/monday/runtime-artifacts/validation"
 mkdir -p "$CI_DIR" "$VALIDATION_DIR" "$CONFORMANCE_DIR"
-mkdir -p "$LOCAL_OPERATOR_DIR" "$MONDAY_CONSUMER_DIR"
+mkdir -p "$LOCAL_OPERATOR_DIR" "$MONDAY_CONSUMER_DIR" "$MONDAY_VALIDATION_DIR"
 
 cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun26.json" <<'JSON'
 {
@@ -664,6 +665,9 @@ MONDAY_CONSUMER_OUTPUT="$TMP_DIR/monday-consumer-report.json"
 MONDAY_CONSUMER_FILTERED_OUTPUT="$TMP_DIR/monday-consumer-report-filtered.json"
 MONDAY_CONSUMER_BLOCKED_OUTPUT="$TMP_DIR/monday-consumer-report-blocked.json"
 MONDAY_CONSUMER_OVERRIDE_OUTPUT="$TMP_DIR/monday-consumer-report-override.json"
+MONDAY_VALIDATION_OUTPUT="$TMP_DIR/monday-validation-report.json"
+MONDAY_VALIDATION_FAIL_OUTPUT="$TMP_DIR/monday-validation-report-fail.json"
+MONDAY_VALIDATION_BRIDGE_OUTPUT="$TMP_DIR/monday-validation-report-bridge.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
 LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
 LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
@@ -3239,6 +3243,126 @@ assert [record["run_id"] for record in records] == [
     "planningops-local-inbox-consumer-20260401T101000Z",
 ], records
 assert all(record["has_runtime_input_overrides"] is False for record in records), records
+PY
+
+cat >"$MONDAY_VALIDATION_DIR/planningops-local-operator-inbox-payload-bridge.schema.json" <<'JSON'
+{
+  "type": "object"
+}
+JSON
+
+cat >"$MONDAY_VALIDATION_DIR/planningops-local-operator-inbox-consumer-report.schema.json" <<'JSON'
+{
+  "type": "object"
+}
+JSON
+
+cat >"$MONDAY_VALIDATION_DIR/planningops-local-operator-inbox-payload-validation-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:40:00+00:00",
+  "kind": "bridge",
+  "artifact_path": "$VALIDATION_DIR/monday-local-operator-inbox-payload.json",
+  "schema_path": "$MONDAY_VALIDATION_DIR/planningops-local-operator-inbox-payload-bridge.schema.json",
+  "error_count": 0,
+  "warning_count": 0,
+  "errors": [],
+  "warnings": [],
+  "verdict": "pass"
+}
+JSON
+
+cat >"$MONDAY_VALIDATION_DIR/planningops-local-operator-inbox-consumer-report-validation-report.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T10:50:00+00:00",
+  "kind": "consumer-report",
+  "artifact_path": "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/consumer-report.json",
+  "schema_path": "$MONDAY_VALIDATION_DIR/planningops-local-operator-inbox-consumer-report.schema.json",
+  "error_count": 2,
+  "warning_count": 1,
+  "errors": [
+    "consumer contract ref mismatch",
+    "schema validation failed: launch_request.source_bridge_id must match bridge_id"
+  ],
+  "warnings": [
+    "runtime report path missing"
+  ],
+  "verdict": "fail"
+}
+JSON
+
+python3 "$QUERY_PATH" monday-validation-report \
+  --format json \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$MONDAY_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["kind"] for record in records] == [
+    "consumer-report",
+    "bridge",
+], records
+consumer_report, bridge = records
+assert consumer_report["verdict"] == "fail", consumer_report
+assert consumer_report["error_count"] == 2, consumer_report
+assert consumer_report["warning_count"] == 1, consumer_report
+assert consumer_report["artifact_exists"] is True, consumer_report
+assert consumer_report["schema_exists"] is True, consumer_report
+assert "consumer contract ref mismatch" in consumer_report["errors"], consumer_report
+assert bridge["verdict"] == "pass", bridge
+assert bridge["error_count"] == 0, bridge
+assert bridge["warning_count"] == 0, bridge
+assert bridge["artifact_exists"] is True, bridge
+assert bridge["schema_exists"] is True, bridge
+PY
+
+python3 "$QUERY_PATH" monday-validation-report \
+  --kind consumer-report \
+  --verdict fail \
+  --has-errors yes \
+  --has-message contract \
+  --format json \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$MONDAY_VALIDATION_FAIL_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_VALIDATION_FAIL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["kind"] == "consumer-report", record
+assert record["verdict"] == "fail", record
+assert record["error_count"] == 2, record
+PY
+
+python3 "$QUERY_PATH" monday-validation-report \
+  --kind bridge \
+  --verdict pass \
+  --has-errors no \
+  --has-warnings no \
+  --artifact-exists yes \
+  --schema-exists yes \
+  --format json \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$MONDAY_VALIDATION_BRIDGE_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_VALIDATION_BRIDGE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["kind"] == "bridge", record
+assert record["verdict"] == "pass", record
+assert record["warning_count"] == 0, record
 PY
 
 python3 "$WRITE_LOCAL_INBOX_VALIDATION_MIRROR_PATH" \

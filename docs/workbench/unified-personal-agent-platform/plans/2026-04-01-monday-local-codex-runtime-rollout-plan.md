@@ -154,6 +154,7 @@ Current deliverables:
 - `monday/scripts/validate_planningops_local_operator_inbox_artifacts.py`
 - `monday/scripts/test_validate_planningops_local_operator_inbox_artifacts.sh`
 - monday local CI now validates the promoted inbox payload bridge and monday-native consumer report against monday-owned schemas before merge
+- `planningops/scripts/federation/query_federated_ci_artifacts.py monday-validation-report` now exposes monday-owned bridge/consumer-report schema validation verdicts from `monday/runtime-artifacts/validation`
 - monday now consumes the promoted inbox payload as structured input and materializes native runtime command argv without reparsing day-packet markdown
 - monday consumer regression now covers:
   - ready dry-run packet materialization
@@ -231,6 +232,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether monday-owned schema validation reports should stay monday-side only or also surface through planningops query/report views
-2. decide whether launch-request, runtime-report, and consumer-report freshness should also be folded into `handoff-report` local validation snapshots
+1. decide whether launch-request, runtime-report, and consumer-report freshness should also be folded into `handoff-report` local validation snapshots
+2. decide whether monday-owned schema validation verdicts should stay query-only or also be mirrored into planningops validation artifacts
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
