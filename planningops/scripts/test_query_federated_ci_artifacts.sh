@@ -673,6 +673,7 @@ MONDAY_VALIDATION_OUTPUT="$TMP_DIR/monday-validation-report.json"
 MONDAY_VALIDATION_FAIL_OUTPUT="$TMP_DIR/monday-validation-report-fail.json"
 MONDAY_VALIDATION_BRIDGE_OUTPUT="$TMP_DIR/monday-validation-report-bridge.json"
 MONDAY_VALIDATION_MIRROR_WRITE_OUTPUT="$TMP_DIR/monday-validation-report-mirror-write.json"
+CROSS_REPO_VALIDATION_REPORT_OUTPUT="$TMP_DIR/cross-repo-validation-report.json"
 LOCAL_VALIDATION_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/local-validation-freshness-with-monday-validation.json"
 LOCAL_VALIDATION_MONDAY_VALIDATION_BLOCKED_OUTPUT="$TMP_DIR/local-validation-monday-validation-blocked.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
@@ -3876,6 +3877,61 @@ assert record["local_validation_action_lines"][-1] == (
 assert "### Monday Schema Validation" in record["markdown"], record
 assert "snapshot summary: `total=2 promotable=1 blocked=1 stale=0`" in record["markdown"], record
 assert "### Monday Schema Validation Actions" in record["markdown"], record
+PY
+
+python3 "$QUERY_PATH" cross-repo-validation-report \
+  --format json \
+  --validation-root "$VALIDATION_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$CROSS_REPO_VALIDATION_REPORT_OUTPUT"
+
+python3 - <<'PY' "$CROSS_REPO_VALIDATION_REPORT_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["cross_repo_snapshot_status"] == "present", record
+assert record["cross_repo_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
+assert [item["artifact_family"] for item in record["cross_repo_validation_records"]] == [
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
+    "monday_local_inbox_bridge_schema_validation",
+    "monday_local_inbox_consumer_schema_validation",
+], record
+assert record["cross_repo_summary_lines"] == [
+    "monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+    "monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
+    "monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
+], record
+assert record["cross_repo_action_lines"] == [
+    "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
+    "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)",
+], record
+assert record["monday_source_validation_status"] == "attention", record
+assert record["monday_source_validation_summary"] == "total=2 pass=1 fail=1 errors=2 warnings=1", record
+assert record["monday_validation_report_lines"] == [
+    "consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes",
+    "bridge: verdict=pass errors=0 warnings=0 artifact_exists=yes schema_exists=yes",
+], record
+assert record["monday_validation_report_action_lines"] == [
+    "monday-validation: inspect consumer-report source report (verdict=fail, errors=2, warnings=1)",
+], record
+assert record["latest_payload_bridge_id"] == "monday-local-inbox-20260401T084500Z", record
+assert record["latest_payload_status"] == "blocked", record
+assert record["latest_payload_monday_validation_snapshot_status"] == "present", record
+assert record["latest_consumer_run_id"] == "planningops-local-inbox-consumer-20260401T103000Z", record
+assert record["latest_consumer_mode"] == "apply", record
+assert record["latest_consumer_verdict"] == "blocked", record
+assert record["latest_consumer_status"] == "blocked", record
+assert record["latest_consumer_monday_validation_snapshot_status"] == "present", record
+assert "### Cross-Repo Mirror Validation" in record["markdown"], record
+assert "### Monday Source Validation Reports" in record["markdown"], record
+assert "### Monday Source Validation Actions" in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \

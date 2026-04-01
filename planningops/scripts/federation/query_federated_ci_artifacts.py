@@ -327,6 +327,30 @@ class HandoffReportRecord:
 
 
 @dataclass(frozen=True)
+class CrossRepoValidationReportRecord:
+    headline: str
+    cross_repo_snapshot_status: str
+    cross_repo_snapshot_summary: str
+    cross_repo_validation_records: list[LocalValidationFreshnessRecord]
+    cross_repo_summary_lines: list[str]
+    cross_repo_action_lines: list[str]
+    monday_source_validation_status: str
+    monday_source_validation_summary: str
+    monday_validation_report_records: list[MondayValidationReportRecord]
+    monday_validation_report_lines: list[str]
+    monday_validation_report_action_lines: list[str]
+    latest_payload_bridge_id: str | None
+    latest_payload_status: str | None
+    latest_payload_monday_validation_snapshot_status: str | None
+    latest_consumer_run_id: str | None
+    latest_consumer_mode: str | None
+    latest_consumer_verdict: str | None
+    latest_consumer_status: str | None
+    latest_consumer_monday_validation_snapshot_status: str | None
+    markdown: str
+
+
+@dataclass(frozen=True)
 class LocalOperatorStackRecord:
     run_id: str
     report_path: str
@@ -1643,6 +1667,60 @@ def render_monday_validation_report_markdown(records: list[MondayValidationRepor
     return "\n".join(lines)
 
 
+def select_latest_monday_validation_report_records(
+    records: list[MondayValidationReportRecord],
+) -> list[MondayValidationReportRecord]:
+    selected: list[MondayValidationReportRecord] = []
+    seen_kinds: set[str] = set()
+    for record in records:
+        if record.kind in seen_kinds:
+            continue
+        seen_kinds.add(record.kind)
+        selected.append(record)
+    return selected
+
+
+def build_monday_validation_report_snapshot(
+    records: list[MondayValidationReportRecord],
+) -> tuple[str, str]:
+    if not records:
+        return "missing", "total=0 pass=0 fail=0 errors=0 warnings=0"
+
+    pass_count = sum(1 for record in records if record.verdict == "pass")
+    fail_count = len(records) - pass_count
+    error_count = sum(record.error_count for record in records)
+    warning_count = sum(record.warning_count for record in records)
+    snapshot_status = "clean" if fail_count == 0 and error_count == 0 else "attention"
+    snapshot_summary = (
+        f"total={len(records)} pass={pass_count} fail={fail_count} "
+        f"errors={error_count} warnings={warning_count}"
+    )
+    return snapshot_status, snapshot_summary
+
+
+def build_monday_validation_report_summary_line(record: MondayValidationReportRecord) -> str:
+    return (
+        f"{record.kind}: verdict={record.verdict or 'unknown'} "
+        f"errors={record.error_count} warnings={record.warning_count} "
+        f"artifact_exists={'yes' if record.artifact_exists else 'no'} "
+        f"schema_exists={'yes' if record.schema_exists else 'no'}"
+    )
+
+
+def build_monday_validation_report_action_line(record: MondayValidationReportRecord) -> str | None:
+    if (
+        record.verdict == "pass"
+        and record.error_count == 0
+        and record.artifact_exists
+        and record.schema_exists
+    ):
+        return None
+    return (
+        f"monday-validation: inspect {record.kind} source report "
+        f"(verdict={record.verdict or 'unknown'}, errors={record.error_count}, warnings={record.warning_count})"
+    )
+
+
 def build_handoff_validation_freshness_record(*, validation_root: Path) -> LocalValidationFreshnessRecord:
     latest_path = (validation_root / "operator-handoff-report.json").resolve()
     latest_doc = load_optional_json(latest_path)
@@ -2688,6 +2766,23 @@ def select_monday_validation_records(
         for record in records
         if record.artifact_family
         in {
+            "monday_local_inbox_bridge_schema_validation",
+            "monday_local_inbox_consumer_schema_validation",
+        }
+    ]
+
+
+def select_cross_repo_validation_records(
+    records: list[LocalValidationFreshnessRecord],
+) -> list[LocalValidationFreshnessRecord]:
+    return [
+        record
+        for record in records
+        if record.artifact_family
+        in {
+            "monday_local_inbox_launch_request",
+            "monday_local_inbox_runtime_report",
+            "monday_local_inbox_consumer_report",
             "monday_local_inbox_bridge_schema_validation",
             "monday_local_inbox_consumer_schema_validation",
         }
@@ -4012,6 +4107,198 @@ def render_handoff_report_markdown(record: HandoffReportRecord) -> str:
     return record.markdown
 
 
+def build_cross_repo_validation_report_record(
+    *,
+    validation_root: Path,
+    consumer_root: Path,
+    monday_validation_root: Path,
+) -> CrossRepoValidationReportRecord:
+    local_validation_records = discover_local_validation_freshness_records(validation_root=validation_root)
+    cross_repo_validation_records = select_cross_repo_validation_records(local_validation_records)
+    cross_repo_snapshot_status, cross_repo_snapshot_summary = build_local_validation_snapshot(
+        cross_repo_validation_records
+    )
+    cross_repo_summary_lines = [
+        build_local_validation_summary_line(record) for record in cross_repo_validation_records
+    ]
+    cross_repo_action_lines = [
+        action
+        for action in (build_local_validation_action_line(record) for record in cross_repo_validation_records)
+        if action is not None
+    ]
+
+    monday_validation_report_records = select_latest_monday_validation_report_records(
+        discover_monday_validation_report_records(validation_root=monday_validation_root)
+    )
+    monday_source_validation_status, monday_source_validation_summary = build_monday_validation_report_snapshot(
+        monday_validation_report_records
+    )
+    monday_validation_report_lines = [
+        build_monday_validation_report_summary_line(record) for record in monday_validation_report_records
+    ]
+    monday_validation_report_action_lines = [
+        action
+        for action in (
+            build_monday_validation_report_action_line(record) for record in monday_validation_report_records
+        )
+        if action is not None
+    ]
+
+    payload_records = filter_local_inbox_payload_records(
+        records=discover_local_inbox_payload_records(validation_root=validation_root),
+        source_kind="latest",
+    )
+    latest_payload = payload_records[0] if payload_records else None
+
+    consumer_records = discover_monday_consumer_report_records(
+        consumer_root=consumer_root,
+        validation_root=validation_root,
+    )
+    latest_consumer = consumer_records[0] if consumer_records else None
+
+    headline = "Cross-repo validation report: monday inbox mirror + schema lane"
+    markdown_lines = [
+        "## Cross-Repo Validation Report",
+        "",
+        "### Snapshot",
+        f"- headline: {headline}",
+        f"- cross-repo snapshot status: `{cross_repo_snapshot_status}`",
+        f"- cross-repo snapshot summary: `{cross_repo_snapshot_summary}`",
+        f"- monday source validation status: `{monday_source_validation_status}`",
+        f"- monday source validation summary: `{monday_source_validation_summary}`",
+        "",
+        "### Payload Pointer",
+        (
+            f"- latest payload bridge: `{latest_payload.bridge_id}`"
+            if latest_payload is not None
+            else "- latest payload bridge: unavailable"
+        ),
+        (
+            f"- payload status: `{latest_payload.status or ''}`"
+            if latest_payload is not None
+            else "- payload status: unavailable"
+        ),
+        (
+            f"- payload monday validation snapshot: `{latest_payload.monday_validation_snapshot_status}`"
+            if latest_payload is not None
+            else "- payload monday validation snapshot: unavailable"
+        ),
+        "",
+        "### Consumer Pointer",
+        (
+            f"- latest consumer run: `{latest_consumer.run_id}`"
+            if latest_consumer is not None
+            else "- latest consumer run: unavailable"
+        ),
+        (
+            f"- consumer mode/verdict/status: `{latest_consumer.mode or ''}` / "
+            f"`{latest_consumer.verdict or ''}` / `{latest_consumer.consumer_status or ''}`"
+            if latest_consumer is not None
+            else "- consumer mode/verdict/status: unavailable"
+        ),
+        (
+            f"- consumer monday validation snapshot: `{latest_consumer.monday_validation_snapshot_status}`"
+            if latest_consumer is not None
+            else "- consumer monday validation snapshot: unavailable"
+        ),
+        "",
+        "### Cross-Repo Mirror Validation",
+        *[f"- {line}" for line in cross_repo_summary_lines],
+        "",
+        "### Monday Source Validation Reports",
+        *[f"- {line}" for line in monday_validation_report_lines],
+    ]
+    if cross_repo_action_lines:
+        markdown_lines.extend(
+            [
+                "",
+                "### Cross-Repo Actions",
+                *[f"{index}. {line}" for index, line in enumerate(cross_repo_action_lines, start=1)],
+            ]
+        )
+    if monday_validation_report_action_lines:
+        markdown_lines.extend(
+            [
+                "",
+                "### Monday Source Validation Actions",
+                *[
+                    f"{index}. {line}"
+                    for index, line in enumerate(monday_validation_report_action_lines, start=1)
+                ],
+            ]
+        )
+
+    return CrossRepoValidationReportRecord(
+        headline=headline,
+        cross_repo_snapshot_status=cross_repo_snapshot_status,
+        cross_repo_snapshot_summary=cross_repo_snapshot_summary,
+        cross_repo_validation_records=cross_repo_validation_records,
+        cross_repo_summary_lines=cross_repo_summary_lines,
+        cross_repo_action_lines=cross_repo_action_lines,
+        monday_source_validation_status=monday_source_validation_status,
+        monday_source_validation_summary=monday_source_validation_summary,
+        monday_validation_report_records=monday_validation_report_records,
+        monday_validation_report_lines=monday_validation_report_lines,
+        monday_validation_report_action_lines=monday_validation_report_action_lines,
+        latest_payload_bridge_id=None if latest_payload is None else latest_payload.bridge_id,
+        latest_payload_status=None if latest_payload is None else latest_payload.status,
+        latest_payload_monday_validation_snapshot_status=(
+            None if latest_payload is None else latest_payload.monday_validation_snapshot_status
+        ),
+        latest_consumer_run_id=None if latest_consumer is None else latest_consumer.run_id,
+        latest_consumer_mode=None if latest_consumer is None else latest_consumer.mode,
+        latest_consumer_verdict=None if latest_consumer is None else latest_consumer.verdict,
+        latest_consumer_status=None if latest_consumer is None else latest_consumer.consumer_status,
+        latest_consumer_monday_validation_snapshot_status=(
+            None if latest_consumer is None else latest_consumer.monday_validation_snapshot_status
+        ),
+        markdown="\n".join(markdown_lines),
+    )
+
+
+def render_cross_repo_validation_report_table(record: CrossRepoValidationReportRecord) -> str:
+    sections = [
+        f"headline\t{record.headline}",
+        f"cross_repo_snapshot_status\t{record.cross_repo_snapshot_status}",
+        f"cross_repo_snapshot_summary\t{record.cross_repo_snapshot_summary}",
+        f"monday_source_validation_status\t{record.monday_source_validation_status}",
+        f"monday_source_validation_summary\t{record.monday_source_validation_summary}",
+    ]
+    if record.latest_payload_bridge_id is not None:
+        sections.append(f"latest_payload_bridge_id\t{record.latest_payload_bridge_id}")
+    if record.latest_payload_status is not None:
+        sections.append(f"latest_payload_status\t{record.latest_payload_status}")
+    if record.latest_payload_monday_validation_snapshot_status is not None:
+        sections.append(
+            "latest_payload_monday_validation_snapshot_status\t"
+            f"{record.latest_payload_monday_validation_snapshot_status}"
+        )
+    if record.latest_consumer_run_id is not None:
+        sections.append(f"latest_consumer_run_id\t{record.latest_consumer_run_id}")
+    if record.latest_consumer_mode is not None:
+        sections.append(f"latest_consumer_mode\t{record.latest_consumer_mode}")
+    if record.latest_consumer_verdict is not None:
+        sections.append(f"latest_consumer_verdict\t{record.latest_consumer_verdict}")
+    if record.latest_consumer_status is not None:
+        sections.append(f"latest_consumer_status\t{record.latest_consumer_status}")
+    if record.latest_consumer_monday_validation_snapshot_status is not None:
+        sections.append(
+            "latest_consumer_monday_validation_snapshot_status\t"
+            f"{record.latest_consumer_monday_validation_snapshot_status}"
+        )
+    sections.extend(["cross_repo_validation", *record.cross_repo_summary_lines])
+    sections.extend(["monday_source_validation_reports", *record.monday_validation_report_lines])
+    if record.cross_repo_action_lines:
+        sections.extend(["cross_repo_actions", *record.cross_repo_action_lines])
+    if record.monday_validation_report_action_lines:
+        sections.extend(["monday_source_validation_actions", *record.monday_validation_report_action_lines])
+    return "\n".join(sections)
+
+
+def render_cross_repo_validation_report_markdown(record: CrossRepoValidationReportRecord) -> str:
+    return record.markdown
+
+
 def build_handoff_artifact_document(
     *,
     record: HandoffReportRecord,
@@ -4924,6 +5211,15 @@ def parse_args() -> argparse.Namespace:
     monday_validation_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     monday_validation_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
+    cross_repo_validation_parser = subparsers.add_parser(
+        "cross-repo-validation-report",
+        help="show a dedicated cross-repo monday inbox validation report",
+    )
+    cross_repo_validation_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
+    cross_repo_validation_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    cross_repo_validation_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
+    cross_repo_validation_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
+
     local_operator_parser = subparsers.add_parser(
         "local-operator-stack",
         help="list planningops-owned monday local operator stack aggregate reports",
@@ -5047,6 +5343,21 @@ def main() -> int:
             print(render_monday_validation_report_markdown(validation_records))
             return 0
         print(render_monday_validation_report_table(validation_records))
+        return 0
+
+    if args.command == "cross-repo-validation-report":
+        record = build_cross_repo_validation_report_record(
+            validation_root=validation_root,
+            consumer_root=consumer_root,
+            monday_validation_root=monday_validation_root,
+        )
+        if args.format == "json":
+            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_cross_repo_validation_report_markdown(record))
+            return 0
+        print(render_cross_repo_validation_report_table(record))
         return 0
 
     if args.command == "local-operator-stack":

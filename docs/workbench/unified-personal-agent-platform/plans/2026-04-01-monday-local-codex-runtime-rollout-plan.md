@@ -182,6 +182,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries a dedicated monday schema validation snapshot/summary/actions section when those mirrored verdicts are present
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload` now carries a bridge-aware monday schema validation snapshot/summary/actions view for the current inbox payload without routing through `handoff-report`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py monday-consumer-report` now carries run-aware monday schema validation snapshot/summary/actions fields so apply/result-first triage sees the same cross-repo validation signal as payload-first and handoff surfaces
+- `planningops/scripts/federation/query_federated_ci_artifacts.py cross-repo-validation-report` now emits a dedicated fixed-format packet that combines mirrored monday inbox launch/runtime/consumer freshness with monday-owned schema validation verdicts in one operator view
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -243,6 +244,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether monday validation verdicts need a dedicated cross-repo validation report surface beyond `handoff-report`, `local-inbox-payload`, `monday-consumer-report`, and `local-validation-freshness`
-2. decide whether cross-repo validation snapshot/status should surface in `triage-feed` or a separate operator packet instead of only per-surface query commands
+1. decide whether cross-repo validation snapshot/status should surface in `triage-feed` or a separate operator packet instead of only `handoff-report`, `local-inbox-payload`, `monday-consumer-report`, `local-validation-freshness`, and `cross-repo-validation-report`
+2. decide whether `cross-repo-validation-report` should stay query-only or also be promoted into stamped validation artifacts
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
