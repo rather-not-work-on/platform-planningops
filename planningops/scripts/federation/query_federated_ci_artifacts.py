@@ -34,6 +34,8 @@ class SummaryRecord:
     source_kind: str
     summary_path: str
     timestamp_utc: str
+    health_status: str
+    health_reasons: list[str]
     verdict: str | None
     overall_status: str | None
     check_count: int | None
@@ -249,12 +251,30 @@ def build_summary_record(
         validation_root=validation_root,
         conformance_root=conformance_root,
     )
+    readiness_status = (
+        str(raw_readiness_status)
+        if isinstance(raw_readiness_status, str) and raw_readiness_status.strip()
+        else ("unknown" if sidecars["readiness"].exists() else "missing")
+    )
+    health_status, health_reasons = build_summary_health_fields(
+        verdict=summary_doc.get("verdict"),
+        overall_status=summary_doc.get("overall_status"),
+        missing_required_checks=[str(name) for name in list(summary_doc.get("missing_required_checks") or [])],
+        failed_checks=failed_checks,
+        readiness_status=readiness_status,
+        reconcile_status=str(reconcile_fields["reconcile_status"]),
+        reconcile_artifact_state=str(reconcile_fields["reconcile_artifact_state"]),
+        reconcile_validation_state=str(reconcile_fields["reconcile_validation_state"]),
+        checkpoint_state=str(reconcile_fields["checkpoint_state"]),
+    )
     return SummaryRecord(
         run_id=run_id,
         family=infer_family_from_run_id(run_id),
         source_kind=source_kind,
         summary_path=str(summary_path.resolve()),
         timestamp_utc=summary_timestamp(summary_doc),
+        health_status=health_status,
+        health_reasons=health_reasons,
         verdict=summary_doc.get("verdict"),
         overall_status=summary_doc.get("overall_status"),
         check_count=summary_doc.get("check_count"),
@@ -262,11 +282,7 @@ def build_summary_record(
         missing_required_checks=[str(name) for name in list(summary_doc.get("missing_required_checks") or [])],
         failure_domains=sorted(set(failures)),
         failed_checks=failed_checks,
-        readiness_status=(
-            str(raw_readiness_status)
-            if isinstance(raw_readiness_status, str) and raw_readiness_status.strip()
-            else ("unknown" if sidecars["readiness"].exists() else "missing")
-        ),
+        readiness_status=readiness_status,
         ready=raw_ready if isinstance(raw_ready, bool) else None,
         blocking_reasons=(
             [str(reason) for reason in list(readiness_doc.get("blocking_reasons") or [])]
@@ -333,9 +349,102 @@ def discover_summary_records(
     return records
 
 
+def build_summary_health_fields(
+    *,
+    verdict: Any,
+    overall_status: Any,
+    missing_required_checks: list[str],
+    failed_checks: list[str],
+    readiness_status: str,
+    reconcile_status: str,
+    reconcile_artifact_state: str,
+    reconcile_validation_state: str,
+    checkpoint_state: str,
+) -> tuple[str, list[str]]:
+    unknown_reasons: list[str] = []
+    if checkpoint_state != "present":
+        unknown_reasons.append(f"checkpoint_{checkpoint_state}")
+    if reconcile_status == "unknown":
+        unknown_reasons.append("reconcile_unknown")
+    if unknown_reasons:
+        return "unknown", unknown_reasons
+
+    blocked_reasons: list[str] = []
+    if verdict == "fail":
+        blocked_reasons.append("summary_verdict_fail")
+    if isinstance(overall_status, str) and overall_status and overall_status != "complete":
+        blocked_reasons.append(f"summary_status_{overall_status}")
+    if missing_required_checks:
+        blocked_reasons.append("missing_required_checks")
+    if failed_checks:
+        blocked_reasons.append("failed_checks_present")
+    if readiness_status == "blocked":
+        blocked_reasons.append("readiness_blocked")
+    if blocked_reasons:
+        return "blocked", blocked_reasons
+
+    degraded_reasons: list[str] = []
+    if readiness_status in {"missing", "unknown"}:
+        degraded_reasons.append(f"readiness_{readiness_status}")
+    if reconcile_status == "restored":
+        degraded_reasons.append("reconcile_restored")
+    if reconcile_artifact_state != "fresh":
+        degraded_reasons.append(f"reconcile_artifact_{reconcile_artifact_state}")
+    if reconcile_validation_state != "fresh":
+        degraded_reasons.append(f"reconcile_validation_{reconcile_validation_state}")
+    if degraded_reasons:
+        return "degraded", degraded_reasons
+
+    return "healthy", []
+
+
+def filter_summary_records(
+    *,
+    records: list[SummaryRecord],
+    family: str | None = None,
+    run_id_prefix: str | None = None,
+    source_kind: str = "all",
+    verdict: str | None = None,
+    status: str | None = None,
+    readiness_status: str | None = None,
+    health_status: str | None = None,
+    reconcile_status: str | None = None,
+    reconcile_artifact_state: str | None = None,
+    reconcile_validation_state: str | None = None,
+    checkpoint_state: str | None = None,
+    failed_check: str | None = None,
+) -> list[SummaryRecord]:
+    filtered = records
+    if family:
+        filtered = [record for record in filtered if record.family == family]
+    if run_id_prefix:
+        filtered = [record for record in filtered if record.run_id.startswith(run_id_prefix)]
+    if source_kind != "all":
+        filtered = [record for record in filtered if record.source_kind == source_kind]
+    if verdict:
+        filtered = [record for record in filtered if record.verdict == verdict]
+    if status:
+        filtered = [record for record in filtered if record.overall_status == status]
+    if readiness_status:
+        filtered = [record for record in filtered if record.readiness_status == readiness_status]
+    if health_status:
+        filtered = [record for record in filtered if record.health_status == health_status]
+    if reconcile_status:
+        filtered = [record for record in filtered if record.reconcile_status == reconcile_status]
+    if reconcile_artifact_state:
+        filtered = [record for record in filtered if record.reconcile_artifact_state == reconcile_artifact_state]
+    if reconcile_validation_state:
+        filtered = [record for record in filtered if record.reconcile_validation_state == reconcile_validation_state]
+    if checkpoint_state:
+        filtered = [record for record in filtered if record.checkpoint_state == checkpoint_state]
+    if failed_check:
+        filtered = [record for record in filtered if failed_check in record.failed_checks]
+    return filtered
+
+
 def render_runs_table(records: list[SummaryRecord]) -> str:
     lines = [
-        "family\trun_id\tsource\tverdict\treadiness\treconcile\tartifact_state\tcheckpoint\tfailed_checks\tstatus\tchecks\ttimestamp",
+        "family\trun_id\tsource\thealth\tverdict\treadiness\treconcile\tartifact_state\tcheckpoint\tfailed_checks\tstatus\tchecks\ttimestamp",
     ]
     for record in records:
         lines.append(
@@ -344,6 +453,7 @@ def render_runs_table(records: list[SummaryRecord]) -> str:
                     record.family,
                     record.run_id,
                     record.source_kind,
+                    record.health_status,
                     str(record.verdict or ""),
                     record.readiness_status,
                     record.reconcile_status,
@@ -361,16 +471,56 @@ def render_runs_table(records: list[SummaryRecord]) -> str:
 
 def render_runs_markdown(records: list[SummaryRecord]) -> str:
     lines = [
-        "| family | run_id | source | verdict | readiness | reconcile | artifact_state | checkpoint | failed_checks | status | checks | timestamp |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
+        "| family | run_id | source | health | verdict | readiness | reconcile | artifact_state | checkpoint | failed_checks | status | checks | timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
     ]
     for record in records:
         lines.append(
-            f"| {record.family} | `{record.run_id}` | {record.source_kind} | "
+            f"| {record.family} | `{record.run_id}` | {record.source_kind} | {record.health_status} | "
             f"{record.verdict or ''} | {record.readiness_status} | {record.reconcile_status} | "
             f"{record.reconcile_artifact_state} | {record.checkpoint_state} | "
             f"{', '.join(record.failed_checks)} | {record.overall_status or ''} | "
             f"{record.check_count if record.check_count is not None else ''} | {record.timestamp_utc} |"
+        )
+    return "\n".join(lines)
+
+
+def render_health_scan_table(records: list[SummaryRecord]) -> str:
+    lines = [
+        "family\trun_id\tsource\thealth\tverdict\treadiness\treconcile\tartifact_state\tfailed_checks\thealth_reasons\ttimestamp",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.family,
+                    record.run_id,
+                    record.source_kind,
+                    record.health_status,
+                    str(record.verdict or ""),
+                    record.readiness_status,
+                    record.reconcile_status,
+                    record.reconcile_artifact_state,
+                    ",".join(record.failed_checks),
+                    ",".join(record.health_reasons),
+                    record.timestamp_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_health_scan_markdown(records: list[SummaryRecord]) -> str:
+    lines = [
+        "| family | run_id | source | health | verdict | readiness | reconcile | artifact_state | failed_checks | health_reasons | timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.family} | `{record.run_id}` | {record.source_kind} | {record.health_status} | "
+            f"{record.verdict or ''} | {record.readiness_status} | {record.reconcile_status} | "
+            f"{record.reconcile_artifact_state} | {', '.join(record.failed_checks)} | "
+            f"{', '.join(record.health_reasons)} | {record.timestamp_utc} |"
         )
     return "\n".join(lines)
 
@@ -935,6 +1085,7 @@ def parse_args() -> argparse.Namespace:
     runs_parser.add_argument("--verdict", choices=["pass", "fail"], default=None)
     runs_parser.add_argument("--status", choices=["complete", "interrupted"], default=None)
     runs_parser.add_argument("--readiness-status", choices=["ready", "blocked", "missing", "unknown"], default=None)
+    runs_parser.add_argument("--health-status", choices=["healthy", "degraded", "blocked", "unknown"], default=None)
     runs_parser.add_argument("--reconcile-status", choices=["healthy", "restored", "unknown"], default=None)
     runs_parser.add_argument("--reconcile-artifact-state", choices=["fresh", "stale", "missing"], default=None)
     runs_parser.add_argument("--reconcile-validation-state", choices=["fresh", "stale", "missing"], default=None)
@@ -975,6 +1126,25 @@ def parse_args() -> argparse.Namespace:
     reconcile_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     reconcile_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     reconcile_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    health_parser = subparsers.add_parser(
+        "health-scan",
+        help="show operator-oriented run health derived from verdict, readiness, and reconcile state",
+    )
+    health_parser.add_argument("--family", default=None)
+    health_parser.add_argument("--run-id-prefix", default=None)
+    health_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="all")
+    health_parser.add_argument("--health-status", choices=["healthy", "degraded", "blocked", "unknown"], default=None)
+    health_parser.add_argument("--readiness-status", choices=["ready", "blocked", "missing", "unknown"], default=None)
+    health_parser.add_argument("--reconcile-status", choices=["healthy", "restored", "unknown"], default=None)
+    health_parser.add_argument("--reconcile-artifact-state", choices=["fresh", "stale", "missing"], default=None)
+    health_parser.add_argument("--checkpoint-state", choices=["present", "missing", "invalid"], default=None)
+    health_parser.add_argument("--failed-check", default=None)
+    health_parser.add_argument("--limit", type=int, default=20)
+    health_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    health_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    health_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    health_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -990,31 +1160,21 @@ def main() -> int:
     )
 
     if args.command == "runs":
-        filtered = records
-        if args.family:
-            filtered = [record for record in filtered if record.family == args.family]
-        if args.run_id_prefix:
-            filtered = [record for record in filtered if record.run_id.startswith(args.run_id_prefix)]
-        if args.source_kind != "all":
-            filtered = [record for record in filtered if record.source_kind == args.source_kind]
-        if args.verdict:
-            filtered = [record for record in filtered if record.verdict == args.verdict]
-        if args.status:
-            filtered = [record for record in filtered if record.overall_status == args.status]
-        if args.readiness_status:
-            filtered = [record for record in filtered if record.readiness_status == args.readiness_status]
-        if args.reconcile_status:
-            filtered = [record for record in filtered if record.reconcile_status == args.reconcile_status]
-        if args.reconcile_artifact_state:
-            filtered = [record for record in filtered if record.reconcile_artifact_state == args.reconcile_artifact_state]
-        if args.reconcile_validation_state:
-            filtered = [
-                record for record in filtered if record.reconcile_validation_state == args.reconcile_validation_state
-            ]
-        if args.checkpoint_state:
-            filtered = [record for record in filtered if record.checkpoint_state == args.checkpoint_state]
-        if args.failed_check:
-            filtered = [record for record in filtered if args.failed_check in record.failed_checks]
+        filtered = filter_summary_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+            verdict=args.verdict,
+            status=args.status,
+            readiness_status=args.readiness_status,
+            health_status=args.health_status,
+            reconcile_status=args.reconcile_status,
+            reconcile_artifact_state=args.reconcile_artifact_state,
+            reconcile_validation_state=args.reconcile_validation_state,
+            checkpoint_state=args.checkpoint_state,
+            failed_check=args.failed_check,
+        )
         filtered = filtered[: args.limit]
         if args.format == "json":
             print(json.dumps({"records": [asdict(record) for record in filtered]}, ensure_ascii=True, indent=2))
@@ -1023,6 +1183,29 @@ def main() -> int:
             print(render_runs_markdown(filtered))
             return 0
         print(render_runs_table(filtered))
+        return 0
+
+    if args.command == "health-scan":
+        filtered = filter_summary_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+            readiness_status=args.readiness_status,
+            health_status=args.health_status,
+            reconcile_status=args.reconcile_status,
+            reconcile_artifact_state=args.reconcile_artifact_state,
+            checkpoint_state=args.checkpoint_state,
+            failed_check=args.failed_check,
+        )
+        filtered = filtered[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in filtered]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_health_scan_markdown(filtered))
+            return 0
+        print(render_health_scan_table(filtered))
         return 0
 
     if args.command == "reconcile-status":
