@@ -395,6 +395,10 @@ class MondayConsumerReportRecord:
     local_validation_snapshot_status: str | None
     block_reasons: list[str]
     command_args: list[str]
+    has_runtime_input_overrides: bool
+    override_kinds: list[str]
+    planner_runtime_config_path: str | None
+    runtime_profile_file_path: str | None
     execution_attempted: bool | None
     execution_exit_code: int | None
     runtime_report_verdict: str | None
@@ -1226,6 +1230,9 @@ def build_monday_consumer_report_record(
 ) -> MondayConsumerReportRecord:
     artifact_paths = report_doc.get("artifact_paths") if isinstance(report_doc.get("artifact_paths"), dict) else {}
     launch_request = report_doc.get("launch_request") if isinstance(report_doc.get("launch_request"), dict) else {}
+    runtime_input_overrides = (
+        launch_request.get("runtime_input_overrides") if isinstance(launch_request.get("runtime_input_overrides"), dict) else {}
+    )
     execution = report_doc.get("execution") if isinstance(report_doc.get("execution"), dict) else {}
     runtime_report_summary = (
         report_doc.get("runtime_report_summary") if isinstance(report_doc.get("runtime_report_summary"), dict) else {}
@@ -1235,6 +1242,13 @@ def build_monday_consumer_report_record(
     runtime_report_path = resolve_artifact_path(artifact_paths.get("runtime_report_path"))
     execution_attempted = execution.get("attempted") if isinstance(execution.get("attempted"), bool) else None
     execution_exit_code = execution.get("exit_code") if isinstance(execution.get("exit_code"), int) else None
+    planner_runtime_config_path = normalize_optional_string(runtime_input_overrides.get("planner_runtime_config"))
+    runtime_profile_file_path = normalize_optional_string(runtime_input_overrides.get("runtime_profile_file"))
+    override_kinds: list[str] = []
+    if planner_runtime_config_path is not None:
+        override_kinds.append("planner_runtime_config")
+    if runtime_profile_file_path is not None:
+        override_kinds.append("runtime_profile_file")
     return MondayConsumerReportRecord(
         run_id=str(report_doc.get("run_id")),
         report_path=str(report_path.resolve()),
@@ -1251,6 +1265,10 @@ def build_monday_consumer_report_record(
         local_validation_snapshot_status=normalize_optional_string(launch_request.get("local_validation_snapshot_status")),
         block_reasons=normalize_string_list(launch_request.get("block_reasons")),
         command_args=normalize_string_list(launch_request.get("runtime_command_args")),
+        has_runtime_input_overrides=bool(override_kinds),
+        override_kinds=override_kinds,
+        planner_runtime_config_path=planner_runtime_config_path,
+        runtime_profile_file_path=runtime_profile_file_path,
         execution_attempted=execution_attempted,
         execution_exit_code=execution_exit_code,
         runtime_report_verdict=normalize_optional_string(runtime_report_summary.get("verdict")),
@@ -1298,6 +1316,8 @@ def filter_monday_consumer_report_records(
     planner_profile: str | None = None,
     launch_mode: str | None = None,
     local_model_route: str | None = None,
+    has_runtime_input_overrides: str | None = None,
+    override_kind: str | None = None,
     has_runtime_report: str | None = None,
     execution_attempted: str | None = None,
 ) -> list[MondayConsumerReportRecord]:
@@ -1321,6 +1341,11 @@ def filter_monday_consumer_report_records(
         filtered = [record for record in filtered if record.launch_mode == launch_mode]
     if local_model_route:
         filtered = [record for record in filtered if record.local_model_route == local_model_route]
+    if has_runtime_input_overrides is not None:
+        expected = has_runtime_input_overrides == "yes"
+        filtered = [record for record in filtered if record.has_runtime_input_overrides is expected]
+    if override_kind:
+        filtered = [record for record in filtered if override_kind in record.override_kinds]
     if has_runtime_report is not None:
         expected = has_runtime_report == "yes"
         filtered = [record for record in filtered if record.has_runtime_report is expected]
@@ -1332,7 +1357,7 @@ def filter_monday_consumer_report_records(
 
 def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
+        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -1347,6 +1372,8 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
                     str(record.planner_profile or ""),
                     str(record.launch_mode or ""),
                     str(record.local_model_route or ""),
+                    "yes" if record.has_runtime_input_overrides else "no",
+                    ",".join(record.override_kinds),
                     (
                         ""
                         if record.execution_attempted is None
@@ -1365,8 +1392,8 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
 
 def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
+        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
@@ -1374,6 +1401,8 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{record.consumer_status or ''} | "
             f"{'' if record.can_launch is None else ('yes' if record.can_launch else 'no')} | "
             f"{record.planner_profile or ''} | {record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{'yes' if record.has_runtime_input_overrides else 'no'} | "
+            f"{', '.join(record.override_kinds)} | "
             f"{'' if record.execution_attempted is None else ('yes' if record.execution_attempted else 'no')} | "
             f"{'' if record.execution_exit_code is None else record.execution_exit_code} | "
             f"{record.runtime_report_verdict or ''} | "
@@ -4052,6 +4081,8 @@ def parse_args() -> argparse.Namespace:
     monday_consumer_parser.add_argument("--planner-profile", default=None)
     monday_consumer_parser.add_argument("--launch-mode", default=None)
     monday_consumer_parser.add_argument("--local-model-route", default=None)
+    monday_consumer_parser.add_argument("--has-runtime-overrides", choices=["yes", "no"], default=None)
+    monday_consumer_parser.add_argument("--override-kind", choices=["planner_runtime_config", "runtime_profile_file"], default=None)
     monday_consumer_parser.add_argument("--has-runtime-report", choices=["yes", "no"], default=None)
     monday_consumer_parser.add_argument("--execution-attempted", choices=["yes", "no"], default=None)
     monday_consumer_parser.add_argument("--limit", type=int, default=20)
@@ -4139,6 +4170,8 @@ def main() -> int:
             planner_profile=args.planner_profile,
             launch_mode=args.launch_mode,
             local_model_route=args.local_model_route,
+            has_runtime_input_overrides=args.has_runtime_overrides,
+            override_kind=args.override_kind,
             has_runtime_report=args.has_runtime_report,
             execution_attempted=args.execution_attempted,
         )

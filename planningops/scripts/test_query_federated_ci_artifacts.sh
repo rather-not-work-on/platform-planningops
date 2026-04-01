@@ -659,6 +659,7 @@ LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT="$TMP_DIR/local-inbox-payload-filtered.json"
 MONDAY_CONSUMER_OUTPUT="$TMP_DIR/monday-consumer-report.json"
 MONDAY_CONSUMER_FILTERED_OUTPUT="$TMP_DIR/monday-consumer-report-filtered.json"
 MONDAY_CONSUMER_BLOCKED_OUTPUT="$TMP_DIR/monday-consumer-report-blocked.json"
+MONDAY_CONSUMER_OVERRIDE_OUTPUT="$TMP_DIR/monday-consumer-report-override.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
 LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
 LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
@@ -2963,6 +2964,46 @@ cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/loc
 }
 JSON
 
+cat >"$TMP_DIR/planner-runtime.json" <<'JSON'
+{
+  "profile": "local_ollama"
+}
+JSON
+
+cat >"$TMP_DIR/runtime-profiles.json" <<'JSON'
+{
+  "profiles": [
+    "local_ollama"
+  ]
+}
+JSON
+
+python3 - <<'PY' "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/launch-request.json" "$TMP_DIR/planner-runtime.json" "$TMP_DIR/runtime-profiles.json"
+import json
+import sys
+from pathlib import Path
+
+launch_request_path = Path(sys.argv[1])
+planner_runtime_path = Path(sys.argv[2]).resolve()
+runtime_profiles_path = Path(sys.argv[3]).resolve()
+doc = json.loads(launch_request_path.read_text(encoding="utf-8"))
+doc["runtime_command_args"] = [
+    "python3",
+    "scripts/run_local_runtime_smoke.py",
+    "--profile",
+    "local_ollama",
+    "--planner-runtime-config",
+    str(planner_runtime_path),
+    "--runtime-profile-file",
+    str(runtime_profiles_path),
+]
+doc["runtime_input_overrides"] = {
+    "planner_runtime_config": str(planner_runtime_path),
+    "runtime_profile_file": str(runtime_profiles_path),
+}
+launch_request_path.write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+PY
+
 cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/consumer-report.json" <<JSON
 {
   "generated_at_utc": "2026-04-01T10:20:00+00:00",
@@ -2983,12 +3024,14 @@ cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/con
   "launch_request": $(cat "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/launch-request.json"),
   "execution": {
     "attempted": true,
-    "command_args": [
-      "python3",
-      "scripts/run_local_runtime_smoke.py",
-      "--profile",
-      "local_ollama"
-    ],
+    "command_args": $(python3 - <<'PY' "$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T102000Z/launch-request.json"
+import json
+import sys
+from pathlib import Path
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(json.dumps(doc["runtime_command_args"]))
+PY
+),
     "exit_code": 0,
     "stdout": "runtime ok",
     "stderr": ""
@@ -3111,6 +3154,13 @@ assert passed_apply["execution_exit_code"] == 0, passed_apply
 assert passed_apply["has_runtime_report"] is True, passed_apply
 assert passed_apply["runtime_report_verdict"] == "pass", passed_apply
 assert passed_apply["runtime_report_reason_code"] == "ok", passed_apply
+assert passed_apply["has_runtime_input_overrides"] is True, passed_apply
+assert passed_apply["override_kinds"] == [
+    "planner_runtime_config",
+    "runtime_profile_file",
+], passed_apply
+assert passed_apply["planner_runtime_config_path"].endswith("/planner-runtime.json"), passed_apply
+assert passed_apply["runtime_profile_file_path"].endswith("/runtime-profiles.json"), passed_apply
 
 assert dry_run["mode"] == "dry-run", dry_run
 assert dry_run["verdict"] == "pass", dry_run
@@ -3120,11 +3170,14 @@ assert dry_run["execution_attempted"] is None, dry_run
 assert dry_run["has_launch_request"] is True, dry_run
 assert dry_run["has_mission_file"] is True, dry_run
 assert dry_run["has_runtime_report"] is False, dry_run
+assert dry_run["has_runtime_input_overrides"] is False, dry_run
 PY
 
 python3 "$QUERY_PATH" monday-consumer-report \
   --mode apply \
   --verdict pass \
+  --has-runtime-overrides yes \
+  --override-kind runtime_profile_file \
   --has-runtime-report yes \
   --execution-attempted yes \
   --format json \
@@ -3142,6 +3195,7 @@ record = records[0]
 assert record["run_id"] == "planningops-local-inbox-consumer-20260401T102000Z", record
 assert record["runtime_report_verdict"] == "pass", record
 assert record["reason_code"] == "ok", record
+assert record["has_runtime_input_overrides"] is True, record
 PY
 
 python3 "$QUERY_PATH" monday-consumer-report \
@@ -3162,6 +3216,25 @@ record = records[0]
 assert record["run_id"] == "planningops-local-inbox-consumer-20260401T103000Z", record
 assert record["verdict"] == "blocked", record
 assert record["execution_attempted"] is False, record
+PY
+
+python3 "$QUERY_PATH" monday-consumer-report \
+  --has-runtime-overrides no \
+  --format json \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_OVERRIDE_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_OVERRIDE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["run_id"] for record in records] == [
+    "planningops-local-inbox-consumer-20260401T103000Z",
+    "planningops-local-inbox-consumer-20260401T101000Z",
+], records
+assert all(record["has_runtime_input_overrides"] is False for record in records), records
 PY
 
 echo "query federated ci artifacts ok"
