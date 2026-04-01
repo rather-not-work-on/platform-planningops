@@ -468,6 +468,8 @@ LATEST_OUTPUT="$TMP_DIR/latest.json"
 RUNS_RECONCILE_OUTPUT="$TMP_DIR/runs-reconcile.json"
 HEALTH_SCAN_OUTPUT="$TMP_DIR/health-scan.json"
 HEALTH_SCAN_DEGRADED_OUTPUT="$TMP_DIR/health-scan-degraded.json"
+HEALTH_SUMMARY_OUTPUT="$TMP_DIR/health-summary.json"
+HEALTH_SUMMARY_BLOCKED_OUTPUT="$TMP_DIR/health-summary-blocked.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -747,6 +749,67 @@ records = doc["records"]
 assert len(records) == 1, records
 assert records[0]["run_id"] == "federated-ci-runtime-gates-20260319-rerun26", records
 assert records[0]["health_status"] == "degraded", records
+PY
+
+python3 "$QUERY_PATH" health-summary \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$HEALTH_SUMMARY_OUTPUT"
+
+python3 - <<'PY' "$HEALTH_SUMMARY_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["family"] for record in records] == [
+    "federated-ci-runtime-gates",
+    "federated-ci-local",
+], records
+
+runtime, local = records
+assert runtime["run_count"] == 5, runtime
+assert runtime["healthy_count"] == 1, runtime
+assert runtime["degraded_count"] == 1, runtime
+assert runtime["blocked_count"] == 2, runtime
+assert runtime["unknown_count"] == 1, runtime
+assert runtime["latest_run_id"] == "federated-ci-runtime-gates-20260319-rerun30", runtime
+assert runtime["latest_run_health_status"] == "healthy", runtime
+assert runtime["latest_alert_run_id"] == "federated-ci-runtime-gates-20260319-rerun29", runtime
+assert runtime["latest_alert_health_status"] == "unknown", runtime
+assert runtime["latest_alert_failed_checks"] == [], runtime
+assert runtime["latest_alert_reasons"] == ["checkpoint_missing", "reconcile_unknown"], runtime
+
+assert local["run_count"] == 1, local
+assert local["healthy_count"] == 0, local
+assert local["degraded_count"] == 0, local
+assert local["blocked_count"] == 0, local
+assert local["unknown_count"] == 1, local
+assert local["latest_run_id"] == "federated-ci-local-20260301", local
+assert local["latest_run_health_status"] == "unknown", local
+assert local["latest_alert_run_id"] == "federated-ci-local-20260301", local
+assert local["latest_alert_health_status"] == "unknown", local
+PY
+
+python3 "$QUERY_PATH" health-summary \
+  --has-health-status blocked \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$HEALTH_SUMMARY_BLOCKED_OUTPUT"
+
+python3 - <<'PY' "$HEALTH_SUMMARY_BLOCKED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["family"] == "federated-ci-runtime-gates", records
+assert records[0]["blocked_count"] == 2, records
 PY
 
 python3 "$QUERY_PATH" reconcile-status \

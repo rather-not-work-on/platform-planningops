@@ -85,6 +85,26 @@ class ReconcileStatusRecord:
     summary_check_count: int | None
 
 
+@dataclass(frozen=True)
+class HealthSummaryRecord:
+    family: str
+    run_count: int
+    latest_run_id: str
+    latest_run_source_kind: str
+    latest_run_health_status: str
+    latest_run_timestamp_utc: str
+    healthy_count: int
+    degraded_count: int
+    blocked_count: int
+    unknown_count: int
+    latest_alert_run_id: str | None
+    latest_alert_source_kind: str | None
+    latest_alert_health_status: str | None
+    latest_alert_timestamp_utc: str | None
+    latest_alert_failed_checks: list[str]
+    latest_alert_reasons: list[str]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -521,6 +541,93 @@ def render_health_scan_markdown(records: list[SummaryRecord]) -> str:
             f"{record.verdict or ''} | {record.readiness_status} | {record.reconcile_status} | "
             f"{record.reconcile_artifact_state} | {', '.join(record.failed_checks)} | "
             f"{', '.join(record.health_reasons)} | {record.timestamp_utc} |"
+        )
+    return "\n".join(lines)
+
+
+def build_health_summary_records(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+) -> list[HealthSummaryRecord]:
+    filtered = filter_summary_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    grouped: dict[str, list[SummaryRecord]] = {}
+    for record in filtered:
+        grouped.setdefault(record.family, []).append(record)
+
+    summaries: list[HealthSummaryRecord] = []
+    for family_name, family_records in grouped.items():
+        latest_record = family_records[0]
+        latest_alert = next((record for record in family_records if record.health_status != "healthy"), None)
+        summaries.append(
+            HealthSummaryRecord(
+                family=family_name,
+                run_count=len(family_records),
+                latest_run_id=latest_record.run_id,
+                latest_run_source_kind=latest_record.source_kind,
+                latest_run_health_status=latest_record.health_status,
+                latest_run_timestamp_utc=latest_record.timestamp_utc,
+                healthy_count=sum(1 for record in family_records if record.health_status == "healthy"),
+                degraded_count=sum(1 for record in family_records if record.health_status == "degraded"),
+                blocked_count=sum(1 for record in family_records if record.health_status == "blocked"),
+                unknown_count=sum(1 for record in family_records if record.health_status == "unknown"),
+                latest_alert_run_id=None if latest_alert is None else latest_alert.run_id,
+                latest_alert_source_kind=None if latest_alert is None else latest_alert.source_kind,
+                latest_alert_health_status=None if latest_alert is None else latest_alert.health_status,
+                latest_alert_timestamp_utc=None if latest_alert is None else latest_alert.timestamp_utc,
+                latest_alert_failed_checks=[] if latest_alert is None else latest_alert.failed_checks,
+                latest_alert_reasons=[] if latest_alert is None else latest_alert.health_reasons,
+            )
+        )
+    summaries.sort(key=lambda record: (record.latest_run_timestamp_utc, record.family), reverse=True)
+    return summaries
+
+
+def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
+    lines = [
+        "family\truns\thealthy\tdegraded\tblocked\tunknown\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_alert_failed_checks\tlatest_timestamp",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.family,
+                    str(record.run_count),
+                    str(record.healthy_count),
+                    str(record.degraded_count),
+                    str(record.blocked_count),
+                    str(record.unknown_count),
+                    record.latest_run_id,
+                    record.latest_run_health_status,
+                    record.latest_alert_run_id or "",
+                    record.latest_alert_health_status or "",
+                    ",".join(record.latest_alert_failed_checks),
+                    record.latest_run_timestamp_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_health_summary_markdown(records: list[HealthSummaryRecord]) -> str:
+    lines = [
+        "| family | runs | healthy | degraded | blocked | unknown | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_alert_failed_checks | latest_timestamp |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.family} | {record.run_count} | {record.healthy_count} | {record.degraded_count} | "
+            f"{record.blocked_count} | {record.unknown_count} | `{record.latest_run_id}` | "
+            f"{record.latest_run_health_status} | `{record.latest_alert_run_id or ''}` | "
+            f"{record.latest_alert_health_status or ''} | {', '.join(record.latest_alert_failed_checks)} | "
+            f"{record.latest_run_timestamp_utc} |"
         )
     return "\n".join(lines)
 
@@ -1145,6 +1252,29 @@ def parse_args() -> argparse.Namespace:
     health_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     health_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     health_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    health_summary_parser = subparsers.add_parser(
+        "health-summary",
+        help="show family-level health bucket counts and the newest alerting run for federated CI artifacts",
+    )
+    health_summary_parser.add_argument("--family", default=None)
+    health_summary_parser.add_argument("--run-id-prefix", default=None)
+    health_summary_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    health_summary_parser.add_argument(
+        "--latest-health-status",
+        choices=["healthy", "degraded", "blocked", "unknown"],
+        default=None,
+    )
+    health_summary_parser.add_argument(
+        "--has-health-status",
+        choices=["healthy", "degraded", "blocked", "unknown"],
+        default=None,
+    )
+    health_summary_parser.add_argument("--limit", type=int, default=20)
+    health_summary_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    health_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    health_summary_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    health_summary_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -1206,6 +1336,28 @@ def main() -> int:
             print(render_health_scan_markdown(filtered))
             return 0
         print(render_health_scan_table(filtered))
+        return 0
+
+    if args.command == "health-summary":
+        summaries = build_health_summary_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+        )
+        if args.latest_health_status:
+            summaries = [record for record in summaries if record.latest_run_health_status == args.latest_health_status]
+        if args.has_health_status:
+            bucket_name = f"{args.has_health_status}_count"
+            summaries = [record for record in summaries if getattr(record, bucket_name) > 0]
+        summaries = summaries[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in summaries]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_health_summary_markdown(summaries))
+            return 0
+        print(render_health_summary_table(summaries))
         return 0
 
     if args.command == "reconcile-status":
