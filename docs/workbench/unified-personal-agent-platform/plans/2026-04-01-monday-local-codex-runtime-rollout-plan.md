@@ -135,6 +135,11 @@ Current deliverables:
 - `planningops/artifacts/validation/monday-local-operator-day-packet.json`
 - `planningops/artifacts/validation/<day-packet-id>-monday-local-operator-day-packet.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now includes the promoted day packet family in the same promotion lane
+- `planningops/contracts/monday-local-operator-inbox-payload-bridge-contract.md`
+- `planningops/scripts/write_monday_local_operator_inbox_payload.py`
+- `planningops/artifacts/validation/monday-local-operator-inbox-payload.json`
+- `planningops/artifacts/validation/<bridge-id>-monday-local-operator-inbox-payload.json`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now includes the promoted inbox payload bridge family in the same promotion lane
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -196,6 +201,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
-2. decide whether the day packet should stay PlanningOps-owned or also emit a monday-owned inbox payload bridge
-3. add a dedicated query/report surface for the promoted day packet if operators need a packet-first view separate from `handoff-report`
+1. add a monday-native consumer that accepts the promoted inbox payload bridge without reparsing day packet markdown
+2. decide whether the inbox payload bridge should be schema-validated against a monday-owned payload contract once that surface exists
+3. add a dedicated query/report surface for the promoted inbox payload bridge if operators need a payload-first view separate from `handoff-report`

@@ -1996,6 +1996,92 @@ path.write_text(payload, encoding="utf-8")
 (validation_dir / "monday-local-day-20260401T083000Z-monday-local-operator-day-packet.json").write_text(payload, encoding="utf-8")
 PY
 
+cat >"$VALIDATION_DIR/monday-local-operator-inbox-payload.json" <<'JSON'
+{
+  "generated_at_utc": "2026-04-01T08:45:00+00:00",
+  "bridge_id": "monday-local-inbox-20260401T084500Z",
+  "contract_ref": "planningops/contracts/monday-local-operator-inbox-payload-bridge-contract.md",
+  "artifact_paths": {
+    "latest_payload_path": "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-inbox-payload.json",
+    "stamped_payload_path": "VALIDATION_ROOT_PLACEHOLDER/monday-local-inbox-20260401T084500Z-monday-local-operator-inbox-payload.json",
+    "output_path": null
+  },
+  "payload": {
+    "title": "Monday local operator day packet: Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+    "status": "blocked",
+    "headline": "Monday local operator day packet: Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+    "priority_headline": "Monday local operator day packet: Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+    "operator_action": "launch_monday_local_runtime",
+    "recommended_wait_minutes": 5,
+    "retry_mode": "manual_recheck",
+    "needs_human_attention": true,
+    "message_class_hint": "decision_request",
+    "planner_profile": "local_ollama",
+    "launch_mode": "direct",
+    "local_model_route": "direct_local_ollama",
+    "day_packet_id": "monday-local-day-20260401T083000Z",
+    "mission_packet_id": "monday-local-mission-20260401T080000Z",
+    "mission_objective": "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+    "first_action_command": "python3 planningops/scripts/run_monday_local_operator_stack.py --execution-mode direct --direct-profile local_ollama --probe-endpoints on --run-id monday-local-mission-20260401T080000Z",
+    "monday_runtime_entrypoint_command": "cd ../monday && python3 scripts/run_local_runtime_smoke.py --profile local_ollama --run-id monday-local-mission-20260401T080000Z",
+    "rollback_command": "cd ../platform-provider-gateway && bash scripts/litellm_stack_launcher.sh --mode start",
+    "local_validation_snapshot_status": "present",
+    "local_validation_summary_lines": [
+      "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
+      "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
+      "monday_local_mission_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=operator_handoff_report=current,monday_local_operator_stack_report=current",
+      "monday_local_operator_day_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current"
+    ],
+    "local_validation_action_lines": [
+      "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)",
+      "local-validation: repair monday_local_mission_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)",
+      "local-validation: repair monday_local_operator_day_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)"
+    ],
+    "attachments": [
+      "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-inbox-payload.json",
+      "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-day-packet.json",
+      "VALIDATION_ROOT_PLACEHOLDER/monday-local-mission-packet.json",
+      "VALIDATION_ROOT_PLACEHOLDER/operator-handoff-report.json",
+      "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-stack-report.json"
+    ],
+    "body_markdown": "## Monday Local Operator Day Packet",
+    "bridge_contract_ref": "planningops/contracts/monday-local-operator-inbox-payload-bridge-contract.md",
+    "source_artifacts": {
+      "day_packet_path": "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-day-packet.json",
+      "mission_packet_path": "VALIDATION_ROOT_PLACEHOLDER/monday-local-mission-packet.json",
+      "handoff_report_path": "VALIDATION_ROOT_PLACEHOLDER/operator-handoff-report.json",
+      "local_operator_report_path": "VALIDATION_ROOT_PLACEHOLDER/monday-local-operator-stack-report.json"
+    }
+  }
+}
+JSON
+
+python3 - <<'PY' "$VALIDATION_DIR/monday-local-operator-inbox-payload.json" "$VALIDATION_DIR"
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+validation_dir = Path(sys.argv[2]).resolve()
+doc = json.loads(path.read_text(encoding="utf-8"))
+doc["artifact_paths"]["latest_payload_path"] = str((validation_dir / "monday-local-operator-inbox-payload.json").resolve())
+doc["artifact_paths"]["stamped_payload_path"] = str((validation_dir / "monday-local-inbox-20260401T084500Z-monday-local-operator-inbox-payload.json").resolve())
+doc["payload"]["attachments"] = [
+    str((validation_dir / "monday-local-operator-inbox-payload.json").resolve()),
+    str((validation_dir / "monday-local-operator-day-packet.json").resolve()),
+    str((validation_dir / "monday-local-mission-packet.json").resolve()),
+    str((validation_dir / "operator-handoff-report.json").resolve()),
+    str((validation_dir / "monday-local-operator-stack-report.json").resolve()),
+]
+doc["payload"]["source_artifacts"]["day_packet_path"] = str((validation_dir / "monday-local-operator-day-packet.json").resolve())
+doc["payload"]["source_artifacts"]["mission_packet_path"] = str((validation_dir / "monday-local-mission-packet.json").resolve())
+doc["payload"]["source_artifacts"]["handoff_report_path"] = str((validation_dir / "operator-handoff-report.json").resolve())
+doc["payload"]["source_artifacts"]["local_operator_report_path"] = str((validation_dir / "monday-local-operator-stack-report.json").resolve())
+payload = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
+path.write_text(payload, encoding="utf-8")
+(validation_dir / "monday-local-inbox-20260401T084500Z-monday-local-operator-inbox-payload.json").write_text(payload, encoding="utf-8")
+PY
+
 python3 "$QUERY_PATH" handoff-report \
   --format json \
   --ci-root "$CI_DIR" \
@@ -2074,6 +2160,7 @@ assert record["local_validation_summary_lines"] == [
     "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
     "monday_local_mission_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=operator_handoff_report=current,monday_local_operator_stack_report=current",
     "monday_local_operator_day_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
+    "monday_local_operator_inbox_payload: freshness=fresh promotability=promotable dependencies=monday_local_operator_day_packet=current,monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
 ], record
 assert record["immediate_action_lines"] == [
     "local-runtime: Expose Codex and add a direct local LLM profile.",
@@ -2122,6 +2209,7 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
         "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
         "monday_local_mission_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=operator_handoff_report=current,monday_local_operator_stack_report=current",
         "monday_local_operator_day_packet: freshness=fresh promotability=blocked reasons=missing_rollback_command dependencies=monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
+        "monday_local_operator_inbox_payload: freshness=fresh promotability=promotable dependencies=monday_local_operator_day_packet=current,monday_local_mission_packet=current,operator_handoff_report=current,monday_local_operator_stack_report=current",
     ], doc
     assert doc["record"]["local_validation_action_lines"] == [
         "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)",
@@ -2575,9 +2663,10 @@ assert [record["artifact_family"] for record in records] == [
     "operator_handoff_report",
     "monday_local_mission_packet",
     "monday_local_operator_day_packet",
+    "monday_local_operator_inbox_payload",
 ], records
 
-local_operator, handoff, mission, day_packet = records
+local_operator, handoff, mission, day_packet, inbox_payload = records
 
 assert local_operator["freshness_state"] == "fresh", local_operator
 assert local_operator["promotability_status"] == "promotable", local_operator
@@ -2607,6 +2696,17 @@ assert day_packet["dependency_states"] == {
     "monday_local_operator_stack_report": "current",
 }, day_packet
 assert day_packet["reasons"] == ["missing_rollback_command"], day_packet
+
+assert inbox_payload["freshness_state"] == "fresh", inbox_payload
+assert inbox_payload["promotability_status"] == "promotable", inbox_payload
+assert inbox_payload["promoted_id"] == "monday-local-inbox-20260401T084500Z", inbox_payload
+assert inbox_payload["dependency_states"] == {
+    "monday_local_operator_day_packet": "current",
+    "monday_local_mission_packet": "current",
+    "operator_handoff_report": "current",
+    "monday_local_operator_stack_report": "current",
+}, inbox_payload
+assert inbox_payload["reasons"] == [], inbox_payload
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
