@@ -308,6 +308,8 @@ class HandoffReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    local_validation_snapshot_status: str
+    local_validation_snapshot_summary: str
     local_validation_records: list[LocalValidationFreshnessRecord]
     local_validation_summary_lines: list[str]
     local_validation_action_lines: list[str]
@@ -2280,6 +2282,27 @@ def build_local_validation_action_line(record: LocalValidationFreshnessRecord) -
     )
 
 
+def build_local_validation_snapshot(records: list[LocalValidationFreshnessRecord]) -> tuple[str, str]:
+    if not records:
+        return "missing", "total=0 promotable=0 blocked=0 stale=0"
+
+    promotable_count = 0
+    stale_count = 0
+    for record in records:
+        if record.promotability_status == "promotable":
+            promotable_count += 1
+        if record.freshness_state != "fresh":
+            stale_count += 1
+
+    blocked_count = len(records) - promotable_count
+    snapshot_status = "fresh" if blocked_count == 0 and stale_count == 0 else "present"
+    snapshot_summary = (
+        f"total={len(records)} promotable={promotable_count} "
+        f"blocked={blocked_count} stale={stale_count}"
+    )
+    return snapshot_status, snapshot_summary
+
+
 def build_summary_health_fields(
     *,
     verdict: Any,
@@ -3453,6 +3476,9 @@ def build_handoff_report_record(
         target_limit=target_limit,
     )
     local_validation_records = discover_local_validation_freshness_records(validation_root=validation_root)
+    local_validation_snapshot_status, local_validation_snapshot_summary = build_local_validation_snapshot(
+        local_validation_records
+    )
     local_validation_summary_lines = [build_local_validation_summary_line(record) for record in local_validation_records]
     local_validation_action_lines = [
         action
@@ -3489,7 +3515,15 @@ def build_handoff_report_record(
         markdown_lines.append(f"- local operator: `{triage_report.local_operator_summary}`")
     if triage_report.local_operator_next_step is not None:
         markdown_lines.append(f"- local operator next step: {triage_report.local_operator_next_step}")
-    markdown_lines.extend(["", "### Local Validation", *[f"- {line}" for line in local_validation_summary_lines]])
+    markdown_lines.extend(
+        [
+            "",
+            "### Local Validation",
+            f"- snapshot status: `{local_validation_snapshot_status}`",
+            f"- snapshot summary: `{local_validation_snapshot_summary}`",
+            *[f"- {line}" for line in local_validation_summary_lines],
+        ]
+    )
     if local_validation_action_lines:
         markdown_lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
     markdown_lines.extend(["", "### Queue", *[f"- {line}" for line in triage_report.queue_lines]])
@@ -3509,6 +3543,8 @@ def build_handoff_report_record(
         local_operator_record=triage_report.local_operator_record,
         local_operator_summary=triage_report.local_operator_summary,
         local_operator_next_step=triage_report.local_operator_next_step,
+        local_validation_snapshot_status=local_validation_snapshot_status,
+        local_validation_snapshot_summary=local_validation_snapshot_summary,
         local_validation_records=local_validation_records,
         local_validation_summary_lines=local_validation_summary_lines,
         local_validation_action_lines=local_validation_action_lines,
@@ -3533,6 +3569,8 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.append(f"local_validation_snapshot_status\t{record.local_validation_snapshot_status}")
+    sections.append(f"local_validation_snapshot_summary\t{record.local_validation_snapshot_summary}")
     sections.extend(["local_validation", *record.local_validation_summary_lines])
     if record.local_validation_action_lines:
         sections.extend(["local_validation_actions", *record.local_validation_action_lines])
