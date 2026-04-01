@@ -109,6 +109,9 @@ class HealthSummaryRecord:
     latest_failure_health_status: str | None
     latest_failure_timestamp_utc: str | None
     latest_failure_domains: list[str]
+    readiness_status_counts: dict[str, int]
+    reconcile_artifact_state_counts: dict[str, int]
+    reconcile_validation_state_counts: dict[str, int]
 
 
 def resolve_root(path_text: str, default: Path) -> Path:
@@ -574,9 +577,19 @@ def build_health_summary_records(
         latest_alert = next((record for record in family_records if record.health_status != "healthy"), None)
         latest_failure = next((record for record in family_records if record.failure_domains), None)
         domain_counts: dict[str, int] = {}
+        readiness_counts: dict[str, int] = {}
+        reconcile_artifact_counts: dict[str, int] = {}
+        reconcile_validation_counts: dict[str, int] = {}
         for record in family_records:
             for domain in record.failure_domains:
                 domain_counts[domain] = domain_counts.get(domain, 0) + 1
+            readiness_counts[record.readiness_status] = readiness_counts.get(record.readiness_status, 0) + 1
+            reconcile_artifact_counts[record.reconcile_artifact_state] = (
+                reconcile_artifact_counts.get(record.reconcile_artifact_state, 0) + 1
+            )
+            reconcile_validation_counts[record.reconcile_validation_state] = (
+                reconcile_validation_counts.get(record.reconcile_validation_state, 0) + 1
+            )
         summaries.append(
             HealthSummaryRecord(
                 family=family_name,
@@ -601,6 +614,13 @@ def build_health_summary_records(
                 latest_failure_health_status=None if latest_failure is None else latest_failure.health_status,
                 latest_failure_timestamp_utc=None if latest_failure is None else latest_failure.timestamp_utc,
                 latest_failure_domains=[] if latest_failure is None else latest_failure.failure_domains,
+                readiness_status_counts={key: readiness_counts[key] for key in sorted(readiness_counts)},
+                reconcile_artifact_state_counts={
+                    key: reconcile_artifact_counts[key] for key in sorted(reconcile_artifact_counts)
+                },
+                reconcile_validation_state_counts={
+                    key: reconcile_validation_counts[key] for key in sorted(reconcile_validation_counts)
+                },
             )
         )
     summaries.sort(key=lambda record: (record.latest_run_timestamp_utc, record.family), reverse=True)
@@ -609,7 +629,7 @@ def build_health_summary_records(
 
 def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
     lines = [
-        "family\truns\thealthy\tdegraded\tblocked\tunknown\tdomain_counts\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_failure_run\tlatest_failure_domains\tlatest_timestamp",
+        "family\truns\thealthy\tdegraded\tblocked\tunknown\treadiness_counts\treconcile_artifact_counts\treconcile_validation_counts\tdomain_counts\tlatest_run\tlatest_health\tlatest_alert_run\tlatest_alert_health\tlatest_failure_run\tlatest_failure_domains\tlatest_timestamp",
     ]
     for record in records:
         lines.append(
@@ -621,6 +641,9 @@ def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
                     str(record.degraded_count),
                     str(record.blocked_count),
                     str(record.unknown_count),
+                    ",".join(f"{key}={value}" for key, value in record.readiness_status_counts.items()),
+                    ",".join(f"{key}={value}" for key, value in record.reconcile_artifact_state_counts.items()),
+                    ",".join(f"{key}={value}" for key, value in record.reconcile_validation_state_counts.items()),
                     ",".join(f"{key}={value}" for key, value in record.failure_domain_counts.items()),
                     record.latest_run_id,
                     record.latest_run_health_status,
@@ -637,13 +660,16 @@ def render_health_summary_table(records: list[HealthSummaryRecord]) -> str:
 
 def render_health_summary_markdown(records: list[HealthSummaryRecord]) -> str:
     lines = [
-        "| family | runs | healthy | degraded | blocked | unknown | domain_counts | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_failure_run | latest_failure_domains | latest_timestamp |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| family | runs | healthy | degraded | blocked | unknown | readiness_counts | reconcile_artifact_counts | reconcile_validation_counts | domain_counts | latest_run | latest_health | latest_alert_run | latest_alert_health | latest_failure_run | latest_failure_domains | latest_timestamp |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
             f"| {record.family} | {record.run_count} | {record.healthy_count} | {record.degraded_count} | "
             f"{record.blocked_count} | {record.unknown_count} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.readiness_status_counts.items())} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.reconcile_artifact_state_counts.items())} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.reconcile_validation_state_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.failure_domain_counts.items())} | "
             f"`{record.latest_run_id}` | {record.latest_run_health_status} | `{record.latest_alert_run_id or ''}` | "
             f"{record.latest_alert_health_status or ''} | `{record.latest_failure_run_id or ''}` | "
@@ -1292,6 +1318,21 @@ def parse_args() -> argparse.Namespace:
         default=None,
     )
     health_summary_parser.add_argument("--has-failure-domain", default=None)
+    health_summary_parser.add_argument(
+        "--has-readiness-status",
+        choices=["ready", "blocked", "missing", "unknown"],
+        default=None,
+    )
+    health_summary_parser.add_argument(
+        "--has-reconcile-artifact-state",
+        choices=["fresh", "stale", "missing"],
+        default=None,
+    )
+    health_summary_parser.add_argument(
+        "--has-reconcile-validation-state",
+        choices=["fresh", "stale", "missing"],
+        default=None,
+    )
     health_summary_parser.add_argument("--limit", type=int, default=20)
     health_summary_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     health_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
@@ -1375,6 +1416,22 @@ def main() -> int:
         if args.has_failure_domain:
             summaries = [
                 record for record in summaries if record.failure_domain_counts.get(args.has_failure_domain, 0) > 0
+            ]
+        if args.has_readiness_status:
+            summaries = [
+                record for record in summaries if record.readiness_status_counts.get(args.has_readiness_status, 0) > 0
+            ]
+        if args.has_reconcile_artifact_state:
+            summaries = [
+                record
+                for record in summaries
+                if record.reconcile_artifact_state_counts.get(args.has_reconcile_artifact_state, 0) > 0
+            ]
+        if args.has_reconcile_validation_state:
+            summaries = [
+                record
+                for record in summaries
+                if record.reconcile_validation_state_counts.get(args.has_reconcile_validation_state, 0) > 0
             ]
         summaries = summaries[: args.limit]
         if args.format == "json":

@@ -471,6 +471,8 @@ HEALTH_SCAN_DEGRADED_OUTPUT="$TMP_DIR/health-scan-degraded.json"
 HEALTH_SUMMARY_OUTPUT="$TMP_DIR/health-summary.json"
 HEALTH_SUMMARY_BLOCKED_OUTPUT="$TMP_DIR/health-summary-blocked.json"
 HEALTH_SUMMARY_RUNTIME_OUTPUT="$TMP_DIR/health-summary-runtime.json"
+HEALTH_SUMMARY_MISSING_OUTPUT="$TMP_DIR/health-summary-missing.json"
+HEALTH_SUMMARY_STALE_OUTPUT="$TMP_DIR/health-summary-stale.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -787,6 +789,9 @@ assert runtime["latest_failure_run_id"] == "federated-ci-runtime-gates-20260319-
 assert runtime["latest_failure_source_kind"] == "stamped", runtime
 assert runtime["latest_failure_health_status"] == "blocked", runtime
 assert runtime["latest_failure_domains"] == ["runtime"], runtime
+assert runtime["readiness_status_counts"] == {"blocked": 1, "missing": 2, "ready": 2}, runtime
+assert runtime["reconcile_artifact_state_counts"] == {"fresh": 2, "missing": 2, "stale": 1}, runtime
+assert runtime["reconcile_validation_state_counts"] == {"fresh": 2, "missing": 2, "stale": 1}, runtime
 
 assert local["run_count"] == 1, local
 assert local["healthy_count"] == 0, local
@@ -800,6 +805,9 @@ assert local["latest_alert_health_status"] == "unknown", local
 assert local["failure_domain_counts"] == {}, local
 assert local["latest_failure_run_id"] is None, local
 assert local["latest_failure_domains"] == [], local
+assert local["readiness_status_counts"] == {"missing": 1}, local
+assert local["reconcile_artifact_state_counts"] == {"missing": 1}, local
+assert local["reconcile_validation_state_counts"] == {"missing": 1}, local
 PY
 
 python3 "$QUERY_PATH" health-summary \
@@ -839,6 +847,47 @@ assert len(records) == 1, records
 assert records[0]["family"] == "federated-ci-runtime-gates", records
 assert records[0]["failure_domain_counts"] == {"runtime": 1}, records
 assert records[0]["latest_failure_run_id"] == "federated-ci-runtime-gates-20260319-rerun27", records
+PY
+
+python3 "$QUERY_PATH" health-summary \
+  --has-readiness-status missing \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$HEALTH_SUMMARY_MISSING_OUTPUT"
+
+python3 - <<'PY' "$HEALTH_SUMMARY_MISSING_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["family"] for record in records] == [
+    "federated-ci-runtime-gates",
+    "federated-ci-local",
+], records
+PY
+
+python3 "$QUERY_PATH" health-summary \
+  --has-reconcile-artifact-state stale \
+  --has-reconcile-validation-state stale \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$HEALTH_SUMMARY_STALE_OUTPUT"
+
+python3 - <<'PY' "$HEALTH_SUMMARY_STALE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["family"] == "federated-ci-runtime-gates", records
+assert records[0]["reconcile_artifact_state_counts"] == {"fresh": 2, "missing": 2, "stale": 1}, records
+assert records[0]["reconcile_validation_state_counts"] == {"fresh": 2, "missing": 2, "stale": 1}, records
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
