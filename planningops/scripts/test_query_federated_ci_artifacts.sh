@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QUERY_PATH="$ROOT_DIR/scripts/federation/query_federated_ci_artifacts.py"
 WRITE_LOCAL_INBOX_VALIDATION_MIRROR_PATH="$ROOT_DIR/scripts/write_monday_local_inbox_validation_mirror.py"
+WRITE_MONDAY_VALIDATION_REPORT_MIRROR_PATH="$ROOT_DIR/scripts/write_monday_validation_report_mirror.py"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -668,6 +669,9 @@ MONDAY_CONSUMER_OVERRIDE_OUTPUT="$TMP_DIR/monday-consumer-report-override.json"
 MONDAY_VALIDATION_OUTPUT="$TMP_DIR/monday-validation-report.json"
 MONDAY_VALIDATION_FAIL_OUTPUT="$TMP_DIR/monday-validation-report-fail.json"
 MONDAY_VALIDATION_BRIDGE_OUTPUT="$TMP_DIR/monday-validation-report-bridge.json"
+MONDAY_VALIDATION_MIRROR_WRITE_OUTPUT="$TMP_DIR/monday-validation-report-mirror-write.json"
+LOCAL_VALIDATION_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/local-validation-freshness-with-monday-validation.json"
+LOCAL_VALIDATION_MONDAY_VALIDATION_BLOCKED_OUTPUT="$TMP_DIR/local-validation-monday-validation-blocked.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
 LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
 LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
@@ -3563,6 +3567,24 @@ assert record["verdict"] == "pass", record
 assert record["warning_count"] == 0, record
 PY
 
+python3 "$WRITE_MONDAY_VALIDATION_REPORT_MIRROR_PATH" \
+  --validation-root "$VALIDATION_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$MONDAY_VALIDATION_MIRROR_WRITE_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_VALIDATION_MIRROR_WRITE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert [record["artifact_family"] for record in doc["records"]] == [
+    "monday_local_inbox_bridge_schema_validation",
+    "monday_local_inbox_consumer_schema_validation",
+], doc
+assert doc["records"][0]["report_verdict"] == "pass", doc
+assert doc["records"][1]["report_verdict"] == "fail", doc
+PY
+
 python3 "$WRITE_LOCAL_INBOX_VALIDATION_MIRROR_PATH" \
   --validation-root "$VALIDATION_DIR" \
   --consumer-root "$MONDAY_CONSUMER_DIR" >"$LOCAL_VALIDATION_MIRROR_WRITE_OUTPUT"
@@ -3601,6 +3623,8 @@ assert [record["artifact_family"] for record in records] == [
     "monday_local_inbox_launch_request",
     "monday_local_inbox_runtime_report",
     "monday_local_inbox_consumer_report",
+    "monday_local_inbox_bridge_schema_validation",
+    "monday_local_inbox_consumer_schema_validation",
 ], records
 
 launch_request = records[5]
@@ -3633,6 +3657,76 @@ assert consumer_report["dependency_states"] == {
     "monday_local_inbox_runtime_report": "current",
 }, consumer_report
 assert consumer_report["reasons"] == [], consumer_report
+PY
+
+python3 "$QUERY_PATH" local-validation-freshness \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_VALIDATION_WITH_MONDAY_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_WITH_MONDAY_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["artifact_family"] for record in records] == [
+    "monday_local_operator_stack_report",
+    "operator_handoff_report",
+    "monday_local_mission_packet",
+    "monday_local_operator_day_packet",
+    "monday_local_operator_inbox_payload",
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
+    "monday_local_inbox_bridge_schema_validation",
+    "monday_local_inbox_consumer_schema_validation",
+], records
+
+bridge_validation = records[8]
+consumer_validation = records[9]
+
+assert bridge_validation["freshness_state"] == "fresh", bridge_validation
+assert bridge_validation["promotability_status"] == "promotable", bridge_validation
+assert bridge_validation["dependency_states"] == {
+    "monday_local_operator_inbox_payload": "current",
+}, bridge_validation
+assert bridge_validation["reasons"] == [], bridge_validation
+
+assert consumer_validation["freshness_state"] == "fresh", consumer_validation
+assert consumer_validation["promotability_status"] == "blocked", consumer_validation
+assert consumer_validation["dependency_states"] == {
+    "monday_local_inbox_consumer_report": "current",
+}, consumer_validation
+assert consumer_validation["reasons"] == [
+    "validation_verdict_fail",
+    "validation_errors_present",
+], consumer_validation
+PY
+
+python3 "$QUERY_PATH" local-validation-freshness \
+  --artifact-family monday_local_inbox_consumer_schema_validation \
+  --promotability-status blocked \
+  --has-reason validation_verdict_fail \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_VALIDATION_MONDAY_VALIDATION_BLOCKED_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_VALIDATION_MONDAY_VALIDATION_BLOCKED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["artifact_family"] == "monday_local_inbox_consumer_schema_validation", record
+assert record["freshness_state"] == "fresh", record
+assert record["promotability_status"] == "blocked", record
+assert record["reasons"] == [
+    "validation_verdict_fail",
+    "validation_errors_present",
+], record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \

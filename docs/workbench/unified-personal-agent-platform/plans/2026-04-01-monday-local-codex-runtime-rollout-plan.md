@@ -172,6 +172,13 @@ Current deliverables:
 - `planningops/artifacts/validation/<run-id>-monday-local-inbox-consumer-report.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now picks up the mirrored monday launch-request, runtime-report, and consumer-report families when they are present in planningops validation
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries a local validation snapshot status/summary that folds the mirrored monday launch-request, runtime-report, and consumer-report families into the operator packet when present
+- `planningops/contracts/monday-validation-report-mirror-contract.md`
+- `planningops/scripts/write_monday_validation_report_mirror.py`
+- `planningops/artifacts/validation/monday-local-inbox-bridge-schema-validation.json`
+- `planningops/artifacts/validation/<report-id>-monday-local-inbox-bridge-schema-validation.json`
+- `planningops/artifacts/validation/monday-local-inbox-consumer-schema-validation.json`
+- `planningops/artifacts/validation/<report-id>-monday-local-inbox-consumer-schema-validation.json`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now picks up mirrored monday-owned bridge and consumer schema validation verdicts when they are promoted into planningops validation
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -233,6 +240,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether monday-owned schema validation verdicts should stay query-only or also be mirrored into planningops validation artifacts
-2. decide whether monday validation verdicts should also be folded into `handoff-report` or another cross-repo operator packet
+1. decide whether mirrored monday schema validation verdicts should also be folded into `handoff-report` or another cross-repo operator packet
+2. decide whether monday validation verdicts need a payload-first or packet-first query/report surface beyond `local-validation-freshness`
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
