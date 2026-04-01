@@ -294,6 +294,9 @@ class HandoffReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    local_validation_records: list[LocalValidationFreshnessRecord]
+    local_validation_summary_lines: list[str]
+    local_validation_action_lines: list[str]
     queue_lines: list[str]
     target_lines: list[str]
     immediate_action_lines: list[str]
@@ -1175,6 +1178,31 @@ def render_local_validation_freshness_markdown(records: list[LocalValidationFres
             f"{', '.join(record.reasons)} | {record.generated_at_utc or ''} |"
         )
     return "\n".join(lines)
+
+
+def build_local_validation_summary_line(record: LocalValidationFreshnessRecord) -> str:
+    line = (
+        f"{record.artifact_family}: freshness={record.freshness_state} "
+        f"promotability={record.promotability_status}"
+    )
+    if record.reasons:
+        line = f"{line} reasons={','.join(record.reasons)}"
+    if record.dependency_states:
+        line = (
+            f"{line} dependencies="
+            f"{','.join(f'{key}={value}' for key, value in record.dependency_states.items())}"
+        )
+    return line
+
+
+def build_local_validation_action_line(record: LocalValidationFreshnessRecord) -> str | None:
+    if record.promotability_status == "promotable" and record.freshness_state == "fresh":
+        return None
+    return (
+        f"local-validation: repair {record.artifact_family} "
+        f"(freshness={record.freshness_state}, promotability={record.promotability_status}, "
+        f"reasons={','.join(record.reasons) if record.reasons else 'none'})"
+    )
 
 
 def build_summary_health_fields(
@@ -2335,6 +2363,7 @@ def build_handoff_report_record(
     *,
     records: list[SummaryRecord],
     local_records: list[LocalOperatorStackRecord] | None,
+    validation_root: Path,
     family: str | None,
     run_id_prefix: str | None,
     source_kind: str,
@@ -2348,10 +2377,19 @@ def build_handoff_report_record(
         source_kind=source_kind,
         target_limit=target_limit,
     )
+    local_validation_records = discover_local_validation_freshness_records(validation_root=validation_root)
+    local_validation_summary_lines = [build_local_validation_summary_line(record) for record in local_validation_records]
+    local_validation_action_lines = [
+        action
+        for action in (build_local_validation_action_line(record) for record in local_validation_records)
+        if action is not None
+    ]
     headline = f"Operator handoff report: {triage_report.headline.removeprefix('Federated CI triage report: ')}"
     immediate_action_lines: list[str] = []
     if triage_report.local_operator_next_step is not None:
         immediate_action_lines.append(f"local-runtime: {triage_report.local_operator_next_step}")
+    if local_validation_action_lines:
+        immediate_action_lines.append(local_validation_action_lines[0])
     if triage_report.target_lines:
         immediate_action_lines.append(f"triage-target: {triage_report.target_lines[0]}")
     if len(triage_report.target_lines) > 1:
@@ -2376,6 +2414,9 @@ def build_handoff_report_record(
         markdown_lines.append(f"- local operator: `{triage_report.local_operator_summary}`")
     if triage_report.local_operator_next_step is not None:
         markdown_lines.append(f"- local operator next step: {triage_report.local_operator_next_step}")
+    markdown_lines.extend(["", "### Local Validation", *[f"- {line}" for line in local_validation_summary_lines]])
+    if local_validation_action_lines:
+        markdown_lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
     markdown_lines.extend(["", "### Queue", *[f"- {line}" for line in triage_report.queue_lines]])
     markdown_lines.extend(
         ["", "### Top Targets", *[f"{index}. {line}" for index, line in enumerate(triage_report.target_lines, start=1)]]
@@ -2393,6 +2434,9 @@ def build_handoff_report_record(
         local_operator_record=triage_report.local_operator_record,
         local_operator_summary=triage_report.local_operator_summary,
         local_operator_next_step=triage_report.local_operator_next_step,
+        local_validation_records=local_validation_records,
+        local_validation_summary_lines=local_validation_summary_lines,
+        local_validation_action_lines=local_validation_action_lines,
         queue_lines=triage_report.queue_lines,
         target_lines=triage_report.target_lines,
         immediate_action_lines=immediate_action_lines,
@@ -2414,6 +2458,9 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.extend(["local_validation", *record.local_validation_summary_lines])
+    if record.local_validation_action_lines:
+        sections.extend(["local_validation_actions", *record.local_validation_action_lines])
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines, "immediate_actions", *record.immediate_action_lines])
     return "\n".join(sections)
 
@@ -3631,6 +3678,7 @@ def main() -> int:
         record = build_handoff_report_record(
             records=records,
             local_records=local_records,
+            validation_root=validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
@@ -3650,6 +3698,7 @@ def main() -> int:
         record = build_handoff_report_record(
             records=records,
             local_records=local_records,
+            validation_root=validation_root,
             family=args.family,
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
