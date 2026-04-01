@@ -58,6 +58,9 @@ LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_mission_packet",
     "monday_local_operator_day_packet",
     "monday_local_operator_inbox_payload",
+    "monday_local_inbox_launch_request",
+    "monday_local_inbox_runtime_report",
+    "monday_local_inbox_consumer_report",
 )
 LOCAL_VALIDATION_FRESHNESS_CHOICES = ("fresh", "stale", "missing")
 LOCAL_VALIDATION_PROMOTABILITY_CHOICES = ("promotable", "blocked")
@@ -1835,14 +1838,203 @@ def build_inbox_payload_validation_freshness_record(*, validation_root: Path) ->
     )
 
 
+def has_promoted_local_validation_artifact(
+    *,
+    validation_root: Path,
+    latest_filename: str,
+    stamped_glob: str,
+) -> bool:
+    latest_path = validation_root / latest_filename
+    if latest_path.exists():
+        return True
+    return any(path.is_file() for path in validation_root.glob(stamped_glob))
+
+
+def build_monday_local_inbox_validation_freshness_record(
+    *,
+    validation_root: Path,
+    artifact_family: str,
+    artifact_kind: str,
+    latest_filename: str,
+    dependency_filenames: dict[str, str],
+) -> LocalValidationFreshnessRecord:
+    latest_path = (validation_root / latest_filename).resolve()
+    latest_doc = load_optional_json(latest_path)
+    freshness_reasons: list[str] = []
+    promotability_reasons: list[str] = []
+    dependency_states: dict[str, str] = {}
+    stamped_path: Path | None = None
+    promoted_id: str | None = None
+    generated_at_utc: str | None = None
+
+    if latest_doc is not None:
+        promoted_id = normalize_optional_string(latest_doc.get("run_id"))
+        generated_at_utc = normalize_optional_string(latest_doc.get("generated_at_utc"))
+        if promoted_id is None:
+            promotability_reasons.append("missing_run_id")
+        if normalize_optional_string(latest_doc.get("artifact_family")) != artifact_family:
+            promotability_reasons.append("artifact_family_mismatch")
+        if normalize_optional_string(latest_doc.get("artifact_kind")) != artifact_kind:
+            promotability_reasons.append("artifact_kind_mismatch")
+        if normalize_optional_string(latest_doc.get("contract_ref")) is None:
+            promotability_reasons.append("missing_contract_ref")
+
+        latest_mirror_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "latest_mirror_path")
+        stamped_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "stamped_mirror_path")
+        source_artifact_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "source_artifact_path")
+        if latest_mirror_path != latest_path:
+            freshness_reasons.append("latest_path_mismatch")
+
+        mirror = resolve_nested_value(latest_doc, "mirror")
+        if not isinstance(mirror, dict):
+            promotability_reasons.append("missing_mirror")
+        else:
+            source_artifact_present = mirror.get("source_artifact_present")
+            if not isinstance(source_artifact_present, bool):
+                promotability_reasons.append("missing_source_artifact_present")
+            else:
+                actual_source_exists = source_artifact_path.exists() if source_artifact_path is not None else False
+                if source_artifact_path is None:
+                    promotability_reasons.append("missing_source_artifact_path")
+                elif source_artifact_present != actual_source_exists:
+                    promotability_reasons.append("source_artifact_state_mismatch")
+                if not actual_source_exists:
+                    promotability_reasons.append("source_artifact_missing")
+                if source_artifact_present and not isinstance(mirror.get("payload"), dict):
+                    promotability_reasons.append("missing_payload")
+
+            validation_dependency_paths = mirror.get("validation_dependency_paths")
+            if dependency_filenames and not isinstance(validation_dependency_paths, dict):
+                promotability_reasons.append("missing_validation_dependency_paths")
+            elif isinstance(validation_dependency_paths, dict):
+                for dependency_family, dependency_filename in dependency_filenames.items():
+                    dependency_state, dependency_reason = build_local_validation_dependency_state(
+                        raw_path=validation_dependency_paths.get(dependency_family),
+                        expected_path=validation_root / dependency_filename,
+                    )
+                    dependency_states[dependency_family] = dependency_state
+                    if dependency_reason == "dependency_path_missing":
+                        promotability_reasons.append(f"missing_{dependency_family}_path")
+                    elif dependency_reason == "dependency_missing":
+                        promotability_reasons.append(f"{dependency_family}_dependency_missing")
+                    elif dependency_reason == "dependency_stale":
+                        promotability_reasons.append(f"{dependency_family}_dependency_stale")
+
+        if stamped_path is not None and stamped_path.exists():
+            stamped_doc = load_optional_json(stamped_path)
+            if stamped_doc is None:
+                freshness_reasons.append("stamped_invalid_json")
+            else:
+                if normalize_optional_string(stamped_doc.get("run_id")) != promoted_id:
+                    freshness_reasons.append("stamped_run_id_mismatch")
+                stamped_latest_path = resolve_nested_artifact_path(stamped_doc, "artifact_paths", "latest_mirror_path")
+                stamped_stamped_path = resolve_nested_artifact_path(
+                    stamped_doc,
+                    "artifact_paths",
+                    "stamped_mirror_path",
+                )
+                if stamped_latest_path != latest_path:
+                    freshness_reasons.append("stamped_latest_path_mismatch")
+                if stamped_stamped_path != stamped_path.resolve():
+                    freshness_reasons.append("stamped_path_mismatch")
+
+    freshness_state, promotability_status = classify_local_validation_states(
+        latest_path=latest_path,
+        latest_doc=latest_doc,
+        stamped_path=stamped_path,
+        freshness_reasons=freshness_reasons,
+        promotability_reasons=promotability_reasons,
+        dependency_states=dependency_states,
+    )
+    return LocalValidationFreshnessRecord(
+        artifact_family=artifact_family,
+        artifact_kind=artifact_kind,
+        promoted_id=promoted_id,
+        generated_at_utc=generated_at_utc,
+        freshness_state=freshness_state,
+        promotability_status=promotability_status,
+        latest_path=str(latest_path),
+        stamped_path=None if stamped_path is None else str(stamped_path.resolve()),
+        reasons=freshness_reasons + promotability_reasons,
+        dependency_states=dependency_states,
+    )
+
+
+def build_monday_local_inbox_launch_request_validation_freshness_record(
+    *,
+    validation_root: Path,
+) -> LocalValidationFreshnessRecord:
+    return build_monday_local_inbox_validation_freshness_record(
+        validation_root=validation_root,
+        artifact_family="monday_local_inbox_launch_request",
+        artifact_kind="request",
+        latest_filename="monday-local-inbox-launch-request.json",
+        dependency_filenames={
+            "monday_local_operator_inbox_payload": "monday-local-operator-inbox-payload.json",
+        },
+    )
+
+
+def build_monday_local_inbox_runtime_report_validation_freshness_record(
+    *,
+    validation_root: Path,
+) -> LocalValidationFreshnessRecord:
+    return build_monday_local_inbox_validation_freshness_record(
+        validation_root=validation_root,
+        artifact_family="monday_local_inbox_runtime_report",
+        artifact_kind="report",
+        latest_filename="monday-local-inbox-runtime-report.json",
+        dependency_filenames={
+            "monday_local_operator_inbox_payload": "monday-local-operator-inbox-payload.json",
+            "monday_local_inbox_launch_request": "monday-local-inbox-launch-request.json",
+        },
+    )
+
+
+def build_monday_local_inbox_consumer_report_validation_freshness_record(
+    *,
+    validation_root: Path,
+) -> LocalValidationFreshnessRecord:
+    return build_monday_local_inbox_validation_freshness_record(
+        validation_root=validation_root,
+        artifact_family="monday_local_inbox_consumer_report",
+        artifact_kind="report",
+        latest_filename="monday-local-inbox-consumer-report.json",
+        dependency_filenames={
+            "monday_local_operator_inbox_payload": "monday-local-operator-inbox-payload.json",
+            "monday_local_inbox_launch_request": "monday-local-inbox-launch-request.json",
+            "monday_local_inbox_runtime_report": "monday-local-inbox-runtime-report.json",
+        },
+    )
+
+
 def discover_local_validation_freshness_records(*, validation_root: Path) -> list[LocalValidationFreshnessRecord]:
-    return [
+    records = [
         build_local_operator_validation_freshness_record(validation_root=validation_root),
         build_handoff_validation_freshness_record(validation_root=validation_root),
         build_mission_packet_validation_freshness_record(validation_root=validation_root),
         build_day_packet_validation_freshness_record(validation_root=validation_root),
         build_inbox_payload_validation_freshness_record(validation_root=validation_root),
     ]
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-launch-request.json",
+        stamped_glob="*-monday-local-inbox-launch-request.json",
+    ):
+        records.append(build_monday_local_inbox_launch_request_validation_freshness_record(validation_root=validation_root))
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-runtime-report.json",
+        stamped_glob="*-monday-local-inbox-runtime-report.json",
+    ):
+        records.append(build_monday_local_inbox_runtime_report_validation_freshness_record(validation_root=validation_root))
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-consumer-report.json",
+        stamped_glob="*-monday-local-inbox-consumer-report.json",
+    ):
+        records.append(build_monday_local_inbox_consumer_report_validation_freshness_record(validation_root=validation_root))
+    return records
 
 
 def filter_local_validation_freshness_records(

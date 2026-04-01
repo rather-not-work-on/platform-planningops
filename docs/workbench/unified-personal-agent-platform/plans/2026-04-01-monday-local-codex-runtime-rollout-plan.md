@@ -161,6 +161,15 @@ Current deliverables:
   - blocked apply-time fail-closed behavior
 - explicit `--planner-runtime-config` and `--runtime-profile-file` passthrough can pin deterministic apply-time runtime inputs for local regression
 - `monday/scripts/run_local_runtime_smoke.py` now records the reviewed `--planner-runtime-config` override in smoke evidence instead of rejecting the consumer-produced argv
+- `planningops/contracts/monday-local-inbox-validation-mirror-contract.md`
+- `planningops/scripts/write_monday_local_inbox_validation_mirror.py`
+- `planningops/artifacts/validation/monday-local-inbox-launch-request.json`
+- `planningops/artifacts/validation/<run-id>-monday-local-inbox-launch-request.json`
+- `planningops/artifacts/validation/monday-local-inbox-runtime-report.json`
+- `planningops/artifacts/validation/<run-id>-monday-local-inbox-runtime-report.json`
+- `planningops/artifacts/validation/monday-local-inbox-consumer-report.json`
+- `planningops/artifacts/validation/<run-id>-monday-local-inbox-consumer-report.json`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now picks up the mirrored monday launch-request, runtime-report, and consumer-report families when they are present in planningops validation
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -222,6 +231,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether launch-request, runtime-report, or consumer-report freshness should be mirrored back into planningops-owned validation artifacts
-2. decide whether monday-owned schema validation reports should stay monday-side only or also surface through planningops query/report views
+1. decide whether monday-owned schema validation reports should stay monday-side only or also surface through planningops query/report views
+2. decide whether launch-request, runtime-report, and consumer-report freshness should also be folded into `handoff-report` local validation snapshots
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
