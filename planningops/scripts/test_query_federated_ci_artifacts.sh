@@ -663,6 +663,7 @@ LOCAL_VALIDATION_RUNTIME_BLOCKED_OUTPUT="$TMP_DIR/local-validation-runtime-block
 LOCAL_INBOX_PAYLOAD_OUTPUT="$TMP_DIR/local-inbox-payload.json"
 LOCAL_INBOX_PAYLOAD_ALL_OUTPUT="$TMP_DIR/local-inbox-payload-all.json"
 LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT="$TMP_DIR/local-inbox-payload-filtered.json"
+LOCAL_INBOX_PAYLOAD_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/local-inbox-payload-with-monday-validation.json"
 MONDAY_CONSUMER_OUTPUT="$TMP_DIR/monday-consumer-report.json"
 MONDAY_CONSUMER_FILTERED_OUTPUT="$TMP_DIR/monday-consumer-report-filtered.json"
 MONDAY_CONSUMER_BLOCKED_OUTPUT="$TMP_DIR/monday-consumer-report-blocked.json"
@@ -3044,6 +3045,10 @@ assert record["planner_profile"] == "local_ollama", record
 assert record["launch_mode"] == "direct", record
 assert record["local_model_route"] == "direct_local_ollama", record
 assert record["local_validation_snapshot_status"] == "present", record
+assert record["monday_validation_snapshot_status"] == "missing", record
+assert record["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_validation_summary_lines"] == [], record
+assert record["monday_validation_action_lines"] == [], record
 assert record["attachment_count"] == 5, record
 assert len(record["local_validation_action_lines"]) == 3, record
 assert len(record["immediate_actions"]) == 1, record
@@ -3106,6 +3111,10 @@ assert record["message_class_hint"] == "status_update", record
 assert record["retry_mode"] == "none", record
 assert record["local_model_route"] == "direct_local_lmstudio", record
 assert record["local_validation_snapshot_status"] == "fresh", record
+assert record["monday_validation_snapshot_status"] == "missing", record
+assert record["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_validation_summary_lines"] == [], record
+assert record["monday_validation_action_lines"] == [], record
 assert record["immediate_actions"] == ["launch monday local runtime via local_lmstudio"], record
 PY
 
@@ -3741,6 +3750,42 @@ assert record["reasons"] == [
     "validation_verdict_fail",
     "validation_errors_present",
 ], record
+PY
+
+python3 "$QUERY_PATH" local-inbox-payload \
+  --source-kind all \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_INBOX_PAYLOAD_WITH_MONDAY_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_INBOX_PAYLOAD_WITH_MONDAY_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["bridge_id"] for record in records] == [
+    "monday-local-inbox-20260401T084500Z",
+    "monday-local-inbox-20260401T084500Z",
+    "monday-local-inbox-20260331T235959Z",
+], records
+
+latest, stamped_current, stamped_old = records
+for record in (latest, stamped_current):
+    assert record["monday_validation_snapshot_status"] == "present", record
+    assert record["monday_validation_snapshot_summary"] == "total=2 promotable=1 blocked=1 stale=0", record
+    assert record["monday_validation_summary_lines"] == [
+        "monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+        "monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
+    ], record
+    assert record["monday_validation_action_lines"] == [
+        "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)"
+    ], record
+
+assert stamped_old["monday_validation_snapshot_status"] == "missing", stamped_old
+assert stamped_old["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", stamped_old
+assert stamped_old["monday_validation_summary_lines"] == [], stamped_old
+assert stamped_old["monday_validation_action_lines"] == [], stamped_old
 PY
 
 python3 "$QUERY_PATH" handoff-report \
