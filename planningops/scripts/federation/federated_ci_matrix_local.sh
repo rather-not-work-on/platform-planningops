@@ -408,7 +408,7 @@ finalize_summary() {
   local summary_rc=$?
 
   if [[ -f "${STAMPED_PATH}" && -f "${STAMPED_VALIDATION_PATH}" ]]; then
-    python3 "${ROOT_DIR}/planningops/scripts/assess_federated_ci_summary_readiness.py" \
+    python3 "${ROOT_DIR}/planningops/scripts/federation/federated_ci_summary.py" write-readiness \
       --summary "${STAMPED_PATH}" \
       --validation-report "${STAMPED_VALIDATION_PATH}" \
       --output "${STAMPED_READINESS_PATH}" \
@@ -419,7 +419,7 @@ finalize_summary() {
     fi
   fi
   if [[ -f "${LATEST_PATH}" && -f "${LATEST_VALIDATION_PATH}" ]]; then
-    python3 "${ROOT_DIR}/planningops/scripts/assess_federated_ci_summary_readiness.py" \
+    python3 "${ROOT_DIR}/planningops/scripts/federation/federated_ci_summary.py" write-readiness \
       --summary "${LATEST_PATH}" \
       --validation-report "${LATEST_VALIDATION_PATH}" \
       --output "${LATEST_READINESS_PATH}" \

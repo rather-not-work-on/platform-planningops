@@ -155,6 +155,7 @@ required_snippets = [
     'local restore_errexit=0',
     'case "$-" in',
     '*e*) restore_errexit=1 ;;',
+    'python3 "${ROOT_DIR}/planningops/scripts/federation/federated_ci_summary.py" write-readiness \\',
     'local stamped_readiness_rc=$?',
     'local latest_readiness_rc=$?',
     'if [[ "${restore_errexit}" -eq 1 ]]; then',
@@ -259,6 +260,8 @@ required_snippets = [
 
 for snippet in required_snippets:
     assert snippet in script, f"missing local matrix mode snippet: {snippet}"
+
+assert "assess_federated_ci_summary_readiness.py" not in script, "local matrix should route readiness writes through federated summary helper"
 
 for step in guardrails:
     snippet = step["local_matrix_command"]
