@@ -224,6 +224,15 @@ class TriageQueueRecord:
     target_domain_counts: dict[str, int]
 
 
+@dataclass(frozen=True)
+class TriageFeedRecord:
+    source_kind: str
+    target_limit: int
+    overview: TriageOverviewRecord
+    queue_records: list[TriageQueueRecord]
+    target_records: list[TriageTargetRecord]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -1342,6 +1351,65 @@ def render_triage_queue_markdown(records: list[TriageQueueRecord]) -> str:
     return "\n".join(lines)
 
 
+def build_triage_feed_record(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+    target_limit: int,
+) -> TriageFeedRecord:
+    overview = build_triage_overview_record(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    queue_records = build_triage_queue_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    target_records = build_triage_target_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )[:target_limit]
+    return TriageFeedRecord(
+        source_kind=source_kind,
+        target_limit=target_limit,
+        overview=overview,
+        queue_records=queue_records,
+        target_records=target_records,
+    )
+
+
+def render_triage_feed_table(record: TriageFeedRecord) -> str:
+    sections = [
+        f"source_kind\t{record.source_kind}",
+        f"target_limit\t{record.target_limit}",
+        "overview",
+        render_triage_overview_table(record.overview),
+        "queue",
+        render_triage_queue_table(record.queue_records),
+        "targets",
+        render_triage_targets_table(record.target_records),
+    ]
+    return "\n".join(sections)
+
+
+def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
+    sections = [
+        f"## Triage Feed\n\n- source_kind: `{record.source_kind}`\n- target_limit: `{record.target_limit}`",
+        "### Overview\n\n" + render_triage_overview_markdown(record.overview),
+        "### Queue\n\n" + render_triage_queue_markdown(record.queue_records),
+        "### Targets\n\n" + render_triage_targets_markdown(record.target_records),
+    ]
+    return "\n\n".join(sections)
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -2087,6 +2155,19 @@ def parse_args() -> argparse.Namespace:
     triage_queue_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_queue_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_queue_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    triage_feed_parser = subparsers.add_parser(
+        "triage-feed",
+        help="show one operator snapshot that bundles overview, queue, and top triage targets",
+    )
+    triage_feed_parser.add_argument("--family", default=None)
+    triage_feed_parser.add_argument("--run-id-prefix", default=None)
+    triage_feed_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    triage_feed_parser.add_argument("--target-limit", type=int, default=3)
+    triage_feed_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    triage_feed_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    triage_feed_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    triage_feed_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -2316,6 +2397,23 @@ def main() -> int:
             print(render_triage_queue_markdown(queue_records))
             return 0
         print(render_triage_queue_table(queue_records))
+        return 0
+
+    if args.command == "triage-feed":
+        record = build_triage_feed_record(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+            target_limit=args.target_limit,
+        )
+        if args.format == "json":
+            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_triage_feed_markdown(record))
+            return 0
+        print(render_triage_feed_table(record))
         return 0
 
     if args.command == "reconcile-status":
