@@ -269,6 +269,8 @@ class TriageFeedRecord:
     monday_source_validation_status: str | None
     monday_source_validation_summary: str | None
     cross_repo_validation_action_line: str | None
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
 
 
 @dataclass(frozen=True)
@@ -292,6 +294,8 @@ class TriageBriefRecord:
     monday_source_validation_status: str | None
     monday_source_validation_summary: str | None
     cross_repo_validation_action_line: str | None
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
     queue_lines: list[str]
     target_lines: list[str]
 
@@ -312,6 +316,8 @@ class TriageReportRecord:
     monday_source_validation_status: str | None
     monday_source_validation_summary: str | None
     cross_repo_validation_action_line: str | None
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
     queue_lines: list[str]
     target_lines: list[str]
     markdown: str
@@ -3878,6 +3884,8 @@ def build_triage_feed_record(
     monday_source_validation_status = None
     monday_source_validation_summary = None
     cross_repo_validation_action_line = None
+    cross_repo_validation_packet_report_id = None
+    cross_repo_validation_packet_path = None
     if family is None and run_id_prefix is None and local_records is not None:
         local_operator_record = select_latest_local_operator_stack_record(local_records)
         cross_repo_validation_record = build_cross_repo_validation_report_record(
@@ -3891,6 +3899,14 @@ def build_triage_feed_record(
         monday_source_validation_summary = cross_repo_validation_record.monday_source_validation_summary
         if cross_repo_validation_record.cross_repo_action_lines:
             cross_repo_validation_action_line = cross_repo_validation_record.cross_repo_action_lines[0]
+        packet_record = select_cross_repo_validation_packet_record(
+            records=discover_cross_repo_validation_packet_records(validation_root=validation_root),
+            report_id=None,
+            source_kind="latest",
+        )
+        if packet_record is not None:
+            cross_repo_validation_packet_report_id = packet_record.report_id
+            cross_repo_validation_packet_path = packet_record.report_path
     return TriageFeedRecord(
         source_kind=source_kind,
         target_limit=target_limit,
@@ -3903,6 +3919,8 @@ def build_triage_feed_record(
         monday_source_validation_status=monday_source_validation_status,
         monday_source_validation_summary=monday_source_validation_summary,
         cross_repo_validation_action_line=cross_repo_validation_action_line,
+        cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=cross_repo_validation_packet_path,
     )
 
 
@@ -3924,6 +3942,12 @@ def render_triage_feed_table(record: TriageFeedRecord) -> str:
         )
         if record.cross_repo_validation_action_line is not None:
             sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
+        if record.cross_repo_validation_packet_report_id is not None:
+            sections.append(
+                f"cross_repo_validation_packet_report_id\t{record.cross_repo_validation_packet_report_id}"
+            )
+        if record.cross_repo_validation_packet_path is not None:
+            sections.append(f"cross_repo_validation_packet_path\t{record.cross_repo_validation_packet_path}")
     if record.local_operator_record is not None:
         local_record = record.local_operator_record
         sections.extend(
@@ -3965,6 +3989,12 @@ def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
         ]
         if record.cross_repo_validation_action_line is not None:
             cross_repo_lines.append(f"- next action: {record.cross_repo_validation_action_line}")
+        if record.cross_repo_validation_packet_report_id is not None:
+            cross_repo_lines.append(
+                f"- detail packet report id: `{record.cross_repo_validation_packet_report_id}`"
+            )
+        if record.cross_repo_validation_packet_path is not None:
+            cross_repo_lines.append(f"- detail packet path: `{record.cross_repo_validation_packet_path}`")
         sections.append("\n".join(cross_repo_lines))
     if record.local_operator_record is not None:
         local_record = record.local_operator_record
@@ -4050,6 +4080,8 @@ def build_triage_brief_record(
         monday_source_validation_status=feed.monday_source_validation_status,
         monday_source_validation_summary=feed.monday_source_validation_summary,
         cross_repo_validation_action_line=feed.cross_repo_validation_action_line,
+        cross_repo_validation_packet_report_id=feed.cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=feed.cross_repo_validation_packet_path,
         queue_lines=queue_lines,
         target_lines=target_lines,
     )
@@ -4083,6 +4115,12 @@ def render_triage_brief_table(record: TriageBriefRecord) -> str:
         )
         if record.cross_repo_validation_action_line is not None:
             sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
+        if record.cross_repo_validation_packet_report_id is not None:
+            sections.append(
+                f"cross_repo_validation_packet_report_id\t{record.cross_repo_validation_packet_report_id}"
+            )
+        if record.cross_repo_validation_packet_path is not None:
+            sections.append(f"cross_repo_validation_packet_path\t{record.cross_repo_validation_packet_path}")
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines])
     return "\n".join(sections)
 
@@ -4122,6 +4160,10 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
         )
         if record.cross_repo_validation_action_line is not None:
             lines.append(f"- next action: {record.cross_repo_validation_action_line}")
+        if record.cross_repo_validation_packet_report_id is not None:
+            lines.append(f"- detail packet report id: `{record.cross_repo_validation_packet_report_id}`")
+        if record.cross_repo_validation_packet_path is not None:
+            lines.append(f"- detail packet path: `{record.cross_repo_validation_packet_path}`")
     lines.append("")
     lines.append("### Queue")
     lines.extend(f"- {line}" for line in record.queue_lines)
@@ -4195,6 +4237,12 @@ def build_triage_report_record(
         )
         if brief.cross_repo_validation_action_line is not None:
             markdown_lines.append(f"- next action: {brief.cross_repo_validation_action_line}")
+        if brief.cross_repo_validation_packet_report_id is not None:
+            markdown_lines.append(
+                f"- detail packet report id: `{brief.cross_repo_validation_packet_report_id}`"
+            )
+        if brief.cross_repo_validation_packet_path is not None:
+            markdown_lines.append(f"- detail packet path: `{brief.cross_repo_validation_packet_path}`")
     markdown_lines.extend(
         [
             "",
@@ -4220,6 +4268,8 @@ def build_triage_report_record(
         monday_source_validation_status=brief.monday_source_validation_status,
         monday_source_validation_summary=brief.monday_source_validation_summary,
         cross_repo_validation_action_line=brief.cross_repo_validation_action_line,
+        cross_repo_validation_packet_report_id=brief.cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=brief.cross_repo_validation_packet_path,
         queue_lines=brief.queue_lines,
         target_lines=brief.target_lines,
         markdown="\n".join(markdown_lines),
@@ -4251,6 +4301,12 @@ def render_triage_report_table(record: TriageReportRecord) -> str:
         )
         if record.cross_repo_validation_action_line is not None:
             sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
+        if record.cross_repo_validation_packet_report_id is not None:
+            sections.append(
+                f"cross_repo_validation_packet_report_id\t{record.cross_repo_validation_packet_report_id}"
+            )
+        if record.cross_repo_validation_packet_path is not None:
+            sections.append(f"cross_repo_validation_packet_path\t{record.cross_repo_validation_packet_path}")
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines])
     return "\n".join(sections)
 
