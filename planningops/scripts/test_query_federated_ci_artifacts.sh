@@ -475,6 +475,9 @@ HEALTH_SUMMARY_MISSING_OUTPUT="$TMP_DIR/health-summary-missing.json"
 HEALTH_SUMMARY_STALE_OUTPUT="$TMP_DIR/health-summary-stale.json"
 HEALTH_SUMMARY_GAP_OUTPUT="$TMP_DIR/health-summary-gap.json"
 HEALTH_SUMMARY_LATEST_RUNTIME_OUTPUT="$TMP_DIR/health-summary-latest-runtime.json"
+OPERATOR_TRIAGE_OUTPUT="$TMP_DIR/operator-triage.json"
+OPERATOR_TRIAGE_LAGGING_OUTPUT="$TMP_DIR/operator-triage-lagging.json"
+OPERATOR_TRIAGE_ACTIVE_OUTPUT="$TMP_DIR/operator-triage-active.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -960,6 +963,90 @@ assert record["latest_gap_reasons"] == [
     "reconcile_artifact_missing",
     "reconcile_validation_missing",
 ], record
+PY
+
+python3 "$QUERY_PATH" operator-triage \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$OPERATOR_TRIAGE_OUTPUT"
+
+python3 - <<'PY' "$OPERATOR_TRIAGE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["family"] for record in records] == [
+    "federated-ci-runtime-gates",
+    "federated-ci-local",
+], records
+
+runtime, local = records
+assert runtime["triage_status"] == "lagging", runtime
+assert runtime["alert_alignment"] == "lagging", runtime
+assert runtime["latest_gap_status"] == "clear", runtime
+assert runtime["latest_gap_domains"] == [], runtime
+assert runtime["latest_alert_run_id"] == "federated-ci-runtime-gates-20260319-rerun29", runtime
+assert runtime["latest_alert_domains"] == ["checkpoint", "readiness", "reconcile"], runtime
+assert runtime["latest_failure_run_id"] == "federated-ci-runtime-gates-20260319-rerun27", runtime
+assert runtime["latest_failure_domains"] == ["runtime"], runtime
+
+assert local["triage_status"] == "active", local
+assert local["alert_alignment"] == "current", local
+assert local["latest_gap_status"] == "attention", local
+assert local["latest_gap_domains"] == ["checkpoint", "readiness", "reconcile"], local
+assert local["latest_alert_run_id"] == "federated-ci-local-20260301", local
+assert local["latest_alert_domains"] == ["checkpoint", "readiness", "reconcile"], local
+PY
+
+python3 "$QUERY_PATH" operator-triage \
+  --triage-status lagging \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$OPERATOR_TRIAGE_LAGGING_OUTPUT"
+
+python3 - <<'PY' "$OPERATOR_TRIAGE_LAGGING_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["family"] == "federated-ci-runtime-gates", records
+assert records[0]["alert_alignment"] == "lagging", records
+assert records[0]["latest_gap_status"] == "clear", records
+PY
+
+python3 "$QUERY_PATH" operator-triage \
+  --family federated-ci-runtime-gates \
+  --source-kind all \
+  --triage-status active \
+  --has-latest-gap-domain reconcile \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$OPERATOR_TRIAGE_ACTIVE_OUTPUT"
+
+python3 - <<'PY' "$OPERATOR_TRIAGE_ACTIVE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["family"] == "federated-ci-runtime-gates", record
+assert record["triage_status"] == "active", record
+assert record["alert_alignment"] == "current", record
+assert record["latest_run_id"] == "federated-ci-runtime-gates-20260319-rerun26", record
+assert record["latest_run_source_kind"] == "latest", record
+assert record["latest_gap_domains"] == ["readiness", "reconcile"], record
+assert record["latest_alert_domains"] == ["readiness", "reconcile"], record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
