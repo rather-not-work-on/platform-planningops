@@ -649,8 +649,10 @@ TRIAGE_FEED_ALL_OUTPUT="$TMP_DIR/triage-feed-all.json"
 TRIAGE_FEED_WITH_CROSS_REPO_VALIDATION_OUTPUT="$TMP_DIR/triage-feed-with-cross-repo-validation.json"
 TRIAGE_BRIEF_OUTPUT="$TMP_DIR/triage-brief.json"
 TRIAGE_BRIEF_ALL_OUTPUT="$TMP_DIR/triage-brief-all.json"
+TRIAGE_BRIEF_WITH_CROSS_REPO_VALIDATION_OUTPUT="$TMP_DIR/triage-brief-with-cross-repo-validation.json"
 TRIAGE_REPORT_OUTPUT="$TMP_DIR/triage-report.json"
 TRIAGE_REPORT_ALL_OUTPUT="$TMP_DIR/triage-report-all.json"
+TRIAGE_REPORT_WITH_CROSS_REPO_VALIDATION_OUTPUT="$TMP_DIR/triage-report-with-cross-repo-validation.json"
 HANDOFF_REPORT_OUTPUT="$TMP_DIR/handoff-report.json"
 HANDOFF_REPORT_ALL_OUTPUT="$TMP_DIR/handoff-report-all.json"
 HANDOFF_REPORT_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/handoff-report-with-monday-validation.json"
@@ -1683,6 +1685,11 @@ assert record["local_operator_summary"] == (
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
 assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
+assert record["cross_repo_validation_snapshot_status"] == "missing", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_source_validation_status"] == "missing", record
+assert record["monday_source_validation_summary"] == "total=0 pass=0 fail=0 errors=0 warnings=0", record
+assert record["cross_repo_validation_action_line"] is None, record
 assert record["queue_lines"] == [
     "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1",
     "lagging: targets=1 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint=1,readiness=1,reconcile=1",
@@ -1724,6 +1731,11 @@ assert record["local_operator_summary"] == (
     "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
+assert record["cross_repo_validation_snapshot_status"] == "missing", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_source_validation_status"] == "missing", record
+assert record["monday_source_validation_summary"] == "total=0 pass=0 fail=0 errors=0 warnings=0", record
+assert record["cross_repo_validation_action_line"] is None, record
 assert record["queue_lines"] == [
     "active: targets=2 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun26 domains=checkpoint=1,readiness=2,reconcile=2",
 ], record
@@ -1760,6 +1772,11 @@ assert record["local_operator_summary"] == (
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
 assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
+assert record["cross_repo_validation_snapshot_status"] == "missing", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_source_validation_status"] == "missing", record
+assert record["monday_source_validation_summary"] == "total=0 pass=0 fail=0 errors=0 warnings=0", record
+assert record["cross_repo_validation_action_line"] is None, record
 assert record["queue_lines"] == [
     "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1",
     "lagging: targets=1 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint=1,readiness=1,reconcile=1",
@@ -1804,6 +1821,11 @@ assert record["local_operator_summary"] == (
     "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
+assert record["cross_repo_validation_snapshot_status"] == "missing", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_source_validation_status"] == "missing", record
+assert record["monday_source_validation_summary"] == "total=0 pass=0 fail=0 errors=0 warnings=0", record
+assert record["cross_repo_validation_action_line"] is None, record
 assert record["queue_lines"] == [
     "active: targets=2 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun26 domains=checkpoint=1,readiness=2,reconcile=2",
 ], record
@@ -4091,6 +4113,61 @@ assert record["cross_repo_validation_action_line"] == (
     "local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ), record
+PY
+
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_BRIEF_WITH_CROSS_REPO_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_WITH_CROSS_REPO_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["cross_repo_validation_snapshot_status"] == "present", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
+assert record["monday_source_validation_status"] == "attention", record
+assert record["monday_source_validation_summary"] == "total=2 pass=1 fail=1 errors=2 warnings=1", record
+assert record["cross_repo_validation_action_line"] == (
+    "local-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
+), record
+PY
+
+python3 "$QUERY_PATH" triage-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_REPORT_WITH_CROSS_REPO_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_REPORT_WITH_CROSS_REPO_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["cross_repo_validation_snapshot_status"] == "present", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
+assert record["monday_source_validation_status"] == "attention", record
+assert record["monday_source_validation_summary"] == "total=2 pass=1 fail=1 errors=2 warnings=1", record
+assert record["cross_repo_validation_action_line"] == (
+    "local-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
+), record
+assert "### Cross-Repo Validation" in record["markdown"], record
+assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in record["markdown"], record
+assert "monday source validation summary: `total=2 pass=1 fail=1 errors=2 warnings=1`" in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \

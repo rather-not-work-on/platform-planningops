@@ -286,6 +286,11 @@ class TriageBriefRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    cross_repo_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_summary: str | None
+    monday_source_validation_status: str | None
+    monday_source_validation_summary: str | None
+    cross_repo_validation_action_line: str | None
     queue_lines: list[str]
     target_lines: list[str]
 
@@ -301,6 +306,11 @@ class TriageReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    cross_repo_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_summary: str | None
+    monday_source_validation_status: str | None
+    monday_source_validation_summary: str | None
+    cross_repo_validation_action_line: str | None
     queue_lines: list[str]
     target_lines: list[str]
     markdown: str
@@ -3992,6 +4002,11 @@ def build_triage_brief_record(
         local_operator_record=feed.local_operator_record,
         local_operator_summary=build_local_operator_summary(feed.local_operator_record),
         local_operator_next_step=build_local_operator_next_step(feed.local_operator_record),
+        cross_repo_validation_snapshot_status=feed.cross_repo_validation_snapshot_status,
+        cross_repo_validation_snapshot_summary=feed.cross_repo_validation_snapshot_summary,
+        monday_source_validation_status=feed.monday_source_validation_status,
+        monday_source_validation_summary=feed.monday_source_validation_summary,
+        cross_repo_validation_action_line=feed.cross_repo_validation_action_line,
         queue_lines=queue_lines,
         target_lines=target_lines,
     )
@@ -4014,6 +4029,17 @@ def render_triage_brief_table(record: TriageBriefRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    if record.cross_repo_validation_snapshot_status is not None:
+        sections.extend(
+            [
+                f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
+                f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary or ''}",
+                f"monday_source_validation_status\t{record.monday_source_validation_status or ''}",
+                f"monday_source_validation_summary\t{record.monday_source_validation_summary or ''}",
+            ]
+        )
+        if record.cross_repo_validation_action_line is not None:
+            sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines])
     return "\n".join(sections)
 
@@ -4040,6 +4066,19 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
         lines.append(f"- local operator: `{record.local_operator_summary}`")
     if record.local_operator_next_step is not None:
         lines.append(f"- local operator next step: {record.local_operator_next_step}")
+    if record.cross_repo_validation_snapshot_status is not None:
+        lines.extend(
+            [
+                "",
+                "### Cross-Repo Validation",
+                f"- snapshot status: `{record.cross_repo_validation_snapshot_status}`",
+                f"- snapshot summary: `{record.cross_repo_validation_snapshot_summary or ''}`",
+                f"- monday source validation status: `{record.monday_source_validation_status or ''}`",
+                f"- monday source validation summary: `{record.monday_source_validation_summary or ''}`",
+            ]
+        )
+        if record.cross_repo_validation_action_line is not None:
+            lines.append(f"- next action: {record.cross_repo_validation_action_line}")
     lines.append("")
     lines.append("### Queue")
     lines.extend(f"- {line}" for line in record.queue_lines)
@@ -4100,6 +4139,19 @@ def build_triage_report_record(
         markdown_lines.append(f"- local operator: `{brief.local_operator_summary}`")
     if brief.local_operator_next_step is not None:
         markdown_lines.append(f"- local operator next step: {brief.local_operator_next_step}")
+    if brief.cross_repo_validation_snapshot_status is not None:
+        markdown_lines.extend(
+            [
+                "",
+                "### Cross-Repo Validation",
+                f"- snapshot status: `{brief.cross_repo_validation_snapshot_status}`",
+                f"- snapshot summary: `{brief.cross_repo_validation_snapshot_summary or ''}`",
+                f"- monday source validation status: `{brief.monday_source_validation_status or ''}`",
+                f"- monday source validation summary: `{brief.monday_source_validation_summary or ''}`",
+            ]
+        )
+        if brief.cross_repo_validation_action_line is not None:
+            markdown_lines.append(f"- next action: {brief.cross_repo_validation_action_line}")
     markdown_lines.extend(
         [
             "",
@@ -4120,6 +4172,11 @@ def build_triage_report_record(
         local_operator_record=brief.local_operator_record,
         local_operator_summary=brief.local_operator_summary,
         local_operator_next_step=brief.local_operator_next_step,
+        cross_repo_validation_snapshot_status=brief.cross_repo_validation_snapshot_status,
+        cross_repo_validation_snapshot_summary=brief.cross_repo_validation_snapshot_summary,
+        monday_source_validation_status=brief.monday_source_validation_status,
+        monday_source_validation_summary=brief.monday_source_validation_summary,
+        cross_repo_validation_action_line=brief.cross_repo_validation_action_line,
         queue_lines=brief.queue_lines,
         target_lines=brief.target_lines,
         markdown="\n".join(markdown_lines),
@@ -4140,6 +4197,17 @@ def render_triage_report_table(record: TriageReportRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    if record.cross_repo_validation_snapshot_status is not None:
+        sections.extend(
+            [
+                f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
+                f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary or ''}",
+                f"monday_source_validation_status\t{record.monday_source_validation_status or ''}",
+                f"monday_source_validation_summary\t{record.monday_source_validation_summary or ''}",
+            ]
+        )
+        if record.cross_repo_validation_action_line is not None:
+            sections.append(f"cross_repo_validation_action\t{record.cross_repo_validation_action_line}")
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines])
     return "\n".join(sections)
 
