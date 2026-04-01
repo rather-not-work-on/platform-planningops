@@ -209,6 +209,21 @@ class TriageTargetRecord:
     target_failed_checks: list[str]
 
 
+@dataclass(frozen=True)
+class TriageQueueRecord:
+    priority_bucket: str
+    target_count: int
+    families: list[str]
+    newest_target_family: str
+    newest_target_run_id: str
+    newest_target_source_kind: str
+    newest_target_health_status: str
+    newest_target_timestamp_utc: str
+    newest_target_kind: str
+    target_kind_counts: dict[str, int]
+    target_domain_counts: dict[str, int]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -1233,6 +1248,100 @@ def render_triage_targets_markdown(records: list[TriageTargetRecord]) -> str:
     return "\n".join(lines)
 
 
+def build_triage_queue_records(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+) -> list[TriageQueueRecord]:
+    target_records = build_triage_target_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    grouped: dict[str, list[TriageTargetRecord]] = {}
+    for record in target_records:
+        grouped.setdefault(record.priority_bucket, []).append(record)
+
+    queue_records: list[TriageQueueRecord] = []
+    for priority_bucket in ("active", "lagging"):
+        bucket_records = grouped.get(priority_bucket, [])
+        if not bucket_records:
+            continue
+        bucket_records = sorted(
+            bucket_records,
+            key=lambda record: (record.target_timestamp_utc, record.family),
+            reverse=True,
+        )
+        newest = bucket_records[0]
+        target_kind_counts: dict[str, int] = {}
+        target_domain_counts: dict[str, int] = {}
+        for record in bucket_records:
+            target_kind_counts[record.target_kind] = target_kind_counts.get(record.target_kind, 0) + 1
+            for domain in record.target_domains:
+                target_domain_counts[domain] = target_domain_counts.get(domain, 0) + 1
+        queue_records.append(
+            TriageQueueRecord(
+                priority_bucket=priority_bucket,
+                target_count=len(bucket_records),
+                families=[record.family for record in bucket_records],
+                newest_target_family=newest.family,
+                newest_target_run_id=newest.target_run_id,
+                newest_target_source_kind=newest.target_source_kind,
+                newest_target_health_status=newest.target_health_status,
+                newest_target_timestamp_utc=newest.target_timestamp_utc,
+                newest_target_kind=newest.target_kind,
+                target_kind_counts={key: target_kind_counts[key] for key in sorted(target_kind_counts)},
+                target_domain_counts={key: target_domain_counts[key] for key in sorted(target_domain_counts)},
+            )
+        )
+    return queue_records
+
+
+def render_triage_queue_table(records: list[TriageQueueRecord]) -> str:
+    lines = [
+        "priority_bucket\ttarget_count\tfamilies\tnewest_target_family\tnewest_target_run\tnewest_target_source\tnewest_target_health\tnewest_target_kind\ttarget_kind_counts\ttarget_domain_counts\tnewest_target_timestamp",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.priority_bucket,
+                    str(record.target_count),
+                    ",".join(record.families),
+                    record.newest_target_family,
+                    record.newest_target_run_id,
+                    record.newest_target_source_kind,
+                    record.newest_target_health_status,
+                    record.newest_target_kind,
+                    ",".join(f"{key}={value}" for key, value in record.target_kind_counts.items()),
+                    ",".join(f"{key}={value}" for key, value in record.target_domain_counts.items()),
+                    record.newest_target_timestamp_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_triage_queue_markdown(records: list[TriageQueueRecord]) -> str:
+    lines = [
+        "| priority_bucket | target_count | families | newest_target_family | newest_target_run | newest_target_source | newest_target_health | newest_target_kind | target_kind_counts | target_domain_counts | newest_target_timestamp |",
+        "| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.priority_bucket} | {record.target_count} | {', '.join(record.families)} | "
+            f"{record.newest_target_family} | `{record.newest_target_run_id}` | {record.newest_target_source_kind} | "
+            f"{record.newest_target_health_status} | {record.newest_target_kind} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.target_kind_counts.items())} | "
+            f"{', '.join(f'{key}={value}' for key, value in record.target_domain_counts.items())} | "
+            f"{record.newest_target_timestamp_utc} |"
+        )
+    return "\n".join(lines)
+
+
 def select_record(
     *,
     records: list[SummaryRecord],
@@ -1963,6 +2072,21 @@ def parse_args() -> argparse.Namespace:
     triage_targets_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_targets_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     triage_targets_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    triage_queue_parser = subparsers.add_parser(
+        "triage-queue",
+        help="show bucketed triage target queues with newest target pointers and domain counts",
+    )
+    triage_queue_parser.add_argument("--family", default=None)
+    triage_queue_parser.add_argument("--run-id-prefix", default=None)
+    triage_queue_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    triage_queue_parser.add_argument("--priority-bucket", choices=["active", "lagging"], default=None)
+    triage_queue_parser.add_argument("--has-target-domain", default=None)
+    triage_queue_parser.add_argument("--limit", type=int, default=20)
+    triage_queue_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    triage_queue_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    triage_queue_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    triage_queue_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -2169,6 +2293,29 @@ def main() -> int:
             print(render_triage_targets_markdown(target_records))
             return 0
         print(render_triage_targets_table(target_records))
+        return 0
+
+    if args.command == "triage-queue":
+        queue_records = build_triage_queue_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+        )
+        if args.priority_bucket:
+            queue_records = [record for record in queue_records if record.priority_bucket == args.priority_bucket]
+        if args.has_target_domain:
+            queue_records = [
+                record for record in queue_records if record.target_domain_counts.get(args.has_target_domain, 0) > 0
+            ]
+        queue_records = queue_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in queue_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_triage_queue_markdown(queue_records))
+            return 0
+        print(render_triage_queue_table(queue_records))
         return 0
 
     if args.command == "reconcile-status":

@@ -486,6 +486,9 @@ TRIAGE_OVERVIEW_ALL_OUTPUT="$TMP_DIR/triage-overview-all.json"
 TRIAGE_TARGETS_OUTPUT="$TMP_DIR/triage-targets.json"
 TRIAGE_TARGETS_LAGGING_OUTPUT="$TMP_DIR/triage-targets-lagging.json"
 TRIAGE_TARGETS_ALL_OUTPUT="$TMP_DIR/triage-targets-all.json"
+TRIAGE_QUEUE_OUTPUT="$TMP_DIR/triage-queue.json"
+TRIAGE_QUEUE_LAGGING_OUTPUT="$TMP_DIR/triage-queue-lagging.json"
+TRIAGE_QUEUE_ALL_OUTPUT="$TMP_DIR/triage-queue-all.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1291,6 +1294,90 @@ assert record["priority_bucket"] == "active", record
 assert record["target_kind"] == "latest-gap", record
 assert record["target_run_id"] == "federated-ci-local-20260301", record
 assert record["target_domains"] == ["checkpoint", "readiness", "reconcile"], record
+PY
+
+python3 "$QUERY_PATH" triage-queue \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_QUEUE_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_QUEUE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["priority_bucket"] for record in records] == ["active", "lagging"], records
+
+active, lagging = records
+assert active["target_count"] == 1, active
+assert active["families"] == ["federated-ci-local"], active
+assert active["newest_target_family"] == "federated-ci-local", active
+assert active["newest_target_run_id"] == "federated-ci-local-20260301", active
+assert active["newest_target_source_kind"] == "stamped", active
+assert active["newest_target_kind"] == "latest-gap", active
+assert active["target_kind_counts"] == {"latest-gap": 1}, active
+assert active["target_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, active
+
+assert lagging["target_count"] == 1, lagging
+assert lagging["families"] == ["federated-ci-runtime-gates"], lagging
+assert lagging["newest_target_family"] == "federated-ci-runtime-gates", lagging
+assert lagging["newest_target_run_id"] == "federated-ci-runtime-gates-20260319-rerun29", lagging
+assert lagging["newest_target_source_kind"] == "stamped", lagging
+assert lagging["newest_target_kind"] == "latest-alert-follow-up", lagging
+assert lagging["target_kind_counts"] == {"latest-alert-follow-up": 1}, lagging
+assert lagging["target_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, lagging
+PY
+
+python3 "$QUERY_PATH" triage-queue \
+  --priority-bucket lagging \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_QUEUE_LAGGING_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_QUEUE_LAGGING_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["priority_bucket"] == "lagging", record
+assert record["families"] == ["federated-ci-runtime-gates"], record
+assert record["target_kind_counts"] == {"latest-alert-follow-up": 1}, record
+PY
+
+python3 "$QUERY_PATH" triage-queue \
+  --source-kind all \
+  --has-target-domain checkpoint \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_QUEUE_ALL_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_QUEUE_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["priority_bucket"] == "active", record
+assert record["target_count"] == 2, record
+assert record["families"] == ["federated-ci-runtime-gates", "federated-ci-local"], record
+assert record["newest_target_family"] == "federated-ci-runtime-gates", record
+assert record["newest_target_run_id"] == "federated-ci-runtime-gates-20260319-rerun26", record
+assert record["newest_target_source_kind"] == "latest", record
+assert record["newest_target_kind"] == "latest-gap", record
+assert record["target_kind_counts"] == {"latest-gap": 2}, record
+assert record["target_domain_counts"] == {"checkpoint": 1, "readiness": 2, "reconcile": 2}, record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
