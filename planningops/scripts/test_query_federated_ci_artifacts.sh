@@ -4215,6 +4215,22 @@ assert record["cross_repo_validation_action_line"] == (
     "local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ), record
+assert record["cross_repo_validation_detail_lines"] == [
+    "mirror: monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+    "mirror: monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
+    "mirror: monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "mirror: monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
+], record
+assert record["monday_source_validation_report_lines"] == [
+    "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes",
+    "source: bridge: verdict=pass errors=0 warnings=0 artifact_exists=yes schema_exists=yes",
+], record
+assert record["cross_repo_validation_action_lines"] == [
+    "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
+    "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)",
+    "monday-validation: inspect consumer-report source report (verdict=fail, errors=2, warnings=1)",
+], record
 assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
 assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
 PY
@@ -4243,6 +4259,22 @@ assert record["cross_repo_validation_action_line"] == (
     "local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ), record
+assert record["cross_repo_validation_detail_lines"] == [
+    "mirror: monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+    "mirror: monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
+    "mirror: monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "mirror: monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
+], record
+assert record["monday_source_validation_report_lines"] == [
+    "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes",
+    "source: bridge: verdict=pass errors=0 warnings=0 artifact_exists=yes schema_exists=yes",
+], record
+assert record["cross_repo_validation_action_lines"] == [
+    "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
+    "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)",
+    "monday-validation: inspect consumer-report source report (verdict=fail, errors=2, warnings=1)",
+], record
 assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
 assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
 PY
@@ -4271,11 +4303,32 @@ assert record["cross_repo_validation_action_line"] == (
     "local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ), record
+assert record["cross_repo_validation_detail_lines"] == [
+    "mirror: monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
+    "mirror: monday_local_inbox_consumer_report: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current,monday_local_inbox_runtime_report=current",
+    "mirror: monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "mirror: monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
+], record
+assert record["monday_source_validation_report_lines"] == [
+    "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes",
+    "source: bridge: verdict=pass errors=0 warnings=0 artifact_exists=yes schema_exists=yes",
+], record
+assert record["cross_repo_validation_action_lines"] == [
+    "local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)",
+    "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)",
+    "monday-validation: inspect consumer-report source report (verdict=fail, errors=2, warnings=1)",
+], record
 assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
 assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
 assert "### Cross-Repo Validation" in record["markdown"], record
 assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in record["markdown"], record
 assert "monday source validation summary: `total=2 pass=1 fail=1 errors=2 warnings=1`" in record["markdown"], record
+assert "### Cross-Repo Validation Details" in record["markdown"], record
+assert "### Cross-Repo Validation Actions" in record["markdown"], record
+assert "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing" in record["markdown"], record
+assert "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes" in record["markdown"], record
+assert "1. local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)" in record["markdown"], record
 assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in record["markdown"], record
 assert "detail packet path: `" in record["markdown"], record
 PY
