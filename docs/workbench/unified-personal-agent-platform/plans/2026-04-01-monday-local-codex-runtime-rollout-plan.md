@@ -120,7 +120,7 @@ Current deliverables:
 - `planningops/artifacts/validation/<run-id>-monday-local-operator-stack-report.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-operator-stack`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report` now carry the latest local operator stack pointer
-- `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` emits a handoff-ready operator packet
+- `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` emits a handoff-ready operator packet with local validation freshness/promotability
 - `planningops/scripts/federation/query_federated_ci_artifacts.py write-handoff-report`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness`
 - `planningops/artifacts/validation/operator-handoff-report.json`
@@ -191,5 +191,5 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. decide whether mission packet promotion should also emit an inbox-ready day packet or stay as a reusable validation-sidecar primitive
-2. surface local validation freshness directly inside `handoff-report` so the operator packet carries freshness + promotability in one document
-3. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
+2. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
+3. decide whether the local validation snapshot should also be mirrored into a day-level inbox or handoff digest artifact
