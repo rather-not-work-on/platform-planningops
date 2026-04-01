@@ -28,7 +28,9 @@ PY
 CI_DIR="$TMP_DIR/ci"
 VALIDATION_DIR="$TMP_DIR/validation"
 CONFORMANCE_DIR="$TMP_DIR/conformance"
+LOCAL_OPERATOR_DIR="$TMP_DIR/local-operator-stack"
 mkdir -p "$CI_DIR" "$VALIDATION_DIR" "$CONFORMANCE_DIR"
+mkdir -p "$LOCAL_OPERATOR_DIR"
 
 cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun26.json" <<'JSON'
 {
@@ -459,6 +461,155 @@ JSON
 touch "$VALIDATION_DIR/federated-ci-summary-validation.json"
 touch "$CONFORMANCE_DIR/federated-ci-runtime-gates-20260319-rerun26-contract.json"
 
+mkdir -p "$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060415Z"
+mkdir -p "$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060416Z"
+mkdir -p "$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060524Z"
+
+cat >"$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060415Z.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T06:04:15+00:00",
+  "run_id": "monday-local-operator-stack-20260401T060415Z",
+  "workspace_root": "${TMP_DIR}/workspace",
+  "execution_mode": "both",
+  "direct_profile": "local_ollama",
+  "dry_run": false,
+  "verdict": "pass",
+  "reason_code": "monday_local_operator_stack_ok",
+  "readiness": {
+    "status": "ready",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060415Z/readiness.json",
+    "report": {
+      "assessment_status": "ready"
+    },
+    "step": {
+      "status": "pass"
+    }
+  },
+  "stack_smoke": {
+    "status": "pass",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060415Z/stack-smoke.json"
+  },
+  "direct_smoke": {
+    "status": "pass",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060415Z/local_ollama.json"
+  },
+  "recommended_next_steps": [
+    "Inspect stamped reports and carry the direct smoke output into handoff."
+  ]
+}
+JSON
+
+cat >"$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060416Z.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T06:04:16+00:00",
+  "run_id": "monday-local-operator-stack-20260401T060416Z",
+  "workspace_root": "${TMP_DIR}/workspace",
+  "execution_mode": "direct",
+  "direct_profile": "local_ollama",
+  "dry_run": false,
+  "verdict": "pass",
+  "reason_code": "monday_local_operator_stack_ok",
+  "readiness": {
+    "status": "bootstrap_required",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060416Z/readiness.json",
+    "report": {
+      "assessment_status": "bootstrap_required"
+    },
+    "step": {
+      "status": "report_only"
+    }
+  },
+  "stack_smoke": {
+    "status": "skipped",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060416Z/stack-smoke.json"
+  },
+  "direct_smoke": {
+    "status": "pass",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060416Z/local_ollama.json"
+  },
+  "recommended_next_steps": [
+    "Start the provider gateway stack first if you want stack mode."
+  ]
+}
+JSON
+
+cat >"$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060524Z.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T06:05:24+00:00",
+  "run_id": "monday-local-operator-stack-20260401T060524Z",
+  "workspace_root": "${TMP_DIR}/workspace",
+  "execution_mode": "both",
+  "direct_profile": "local_lmstudio",
+  "dry_run": false,
+  "verdict": "fail",
+  "reason_code": "readiness_blocked",
+  "readiness": {
+    "status": "blocked",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060524Z/readiness.json",
+    "report": {
+      "assessment_status": "blocked"
+    },
+    "step": {
+      "status": "report_only"
+    }
+  },
+  "stack_smoke": {
+    "status": "skipped",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060524Z/stack-smoke.json"
+  },
+  "direct_smoke": {
+    "status": "skipped",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060524Z/local_lmstudio.json"
+  },
+  "recommended_next_steps": [
+    "Expose Codex and add a direct local LLM profile."
+  ]
+}
+JSON
+
+cat >"$LOCAL_OPERATOR_DIR/monday-local-operator-stack-20260401T060700Z.json" <<JSON
+{
+  "generated_at_utc": "2026-04-01T06:07:00+00:00",
+  "run_id": "monday-local-operator-stack-20260401T060700Z",
+  "workspace_root": "${TMP_DIR}/workspace",
+  "execution_mode": "stack",
+  "direct_profile": null,
+  "dry_run": true,
+  "verdict": "planned",
+  "reason_code": "operator_stack_dry_run_only",
+  "readiness": {
+    "status": "ready",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060700Z/readiness.json",
+    "report": {
+      "assessment_status": "ready"
+    },
+    "step": {
+      "status": "pass"
+    }
+  },
+  "stack_smoke": {
+    "status": "planned",
+    "report_path": "${LOCAL_OPERATOR_DIR}/monday-local-operator-stack-20260401T060700Z/stack-smoke.json"
+  },
+  "direct_smoke": {
+    "status": "skipped",
+    "report_path": null
+  },
+  "recommended_next_steps": []
+}
+JSON
+
+python3 - <<'PY' "$LOCAL_OPERATOR_DIR/._monday-local-operator-stack-20260401T060800Z.json"
+from pathlib import Path
+import sys
+
+Path(sys.argv[1]).write_bytes(b"\x00\xffappledouble")
+PY
+
+cat >"$LOCAL_OPERATOR_DIR/broken-report.json" <<'EOF'
+{broken json
+EOF
+
 RUNS_OUTPUT="$TMP_DIR/runs.json"
 RUNS_HEALTHY_OUTPUT="$TMP_DIR/runs-healthy.json"
 CHECKS_OUTPUT="$TMP_DIR/checks.json"
@@ -495,6 +646,9 @@ TRIAGE_BRIEF_OUTPUT="$TMP_DIR/triage-brief.json"
 TRIAGE_BRIEF_ALL_OUTPUT="$TMP_DIR/triage-brief-all.json"
 TRIAGE_REPORT_OUTPUT="$TMP_DIR/triage-report.json"
 TRIAGE_REPORT_ALL_OUTPUT="$TMP_DIR/triage-report-all.json"
+LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
+LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
+LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1767,6 +1921,99 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert doc["record"]["source_kind"] == "stamped", doc
+PY
+
+python3 "$QUERY_PATH" local-operator-stack \
+  --format json \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$LOCAL_OPERATOR_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_OPERATOR_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["run_id"] for record in records] == [
+    "monday-local-operator-stack-20260401T060700Z",
+    "monday-local-operator-stack-20260401T060524Z",
+    "monday-local-operator-stack-20260401T060416Z",
+    "monday-local-operator-stack-20260401T060415Z",
+], records
+
+planned, blocked, bootstrap, ready = records
+assert planned["verdict"] == "planned", planned
+assert planned["execution_mode"] == "stack", planned
+assert planned["stack_status"] == "planned", planned
+assert planned["direct_status"] == "skipped", planned
+assert planned["has_detail_dir"] is False, planned
+assert planned["detail_dir"] is None, planned
+assert planned["expected_detail_dir"].endswith(planned["run_id"]), planned
+
+assert blocked["verdict"] == "fail", blocked
+assert blocked["reason_code"] == "readiness_blocked", blocked
+assert blocked["readiness_status"] == "blocked", blocked
+assert blocked["readiness_step_status"] == "report_only", blocked
+assert blocked["stack_status"] == "skipped", blocked
+assert blocked["direct_status"] == "skipped", blocked
+assert blocked["direct_profile"] == "local_lmstudio", blocked
+assert blocked["has_detail_dir"] is True, blocked
+
+assert bootstrap["verdict"] == "pass", bootstrap
+assert bootstrap["execution_mode"] == "direct", bootstrap
+assert bootstrap["readiness_status"] == "bootstrap_required", bootstrap
+assert bootstrap["direct_status"] == "pass", bootstrap
+assert bootstrap["stack_status"] == "skipped", bootstrap
+
+assert ready["verdict"] == "pass", ready
+assert ready["execution_mode"] == "both", ready
+assert ready["readiness_status"] == "ready", ready
+assert ready["stack_status"] == "pass", ready
+assert ready["direct_status"] == "pass", ready
+assert len(ready["recommended_next_steps"]) == 1, ready
+PY
+
+python3 "$QUERY_PATH" local-operator-stack \
+  --verdict pass \
+  --execution-mode direct \
+  --readiness-status bootstrap_required \
+  --direct-status pass \
+  --format json \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$LOCAL_OPERATOR_FILTERED_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_OPERATOR_FILTERED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["run_id"] == "monday-local-operator-stack-20260401T060416Z", record
+assert record["readiness_status"] == "bootstrap_required", record
+assert record["direct_status"] == "pass", record
+assert record["stack_status"] == "skipped", record
+PY
+
+python3 "$QUERY_PATH" local-operator-stack \
+  --verdict planned \
+  --has-detail-dir no \
+  --format json \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$LOCAL_OPERATOR_DETAIL_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_OPERATOR_DETAIL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["run_id"] == "monday-local-operator-stack-20260401T060700Z", record
+assert record["has_detail_dir"] is False, record
+assert record["expected_detail_dir"].endswith("monday-local-operator-stack-20260401T060700Z"), record
 PY
 
 echo "query federated ci artifacts ok"
