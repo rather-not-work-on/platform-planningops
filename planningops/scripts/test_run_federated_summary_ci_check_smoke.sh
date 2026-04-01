@@ -25,15 +25,17 @@ bash "$SCRIPT_PATH" \
   --stamped-readiness-validation-path "$tmp_dir/ci-pass-summary-readiness-validation.json" \
   --latest-readiness-validation-path "$tmp_dir/federated-ci-summary-readiness-validation.json"
 
-python3 - <<'PY' "$tmp_dir/ci-pass.json" "$tmp_dir/federated-ci-summary-readiness.json"
+python3 - <<'PY' "$tmp_dir/ci-pass.json" "$tmp_dir/federated-ci-summary-readiness.json" "$tmp_dir/ci-pass.tmp.json"
 import json
 import sys
 from pathlib import Path
 
 summary = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 readiness = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+tmp_summary_path = Path(sys.argv[3])
 
 assert summary["run_id"] == "ci-pass", summary
+assert isinstance(summary["started_at_utc"], str) and summary["started_at_utc"], summary
 assert summary["verdict"] == "pass", summary
 assert summary["overall_status"] == "complete", summary
 assert summary["check_count"] == 7, summary
@@ -41,6 +43,7 @@ assert readiness["summary_run_id"] == "ci-pass", readiness
 assert readiness["readiness_status"] == "ready", readiness
 assert readiness["ready"] is True, readiness
 assert readiness["next_step"] == "none", readiness
+assert not tmp_summary_path.exists(), tmp_summary_path
 PY
 
 set +e

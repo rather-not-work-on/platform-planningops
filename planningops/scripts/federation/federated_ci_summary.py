@@ -8,7 +8,13 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from federated_ci_runtime_state import build_check_record, finalize_summary_doc, load_json, write_json
+from federated_ci_runtime_state import (
+    build_check_record,
+    finalize_summary_doc,
+    initialize_summary_doc,
+    load_json,
+    write_json,
+)
 
 
 def load_validator_module():
@@ -23,13 +29,13 @@ def load_validator_module():
 
 def command_init(args: argparse.Namespace) -> int:
     summary_path = Path(args.summary)
-    doc = {
-        "run_id": args.run_id,
-        "started_at_utc": now_utc(),
-        "checks": [],
-        "required_checks": list(args.required_check),
-    }
-    write_json(summary_path, doc)
+    write_json(
+        summary_path,
+        initialize_summary_doc(
+            run_id=args.run_id,
+            required_checks=list(args.required_check),
+        ),
+    )
     return 0
 
 
