@@ -55,19 +55,25 @@ class SummaryRecord:
 @dataclass(frozen=True)
 class ReconcileStatusRecord:
     generated_at_utc: str
+    timestamp_utc: str
     run_id: str
     family: str
     source_kind: str
     summary_path: str
     checkpoint_path: str
+    checkpoint_state: str
     previous_report_path: str | None
+    reconcile_validation_path: str | None
     check_name: str | None
     status: str
     restored: bool
     reasons: list[str]
     reconcile_count: int
     restored_check_names: list[str]
-    checkpoint_check_count: int
+    reconcile_artifact_state: str
+    reconcile_validation_verdict: str
+    reconcile_validation_state: str
+    checkpoint_check_count: int | None
     summary_check_count: int | None
 
 
@@ -95,6 +101,18 @@ def load_optional_json(path: Path) -> dict[str, Any] | None:
         return load_json(path)
     except (UnicodeDecodeError, json.JSONDecodeError):
         return None
+
+
+def resolve_artifact_path(path_text: Any) -> Path | None:
+    if not isinstance(path_text, str) or not path_text.strip():
+        return None
+    return Path(path_text).expanduser().resolve()
+
+
+def build_reconcile_validation_path(report_path: Path | None) -> Path | None:
+    if report_path is None:
+        return None
+    return report_path.with_name(f"{report_path.stem}-validation.json")
 
 
 def build_sidecar_paths(
@@ -293,23 +311,116 @@ def render_checks_table(record: SummaryRecord, checks: list[dict[str, Any]]) -> 
     return "\n".join(lines)
 
 
-def render_reconcile_table(record: ReconcileStatusRecord) -> str:
+def reconcile_doc_matches_record(
+    *,
+    record: ReconcileStatusRecord,
+    reconcile_doc: dict[str, Any] | None,
+    reconcile_path: Path | None,
+) -> bool:
+    if reconcile_path is None or not isinstance(reconcile_doc, dict):
+        return False
+    if resolve_artifact_path(reconcile_doc.get("output_path")) != reconcile_path.resolve():
+        return False
+    if reconcile_doc.get("run_id") != record.run_id:
+        return False
+    if reconcile_doc.get("status") != record.status:
+        return False
+    if reconcile_doc.get("restored") != record.restored:
+        return False
+    reconcile_count = reconcile_doc.get("reconcile_count")
+    restored_check_names = reconcile_doc.get("restored_check_names")
+    if not isinstance(reconcile_count, int) or isinstance(reconcile_count, bool) or reconcile_count < 0:
+        return False
+    if not isinstance(restored_check_names, list):
+        return False
+    normalized_restored = [name for name in restored_check_names if isinstance(name, str) and name.strip()]
+    if len(normalized_restored) != reconcile_count:
+        return False
+    if normalized_restored != record.restored_check_names:
+        return False
+    return True
+
+
+def reconcile_validation_matches_record(
+    *,
+    reconcile_doc: dict[str, Any] | None,
+    reconcile_validation_doc: dict[str, Any] | None,
+    reconcile_path: Path | None,
+) -> bool:
+    if reconcile_path is None or not isinstance(reconcile_doc, dict) or not isinstance(reconcile_validation_doc, dict):
+        return False
+    if resolve_artifact_path(reconcile_validation_doc.get("reconcile_report_path")) != reconcile_path.resolve():
+        return False
+    if reconcile_validation_doc.get("reconcile_generated_at_utc") != reconcile_doc.get("generated_at_utc"):
+        return False
+    if reconcile_validation_doc.get("reconcile_run_id") != reconcile_doc.get("run_id"):
+        return False
+    if reconcile_validation_doc.get("reconcile_status") != reconcile_doc.get("status"):
+        return False
+    if reconcile_validation_doc.get("reconcile_restored") != reconcile_doc.get("restored"):
+        return False
+    if reconcile_validation_doc.get("reconcile_count") != reconcile_doc.get("reconcile_count"):
+        return False
+    return True
+
+
+def build_reconcile_observed_state(
+    *,
+    record: ReconcileStatusRecord,
+    reconcile_path: Path | None,
+    reconcile_validation_path: Path | None,
+    reconcile_doc: dict[str, Any] | None,
+    reconcile_validation_doc: dict[str, Any] | None,
+) -> tuple[str, str, str]:
+    reconcile_artifact_state = (
+        "fresh"
+        if reconcile_doc_matches_record(record=record, reconcile_doc=reconcile_doc, reconcile_path=reconcile_path)
+        else ("stale" if reconcile_path is not None and reconcile_path.exists() else "missing")
+    )
+    reconcile_validation_verdict = (
+        str(reconcile_validation_doc.get("verdict") or "unknown")
+        if isinstance(reconcile_validation_doc, dict)
+        else ("unknown" if reconcile_validation_path is not None and reconcile_validation_path.exists() else "missing")
+    )
+    reconcile_validation_state = (
+        "fresh"
+        if reconcile_validation_matches_record(
+            reconcile_doc=reconcile_doc,
+            reconcile_validation_doc=reconcile_validation_doc,
+            reconcile_path=reconcile_path,
+        )
+        else ("stale" if reconcile_validation_path is not None and reconcile_validation_path.exists() else "missing")
+    )
+    return reconcile_artifact_state, reconcile_validation_verdict, reconcile_validation_state
+
+
+def render_reconcile_table(records: list[ReconcileStatusRecord]) -> str:
     return "\n".join(
         [
-            "family\trun_id\tsource\tstatus\trestored\treconcile_count\tcheck_name\treasons\trestored_checks",
-            "\t".join(
-                [
-                    record.family,
-                    record.run_id,
-                    record.source_kind,
-                    record.status,
-                    "true" if record.restored else "false",
-                    str(record.reconcile_count),
-                    str(record.check_name or ""),
-                    ",".join(record.reasons),
-                    ",".join(record.restored_check_names),
-                ]
-            ),
+            "family\trun_id\tsource\tstatus\tartifact_state\tvalidation_state\tcheckpoint_state\trestored\treconcile_count\treasons\trestored_checks\ttimestamp",
+            *[
+                "\t".join(
+                    [
+                        record.family,
+                        record.run_id,
+                        record.source_kind,
+                        record.status,
+                        record.reconcile_artifact_state,
+                        record.reconcile_validation_state,
+                        record.checkpoint_state,
+                        (
+                            "true"
+                            if record.restored is True
+                            else ("false" if record.restored is False else "unknown")
+                        ),
+                        str(record.reconcile_count),
+                        ",".join(record.reasons),
+                        ",".join(record.restored_check_names),
+                        record.timestamp_utc,
+                    ]
+                )
+                for record in records
+            ],
         ]
     )
 
@@ -322,6 +433,9 @@ def render_reconcile_markdown(record: ReconcileStatusRecord) -> str:
         f"- source_kind: `{record.source_kind}`",
         f"- status: `{record.status}`",
         f"- restored: `{str(record.restored).lower()}`",
+        f"- reconcile_artifact_state: `{record.reconcile_artifact_state}`",
+        f"- reconcile_validation_state: `{record.reconcile_validation_state}`",
+        f"- checkpoint_state: `{record.checkpoint_state}`",
         f"- reconcile_count: `{record.reconcile_count}`",
         f"- check_name: `{record.check_name or ''}`",
         f"- summary_path: `{record.summary_path}`",
@@ -329,18 +443,36 @@ def render_reconcile_markdown(record: ReconcileStatusRecord) -> str:
     ]
     if record.previous_report_path is not None:
         lines.append(f"- previous_report_path: `{record.previous_report_path}`")
+    if record.reconcile_validation_path is not None:
+        lines.append(f"- reconcile_validation_path: `{record.reconcile_validation_path}`")
     lines.extend(
         [
             "",
-            "| reasons | restored_check_names | checkpoint_check_count | summary_check_count |",
-            "| --- | --- | ---: | ---: |",
+            "| reasons | restored_check_names | checkpoint_check_count | summary_check_count | validation_verdict | timestamp |",
+            "| --- | --- | ---: | ---: | --- | --- |",
             (
                 f"| {', '.join(record.reasons)} | {', '.join(record.restored_check_names)} | "
-                f"{record.checkpoint_check_count} | "
-                f"{record.summary_check_count if record.summary_check_count is not None else ''} |"
+                f"{record.checkpoint_check_count if record.checkpoint_check_count is not None else ''} | "
+                f"{record.summary_check_count if record.summary_check_count is not None else ''} | "
+                f"{record.reconcile_validation_verdict} | {record.timestamp_utc} |"
             ),
         ]
     )
+    return "\n".join(lines)
+
+
+def render_reconcile_records_markdown(records: list[ReconcileStatusRecord]) -> str:
+    lines = [
+        "| family | run_id | source | status | artifact_state | validation_state | checkpoint_state | restored | reconcile_count | timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.family} | `{record.run_id}` | {record.source_kind} | {record.status} | "
+            f"{record.reconcile_artifact_state} | {record.reconcile_validation_state} | {record.checkpoint_state} | "
+            f"{'true' if record.restored is True else ('false' if record.restored is False else 'unknown')} | "
+            f"{record.reconcile_count} | {record.timestamp_utc} |"
+        )
     return "\n".join(lines)
 
 
@@ -349,12 +481,17 @@ def build_reconcile_status_record(
     summary_path: Path,
     checkpoint_path: Path,
     previous_report_path: Path | None,
+    reconcile_validation_path: Path | None,
     summary_doc: dict[str, Any] | None,
     checkpoint_doc: dict[str, Any],
     check_name: str | None,
     source_kind: str,
+    checkpoint_state: str = "present",
 ) -> ReconcileStatusRecord:
     previous_doc = load_optional_json(previous_report_path) if previous_report_path is not None else None
+    reconcile_validation_doc = (
+        load_optional_json(reconcile_validation_path) if reconcile_validation_path is not None else None
+    )
     reconcile_state = build_reconcile_state(
         summary_doc,
         checkpoint_doc,
@@ -369,25 +506,247 @@ def build_reconcile_status_record(
         summary_doc=summary_doc,
         reconcile_state=reconcile_state,
     )
-    return ReconcileStatusRecord(
+    record = ReconcileStatusRecord(
         generated_at_utc=str(report["generated_at_utc"]),
+        timestamp_utc=summary_timestamp(summary_doc or checkpoint_doc),
         run_id=str(report["run_id"]),
         family=infer_family_from_run_id(str(report["run_id"])),
         source_kind=source_kind,
         summary_path=str(report["summary_path"]),
         checkpoint_path=str(report["checkpoint_path"]),
+        checkpoint_state=checkpoint_state,
         previous_report_path=None if previous_report_path is None else str(previous_report_path.resolve()),
+        reconcile_validation_path=(
+            None if reconcile_validation_path is None else str(reconcile_validation_path.resolve())
+        ),
         check_name=report["check_name"],
         status=str(report["status"]),
         restored=bool(report["restored"]),
         reasons=[str(reason) for reason in list(report.get("reasons") or [])],
         reconcile_count=int(report["reconcile_count"]),
         restored_check_names=[str(name) for name in list(report.get("restored_check_names") or [])],
+        reconcile_artifact_state="missing",
+        reconcile_validation_verdict="missing",
+        reconcile_validation_state="missing",
         checkpoint_check_count=int(report["checkpoint_check_count"]),
         summary_check_count=(
             int(report["summary_check_count"]) if isinstance(report.get("summary_check_count"), int) else None
         ),
     )
+    (
+        reconcile_artifact_state,
+        reconcile_validation_verdict,
+        reconcile_validation_state,
+    ) = build_reconcile_observed_state(
+        record=record,
+        reconcile_path=previous_report_path,
+        reconcile_validation_path=reconcile_validation_path,
+        reconcile_doc=previous_doc,
+        reconcile_validation_doc=reconcile_validation_doc,
+    )
+    return ReconcileStatusRecord(
+        generated_at_utc=record.generated_at_utc,
+        timestamp_utc=record.timestamp_utc,
+        run_id=record.run_id,
+        family=record.family,
+        source_kind=record.source_kind,
+        summary_path=record.summary_path,
+        checkpoint_path=record.checkpoint_path,
+        checkpoint_state=record.checkpoint_state,
+        previous_report_path=record.previous_report_path,
+        reconcile_validation_path=record.reconcile_validation_path,
+        check_name=record.check_name,
+        status=record.status,
+        restored=record.restored,
+        reasons=record.reasons,
+        reconcile_count=record.reconcile_count,
+        restored_check_names=record.restored_check_names,
+        reconcile_artifact_state=reconcile_artifact_state,
+        reconcile_validation_verdict=reconcile_validation_verdict,
+        reconcile_validation_state=reconcile_validation_state,
+        checkpoint_check_count=record.checkpoint_check_count,
+        summary_check_count=record.summary_check_count,
+    )
+
+
+def build_unknown_reconcile_status_record(
+    *,
+    summary_path: Path,
+    checkpoint_path: Path,
+    previous_report_path: Path | None,
+    reconcile_validation_path: Path | None,
+    run_id: str,
+    source_kind: str,
+    timestamp_utc: str,
+    checkpoint_state: str,
+    reasons: list[str],
+) -> ReconcileStatusRecord:
+    previous_doc = load_optional_json(previous_report_path) if previous_report_path is not None else None
+    reconcile_validation_doc = (
+        load_optional_json(reconcile_validation_path) if reconcile_validation_path is not None else None
+    )
+    record = ReconcileStatusRecord(
+        generated_at_utc="",
+        timestamp_utc=timestamp_utc,
+        run_id=run_id,
+        family=infer_family_from_run_id(run_id),
+        source_kind=source_kind,
+        summary_path=str(summary_path.resolve()),
+        checkpoint_path=str(checkpoint_path.resolve()),
+        checkpoint_state=checkpoint_state,
+        previous_report_path=None if previous_report_path is None else str(previous_report_path.resolve()),
+        reconcile_validation_path=(
+            None if reconcile_validation_path is None else str(reconcile_validation_path.resolve())
+        ),
+        check_name=None,
+        status="unknown",
+        restored=False,
+        reasons=reasons,
+        reconcile_count=(
+            int(previous_doc["reconcile_count"])
+            if isinstance(previous_doc, dict) and isinstance(previous_doc.get("reconcile_count"), int)
+            else 0
+        ),
+        restored_check_names=(
+            [str(name) for name in list(previous_doc.get("restored_check_names") or [])]
+            if isinstance(previous_doc, dict)
+            else []
+        ),
+        reconcile_artifact_state="missing",
+        reconcile_validation_verdict="missing",
+        reconcile_validation_state="missing",
+        checkpoint_check_count=None,
+        summary_check_count=None,
+    )
+    (
+        reconcile_artifact_state,
+        reconcile_validation_verdict,
+        reconcile_validation_state,
+    ) = build_reconcile_observed_state(
+        record=record,
+        reconcile_path=previous_report_path,
+        reconcile_validation_path=reconcile_validation_path,
+        reconcile_doc=previous_doc,
+        reconcile_validation_doc=reconcile_validation_doc,
+    )
+    return ReconcileStatusRecord(
+        generated_at_utc=record.generated_at_utc,
+        timestamp_utc=record.timestamp_utc,
+        run_id=record.run_id,
+        family=record.family,
+        source_kind=record.source_kind,
+        summary_path=record.summary_path,
+        checkpoint_path=record.checkpoint_path,
+        checkpoint_state=record.checkpoint_state,
+        previous_report_path=record.previous_report_path,
+        reconcile_validation_path=record.reconcile_validation_path,
+        check_name=record.check_name,
+        status=record.status,
+        restored=record.restored,
+        reasons=record.reasons,
+        reconcile_count=record.reconcile_count,
+        restored_check_names=record.restored_check_names,
+        reconcile_artifact_state=reconcile_artifact_state,
+        reconcile_validation_verdict=reconcile_validation_verdict,
+        reconcile_validation_state=reconcile_validation_state,
+        checkpoint_check_count=record.checkpoint_check_count,
+        summary_check_count=record.summary_check_count,
+    )
+
+
+def discover_reconcile_status_records(
+    *,
+    records: list[SummaryRecord],
+    ci_root: Path,
+    validation_root: Path,
+    conformance_root: Path,
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+) -> list[ReconcileStatusRecord]:
+    del conformance_root
+
+    filtered = records
+    if family:
+        filtered = [record for record in filtered if record.family == family]
+    if run_id_prefix:
+        filtered = [record for record in filtered if record.run_id.startswith(run_id_prefix)]
+    if source_kind not in {"auto", "all"}:
+        filtered = [record for record in filtered if record.source_kind == source_kind]
+
+    reconcile_records: list[ReconcileStatusRecord] = []
+    for summary_record in filtered:
+        summary_path = Path(summary_record.summary_path)
+        summary_doc = load_optional_json(summary_path)
+        sidecars = build_sidecar_paths(
+            run_id=summary_record.run_id,
+            source_kind=summary_record.source_kind,
+            validation_root=validation_root,
+            conformance_root=DEFAULT_CONFORMANCE_ROOT,
+        )
+        previous_report_path = sidecars["reconcile_report"]
+        reconcile_validation_path = sidecars["reconcile_validation"]
+        checkpoint_path = (ci_root / f"{summary_record.run_id}.checkpoint.json").resolve()
+        if not checkpoint_path.exists():
+            reconcile_records.append(
+                build_unknown_reconcile_status_record(
+                    summary_path=summary_path,
+                    checkpoint_path=checkpoint_path,
+                    previous_report_path=previous_report_path,
+                    reconcile_validation_path=reconcile_validation_path,
+                    run_id=summary_record.run_id,
+                    source_kind=summary_record.source_kind,
+                    timestamp_utc=summary_record.timestamp_utc,
+                    checkpoint_state="missing",
+                    reasons=["checkpoint_missing"],
+                )
+            )
+            continue
+        checkpoint_doc = load_optional_json(checkpoint_path)
+        if checkpoint_doc is None:
+            reconcile_records.append(
+                build_unknown_reconcile_status_record(
+                    summary_path=summary_path,
+                    checkpoint_path=checkpoint_path,
+                    previous_report_path=previous_report_path,
+                    reconcile_validation_path=reconcile_validation_path,
+                    run_id=summary_record.run_id,
+                    source_kind=summary_record.source_kind,
+                    timestamp_utc=summary_record.timestamp_utc,
+                    checkpoint_state="invalid",
+                    reasons=["checkpoint_invalid_json"],
+                )
+            )
+            continue
+        checkpoint_errors = validate_checkpoint_doc(checkpoint_doc)
+        if checkpoint_errors:
+            reconcile_records.append(
+                build_unknown_reconcile_status_record(
+                    summary_path=summary_path,
+                    checkpoint_path=checkpoint_path,
+                    previous_report_path=previous_report_path,
+                    reconcile_validation_path=reconcile_validation_path,
+                    run_id=summary_record.run_id,
+                    source_kind=summary_record.source_kind,
+                    timestamp_utc=summary_record.timestamp_utc,
+                    checkpoint_state="invalid",
+                    reasons=[f"checkpoint_invalid:{error}" for error in checkpoint_errors],
+                )
+            )
+            continue
+        reconcile_records.append(
+            build_reconcile_status_record(
+                summary_path=summary_path,
+                checkpoint_path=checkpoint_path,
+                previous_report_path=previous_report_path,
+                reconcile_validation_path=reconcile_validation_path,
+                summary_doc=summary_doc,
+                checkpoint_doc=checkpoint_doc,
+                check_name=None,
+                source_kind=summary_record.source_kind,
+            )
+        )
+    return reconcile_records
 
 
 def resolve_reconcile_status_record(
@@ -410,7 +769,8 @@ def resolve_reconcile_status_record(
         if isinstance(summary_doc, dict) and is_summary_document(summary_doc):
             run_id = str(summary_doc["run_id"])
     else:
-        record = select_record(records=records, run_id=args.run_id, source_kind=args.source_kind)
+        selected_source_kind = args.source_kind if args.source_kind in {"stamped", "latest"} else "auto"
+        record = select_record(records=records, run_id=args.run_id, source_kind=selected_source_kind)
         if record is None:
             raise ValueError(f"run not found: {args.run_id}")
         summary_path = Path(record.summary_path)
@@ -443,11 +803,13 @@ def resolve_reconcile_status_record(
             validation_root=validation_root,
             conformance_root=conformance_root,
         )["reconcile_report"]
+    reconcile_validation_path = build_reconcile_validation_path(previous_report_path)
 
     return build_reconcile_status_record(
         summary_path=summary_path,
         checkpoint_path=checkpoint_path,
         previous_report_path=previous_report_path,
+        reconcile_validation_path=reconcile_validation_path,
         summary_doc=summary_doc,
         checkpoint_doc=checkpoint_doc,
         check_name=args.check_name,
@@ -485,13 +847,19 @@ def parse_args() -> argparse.Namespace:
         "reconcile-status",
         help="show tmp/checkpoint reconcile state for one federated CI run or explicit summary/checkpoint pair",
     )
-    reconcile_target = reconcile_parser.add_mutually_exclusive_group(required=True)
-    reconcile_target.add_argument("--run-id", default=None)
-    reconcile_target.add_argument("--summary", default=None)
+    reconcile_parser.add_argument("--run-id", default=None)
+    reconcile_parser.add_argument("--summary", default=None)
+    reconcile_parser.add_argument("--family", default=None)
+    reconcile_parser.add_argument("--run-id-prefix", default=None)
     reconcile_parser.add_argument("--checkpoint", default=None)
     reconcile_parser.add_argument("--previous-report", default=None)
     reconcile_parser.add_argument("--check-name", default=None)
-    reconcile_parser.add_argument("--source-kind", choices=["auto", "stamped", "latest"], default="auto")
+    reconcile_parser.add_argument("--source-kind", choices=["auto", "all", "stamped", "latest"], default="auto")
+    reconcile_parser.add_argument("--status", choices=["healthy", "restored", "unknown"], default=None)
+    reconcile_parser.add_argument("--artifact-state", choices=["fresh", "stale", "missing"], default=None)
+    reconcile_parser.add_argument("--validation-state", choices=["fresh", "stale", "missing"], default=None)
+    reconcile_parser.add_argument("--checkpoint-state", choices=["present", "missing", "invalid"], default=None)
+    reconcile_parser.add_argument("--limit", type=int, default=20)
     reconcile_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     reconcile_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     reconcile_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -537,6 +905,41 @@ def main() -> int:
         return 0
 
     if args.command == "reconcile-status":
+        is_single_target = args.run_id is not None or args.summary is not None
+        is_scan_target = args.family is not None or args.run_id_prefix is not None
+        if is_single_target and is_scan_target:
+            print("choose either single target flags (--run-id/--summary) or scan flags (--family/--run-id-prefix)", file=sys.stderr)
+            return 1
+        if not is_single_target and not is_scan_target:
+            print("one of --run-id, --summary, --family, or --run-id-prefix is required", file=sys.stderr)
+            return 1
+        if is_scan_target:
+            filtered = discover_reconcile_status_records(
+                records=records,
+                ci_root=ci_root,
+                validation_root=validation_root,
+                conformance_root=conformance_root,
+                family=args.family,
+                run_id_prefix=args.run_id_prefix,
+                source_kind=args.source_kind,
+            )
+            if args.status:
+                filtered = [record for record in filtered if record.status == args.status]
+            if args.artifact_state:
+                filtered = [record for record in filtered if record.reconcile_artifact_state == args.artifact_state]
+            if args.validation_state:
+                filtered = [record for record in filtered if record.reconcile_validation_state == args.validation_state]
+            if args.checkpoint_state:
+                filtered = [record for record in filtered if record.checkpoint_state == args.checkpoint_state]
+            filtered = filtered[: args.limit]
+            if args.format == "json":
+                print(json.dumps({"records": [asdict(record) for record in filtered]}, ensure_ascii=True, indent=2))
+                return 0
+            if args.format == "markdown":
+                print(render_reconcile_records_markdown(filtered))
+                return 0
+            print(render_reconcile_table(filtered))
+            return 0
         try:
             record = resolve_reconcile_status_record(
                 args=args,
@@ -554,7 +957,7 @@ def main() -> int:
         if args.format == "markdown":
             print(render_reconcile_markdown(record))
             return 0
-        print(render_reconcile_table(record))
+        print(render_reconcile_table([record]))
         return 0
 
     record = select_record(records=records, run_id=args.run_id, source_kind=args.source_kind)
