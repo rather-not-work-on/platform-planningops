@@ -9,7 +9,15 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from federated_ci_runtime_state import infer_family_from_run_id, is_summary_document, load_json, summary_timestamp
+from federated_ci_runtime_state import (
+    build_reconcile_report,
+    build_reconcile_state,
+    infer_family_from_run_id,
+    is_summary_document,
+    load_json,
+    summary_timestamp,
+    validate_checkpoint_doc,
+)
 
 
 # /planningops/scripts/federation lives one level below the repo's planningops package.
@@ -44,11 +52,36 @@ class SummaryRecord:
     has_conformance_contract: bool
 
 
+@dataclass(frozen=True)
+class ReconcileStatusRecord:
+    generated_at_utc: str
+    run_id: str
+    family: str
+    source_kind: str
+    summary_path: str
+    checkpoint_path: str
+    previous_report_path: str | None
+    check_name: str | None
+    status: str
+    restored: bool
+    reasons: list[str]
+    reconcile_count: int
+    restored_check_names: list[str]
+    checkpoint_check_count: int
+    summary_check_count: int | None
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
         candidate = (WORKSPACE_ROOT / candidate).resolve()
     return candidate if path_text else default
+
+
+def resolve_optional_path(path_text: str | None) -> Path | None:
+    if path_text is None:
+        return None
+    return resolve_root(path_text, WORKSPACE_ROOT)
 
 
 def source_kind_for_summary_path(path: Path) -> str:
@@ -260,6 +293,168 @@ def render_checks_table(record: SummaryRecord, checks: list[dict[str, Any]]) -> 
     return "\n".join(lines)
 
 
+def render_reconcile_table(record: ReconcileStatusRecord) -> str:
+    return "\n".join(
+        [
+            "family\trun_id\tsource\tstatus\trestored\treconcile_count\tcheck_name\treasons\trestored_checks",
+            "\t".join(
+                [
+                    record.family,
+                    record.run_id,
+                    record.source_kind,
+                    record.status,
+                    "true" if record.restored else "false",
+                    str(record.reconcile_count),
+                    str(record.check_name or ""),
+                    ",".join(record.reasons),
+                    ",".join(record.restored_check_names),
+                ]
+            ),
+        ]
+    )
+
+
+def render_reconcile_markdown(record: ReconcileStatusRecord) -> str:
+    lines = [
+        f"# `{record.run_id}` reconcile status",
+        "",
+        f"- family: `{record.family}`",
+        f"- source_kind: `{record.source_kind}`",
+        f"- status: `{record.status}`",
+        f"- restored: `{str(record.restored).lower()}`",
+        f"- reconcile_count: `{record.reconcile_count}`",
+        f"- check_name: `{record.check_name or ''}`",
+        f"- summary_path: `{record.summary_path}`",
+        f"- checkpoint_path: `{record.checkpoint_path}`",
+    ]
+    if record.previous_report_path is not None:
+        lines.append(f"- previous_report_path: `{record.previous_report_path}`")
+    lines.extend(
+        [
+            "",
+            "| reasons | restored_check_names | checkpoint_check_count | summary_check_count |",
+            "| --- | --- | ---: | ---: |",
+            (
+                f"| {', '.join(record.reasons)} | {', '.join(record.restored_check_names)} | "
+                f"{record.checkpoint_check_count} | "
+                f"{record.summary_check_count if record.summary_check_count is not None else ''} |"
+            ),
+        ]
+    )
+    return "\n".join(lines)
+
+
+def build_reconcile_status_record(
+    *,
+    summary_path: Path,
+    checkpoint_path: Path,
+    previous_report_path: Path | None,
+    summary_doc: dict[str, Any] | None,
+    checkpoint_doc: dict[str, Any],
+    check_name: str | None,
+    source_kind: str,
+) -> ReconcileStatusRecord:
+    previous_doc = load_optional_json(previous_report_path) if previous_report_path is not None else None
+    reconcile_state = build_reconcile_state(
+        summary_doc,
+        checkpoint_doc,
+        previous_report_doc=previous_doc,
+        check_name=check_name,
+    )
+    report = build_reconcile_report(
+        summary_path=summary_path,
+        checkpoint_path=checkpoint_path,
+        output_path=previous_report_path,
+        checkpoint_doc=checkpoint_doc,
+        summary_doc=summary_doc,
+        reconcile_state=reconcile_state,
+    )
+    return ReconcileStatusRecord(
+        generated_at_utc=str(report["generated_at_utc"]),
+        run_id=str(report["run_id"]),
+        family=infer_family_from_run_id(str(report["run_id"])),
+        source_kind=source_kind,
+        summary_path=str(report["summary_path"]),
+        checkpoint_path=str(report["checkpoint_path"]),
+        previous_report_path=None if previous_report_path is None else str(previous_report_path.resolve()),
+        check_name=report["check_name"],
+        status=str(report["status"]),
+        restored=bool(report["restored"]),
+        reasons=[str(reason) for reason in list(report.get("reasons") or [])],
+        reconcile_count=int(report["reconcile_count"]),
+        restored_check_names=[str(name) for name in list(report.get("restored_check_names") or [])],
+        checkpoint_check_count=int(report["checkpoint_check_count"]),
+        summary_check_count=(
+            int(report["summary_check_count"]) if isinstance(report.get("summary_check_count"), int) else None
+        ),
+    )
+
+
+def resolve_reconcile_status_record(
+    *,
+    args: argparse.Namespace,
+    records: list[SummaryRecord],
+    ci_root: Path,
+    validation_root: Path,
+    conformance_root: Path,
+) -> ReconcileStatusRecord:
+    source_kind = "stamped"
+    summary_path: Path
+    summary_doc: dict[str, Any] | None
+    run_id: str | None = None
+
+    if args.summary is not None:
+        summary_path = resolve_root(args.summary, WORKSPACE_ROOT)
+        summary_doc = load_optional_json(summary_path)
+        source_kind = source_kind_for_summary_path(summary_path)
+        if isinstance(summary_doc, dict) and is_summary_document(summary_doc):
+            run_id = str(summary_doc["run_id"])
+    else:
+        record = select_record(records=records, run_id=args.run_id, source_kind=args.source_kind)
+        if record is None:
+            raise ValueError(f"run not found: {args.run_id}")
+        summary_path = Path(record.summary_path)
+        summary_doc = load_optional_json(summary_path)
+        run_id = record.run_id
+        source_kind = record.source_kind
+
+    if args.checkpoint is None and run_id is None:
+        raise ValueError("checkpoint required when summary path does not contain a valid federated CI summary document")
+
+    checkpoint_path = (
+        resolve_optional_path(args.checkpoint)
+        if args.checkpoint is not None
+        else (ci_root / f"{run_id}.checkpoint.json").resolve()
+    )
+    if checkpoint_path is None or not checkpoint_path.exists():
+        raise ValueError(f"checkpoint missing: {checkpoint_path}")
+    checkpoint_doc = load_json(checkpoint_path)
+    checkpoint_errors = validate_checkpoint_doc(checkpoint_doc)
+    if checkpoint_errors:
+        raise ValueError(f"invalid checkpoint: {checkpoint_errors}")
+    if run_id is None:
+        run_id = str(checkpoint_doc["run_id"])
+
+    previous_report_path = resolve_optional_path(args.previous_report)
+    if previous_report_path is None:
+        previous_report_path = build_sidecar_paths(
+            run_id=run_id,
+            source_kind=source_kind,
+            validation_root=validation_root,
+            conformance_root=conformance_root,
+        )["reconcile_report"]
+
+    return build_reconcile_status_record(
+        summary_path=summary_path,
+        checkpoint_path=checkpoint_path,
+        previous_report_path=previous_report_path,
+        summary_doc=summary_doc,
+        checkpoint_doc=checkpoint_doc,
+        check_name=args.check_name,
+        source_kind=source_kind,
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Query federated CI summary artifacts from planningops artifact roots")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -285,6 +480,22 @@ def parse_args() -> argparse.Namespace:
     checks_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     checks_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     checks_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    reconcile_parser = subparsers.add_parser(
+        "reconcile-status",
+        help="show tmp/checkpoint reconcile state for one federated CI run or explicit summary/checkpoint pair",
+    )
+    reconcile_target = reconcile_parser.add_mutually_exclusive_group(required=True)
+    reconcile_target.add_argument("--run-id", default=None)
+    reconcile_target.add_argument("--summary", default=None)
+    reconcile_parser.add_argument("--checkpoint", default=None)
+    reconcile_parser.add_argument("--previous-report", default=None)
+    reconcile_parser.add_argument("--check-name", default=None)
+    reconcile_parser.add_argument("--source-kind", choices=["auto", "stamped", "latest"], default="auto")
+    reconcile_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    reconcile_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    reconcile_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    reconcile_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -323,6 +534,27 @@ def main() -> int:
             print(render_runs_markdown(filtered))
             return 0
         print(render_runs_table(filtered))
+        return 0
+
+    if args.command == "reconcile-status":
+        try:
+            record = resolve_reconcile_status_record(
+                args=args,
+                records=records,
+                ci_root=ci_root,
+                validation_root=validation_root,
+                conformance_root=conformance_root,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        if args.format == "json":
+            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_reconcile_markdown(record))
+            return 0
+        print(render_reconcile_table(record))
         return 0
 
     record = select_record(records=records, run_id=args.run_id, source_kind=args.source_kind)
