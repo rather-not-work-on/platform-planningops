@@ -132,6 +132,29 @@ class HealthSummaryRecord:
     reconcile_validation_state_counts: dict[str, int]
 
 
+@dataclass(frozen=True)
+class OperatorTriageRecord:
+    family: str
+    triage_status: str
+    alert_alignment: str
+    latest_run_id: str
+    latest_run_source_kind: str
+    latest_run_health_status: str
+    latest_run_timestamp_utc: str
+    latest_gap_status: str
+    latest_gap_reasons: list[str]
+    latest_gap_domains: list[str]
+    latest_alert_run_id: str | None
+    latest_alert_source_kind: str | None
+    latest_alert_health_status: str | None
+    latest_alert_timestamp_utc: str | None
+    latest_alert_reasons: list[str]
+    latest_alert_domains: list[str]
+    latest_alert_failed_checks: list[str]
+    latest_failure_run_id: str | None
+    latest_failure_domains: list[str]
+
+
 def resolve_root(path_text: str, default: Path) -> Path:
     candidate = Path(path_text)
     if not candidate.is_absolute():
@@ -601,6 +624,19 @@ def build_latest_gap_reasons(record: SummaryRecord) -> list[str]:
     return reasons
 
 
+def build_latest_gap_domains(record: SummaryRecord, reasons: list[str]) -> list[str]:
+    domains = set(record.failure_domains)
+    if any(reason.startswith("readiness_") for reason in reasons):
+        domains.add("readiness")
+    if any(reason.startswith("reconcile_") for reason in reasons):
+        domains.add("reconcile")
+    if any(reason.startswith("checkpoint_") for reason in reasons):
+        domains.add("checkpoint")
+    if "missing_required_checks" in reasons:
+        domains.add("required-checks")
+    return sorted(domains)
+
+
 def build_health_summary_records(
     *,
     records: list[SummaryRecord],
@@ -730,6 +766,125 @@ def render_health_summary_markdown(records: list[HealthSummaryRecord]) -> str:
             f"{record.latest_alert_health_status or ''} | `{record.latest_failure_run_id or ''}` | "
             f"{', '.join(record.latest_failure_domains)} | "
             f"{record.latest_run_timestamp_utc} |"
+        )
+    return "\n".join(lines)
+
+
+def build_operator_triage_records(
+    *,
+    records: list[SummaryRecord],
+    family: str | None,
+    run_id_prefix: str | None,
+    source_kind: str,
+) -> list[OperatorTriageRecord]:
+    filtered = filter_summary_records(
+        records=records,
+        family=family,
+        run_id_prefix=run_id_prefix,
+        source_kind=source_kind,
+    )
+    grouped: dict[str, list[SummaryRecord]] = {}
+    for record in filtered:
+        grouped.setdefault(record.family, []).append(record)
+
+    triage_records: list[OperatorTriageRecord] = []
+    for family_name, family_records in grouped.items():
+        latest_record = family_records[0]
+        latest_gap_reasons = build_latest_gap_reasons(latest_record)
+        latest_gap_domains = build_latest_gap_domains(latest_record, latest_gap_reasons)
+        latest_gap_status = "clear" if not latest_gap_reasons else "attention"
+        latest_alert = next((record for record in family_records if record.health_status != "healthy"), None)
+        latest_failure = next((record for record in family_records if record.failure_domains), None)
+        if latest_alert is None:
+            alert_alignment = "none"
+            latest_alert_gap_reasons: list[str] = []
+            latest_alert_domains: list[str] = []
+        else:
+            alert_alignment = (
+                "current"
+                if latest_alert.run_id == latest_record.run_id and latest_alert.source_kind == latest_record.source_kind
+                else "lagging"
+            )
+            latest_alert_gap_reasons = build_latest_gap_reasons(latest_alert)
+            latest_alert_domains = build_latest_gap_domains(latest_alert, latest_alert_gap_reasons)
+        if latest_gap_status == "attention":
+            triage_status = "active"
+        elif alert_alignment == "lagging":
+            triage_status = "lagging"
+        else:
+            triage_status = "clear"
+        triage_records.append(
+            OperatorTriageRecord(
+                family=family_name,
+                triage_status=triage_status,
+                alert_alignment=alert_alignment,
+                latest_run_id=latest_record.run_id,
+                latest_run_source_kind=latest_record.source_kind,
+                latest_run_health_status=latest_record.health_status,
+                latest_run_timestamp_utc=latest_record.timestamp_utc,
+                latest_gap_status=latest_gap_status,
+                latest_gap_reasons=latest_gap_reasons,
+                latest_gap_domains=latest_gap_domains,
+                latest_alert_run_id=None if latest_alert is None else latest_alert.run_id,
+                latest_alert_source_kind=None if latest_alert is None else latest_alert.source_kind,
+                latest_alert_health_status=None if latest_alert is None else latest_alert.health_status,
+                latest_alert_timestamp_utc=None if latest_alert is None else latest_alert.timestamp_utc,
+                latest_alert_reasons=[] if latest_alert is None else latest_alert.health_reasons,
+                latest_alert_domains=latest_alert_domains,
+                latest_alert_failed_checks=[] if latest_alert is None else latest_alert.failed_checks,
+                latest_failure_run_id=None if latest_failure is None else latest_failure.run_id,
+                latest_failure_domains=[] if latest_failure is None else latest_failure.failure_domains,
+            )
+        )
+    triage_records.sort(key=lambda record: (record.latest_run_timestamp_utc, record.family), reverse=True)
+    return triage_records
+
+
+def render_operator_triage_table(records: list[OperatorTriageRecord]) -> str:
+    lines = [
+        "family\ttriage_status\talert_alignment\tlatest_gap_status\tlatest_gap_domains\tlatest_gap_reasons\tlatest_run\tlatest_run_source\tlatest_run_health\tlatest_alert_run\tlatest_alert_source\tlatest_alert_health\tlatest_alert_domains\tlatest_alert_failed_checks\tlatest_failure_run\tlatest_failure_domains\tlatest_timestamp",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.family,
+                    record.triage_status,
+                    record.alert_alignment,
+                    record.latest_gap_status,
+                    ",".join(record.latest_gap_domains),
+                    ",".join(record.latest_gap_reasons),
+                    record.latest_run_id,
+                    record.latest_run_source_kind,
+                    record.latest_run_health_status,
+                    record.latest_alert_run_id or "",
+                    record.latest_alert_source_kind or "",
+                    record.latest_alert_health_status or "",
+                    ",".join(record.latest_alert_domains),
+                    ",".join(record.latest_alert_failed_checks),
+                    record.latest_failure_run_id or "",
+                    ",".join(record.latest_failure_domains),
+                    record.latest_run_timestamp_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_operator_triage_markdown(records: list[OperatorTriageRecord]) -> str:
+    lines = [
+        "| family | triage_status | alert_alignment | latest_gap_status | latest_gap_domains | latest_gap_reasons | latest_run | latest_run_source | latest_run_health | latest_alert_run | latest_alert_source | latest_alert_health | latest_alert_domains | latest_alert_failed_checks | latest_failure_run | latest_failure_domains | latest_timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for record in records:
+        lines.append(
+            f"| {record.family} | {record.triage_status} | {record.alert_alignment} | {record.latest_gap_status} | "
+            f"{', '.join(record.latest_gap_domains)} | {', '.join(record.latest_gap_reasons)} | "
+            f"`{record.latest_run_id}` | {record.latest_run_source_kind} | {record.latest_run_health_status} | "
+            f"`{record.latest_alert_run_id or ''}` | {record.latest_alert_source_kind or ''} | "
+            f"{record.latest_alert_health_status or ''} | {', '.join(record.latest_alert_domains)} | "
+            f"{', '.join(record.latest_alert_failed_checks)} | `{record.latest_failure_run_id or ''}` | "
+            f"{', '.join(record.latest_failure_domains)} | {record.latest_run_timestamp_utc} |"
         )
     return "\n".join(lines)
 
@@ -1403,6 +1558,24 @@ def parse_args() -> argparse.Namespace:
     health_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     health_summary_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     health_summary_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
+
+    operator_triage_parser = subparsers.add_parser(
+        "operator-triage",
+        help="show family-level triage state comparing the latest gap against the latest alerting run",
+    )
+    operator_triage_parser.add_argument("--family", default=None)
+    operator_triage_parser.add_argument("--run-id-prefix", default=None)
+    operator_triage_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    operator_triage_parser.add_argument("--triage-status", choices=["clear", "active", "lagging"], default=None)
+    operator_triage_parser.add_argument("--alert-alignment", choices=["none", "current", "lagging"], default=None)
+    operator_triage_parser.add_argument("--latest-gap-status", choices=["clear", "attention"], default=None)
+    operator_triage_parser.add_argument("--has-latest-gap-domain", default=None)
+    operator_triage_parser.add_argument("--has-latest-alert-domain", default=None)
+    operator_triage_parser.add_argument("--limit", type=int, default=20)
+    operator_triage_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    operator_triage_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
+    operator_triage_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+    operator_triage_parser.add_argument("--conformance-root", default=str(DEFAULT_CONFORMANCE_ROOT))
     return parser.parse_args()
 
 
@@ -1510,6 +1683,37 @@ def main() -> int:
             print(render_health_summary_markdown(summaries))
             return 0
         print(render_health_summary_table(summaries))
+        return 0
+
+    if args.command == "operator-triage":
+        triage_records = build_operator_triage_records(
+            records=records,
+            family=args.family,
+            run_id_prefix=args.run_id_prefix,
+            source_kind=args.source_kind,
+        )
+        if args.triage_status:
+            triage_records = [record for record in triage_records if record.triage_status == args.triage_status]
+        if args.alert_alignment:
+            triage_records = [record for record in triage_records if record.alert_alignment == args.alert_alignment]
+        if args.latest_gap_status:
+            triage_records = [record for record in triage_records if record.latest_gap_status == args.latest_gap_status]
+        if args.has_latest_gap_domain:
+            triage_records = [
+                record for record in triage_records if args.has_latest_gap_domain in record.latest_gap_domains
+            ]
+        if args.has_latest_alert_domain:
+            triage_records = [
+                record for record in triage_records if args.has_latest_alert_domain in record.latest_alert_domains
+            ]
+        triage_records = triage_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in triage_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_operator_triage_markdown(triage_records))
+            return 0
+        print(render_operator_triage_table(triage_records))
         return 0
 
     if args.command == "reconcile-status":
