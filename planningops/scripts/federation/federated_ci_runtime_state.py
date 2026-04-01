@@ -92,6 +92,14 @@ class FederatedCICheckpointReconcileState:
         return "restored" if self.restored else "healthy"
 
 
+@dataclass(frozen=True)
+class FederatedCISummaryArtifactWritePlan:
+    stamped_path: Path
+    latest_path: Path
+    stamped_validation_output: Path | None
+    latest_validation_output: Path | None
+
+
 def build_check_record(
     *,
     name: str,
@@ -126,6 +134,21 @@ def initialize_summary_doc(
         required_checks=tuple(required_checks),
         checks=(),
     ).to_doc()
+
+
+def build_summary_artifact_write_plan(
+    *,
+    stamped_path: Path,
+    latest_path: Path,
+    stamped_validation_output: Path | None = None,
+    latest_validation_output: Path | None = None,
+) -> FederatedCISummaryArtifactWritePlan:
+    return FederatedCISummaryArtifactWritePlan(
+        stamped_path=stamped_path,
+        latest_path=latest_path,
+        stamped_validation_output=stamped_validation_output,
+        latest_validation_output=latest_validation_output,
+    )
 
 
 def finalize_summary_doc(
@@ -264,3 +287,25 @@ def build_reconcile_report(
         "reconcile_count": reconcile_state.reconcile_count,
         "restored_check_names": list(reconcile_state.restored_check_names),
     }
+
+
+def write_summary_artifacts(
+    summary_doc: dict[str, Any],
+    *,
+    plan: FederatedCISummaryArtifactWritePlan,
+    validator_module: Any,
+    schema_path: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    write_json(plan.stamped_path, summary_doc)
+    write_json(plan.latest_path, summary_doc)
+
+    schema_doc = validator_module.load_json(schema_path)
+    stamped_report = validator_module.build_report(plan.stamped_path, schema_path, summary_doc, schema_doc)
+    latest_report = validator_module.build_report(plan.latest_path, schema_path, summary_doc, schema_doc)
+
+    if plan.stamped_validation_output is not None:
+        validator_module.write_json(plan.stamped_validation_output, stamped_report)
+    if plan.latest_validation_output is not None:
+        validator_module.write_json(plan.latest_validation_output, latest_report)
+
+    return stamped_report, latest_report
