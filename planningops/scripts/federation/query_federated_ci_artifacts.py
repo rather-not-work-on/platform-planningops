@@ -56,6 +56,7 @@ MONDAY_CONSUMER_VERDICT_CHOICES = ("pass", "fail", "blocked")
 MONDAY_CONSUMER_STATUS_CHOICES = ("ready_to_launch", "blocked")
 MONDAY_VALIDATION_KIND_CHOICES = ("bridge", "consumer-report")
 MONDAY_VALIDATION_VERDICT_CHOICES = ("pass", "fail")
+CROSS_REPO_VALIDATION_PACKET_SOURCE_CHOICES = ("latest", "stamped")
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -354,6 +355,36 @@ class CrossRepoValidationReportRecord:
     monday_source_validation_status: str
     monday_source_validation_summary: str
     monday_validation_report_records: list[MondayValidationReportRecord]
+    monday_validation_report_lines: list[str]
+    monday_validation_report_action_lines: list[str]
+    latest_payload_bridge_id: str | None
+    latest_payload_status: str | None
+    latest_payload_monday_validation_snapshot_status: str | None
+    latest_consumer_run_id: str | None
+    latest_consumer_mode: str | None
+    latest_consumer_verdict: str | None
+    latest_consumer_status: str | None
+    latest_consumer_monday_validation_snapshot_status: str | None
+    markdown: str
+
+
+@dataclass(frozen=True)
+class CrossRepoValidationPacketRecord:
+    report_id: str
+    source_kind: str
+    report_path: str
+    generated_at_utc: str
+    contract_ref: str | None
+    latest_report_path: str | None
+    stamped_report_path: str | None
+    output_path: str | None
+    headline: str
+    cross_repo_snapshot_status: str
+    cross_repo_snapshot_summary: str
+    cross_repo_summary_lines: list[str]
+    cross_repo_action_lines: list[str]
+    monday_source_validation_status: str
+    monday_source_validation_summary: str
     monday_validation_report_lines: list[str]
     monday_validation_report_action_lines: list[str]
     latest_payload_bridge_id: str | None
@@ -1010,6 +1041,18 @@ def is_monday_validation_report_document(doc: dict[str, Any]) -> bool:
         and isinstance(doc.get("schema_path"), str)
         and isinstance(doc.get("errors"), list)
         and isinstance(doc.get("warnings"), list)
+    )
+
+
+def source_kind_for_cross_repo_validation_report_path(path: Path) -> str:
+    return "latest" if path.name == "cross-repo-validation-report.json" else "stamped"
+
+
+def is_cross_repo_validation_artifact_document(doc: dict[str, Any]) -> bool:
+    return (
+        isinstance(doc.get("report_id"), str)
+        and isinstance(doc.get("artifact_paths"), dict)
+        and isinstance(doc.get("record"), dict)
     )
 
 
@@ -4577,6 +4620,161 @@ def render_cross_repo_validation_report_markdown(record: CrossRepoValidationRepo
     return record.markdown
 
 
+def discover_cross_repo_validation_packet_records(*, validation_root: Path) -> list[CrossRepoValidationPacketRecord]:
+    paths: list[Path] = []
+    latest_path = validation_root / "cross-repo-validation-report.json"
+    if latest_path.exists():
+        paths.append(latest_path)
+    paths.extend(sorted(validation_root.glob("*-cross-repo-validation-report.json")))
+
+    records: list[CrossRepoValidationPacketRecord] = []
+    for report_path in paths:
+        doc = load_optional_json(report_path)
+        if doc is None or not is_cross_repo_validation_artifact_document(doc):
+            continue
+
+        artifact_paths = doc.get("artifact_paths") if isinstance(doc.get("artifact_paths"), dict) else {}
+        record_doc = doc.get("record") if isinstance(doc.get("record"), dict) else {}
+        records.append(
+            CrossRepoValidationPacketRecord(
+                report_id=str(doc.get("report_id") or ""),
+                source_kind=source_kind_for_cross_repo_validation_report_path(report_path),
+                report_path=str(report_path.resolve()),
+                generated_at_utc=str(doc.get("generated_at_utc") or ""),
+                contract_ref=str(doc.get("contract_ref") or "").strip() or None,
+                latest_report_path=str(artifact_paths.get("latest_report_path") or "").strip() or None,
+                stamped_report_path=str(artifact_paths.get("stamped_report_path") or "").strip() or None,
+                output_path=str(artifact_paths.get("output_path") or "").strip() or None,
+                headline=str(record_doc.get("headline") or ""),
+                cross_repo_snapshot_status=str(record_doc.get("cross_repo_snapshot_status") or ""),
+                cross_repo_snapshot_summary=str(record_doc.get("cross_repo_snapshot_summary") or ""),
+                cross_repo_summary_lines=[
+                    str(line) for line in list(record_doc.get("cross_repo_summary_lines") or []) if str(line).strip()
+                ],
+                cross_repo_action_lines=[
+                    str(line) for line in list(record_doc.get("cross_repo_action_lines") or []) if str(line).strip()
+                ],
+                monday_source_validation_status=str(record_doc.get("monday_source_validation_status") or ""),
+                monday_source_validation_summary=str(record_doc.get("monday_source_validation_summary") or ""),
+                monday_validation_report_lines=[
+                    str(line)
+                    for line in list(record_doc.get("monday_validation_report_lines") or [])
+                    if str(line).strip()
+                ],
+                monday_validation_report_action_lines=[
+                    str(line)
+                    for line in list(record_doc.get("monday_validation_report_action_lines") or [])
+                    if str(line).strip()
+                ],
+                latest_payload_bridge_id=str(record_doc.get("latest_payload_bridge_id") or "").strip() or None,
+                latest_payload_status=str(record_doc.get("latest_payload_status") or "").strip() or None,
+                latest_payload_monday_validation_snapshot_status=(
+                    str(record_doc.get("latest_payload_monday_validation_snapshot_status") or "").strip() or None
+                ),
+                latest_consumer_run_id=str(record_doc.get("latest_consumer_run_id") or "").strip() or None,
+                latest_consumer_mode=str(record_doc.get("latest_consumer_mode") or "").strip() or None,
+                latest_consumer_verdict=str(record_doc.get("latest_consumer_verdict") or "").strip() or None,
+                latest_consumer_status=str(record_doc.get("latest_consumer_status") or "").strip() or None,
+                latest_consumer_monday_validation_snapshot_status=(
+                    str(record_doc.get("latest_consumer_monday_validation_snapshot_status") or "").strip() or None
+                ),
+                markdown=str(record_doc.get("markdown") or ""),
+            )
+        )
+
+    records.sort(
+        key=lambda record: (
+            1 if record.source_kind == "latest" else 0,
+            record.generated_at_utc,
+            record.report_id,
+            record.report_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def select_cross_repo_validation_packet_record(
+    *,
+    records: list[CrossRepoValidationPacketRecord],
+    report_id: str | None,
+    source_kind: str,
+) -> CrossRepoValidationPacketRecord | None:
+    matches = records
+    if report_id is not None:
+        matches = [record for record in matches if record.report_id == report_id]
+    if not matches:
+        return None
+    narrowed = [record for record in matches if record.source_kind == source_kind]
+    return narrowed[0] if narrowed else None
+
+
+def render_cross_repo_validation_packet_table(record: CrossRepoValidationPacketRecord) -> str:
+    sections = [
+        f"report_id\t{record.report_id}",
+        f"source_kind\t{record.source_kind}",
+        f"report_path\t{record.report_path}",
+        f"generated_at_utc\t{record.generated_at_utc}",
+        f"contract_ref\t{record.contract_ref or ''}",
+        f"latest_report_path\t{record.latest_report_path or ''}",
+        f"stamped_report_path\t{record.stamped_report_path or ''}",
+        f"output_path\t{record.output_path or ''}",
+        f"headline\t{record.headline}",
+        f"cross_repo_snapshot_status\t{record.cross_repo_snapshot_status}",
+        f"cross_repo_snapshot_summary\t{record.cross_repo_snapshot_summary}",
+        f"monday_source_validation_status\t{record.monday_source_validation_status}",
+        f"monday_source_validation_summary\t{record.monday_source_validation_summary}",
+    ]
+    if record.latest_payload_bridge_id is not None:
+        sections.append(f"latest_payload_bridge_id\t{record.latest_payload_bridge_id}")
+    if record.latest_payload_status is not None:
+        sections.append(f"latest_payload_status\t{record.latest_payload_status}")
+    if record.latest_payload_monday_validation_snapshot_status is not None:
+        sections.append(
+            "latest_payload_monday_validation_snapshot_status\t"
+            f"{record.latest_payload_monday_validation_snapshot_status}"
+        )
+    if record.latest_consumer_run_id is not None:
+        sections.append(f"latest_consumer_run_id\t{record.latest_consumer_run_id}")
+    if record.latest_consumer_mode is not None:
+        sections.append(f"latest_consumer_mode\t{record.latest_consumer_mode}")
+    if record.latest_consumer_verdict is not None:
+        sections.append(f"latest_consumer_verdict\t{record.latest_consumer_verdict}")
+    if record.latest_consumer_status is not None:
+        sections.append(f"latest_consumer_status\t{record.latest_consumer_status}")
+    if record.latest_consumer_monday_validation_snapshot_status is not None:
+        sections.append(
+            "latest_consumer_monday_validation_snapshot_status\t"
+            f"{record.latest_consumer_monday_validation_snapshot_status}"
+        )
+    sections.extend(["cross_repo_validation", *record.cross_repo_summary_lines])
+    sections.extend(["monday_source_validation_reports", *record.monday_validation_report_lines])
+    if record.cross_repo_action_lines:
+        sections.extend(["cross_repo_actions", *record.cross_repo_action_lines])
+    if record.monday_validation_report_action_lines:
+        sections.extend(["monday_source_validation_actions", *record.monday_validation_report_action_lines])
+    return "\n".join(sections)
+
+
+def render_cross_repo_validation_packet_markdown(record: CrossRepoValidationPacketRecord) -> str:
+    return "\n".join(
+        [
+            "## Cross-Repo Validation Packet",
+            "",
+            f"- report_id: `{record.report_id}`",
+            f"- source_kind: `{record.source_kind}`",
+            f"- report_path: `{record.report_path}`",
+            f"- generated_at_utc: `{record.generated_at_utc}`",
+            f"- contract_ref: `{record.contract_ref or ''}`",
+            f"- latest_report_path: `{record.latest_report_path or ''}`",
+            f"- stamped_report_path: `{record.stamped_report_path or ''}`",
+            f"- output_path: `{record.output_path or ''}`",
+            "",
+            record.markdown,
+        ]
+    )
+
+
 def build_handoff_artifact_document(
     *,
     record: HandoffReportRecord,
@@ -5529,6 +5727,19 @@ def parse_args() -> argparse.Namespace:
     cross_repo_validation_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
     cross_repo_validation_parser.add_argument("--monday-validation-root", default=str(DEFAULT_MONDAY_VALIDATION_ROOT))
 
+    cross_repo_validation_packet_parser = subparsers.add_parser(
+        "cross-repo-validation-packet",
+        help="show the promoted latest or stamped cross-repo validation packet without recomputing source roots",
+    )
+    cross_repo_validation_packet_parser.add_argument("--report-id", default=None)
+    cross_repo_validation_packet_parser.add_argument(
+        "--source-kind",
+        choices=CROSS_REPO_VALIDATION_PACKET_SOURCE_CHOICES,
+        default="latest",
+    )
+    cross_repo_validation_packet_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
+    cross_repo_validation_packet_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+
     write_cross_repo_validation_parser = subparsers.add_parser(
         "write-cross-repo-validation-report",
         help="write the cross-repo monday inbox validation report into latest + stamped validation artifacts",
@@ -5678,6 +5889,31 @@ def main() -> int:
             print(render_cross_repo_validation_report_markdown(record))
             return 0
         print(render_cross_repo_validation_report_table(record))
+        return 0
+
+    if args.command == "cross-repo-validation-packet":
+        records = discover_cross_repo_validation_packet_records(validation_root=validation_root)
+        record = select_cross_repo_validation_packet_record(
+            records=records,
+            report_id=args.report_id,
+            source_kind=args.source_kind,
+        )
+        if record is None:
+            if args.report_id is not None:
+                print(
+                    f"cross-repo validation packet not found: report_id={args.report_id} source_kind={args.source_kind}",
+                    file=sys.stderr,
+                )
+            else:
+                print(f"cross-repo validation packet not found: source_kind={args.source_kind}", file=sys.stderr)
+            return 1
+        if args.format == "json":
+            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_cross_repo_validation_packet_markdown(record))
+            return 0
+        print(render_cross_repo_validation_packet_table(record))
         return 0
 
     if args.command == "write-cross-repo-validation-report":
