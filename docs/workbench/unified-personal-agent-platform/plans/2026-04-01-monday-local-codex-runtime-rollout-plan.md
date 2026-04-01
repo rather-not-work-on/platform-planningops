@@ -116,6 +116,8 @@ Current deliverables:
 
 - `planningops/scripts/run_monday_local_operator_stack.py`
 - `planningops/runtime-artifacts/local/monday-local-operator-stack/<run-id>.json`
+- `planningops/artifacts/validation/monday-local-operator-stack-report.json`
+- `planningops/artifacts/validation/<run-id>-monday-local-operator-stack-report.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-operator-stack`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report` now carry the latest local operator stack pointer
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` emits a handoff-ready operator packet
@@ -180,6 +182,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether local operator evidence should stay in `runtime-artifacts/local` or gain a validation mirror for promotion workflows
-2. decide whether the handoff packet should mirror into validation artifacts or stay query-only
-3. add a Codex-to-monday mission packet contract so local operator prompts become reproducible inputs
+1. decide whether the handoff packet should mirror into validation artifacts or stay query-only
+2. add a Codex-to-monday mission packet contract so local operator prompts become reproducible inputs
+3. add a validation freshness surface so local operator stamped/latest mirrors can be promoted with the same evidence-first rules as federated CI summaries
