@@ -32,9 +32,9 @@ assert 'bash "${ROOT_DIR}/planningops/scripts/test_run_federated_summary_ci_chec
 assert 'python3 "${SUMMARY_HELPER}" init \\' in script, "federated-summary helper missing init command"
 assert 'python3 "${SUMMARY_HELPER}" append-check \\' in script, "federated-summary helper missing append-check command"
 assert 'python3 "${SUMMARY_HELPER}" finalize \\' in script, "federated-summary helper missing finalize command"
+assert 'python3 "${SUMMARY_HELPER}" write-readiness \\' in script, "federated-summary helper missing write-readiness command"
 assert 'append_job_result "federated-conformance" "federation" "${FEDERATED_CONFORMANCE_RESULT}"' in script, "federated-summary helper missing federated-conformance mapping"
 assert 'append_job_result "monday-harness-projection" "runtime" "${MONDAY_HARNESS_PROJECTION_RESULT}"' in script, "federated-summary helper missing monday projection mapping"
-assert 'python3 "${READINESS_HELPER}" \\' in script, "federated-summary helper missing readiness helper call"
 PY
 
 echo "federated summary ci check contract ok"

@@ -29,6 +29,19 @@ def load_validator_module():
     return module
 
 
+def load_readiness_module():
+    module_path = Path(__file__).resolve().parents[1] / "assess_federated_ci_summary_readiness.py"
+    spec = importlib.util.spec_from_file_location("assess_federated_ci_summary_readiness", module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"unable to load readiness module from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    parent_dir = str(module_path.parent)
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+    spec.loader.exec_module(module)
+    return module
+
+
 def command_init(args: argparse.Namespace) -> int:
     summary_path = Path(args.summary)
     write_json(
@@ -105,6 +118,22 @@ def command_finalize(args: argparse.Namespace) -> int:
     return 0 if doc["verdict"] == "pass" else 1
 
 
+def command_write_readiness(args: argparse.Namespace) -> int:
+    readiness = load_readiness_module()
+    report, validation_report = readiness.assess_readiness_artifacts(
+        summary_path=Path(args.summary),
+        validation_path=Path(args.validation_report),
+        output_path=Path(args.output),
+        validation_output_path=Path(args.validation_output),
+    )
+    if validation_report["verdict"] != "pass":
+        print(f"federated summary readiness validation failed: {validation_report['errors']}", file=sys.stderr)
+        return 1
+    print(f"report written: {Path(args.output)}")
+    print(f"readiness_status={report['readiness_status']} ready={report['ready']}")
+    return 0 if report["ready"] or not args.strict else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Manage federated CI summary artifacts")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -135,6 +164,14 @@ def build_parser() -> argparse.ArgumentParser:
     finalize_parser.add_argument("--latest-validation-output", default=None)
     finalize_parser.add_argument("--keep-tmp", action="store_true")
     finalize_parser.set_defaults(func=command_finalize)
+
+    readiness_parser = subparsers.add_parser("write-readiness")
+    readiness_parser.add_argument("--summary", required=True)
+    readiness_parser.add_argument("--validation-report", required=True)
+    readiness_parser.add_argument("--output", required=True)
+    readiness_parser.add_argument("--validation-output", required=True)
+    readiness_parser.add_argument("--strict", action="store_true")
+    readiness_parser.set_defaults(func=command_write_readiness)
 
     return parser
 

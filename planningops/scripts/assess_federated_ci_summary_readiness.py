@@ -3,26 +3,20 @@
 from __future__ import annotations
 
 import argparse
-import json
 import importlib.util
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 from doctor_federated_ci_summary import DEFAULT_SUMMARY, DEFAULT_VALIDATION, WORKSPACE_ROOT, build_status
+from federation.federated_ci_runtime_state import (
+    build_readiness_artifact_write_plan,
+    build_readiness_report,
+    write_readiness_artifacts,
+)
 
 
 DEFAULT_OUTPUT = WORKSPACE_ROOT / "planningops/artifacts/validation/federated-ci-summary-readiness.json"
 DEFAULT_VALIDATION_OUTPUT = WORKSPACE_ROOT / "planningops/artifacts/validation/federated-ci-summary-readiness-validation.json"
-
-
-def now_utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def write_json(path: Path, doc) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 
 
 def load_validator_module():
@@ -33,6 +27,28 @@ def load_validator_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def assess_readiness_artifacts(
+    *,
+    summary_path: Path,
+    validation_path: Path,
+    output_path: Path,
+    validation_output_path: Path,
+) -> tuple[dict, dict]:
+    report = build_readiness_report(build_status(summary_path, validation_path))
+    validator = load_validator_module()
+    schema_path = Path(__file__).resolve().parent.parent / "schemas" / "federated-ci-summary-readiness.schema.json"
+    validation_report = write_readiness_artifacts(
+        report,
+        plan=build_readiness_artifact_write_plan(
+            output_path=output_path,
+            validation_output=validation_output_path,
+        ),
+        validator_module=validator,
+        schema_path=schema_path,
+    )
+    return report, validation_report
 
 
 def main() -> int:
@@ -58,20 +74,15 @@ def main() -> int:
     if not validation_output_path.is_absolute():
         validation_output_path = (Path.cwd() / validation_output_path).resolve()
 
-    status = build_status(summary_path, validation_path)
-    report = {
-        "generated_at_utc": now_utc(),
-        **status,
-    }
-    validator = load_validator_module()
-    schema_path = Path(__file__).resolve().parent.parent / "schemas" / "federated-ci-summary-readiness.schema.json"
-    schema_doc = validator.load_json(schema_path)
-    validation_report = validator.build_report(output_path, schema_path, report, schema_doc)
-    validator.write_json(validation_output_path, validation_report)
+    report, validation_report = assess_readiness_artifacts(
+        summary_path=summary_path,
+        validation_path=validation_path,
+        output_path=output_path,
+        validation_output_path=validation_output_path,
+    )
     if validation_report["verdict"] != "pass":
         print(f"federated summary readiness validation failed: {validation_report['errors']}", file=sys.stderr)
         return 1
-    write_json(output_path, report)
     print(f"report written: {output_path}")
     print(f"readiness_status={report['readiness_status']} ready={report['ready']}")
     return 0 if report["ready"] or not args.strict else 1
