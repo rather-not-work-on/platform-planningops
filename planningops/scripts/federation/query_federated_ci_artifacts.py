@@ -44,6 +44,12 @@ class SummaryRecord:
     readiness_status: str
     ready: bool | None
     blocking_reasons: list[str]
+    reconcile_status: str
+    reconcile_count: int | None
+    reconcile_artifact_state: str
+    reconcile_validation_verdict: str
+    reconcile_validation_state: str
+    checkpoint_state: str
     has_summary_validation: bool
     has_readiness: bool
     has_readiness_validation: bool
@@ -136,8 +142,87 @@ def build_sidecar_paths(
     }
 
 
+def build_runs_reconcile_fields(
+    *,
+    ci_root: Path,
+    summary_path: Path,
+    summary_doc: dict[str, Any],
+    validation_root: Path,
+    conformance_root: Path,
+) -> dict[str, Any]:
+    run_id = str(summary_doc["run_id"])
+    source_kind = source_kind_for_summary_path(summary_path)
+    sidecars = build_sidecar_paths(
+        run_id=run_id,
+        source_kind=source_kind,
+        validation_root=validation_root,
+        conformance_root=conformance_root,
+    )
+    checkpoint_path = (ci_root / f"{run_id}.checkpoint.json").resolve()
+    if not checkpoint_path.exists():
+        record = build_unknown_reconcile_status_record(
+            summary_path=summary_path,
+            checkpoint_path=checkpoint_path,
+            previous_report_path=sidecars["reconcile_report"],
+            reconcile_validation_path=sidecars["reconcile_validation"],
+            run_id=run_id,
+            source_kind=source_kind,
+            timestamp_utc=summary_timestamp(summary_doc),
+            checkpoint_state="missing",
+            reasons=["checkpoint_missing"],
+        )
+    else:
+        checkpoint_doc = load_optional_json(checkpoint_path)
+        if checkpoint_doc is None:
+            record = build_unknown_reconcile_status_record(
+                summary_path=summary_path,
+                checkpoint_path=checkpoint_path,
+                previous_report_path=sidecars["reconcile_report"],
+                reconcile_validation_path=sidecars["reconcile_validation"],
+                run_id=run_id,
+                source_kind=source_kind,
+                timestamp_utc=summary_timestamp(summary_doc),
+                checkpoint_state="invalid",
+                reasons=["checkpoint_invalid_json"],
+            )
+        else:
+            checkpoint_errors = validate_checkpoint_doc(checkpoint_doc)
+            if checkpoint_errors:
+                record = build_unknown_reconcile_status_record(
+                    summary_path=summary_path,
+                    checkpoint_path=checkpoint_path,
+                    previous_report_path=sidecars["reconcile_report"],
+                    reconcile_validation_path=sidecars["reconcile_validation"],
+                    run_id=run_id,
+                    source_kind=source_kind,
+                    timestamp_utc=summary_timestamp(summary_doc),
+                    checkpoint_state="invalid",
+                    reasons=[f"checkpoint_invalid:{error}" for error in checkpoint_errors],
+                )
+            else:
+                record = build_reconcile_status_record(
+                    summary_path=summary_path,
+                    checkpoint_path=checkpoint_path,
+                    previous_report_path=sidecars["reconcile_report"],
+                    reconcile_validation_path=sidecars["reconcile_validation"],
+                    summary_doc=summary_doc,
+                    checkpoint_doc=checkpoint_doc,
+                    check_name=None,
+                    source_kind=source_kind,
+                )
+    return {
+        "reconcile_status": record.status,
+        "reconcile_count": record.reconcile_count,
+        "reconcile_artifact_state": record.reconcile_artifact_state,
+        "reconcile_validation_verdict": record.reconcile_validation_verdict,
+        "reconcile_validation_state": record.reconcile_validation_state,
+        "checkpoint_state": record.checkpoint_state,
+    }
+
+
 def build_summary_record(
     *,
+    ci_root: Path,
     summary_path: Path,
     summary_doc: dict[str, Any],
     validation_root: Path,
@@ -157,6 +242,13 @@ def build_summary_record(
     readiness_doc = load_optional_json(sidecars["readiness"])
     raw_readiness_status = readiness_doc.get("readiness_status") if isinstance(readiness_doc, dict) else None
     raw_ready = readiness_doc.get("ready") if isinstance(readiness_doc, dict) else None
+    reconcile_fields = build_runs_reconcile_fields(
+        ci_root=ci_root,
+        summary_path=summary_path,
+        summary_doc=summary_doc,
+        validation_root=validation_root,
+        conformance_root=conformance_root,
+    )
     return SummaryRecord(
         run_id=run_id,
         family=infer_family_from_run_id(run_id),
@@ -181,6 +273,16 @@ def build_summary_record(
             if isinstance(readiness_doc, dict)
             else []
         ),
+        reconcile_status=str(reconcile_fields["reconcile_status"]),
+        reconcile_count=(
+            int(reconcile_fields["reconcile_count"])
+            if isinstance(reconcile_fields["reconcile_count"], int)
+            else None
+        ),
+        reconcile_artifact_state=str(reconcile_fields["reconcile_artifact_state"]),
+        reconcile_validation_verdict=str(reconcile_fields["reconcile_validation_verdict"]),
+        reconcile_validation_state=str(reconcile_fields["reconcile_validation_state"]),
+        checkpoint_state=str(reconcile_fields["checkpoint_state"]),
         has_summary_validation=sidecars["summary_validation"].exists(),
         has_readiness=sidecars["readiness"].exists(),
         has_readiness_validation=sidecars["readiness_validation"].exists(),
@@ -212,6 +314,7 @@ def discover_summary_records(
             continue
         records.append(
             build_summary_record(
+                ci_root=ci_root,
                 summary_path=path,
                 summary_doc=doc,
                 validation_root=validation_root,
@@ -232,7 +335,7 @@ def discover_summary_records(
 
 def render_runs_table(records: list[SummaryRecord]) -> str:
     lines = [
-        "family\trun_id\tsource\tverdict\treadiness\tfailed_checks\tstatus\tchecks\ttimestamp",
+        "family\trun_id\tsource\tverdict\treadiness\treconcile\tartifact_state\tcheckpoint\tfailed_checks\tstatus\tchecks\ttimestamp",
     ]
     for record in records:
         lines.append(
@@ -243,6 +346,9 @@ def render_runs_table(records: list[SummaryRecord]) -> str:
                     record.source_kind,
                     str(record.verdict or ""),
                     record.readiness_status,
+                    record.reconcile_status,
+                    record.reconcile_artifact_state,
+                    record.checkpoint_state,
                     ",".join(record.failed_checks),
                     str(record.overall_status or ""),
                     str(record.check_count if record.check_count is not None else ""),
@@ -255,13 +361,14 @@ def render_runs_table(records: list[SummaryRecord]) -> str:
 
 def render_runs_markdown(records: list[SummaryRecord]) -> str:
     lines = [
-        "| family | run_id | source | verdict | readiness | failed_checks | status | checks | timestamp |",
-        "| --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
+        "| family | run_id | source | verdict | readiness | reconcile | artifact_state | checkpoint | failed_checks | status | checks | timestamp |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
     ]
     for record in records:
         lines.append(
             f"| {record.family} | `{record.run_id}` | {record.source_kind} | "
-            f"{record.verdict or ''} | {record.readiness_status} | "
+            f"{record.verdict or ''} | {record.readiness_status} | {record.reconcile_status} | "
+            f"{record.reconcile_artifact_state} | {record.checkpoint_state} | "
             f"{', '.join(record.failed_checks)} | {record.overall_status or ''} | "
             f"{record.check_count if record.check_count is not None else ''} | {record.timestamp_utc} |"
         )
@@ -828,6 +935,10 @@ def parse_args() -> argparse.Namespace:
     runs_parser.add_argument("--verdict", choices=["pass", "fail"], default=None)
     runs_parser.add_argument("--status", choices=["complete", "interrupted"], default=None)
     runs_parser.add_argument("--readiness-status", choices=["ready", "blocked", "missing", "unknown"], default=None)
+    runs_parser.add_argument("--reconcile-status", choices=["healthy", "restored", "unknown"], default=None)
+    runs_parser.add_argument("--reconcile-artifact-state", choices=["fresh", "stale", "missing"], default=None)
+    runs_parser.add_argument("--reconcile-validation-state", choices=["fresh", "stale", "missing"], default=None)
+    runs_parser.add_argument("--checkpoint-state", choices=["present", "missing", "invalid"], default=None)
     runs_parser.add_argument("--failed-check", default=None)
     runs_parser.add_argument("--limit", type=int, default=20)
     runs_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
@@ -892,6 +1003,16 @@ def main() -> int:
             filtered = [record for record in filtered if record.overall_status == args.status]
         if args.readiness_status:
             filtered = [record for record in filtered if record.readiness_status == args.readiness_status]
+        if args.reconcile_status:
+            filtered = [record for record in filtered if record.reconcile_status == args.reconcile_status]
+        if args.reconcile_artifact_state:
+            filtered = [record for record in filtered if record.reconcile_artifact_state == args.reconcile_artifact_state]
+        if args.reconcile_validation_state:
+            filtered = [
+                record for record in filtered if record.reconcile_validation_state == args.reconcile_validation_state
+            ]
+        if args.checkpoint_state:
+            filtered = [record for record in filtered if record.checkpoint_state == args.checkpoint_state]
         if args.failed_check:
             filtered = [record for record in filtered if args.failed_check in record.failed_checks]
         filtered = filtered[: args.limit]

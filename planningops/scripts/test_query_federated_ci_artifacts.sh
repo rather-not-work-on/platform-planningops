@@ -138,6 +138,38 @@ cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun28.json" <<'JSON'
 }
 JSON
 
+cat >"$CI_DIR/federated-ci-runtime-gates-20260319-rerun29.json" <<'JSON'
+{
+  "run_id": "federated-ci-runtime-gates-20260319-rerun29",
+  "started_at_utc": "2026-03-19T00:00:50+00:00",
+  "generated_at_utc": "2026-03-19T00:10:50+00:00",
+  "finished_at_utc": "2026-03-19T00:10:50+00:00",
+  "checks": [
+    {
+      "name": "provider-profile",
+      "domain": "infra",
+      "exit_code": 0,
+      "verdict": "pass",
+      "stdout_log": "/tmp/provider.stdout.log",
+      "stderr_log": "/tmp/provider.stderr.log"
+    }
+  ],
+  "required_checks": [
+    "provider-profile"
+  ],
+  "overall_status": "complete",
+  "check_count": 1,
+  "missing_required_checks": [],
+  "failure_classification": {
+    "count": 0,
+    "domains": [],
+    "deterministic_rule": "demo"
+  },
+  "verdict": "pass",
+  "shell_exit_code": 0
+}
+JSON
+
 cat >"$CI_DIR/federated-ci-summary.json" <<'JSON'
 {
   "run_id": "federated-ci-runtime-gates-20260319-rerun26",
@@ -342,10 +374,12 @@ CHECKS_OUTPUT="$TMP_DIR/checks.json"
 CHECKS_AUTO_OUTPUT="$TMP_DIR/checks-auto.json"
 FAILED_OUTPUT="$TMP_DIR/failed.json"
 LATEST_OUTPUT="$TMP_DIR/latest.json"
+RUNS_RECONCILE_OUTPUT="$TMP_DIR/runs-reconcile.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
 RECONCILE_SCAN_FRESH_OUTPUT="$TMP_DIR/reconcile-scan-fresh.json"
+RUNS_UNKNOWN_OUTPUT="$TMP_DIR/runs-unknown.json"
 RESTORED_SUMMARY_PATH="$TMP_DIR/federated-ci-runtime-gates-20260319-rerun27.tmp-query.json"
 RESTORED_CHECKPOINT_PATH="$TMP_DIR/federated-ci-runtime-gates-20260319-rerun27.checkpoint.json"
 RESTORED_PREVIOUS_PATH="$TMP_DIR/federated-ci-runtime-gates-20260319-rerun27-summary-tmp-reconcile.json"
@@ -364,25 +398,42 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 records = doc["records"]
-assert len(records) == 4, records
+assert len(records) == 5, records
 assert records[0]["source_kind"] == "latest", records
-assert records[1]["run_id"] == "federated-ci-runtime-gates-20260319-rerun28", records
-assert records[2]["run_id"] == "federated-ci-runtime-gates-20260319-rerun27", records
-assert records[3]["source_kind"] == "stamped", records
+assert records[1]["run_id"] == "federated-ci-runtime-gates-20260319-rerun29", records
+assert records[2]["run_id"] == "federated-ci-runtime-gates-20260319-rerun28", records
+assert records[3]["run_id"] == "federated-ci-runtime-gates-20260319-rerun27", records
+assert records[4]["source_kind"] == "stamped", records
 
 latest = records[0]
-restored = records[1]
-failed = records[2]
-stamped = records[3]
+unknown = records[1]
+restored = records[2]
+failed = records[3]
+stamped = records[4]
 
 assert latest["has_summary_validation"] is True, latest
 assert latest["has_readiness"] is False, latest
 assert latest["readiness_status"] == "missing", latest
 assert latest["has_conformance_contract"] is True, latest
+assert latest["reconcile_status"] == "restored", latest
+assert latest["reconcile_artifact_state"] == "missing", latest
+assert latest["reconcile_validation_state"] == "missing", latest
+assert latest["checkpoint_state"] == "present", latest
+
+assert unknown["run_id"] == "federated-ci-runtime-gates-20260319-rerun29", unknown
+assert unknown["reconcile_status"] == "unknown", unknown
+assert unknown["reconcile_artifact_state"] == "missing", unknown
+assert unknown["reconcile_validation_state"] == "missing", unknown
+assert unknown["checkpoint_state"] == "missing", unknown
 
 assert restored["run_id"] == "federated-ci-runtime-gates-20260319-rerun28", restored
 assert restored["check_count"] == 1, restored
 assert restored["missing_required_checks"] == ["loop-guardrails"], restored
+assert restored["reconcile_status"] == "restored", restored
+assert restored["reconcile_artifact_state"] == "fresh", restored
+assert restored["reconcile_validation_verdict"] == "pass", restored
+assert restored["reconcile_validation_state"] == "fresh", restored
+assert restored["checkpoint_state"] == "present", restored
 
 assert failed["verdict"] == "fail", failed
 assert failed["source_kind"] == "stamped", failed
@@ -390,6 +441,9 @@ assert failed["readiness_status"] == "blocked", failed
 assert failed["ready"] is False, failed
 assert failed["failed_checks"] == ["runtime-handoff"], failed
 assert failed["failure_domains"] == ["runtime"], failed
+assert failed["reconcile_status"] == "healthy", failed
+assert failed["reconcile_artifact_state"] == "missing", failed
+assert failed["checkpoint_state"] == "present", failed
 
 assert stamped["run_id"] == "federated-ci-runtime-gates-20260319-rerun26", stamped
 assert stamped["family"] == "federated-ci-runtime-gates", stamped
@@ -401,6 +455,11 @@ assert stamped["has_readiness_validation"] is True, stamped
 assert stamped["has_reconcile_report"] is True, stamped
 assert stamped["has_reconcile_validation"] is True, stamped
 assert stamped["has_conformance_contract"] is True, stamped
+assert stamped["reconcile_status"] == "healthy", stamped
+assert stamped["reconcile_artifact_state"] == "stale", stamped
+assert stamped["reconcile_validation_verdict"] == "unknown", stamped
+assert stamped["reconcile_validation_state"] == "stale", stamped
+assert stamped["checkpoint_state"] == "present", stamped
 PY
 
 python3 "$QUERY_PATH" runs \
@@ -445,6 +504,52 @@ records = doc["records"]
 assert len(records) == 1, records
 assert records[0]["source_kind"] == "latest", records
 assert records[0]["readiness_status"] == "missing", records
+assert records[0]["reconcile_status"] == "restored", records
+PY
+
+python3 "$QUERY_PATH" runs \
+  --family federated-ci-runtime-gates \
+  --reconcile-status restored \
+  --reconcile-artifact-state fresh \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$RUNS_RECONCILE_OUTPUT"
+
+python3 - <<'PY' "$RUNS_RECONCILE_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["run_id"] == "federated-ci-runtime-gates-20260319-rerun28", records
+assert records[0]["reconcile_status"] == "restored", records
+assert records[0]["reconcile_artifact_state"] == "fresh", records
+assert records[0]["reconcile_validation_state"] == "fresh", records
+PY
+
+python3 "$QUERY_PATH" runs \
+  --family federated-ci-runtime-gates \
+  --reconcile-status unknown \
+  --checkpoint-state missing \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$RUNS_UNKNOWN_OUTPUT"
+
+python3 - <<'PY' "$RUNS_UNKNOWN_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["run_id"] == "federated-ci-runtime-gates-20260319-rerun29", records
+assert records[0]["reconcile_status"] == "unknown", records
+assert records[0]["checkpoint_state"] == "missing", records
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
@@ -560,11 +665,15 @@ from pathlib import Path
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 records = doc["records"]
 assert [record["run_id"] for record in records] == [
+    "federated-ci-runtime-gates-20260319-rerun29",
     "federated-ci-runtime-gates-20260319-rerun28",
     "federated-ci-runtime-gates-20260319-rerun27",
     "federated-ci-runtime-gates-20260319-rerun26",
 ], records
-restored, missing, stale = records
+unknown, restored, missing, stale = records
+assert unknown["status"] == "unknown", unknown
+assert unknown["checkpoint_state"] == "missing", unknown
+assert unknown["reconcile_artifact_state"] == "missing", unknown
 assert restored["status"] == "restored", restored
 assert restored["reconcile_artifact_state"] == "fresh", restored
 assert restored["reconcile_validation_state"] == "fresh", restored
