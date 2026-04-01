@@ -493,6 +493,8 @@ TRIAGE_FEED_OUTPUT="$TMP_DIR/triage-feed.json"
 TRIAGE_FEED_ALL_OUTPUT="$TMP_DIR/triage-feed-all.json"
 TRIAGE_BRIEF_OUTPUT="$TMP_DIR/triage-brief.json"
 TRIAGE_BRIEF_ALL_OUTPUT="$TMP_DIR/triage-brief-all.json"
+TRIAGE_REPORT_OUTPUT="$TMP_DIR/triage-report.json"
+TRIAGE_REPORT_ALL_OUTPUT="$TMP_DIR/triage-report-all.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -1501,6 +1503,68 @@ assert record["queue_lines"] == [
 assert record["target_lines"] == [
     "[active/latest-gap] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun26 domains=readiness,reconcile",
 ], record
+PY
+
+python3 "$QUERY_PATH" triage-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_REPORT_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_REPORT_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["source_kind"] == "stamped", record
+assert record["target_limit"] == 3, record
+assert record["headline"] == "Federated CI triage report: 2 attention families", record
+assert record["attention_summary"] == "active=1, lagging=1, clear=0", record
+assert record["newest_failing_summary"] == "federated-ci-runtime-gates / federated-ci-runtime-gates-20260319-rerun30 / lagging", record
+assert record["newest_recovered_summary"] is None, record
+assert record["queue_lines"] == [
+    "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1",
+    "lagging: targets=1 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint=1,readiness=1,reconcile=1",
+], record
+assert record["target_lines"] == [
+    "[active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+    "[lagging/latest-alert-follow-up] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint,readiness,reconcile",
+], record
+assert "## Federated CI Triage Report" in record["markdown"], record
+assert "### Queue" in record["markdown"], record
+assert "### Top Targets" in record["markdown"], record
+PY
+
+python3 "$QUERY_PATH" triage-report \
+  --source-kind all \
+  --target-limit 1 \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$TRIAGE_REPORT_ALL_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_REPORT_ALL_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["source_kind"] == "all", record
+assert record["target_limit"] == 1, record
+assert record["headline"] == "Federated CI triage report: 2 attention families", record
+assert record["attention_summary"] == "active=2, lagging=0, clear=0", record
+assert record["newest_failing_summary"] == "federated-ci-runtime-gates / federated-ci-runtime-gates-20260319-rerun26 / active", record
+assert record["newest_recovered_summary"] is None, record
+assert record["queue_lines"] == [
+    "active: targets=2 newest=federated-ci-runtime-gates/federated-ci-runtime-gates-20260319-rerun26 domains=checkpoint=1,readiness=2,reconcile=2",
+], record
+assert record["target_lines"] == [
+    "[active/latest-gap] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun26 domains=readiness,reconcile",
+], record
+assert "source_kind: `all`" in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
