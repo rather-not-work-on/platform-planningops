@@ -196,6 +196,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now points blocking cross-repo validation states at the promoted `cross-repo-validation-packet` through explicit packet `report_id` and `path` fields so operator handoff can jump straight to immutable detail evidence
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report` now carry dedicated cross-repo detail lines and action lines alongside the immutable packet pointer so operators can read mirror/source specifics without immediately reopening the promoted packet
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload|monday-consumer-report` now point current blocking payload-first and apply/result-first records at the promoted `cross-repo-validation-packet` through explicit packet `report_id` and `path` fields instead of relying on snapshot-only linkage
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload|monday-consumer-report` now also carry the linked packet's dedicated cross-repo detail lines and action lines in their markdown/json surfaces so operators can stay in payload-first or apply/result-first views without reopening the promoted packet immediately
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -258,5 +259,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. decide whether `handoff-report` should keep the immutable packet pointer only or also grow a dedicated cross-repo details/actions section to match triage surfaces
-2. decide whether payload-first and apply/result-first surfaces should stay pointer-only or also grow dedicated cross-repo details/actions sections when the linked packet is blocking
-3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
+2. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage

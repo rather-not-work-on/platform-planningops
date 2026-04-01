@@ -481,6 +481,9 @@ class LocalInboxPayloadRecord:
     monday_validation_action_lines: list[str]
     cross_repo_validation_packet_report_id: str | None
     cross_repo_validation_packet_path: str | None
+    cross_repo_validation_detail_lines: list[str]
+    monday_source_validation_report_lines: list[str]
+    cross_repo_validation_action_lines: list[str]
     local_validation_action_lines: list[str]
     immediate_actions: list[str]
     queue_lines: list[str]
@@ -511,6 +514,9 @@ class MondayConsumerReportRecord:
     monday_validation_action_lines: list[str]
     cross_repo_validation_packet_report_id: str | None
     cross_repo_validation_packet_path: str | None
+    cross_repo_validation_detail_lines: list[str]
+    monday_source_validation_report_lines: list[str]
+    cross_repo_validation_action_lines: list[str]
     has_runtime_input_overrides: bool
     override_kinds: list[str]
     planner_runtime_config_path: str | None
@@ -1237,6 +1243,9 @@ def build_local_inbox_payload_record(
     ]
     cross_repo_validation_packet_report_id = None
     cross_repo_validation_packet_path = None
+    cross_repo_validation_detail_lines: list[str] = []
+    monday_source_validation_report_lines: list[str] = []
+    cross_repo_validation_action_lines: list[str] = []
     packet_record = select_current_cross_repo_validation_packet_record(
         validation_root=validation_root,
         bridge_id=bridge_id,
@@ -1244,6 +1253,11 @@ def build_local_inbox_payload_record(
     if packet_record is not None:
         cross_repo_validation_packet_report_id = packet_record.report_id
         cross_repo_validation_packet_path = packet_record.report_path
+        (
+            cross_repo_validation_detail_lines,
+            monday_source_validation_report_lines,
+            cross_repo_validation_action_lines,
+        ) = build_cross_repo_validation_packet_lines(packet_record)
     return LocalInboxPayloadRecord(
         bridge_id=bridge_id,
         source_kind=source_kind_for_local_inbox_payload_path(payload_path),
@@ -1274,6 +1288,9 @@ def build_local_inbox_payload_record(
         monday_validation_action_lines=monday_validation_action_lines,
         cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
         cross_repo_validation_packet_path=cross_repo_validation_packet_path,
+        cross_repo_validation_detail_lines=cross_repo_validation_detail_lines,
+        monday_source_validation_report_lines=monday_source_validation_report_lines,
+        cross_repo_validation_action_lines=cross_repo_validation_action_lines,
         local_validation_action_lines=normalize_string_list(payload.get("local_validation_action_lines")),
         immediate_actions=normalize_string_list(payload.get("immediate_actions")),
         queue_lines=normalize_string_list(payload.get("queue_lines")),
@@ -1397,6 +1414,7 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
         "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
     ]
+    sections: list[str] = []
     for record in records:
         lines.append(
             f"| `{record.bridge_id}` | {record.source_kind} | {record.status or ''} | "
@@ -1411,7 +1429,41 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
             f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.attachment_count} | "
             f"{record.generated_at_utc} |"
         )
-    return "\n".join(lines)
+        detail_lines: list[str] = []
+        if record.cross_repo_validation_packet_report_id is not None:
+            detail_lines.append(
+                f"- detail packet report id: `{record.cross_repo_validation_packet_report_id}`"
+            )
+        if record.cross_repo_validation_packet_path is not None:
+            detail_lines.append(f"- detail packet path: `{record.cross_repo_validation_packet_path}`")
+        detail_lines.extend(f"- {line}" for line in record.cross_repo_validation_detail_lines)
+        detail_lines.extend(f"- {line}" for line in record.monday_source_validation_report_lines)
+        if detail_lines:
+            sections.append(
+                "\n".join(
+                    [
+                        f"### Cross-Repo Validation Details: `{record.bridge_id}`",
+                        "",
+                        *detail_lines,
+                    ]
+                )
+            )
+        if record.cross_repo_validation_action_lines:
+            sections.append(
+                "\n".join(
+                    [
+                        f"### Cross-Repo Validation Actions: `{record.bridge_id}`",
+                        "",
+                        *[
+                            f"{index}. {line}"
+                            for index, line in enumerate(record.cross_repo_validation_action_lines, start=1)
+                        ],
+                    ]
+                )
+            )
+    if not sections:
+        return "\n".join(lines)
+    return "\n".join(lines) + "\n\n" + "\n\n".join(sections)
 
 
 def build_monday_consumer_report_record(
@@ -1460,6 +1512,9 @@ def build_monday_consumer_report_record(
     ]
     cross_repo_validation_packet_report_id = None
     cross_repo_validation_packet_path = None
+    cross_repo_validation_detail_lines: list[str] = []
+    monday_source_validation_report_lines: list[str] = []
+    cross_repo_validation_action_lines: list[str] = []
     packet_record = select_current_cross_repo_validation_packet_record(
         validation_root=validation_root,
         consumer_run_id=str(report_doc.get("run_id")),
@@ -1467,6 +1522,11 @@ def build_monday_consumer_report_record(
     if packet_record is not None:
         cross_repo_validation_packet_report_id = packet_record.report_id
         cross_repo_validation_packet_path = packet_record.report_path
+        (
+            cross_repo_validation_detail_lines,
+            monday_source_validation_report_lines,
+            cross_repo_validation_action_lines,
+        ) = build_cross_repo_validation_packet_lines(packet_record)
     return MondayConsumerReportRecord(
         run_id=str(report_doc.get("run_id")),
         report_path=str(report_path.resolve()),
@@ -1489,6 +1549,9 @@ def build_monday_consumer_report_record(
         monday_validation_action_lines=monday_validation_action_lines,
         cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
         cross_repo_validation_packet_path=cross_repo_validation_packet_path,
+        cross_repo_validation_detail_lines=cross_repo_validation_detail_lines,
+        monday_source_validation_report_lines=monday_source_validation_report_lines,
+        cross_repo_validation_action_lines=cross_repo_validation_action_lines,
         has_runtime_input_overrides=bool(override_kinds),
         override_kinds=override_kinds,
         planner_runtime_config_path=planner_runtime_config_path,
@@ -1628,6 +1691,7 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
         "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
     ]
+    sections: list[str] = []
     for record in records:
         lines.append(
             f"| `{record.run_id}` | {record.mode or ''} | {record.verdict or ''} | {record.reason_code or ''} | "
@@ -1645,7 +1709,41 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{'yes' if record.has_runtime_report else 'no'} | "
             f"{', '.join(record.block_reasons)} | {record.generated_at_utc} |"
         )
-    return "\n".join(lines)
+        detail_lines: list[str] = []
+        if record.cross_repo_validation_packet_report_id is not None:
+            detail_lines.append(
+                f"- detail packet report id: `{record.cross_repo_validation_packet_report_id}`"
+            )
+        if record.cross_repo_validation_packet_path is not None:
+            detail_lines.append(f"- detail packet path: `{record.cross_repo_validation_packet_path}`")
+        detail_lines.extend(f"- {line}" for line in record.cross_repo_validation_detail_lines)
+        detail_lines.extend(f"- {line}" for line in record.monday_source_validation_report_lines)
+        if detail_lines:
+            sections.append(
+                "\n".join(
+                    [
+                        f"### Cross-Repo Validation Details: `{record.run_id}`",
+                        "",
+                        *detail_lines,
+                    ]
+                )
+            )
+        if record.cross_repo_validation_action_lines:
+            sections.append(
+                "\n".join(
+                    [
+                        f"### Cross-Repo Validation Actions: `{record.run_id}`",
+                        "",
+                        *[
+                            f"{index}. {line}"
+                            for index, line in enumerate(record.cross_repo_validation_action_lines, start=1)
+                        ],
+                    ]
+                )
+            )
+    if not sections:
+        return "\n".join(lines)
+    return "\n".join(lines) + "\n\n" + "\n\n".join(sections)
 
 
 def build_monday_validation_report_record(
@@ -4970,6 +5068,21 @@ def select_current_cross_repo_validation_packet_record(
     if consumer_run_id is not None and packet_record.latest_consumer_run_id == consumer_run_id:
         return packet_record
     return None
+
+
+def build_cross_repo_validation_packet_lines(
+    packet_record: CrossRepoValidationPacketRecord | None,
+) -> tuple[list[str], list[str], list[str]]:
+    if packet_record is None:
+        return [], [], []
+    return (
+        [f"mirror: {line}" for line in packet_record.cross_repo_summary_lines],
+        [f"source: {line}" for line in packet_record.monday_validation_report_lines],
+        [
+            *packet_record.cross_repo_action_lines,
+            *packet_record.monday_validation_report_action_lines,
+        ],
+    )
 
 
 def render_cross_repo_validation_packet_table(record: CrossRepoValidationPacketRecord) -> str:
