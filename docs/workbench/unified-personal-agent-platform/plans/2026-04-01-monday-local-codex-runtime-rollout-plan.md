@@ -184,6 +184,11 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py monday-consumer-report` now carries run-aware monday schema validation snapshot/summary/actions fields so apply/result-first triage sees the same cross-repo validation signal as payload-first and handoff surfaces
 - `planningops/scripts/federation/query_federated_ci_artifacts.py cross-repo-validation-report` now emits a dedicated fixed-format packet that combines mirrored monday inbox launch/runtime/consumer freshness with monday-owned schema validation verdicts in one operator view
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed` now carries the cross-repo validation snapshot/status summary so the top-level operator overview shows monday inbox mirror health and monday source validation verdicts without leaving the feed
+- `planningops/contracts/cross-repo-validation-report-contract.md`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py write-cross-repo-validation-report`
+- `planningops/artifacts/validation/cross-repo-validation-report.json`
+- `planningops/artifacts/validation/<report-id>-cross-repo-validation-report.json`
+- the dedicated cross-repo validation packet is now promotion-ready as a stamped validation artifact instead of staying query-only
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -245,6 +250,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether `cross-repo-validation-report` should stay query-only or also be promoted into stamped validation artifacts
+1. decide whether the promoted `cross-repo-validation-report` should also be tracked in `local-validation-freshness` as its own validation family
 2. decide whether the same cross-repo validation snapshot should also surface in `triage-brief` or `triage-report`, not only `triage-feed`
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
