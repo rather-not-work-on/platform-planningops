@@ -646,6 +646,7 @@ TRIAGE_QUEUE_LAGGING_OUTPUT="$TMP_DIR/triage-queue-lagging.json"
 TRIAGE_QUEUE_ALL_OUTPUT="$TMP_DIR/triage-queue-all.json"
 TRIAGE_FEED_OUTPUT="$TMP_DIR/triage-feed.json"
 TRIAGE_FEED_ALL_OUTPUT="$TMP_DIR/triage-feed-all.json"
+TRIAGE_FEED_WITH_CROSS_REPO_VALIDATION_OUTPUT="$TMP_DIR/triage-feed-with-cross-repo-validation.json"
 TRIAGE_BRIEF_OUTPUT="$TMP_DIR/triage-brief.json"
 TRIAGE_BRIEF_ALL_OUTPUT="$TMP_DIR/triage-brief-all.json"
 TRIAGE_REPORT_OUTPUT="$TMP_DIR/triage-report.json"
@@ -1575,7 +1576,9 @@ python3 "$QUERY_PATH" triage-feed \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_FEED_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_FEED_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_FEED_OUTPUT"
 import json
@@ -1597,6 +1600,11 @@ assert record["local_operator_record"]["verdict"] == "fail", record
 assert record["local_operator_record"]["readiness_status"] == "blocked", record
 assert record["local_operator_record"]["stack_status"] == "skipped", record
 assert record["local_operator_record"]["direct_status"] == "skipped", record
+assert record["cross_repo_validation_snapshot_status"] == "missing", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_source_validation_status"] == "missing", record
+assert record["monday_source_validation_summary"] == "total=0 pass=0 fail=0 errors=0 warnings=0", record
+assert record["cross_repo_validation_action_line"] is None, record
 assert record["target_records"][0]["priority_bucket"] == "active", record
 assert record["target_records"][1]["priority_bucket"] == "lagging", record
 PY
@@ -1608,7 +1616,9 @@ python3 "$QUERY_PATH" triage-feed \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_FEED_ALL_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_FEED_ALL_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_FEED_ALL_OUTPUT"
 import json
@@ -1631,6 +1641,11 @@ assert target["family"] == "federated-ci-runtime-gates", target
 assert target["priority_bucket"] == "active", target
 assert target["target_source_kind"] == "latest", target
 assert record["local_operator_record"]["run_id"] == "monday-local-operator-stack-20260401T060524Z", record
+assert record["cross_repo_validation_snapshot_status"] == "missing", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
+assert record["monday_source_validation_status"] == "missing", record
+assert record["monday_source_validation_summary"] == "total=0 pass=0 fail=0 errors=0 warnings=0", record
+assert record["cross_repo_validation_action_line"] is None, record
 PY
 
 python3 "$QUERY_PATH" triage-brief \
@@ -1638,7 +1653,9 @@ python3 "$QUERY_PATH" triage-brief \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_BRIEF_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_BRIEF_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_BRIEF_OUTPUT"
 import json
@@ -1679,7 +1696,9 @@ python3 "$QUERY_PATH" triage-brief \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_BRIEF_ALL_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_BRIEF_ALL_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_BRIEF_ALL_OUTPUT"
 import json
@@ -1714,7 +1733,9 @@ python3 "$QUERY_PATH" triage-report \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_REPORT_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_REPORT_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_REPORT_OUTPUT"
 import json
@@ -1758,7 +1779,9 @@ python3 "$QUERY_PATH" triage-report \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$TRIAGE_REPORT_ALL_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_REPORT_ALL_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_REPORT_ALL_OUTPUT"
 import json
@@ -2288,7 +2311,9 @@ python3 "$QUERY_PATH" handoff-report \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$HANDOFF_REPORT_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$HANDOFF_REPORT_OUTPUT"
 
 python3 - <<'PY' "$HANDOFF_REPORT_OUTPUT"
 import json
@@ -2363,7 +2388,9 @@ python3 "$QUERY_PATH" handoff-report \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$HANDOFF_REPORT_ALL_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$HANDOFF_REPORT_ALL_OUTPUT"
 
 python3 - <<'PY' "$HANDOFF_REPORT_ALL_OUTPUT"
 import json
@@ -2414,7 +2441,9 @@ python3 "$QUERY_PATH" write-handoff-report \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$HANDOFF_WRITE_OUTPUT.stdout"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$HANDOFF_WRITE_OUTPUT.stdout"
 
 python3 - <<'PY' "$HANDOFF_WRITE_OUTPUT.stdout" "$HANDOFF_WRITE_OUTPUT" "$VALIDATION_DIR"
 import json
@@ -3846,7 +3875,9 @@ python3 "$QUERY_PATH" handoff-report \
   --ci-root "$CI_DIR" \
   --validation-root "$VALIDATION_DIR" \
   --conformance-root "$CONFORMANCE_DIR" \
-  --local-root "$LOCAL_OPERATOR_DIR" >"$HANDOFF_REPORT_WITH_MONDAY_VALIDATION_OUTPUT"
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$HANDOFF_REPORT_WITH_MONDAY_VALIDATION_OUTPUT"
 
 python3 - <<'PY' "$HANDOFF_REPORT_WITH_MONDAY_VALIDATION_OUTPUT"
 import json
@@ -3932,6 +3963,32 @@ assert record["latest_consumer_monday_validation_snapshot_status"] == "present",
 assert "### Cross-Repo Mirror Validation" in record["markdown"], record
 assert "### Monday Source Validation Reports" in record["markdown"], record
 assert "### Monday Source Validation Actions" in record["markdown"], record
+PY
+
+python3 "$QUERY_PATH" triage-feed \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_FEED_WITH_CROSS_REPO_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_FEED_WITH_CROSS_REPO_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["cross_repo_validation_snapshot_status"] == "present", record
+assert record["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
+assert record["monday_source_validation_status"] == "attention", record
+assert record["monday_source_validation_summary"] == "total=2 pass=1 fail=1 errors=2 warnings=1", record
+assert record["cross_repo_validation_action_line"] == (
+    "local-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
+), record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
