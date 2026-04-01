@@ -315,6 +315,11 @@ class HandoffReportRecord:
     local_validation_records: list[LocalValidationFreshnessRecord]
     local_validation_summary_lines: list[str]
     local_validation_action_lines: list[str]
+    monday_validation_snapshot_status: str
+    monday_validation_snapshot_summary: str
+    monday_validation_records: list[LocalValidationFreshnessRecord]
+    monday_validation_summary_lines: list[str]
+    monday_validation_action_lines: list[str]
     queue_lines: list[str]
     target_lines: list[str]
     immediate_action_lines: list[str]
@@ -2485,6 +2490,20 @@ def build_local_validation_snapshot(records: list[LocalValidationFreshnessRecord
     return snapshot_status, snapshot_summary
 
 
+def select_monday_validation_records(
+    records: list[LocalValidationFreshnessRecord],
+) -> list[LocalValidationFreshnessRecord]:
+    return [
+        record
+        for record in records
+        if record.artifact_family
+        in {
+            "monday_local_inbox_bridge_schema_validation",
+            "monday_local_inbox_consumer_schema_validation",
+        }
+    ]
+
+
 def build_summary_health_fields(
     *,
     verdict: Any,
@@ -3667,6 +3686,16 @@ def build_handoff_report_record(
         for action in (build_local_validation_action_line(record) for record in local_validation_records)
         if action is not None
     ]
+    monday_validation_records = select_monday_validation_records(local_validation_records)
+    monday_validation_snapshot_status, monday_validation_snapshot_summary = build_local_validation_snapshot(
+        monday_validation_records
+    )
+    monday_validation_summary_lines = [build_local_validation_summary_line(record) for record in monday_validation_records]
+    monday_validation_action_lines = [
+        action
+        for action in (build_local_validation_action_line(record) for record in monday_validation_records)
+        if action is not None
+    ]
     headline = f"Operator handoff report: {triage_report.headline.removeprefix('Federated CI triage report: ')}"
     immediate_action_lines: list[str] = []
     if triage_report.local_operator_next_step is not None:
@@ -3706,6 +3735,24 @@ def build_handoff_report_record(
             *[f"- {line}" for line in local_validation_summary_lines],
         ]
     )
+    if monday_validation_records:
+        markdown_lines.extend(
+            [
+                "",
+                "### Monday Schema Validation",
+                f"- snapshot status: `{monday_validation_snapshot_status}`",
+                f"- snapshot summary: `{monday_validation_snapshot_summary}`",
+                *[f"- {line}" for line in monday_validation_summary_lines],
+            ]
+        )
+    if monday_validation_action_lines:
+        markdown_lines.extend(
+            [
+                "",
+                "### Monday Schema Validation Actions",
+                *[f"{index}. {line}" for index, line in enumerate(monday_validation_action_lines, start=1)],
+            ]
+        )
     if local_validation_action_lines:
         markdown_lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
     markdown_lines.extend(["", "### Queue", *[f"- {line}" for line in triage_report.queue_lines]])
@@ -3730,6 +3777,11 @@ def build_handoff_report_record(
         local_validation_records=local_validation_records,
         local_validation_summary_lines=local_validation_summary_lines,
         local_validation_action_lines=local_validation_action_lines,
+        monday_validation_snapshot_status=monday_validation_snapshot_status,
+        monday_validation_snapshot_summary=monday_validation_snapshot_summary,
+        monday_validation_records=monday_validation_records,
+        monday_validation_summary_lines=monday_validation_summary_lines,
+        monday_validation_action_lines=monday_validation_action_lines,
         queue_lines=triage_report.queue_lines,
         target_lines=triage_report.target_lines,
         immediate_action_lines=immediate_action_lines,
@@ -3754,6 +3806,12 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
     sections.append(f"local_validation_snapshot_status\t{record.local_validation_snapshot_status}")
     sections.append(f"local_validation_snapshot_summary\t{record.local_validation_snapshot_summary}")
     sections.extend(["local_validation", *record.local_validation_summary_lines])
+    sections.append(f"monday_validation_snapshot_status\t{record.monday_validation_snapshot_status}")
+    sections.append(f"monday_validation_snapshot_summary\t{record.monday_validation_snapshot_summary}")
+    if record.monday_validation_summary_lines:
+        sections.extend(["monday_validation", *record.monday_validation_summary_lines])
+    if record.monday_validation_action_lines:
+        sections.extend(["monday_validation_actions", *record.monday_validation_action_lines])
     if record.local_validation_action_lines:
         sections.extend(["local_validation_actions", *record.local_validation_action_lines])
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines, "immediate_actions", *record.immediate_action_lines])
