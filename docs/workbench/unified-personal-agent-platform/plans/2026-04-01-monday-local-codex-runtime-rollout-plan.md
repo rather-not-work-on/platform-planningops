@@ -129,6 +129,7 @@ Current deliverables:
 - `planningops/scripts/write_monday_local_mission_packet.py`
 - `planningops/artifacts/validation/monday-local-mission-packet.json`
 - `planningops/artifacts/validation/<packet-id>-monday-local-mission-packet.json`
+- mission packets now carry forward local validation freshness/promotability snapshot fields from promoted handoff packets
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -192,4 +193,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 1. decide whether mission packet promotion should also emit an inbox-ready day packet or stay as a reusable validation-sidecar primitive
 2. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
-3. decide whether the local validation snapshot should also be mirrored into a day-level inbox or handoff digest artifact
+3. decide whether the carried local validation snapshot should also be mirrored into a day-level inbox or handoff digest artifact
