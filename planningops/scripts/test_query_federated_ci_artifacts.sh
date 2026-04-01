@@ -648,6 +648,7 @@ TRIAGE_REPORT_OUTPUT="$TMP_DIR/triage-report.json"
 TRIAGE_REPORT_ALL_OUTPUT="$TMP_DIR/triage-report-all.json"
 HANDOFF_REPORT_OUTPUT="$TMP_DIR/handoff-report.json"
 HANDOFF_REPORT_ALL_OUTPUT="$TMP_DIR/handoff-report-all.json"
+HANDOFF_WRITE_OUTPUT="$TMP_DIR/handoff-write.json"
 LOCAL_OPERATOR_OUTPUT="$TMP_DIR/local-operator-stack.json"
 LOCAL_OPERATOR_FILTERED_OUTPUT="$TMP_DIR/local-operator-stack-filtered.json"
 LOCAL_OPERATOR_DETAIL_OUTPUT="$TMP_DIR/local-operator-stack-detail.json"
@@ -1835,6 +1836,50 @@ assert record["immediate_action_lines"] == [
 ], record
 assert "source_kind: `all`" in record["markdown"], record
 assert "### Immediate Actions" in record["markdown"], record
+PY
+
+python3 "$QUERY_PATH" write-handoff-report \
+  --report-id operator-handoff-20260401T070000Z \
+  --output "$HANDOFF_WRITE_OUTPUT" \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" >"$HANDOFF_WRITE_OUTPUT.stdout"
+
+python3 - <<'PY' "$HANDOFF_WRITE_OUTPUT.stdout" "$HANDOFF_WRITE_OUTPUT" "$VALIDATION_DIR"
+import json
+import sys
+from pathlib import Path
+
+stdout_doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+output_doc = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+validation_dir = Path(sys.argv[3]).resolve()
+latest_path = validation_dir / "operator-handoff-report.json"
+stamped_path = validation_dir / "operator-handoff-20260401T070000Z-operator-handoff-report.json"
+latest_doc = json.loads(latest_path.read_text(encoding="utf-8"))
+stamped_doc = json.loads(stamped_path.read_text(encoding="utf-8"))
+
+for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
+    assert doc["report_id"] == "operator-handoff-20260401T070000Z", doc
+    assert doc["artifact_paths"]["latest_report_path"] == str(latest_path), doc
+    assert doc["artifact_paths"]["stamped_report_path"] == str(stamped_path), doc
+    assert doc["record"]["headline"] == "Operator handoff report: 2 attention families", doc
+    assert doc["record"]["source_kind"] == "stamped", doc
+    assert doc["record"]["local_operator_summary"] == (
+        "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
+        "stack=skipped direct=skipped mode=both reason=readiness_blocked"
+    ), doc
+    assert doc["record"]["immediate_action_lines"] == [
+        "local-runtime: Expose Codex and add a direct local LLM profile.",
+        "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+        "follow-up: [lagging/latest-alert-follow-up] federated-ci-runtime-gates -> federated-ci-runtime-gates-20260319-rerun29 domains=checkpoint,readiness,reconcile",
+    ], doc
+
+assert stdout_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), stdout_doc
+assert output_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), output_doc
+assert latest_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), latest_doc
+assert stamped_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), stamped_doc
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
