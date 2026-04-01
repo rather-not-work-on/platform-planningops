@@ -140,6 +140,13 @@ Current deliverables:
 - `planningops/artifacts/validation/monday-local-operator-inbox-payload.json`
 - `planningops/artifacts/validation/<bridge-id>-monday-local-operator-inbox-payload.json`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now includes the promoted inbox payload bridge family in the same promotion lane
+- `monday/contracts/planningops-local-operator-inbox-consumer-contract.md`
+- `monday/scripts/consume_planningops_local_operator_inbox_payload.py`
+- `monday/scripts/test_consume_planningops_local_operator_inbox_payload.sh`
+- `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/launch-request.json`
+- `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/mission.json`
+- `monday/runtime-artifacts/integration/planningops-local-operator-inbox/<run-id>/consumer-report.json`
+- monday now consumes the promoted inbox payload as structured input and materializes native runtime command argv without reparsing day-packet markdown
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -201,6 +208,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. add a monday-native consumer that accepts the promoted inbox payload bridge without reparsing day packet markdown
-2. decide whether the inbox payload bridge should be schema-validated against a monday-owned payload contract once that surface exists
-3. add a dedicated query/report surface for the promoted inbox payload bridge if operators need a payload-first view separate from `handoff-report`
+1. decide whether the inbox payload bridge and the monday-native consumer report should be schema-validated against monday-owned contracts
+2. add an apply-path regression for the monday consumer that exercises a `ready` launch through `scripts/run_local_runtime_smoke.py`
+3. add a dedicated query/report surface for the promoted inbox payload bridge or monday consumer report if operators need a payload-first view separate from `handoff-report`
