@@ -412,8 +412,12 @@ class MondayConsumerReportRecord:
     launch_mode: str | None
     local_model_route: str | None
     local_validation_snapshot_status: str | None
+    monday_validation_snapshot_status: str
+    monday_validation_snapshot_summary: str
     block_reasons: list[str]
     command_args: list[str]
+    monday_validation_summary_lines: list[str]
+    monday_validation_action_lines: list[str]
     has_runtime_input_overrides: bool
     override_kinds: list[str]
     planner_runtime_config_path: str | None
@@ -1292,6 +1296,7 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
 
 def build_monday_consumer_report_record(
     *,
+    validation_root: Path,
     report_path: Path,
     report_doc: dict[str, Any],
 ) -> MondayConsumerReportRecord:
@@ -1316,11 +1321,28 @@ def build_monday_consumer_report_record(
         override_kinds.append("planner_runtime_config")
     if runtime_profile_file_path is not None:
         override_kinds.append("runtime_profile_file")
+    bridge_id = normalize_optional_string(report_doc.get("bridge_id"))
+    monday_validation_records = discover_monday_validation_records_for_consumer_report(
+        validation_root=validation_root,
+        report_path=report_path,
+        bridge_id=bridge_id,
+    )
+    monday_validation_snapshot_status, monday_validation_snapshot_summary = build_local_validation_snapshot(
+        monday_validation_records
+    )
+    monday_validation_summary_lines = [
+        build_local_validation_summary_line(record) for record in monday_validation_records
+    ]
+    monday_validation_action_lines = [
+        action
+        for action in (build_local_validation_action_line(record) for record in monday_validation_records)
+        if action is not None
+    ]
     return MondayConsumerReportRecord(
         run_id=str(report_doc.get("run_id")),
         report_path=str(report_path.resolve()),
         generated_at_utc=str(report_doc.get("generated_at_utc") or ""),
-        bridge_id=normalize_optional_string(report_doc.get("bridge_id")),
+        bridge_id=bridge_id,
         mode=normalize_optional_string(report_doc.get("mode")),
         verdict=normalize_optional_string(report_doc.get("verdict")),
         reason_code=normalize_optional_string(report_doc.get("reason_code")),
@@ -1330,8 +1352,12 @@ def build_monday_consumer_report_record(
         launch_mode=normalize_optional_string(launch_request.get("launch_mode")),
         local_model_route=normalize_optional_string(launch_request.get("local_model_route")),
         local_validation_snapshot_status=normalize_optional_string(launch_request.get("local_validation_snapshot_status")),
+        monday_validation_snapshot_status=monday_validation_snapshot_status,
+        monday_validation_snapshot_summary=monday_validation_snapshot_summary,
         block_reasons=normalize_string_list(launch_request.get("block_reasons")),
         command_args=normalize_string_list(launch_request.get("runtime_command_args")),
+        monday_validation_summary_lines=monday_validation_summary_lines,
+        monday_validation_action_lines=monday_validation_action_lines,
         has_runtime_input_overrides=bool(override_kinds),
         override_kinds=override_kinds,
         planner_runtime_config_path=planner_runtime_config_path,
@@ -1346,7 +1372,7 @@ def build_monday_consumer_report_record(
     )
 
 
-def discover_monday_consumer_report_records(*, consumer_root: Path) -> list[MondayConsumerReportRecord]:
+def discover_monday_consumer_report_records(*, consumer_root: Path, validation_root: Path) -> list[MondayConsumerReportRecord]:
     if not consumer_root.exists():
         return []
     records: list[MondayConsumerReportRecord] = []
@@ -1359,7 +1385,13 @@ def discover_monday_consumer_report_records(*, consumer_root: Path) -> list[Mond
             continue
         if not is_monday_consumer_report_document(doc):
             continue
-        records.append(build_monday_consumer_report_record(report_path=path, report_doc=doc))
+        records.append(
+            build_monday_consumer_report_record(
+                validation_root=validation_root,
+                report_path=path,
+                report_doc=doc,
+            )
+        )
     records.sort(
         key=lambda record: (
             record.generated_at_utc,
@@ -1424,7 +1456,7 @@ def filter_monday_consumer_report_records(
 
 def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
+        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\tmonday_validation_snapshot\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -1439,6 +1471,7 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
                     str(record.planner_profile or ""),
                     str(record.launch_mode or ""),
                     str(record.local_model_route or ""),
+                    record.monday_validation_snapshot_status,
                     "yes" if record.has_runtime_input_overrides else "no",
                     ",".join(record.override_kinds),
                     (
@@ -1459,8 +1492,8 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
 
 def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
+        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | monday_validation_snapshot | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
@@ -1468,6 +1501,7 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{record.consumer_status or ''} | "
             f"{'' if record.can_launch is None else ('yes' if record.can_launch else 'no')} | "
             f"{record.planner_profile or ''} | {record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{record.monday_validation_snapshot_status} | "
             f"{'yes' if record.has_runtime_input_overrides else 'no'} | "
             f"{', '.join(record.override_kinds)} | "
             f"{'' if record.execution_attempted is None else ('yes' if record.execution_attempted else 'no')} | "
@@ -2439,6 +2473,64 @@ def discover_monday_validation_records_for_bridge(
         ) != bridge_id:
             continue
         records.append(builder(validation_root=validation_root))
+    return records
+
+
+def resolve_monday_validation_artifact_path(
+    *,
+    validation_root: Path,
+    artifact_family: str,
+) -> Path | None:
+    latest_filename_by_family = {
+        "monday_local_inbox_bridge_schema_validation": "monday-local-inbox-bridge-schema-validation.json",
+        "monday_local_inbox_consumer_schema_validation": "monday-local-inbox-consumer-schema-validation.json",
+    }
+    latest_filename = latest_filename_by_family.get(artifact_family)
+    if latest_filename is None:
+        return None
+
+    latest_doc = load_optional_json((validation_root / latest_filename).resolve())
+    if latest_doc is None:
+        return None
+    source_report_doc = resolve_nested_value(latest_doc, "mirror", "payload")
+    if not isinstance(source_report_doc, dict):
+        return None
+    return resolve_artifact_path(source_report_doc.get("artifact_path"))
+
+
+def discover_monday_validation_records_for_consumer_report(
+    *,
+    validation_root: Path,
+    report_path: Path,
+    bridge_id: str | None,
+) -> list[LocalValidationFreshnessRecord]:
+    records: list[LocalValidationFreshnessRecord] = []
+    resolved_report_path = report_path.resolve()
+
+    if bridge_id is not None and has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-bridge-schema-validation.json",
+        stamped_glob="*-monday-local-inbox-bridge-schema-validation.json",
+    ):
+        if resolve_monday_validation_bridge_id(
+            validation_root=validation_root,
+            artifact_family="monday_local_inbox_bridge_schema_validation",
+        ) == bridge_id:
+            records.append(build_monday_bridge_validation_mirror_freshness_record(validation_root=validation_root))
+
+    artifact_family = "monday_local_inbox_consumer_schema_validation"
+    if has_promoted_local_validation_artifact(
+        validation_root=validation_root,
+        latest_filename="monday-local-inbox-consumer-schema-validation.json",
+        stamped_glob="*-monday-local-inbox-consumer-schema-validation.json",
+    ):
+        artifact_path = resolve_monday_validation_artifact_path(
+            validation_root=validation_root,
+            artifact_family=artifact_family,
+        )
+        if artifact_path == resolved_report_path:
+            records.append(build_monday_consumer_validation_mirror_freshness_record(validation_root=validation_root))
+
     return records
 
 
@@ -4814,6 +4906,7 @@ def parse_args() -> argparse.Namespace:
     monday_consumer_parser.add_argument("--execution-attempted", choices=["yes", "no"], default=None)
     monday_consumer_parser.add_argument("--limit", type=int, default=20)
     monday_consumer_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    monday_consumer_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
     monday_consumer_parser.add_argument("--consumer-root", default=str(DEFAULT_MONDAY_CONSUMER_ROOT))
 
     monday_validation_parser = subparsers.add_parser(
@@ -4904,7 +4997,10 @@ def main() -> int:
         return 0
 
     if args.command == "monday-consumer-report":
-        consumer_records = discover_monday_consumer_report_records(consumer_root=consumer_root)
+        consumer_records = discover_monday_consumer_report_records(
+            consumer_root=consumer_root,
+            validation_root=validation_root,
+        )
         consumer_records = filter_monday_consumer_report_records(
             records=consumer_records,
             run_id_prefix=args.run_id_prefix,

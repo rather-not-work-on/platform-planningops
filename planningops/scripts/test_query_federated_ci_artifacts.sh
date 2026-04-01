@@ -668,6 +668,7 @@ MONDAY_CONSUMER_OUTPUT="$TMP_DIR/monday-consumer-report.json"
 MONDAY_CONSUMER_FILTERED_OUTPUT="$TMP_DIR/monday-consumer-report-filtered.json"
 MONDAY_CONSUMER_BLOCKED_OUTPUT="$TMP_DIR/monday-consumer-report-blocked.json"
 MONDAY_CONSUMER_OVERRIDE_OUTPUT="$TMP_DIR/monday-consumer-report-override.json"
+MONDAY_CONSUMER_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/monday-consumer-report-with-monday-validation.json"
 MONDAY_VALIDATION_OUTPUT="$TMP_DIR/monday-validation-report.json"
 MONDAY_VALIDATION_FAIL_OUTPUT="$TMP_DIR/monday-validation-report-fail.json"
 MONDAY_VALIDATION_BRIDGE_OUTPUT="$TMP_DIR/monday-validation-report-bridge.json"
@@ -3379,6 +3380,10 @@ assert blocked["block_reasons"] == [
     "needs_human_attention",
     "local_validation_actions_present",
 ], blocked
+assert blocked["monday_validation_snapshot_status"] == "missing", blocked
+assert blocked["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", blocked
+assert blocked["monday_validation_summary_lines"] == [], blocked
+assert blocked["monday_validation_action_lines"] == [], blocked
 
 assert passed_apply["verdict"] == "pass", passed_apply
 assert passed_apply["mode"] == "apply", passed_apply
@@ -3394,6 +3399,10 @@ assert passed_apply["override_kinds"] == [
 ], passed_apply
 assert passed_apply["planner_runtime_config_path"].endswith("/planner-runtime.json"), passed_apply
 assert passed_apply["runtime_profile_file_path"].endswith("/runtime-profiles.json"), passed_apply
+assert passed_apply["monday_validation_snapshot_status"] == "missing", passed_apply
+assert passed_apply["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", passed_apply
+assert passed_apply["monday_validation_summary_lines"] == [], passed_apply
+assert passed_apply["monday_validation_action_lines"] == [], passed_apply
 
 assert dry_run["mode"] == "dry-run", dry_run
 assert dry_run["verdict"] == "pass", dry_run
@@ -3404,6 +3413,10 @@ assert dry_run["has_launch_request"] is True, dry_run
 assert dry_run["has_mission_file"] is True, dry_run
 assert dry_run["has_runtime_report"] is False, dry_run
 assert dry_run["has_runtime_input_overrides"] is False, dry_run
+assert dry_run["monday_validation_snapshot_status"] == "missing", dry_run
+assert dry_run["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", dry_run
+assert dry_run["monday_validation_summary_lines"] == [], dry_run
+assert dry_run["monday_validation_action_lines"] == [], dry_run
 PY
 
 python3 "$QUERY_PATH" monday-consumer-report \
@@ -3786,6 +3799,45 @@ assert stamped_old["monday_validation_snapshot_status"] == "missing", stamped_ol
 assert stamped_old["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", stamped_old
 assert stamped_old["monday_validation_summary_lines"] == [], stamped_old
 assert stamped_old["monday_validation_action_lines"] == [], stamped_old
+PY
+
+python3 "$QUERY_PATH" monday-consumer-report \
+  --format json \
+  --validation-root "$VALIDATION_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_WITH_MONDAY_VALIDATION_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_WITH_MONDAY_VALIDATION_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert [record["run_id"] for record in records] == [
+    "planningops-local-inbox-consumer-20260401T103000Z",
+    "planningops-local-inbox-consumer-20260401T102000Z",
+    "planningops-local-inbox-consumer-20260401T101000Z",
+], records
+
+blocked, passed_apply, dry_run = records
+
+assert blocked["monday_validation_snapshot_status"] == "present", blocked
+assert blocked["monday_validation_snapshot_summary"] == "total=2 promotable=1 blocked=1 stale=0", blocked
+assert blocked["monday_validation_summary_lines"] == [
+    "monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
+    "monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
+], blocked
+assert blocked["monday_validation_action_lines"] == [
+    "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)"
+], blocked
+
+for record in (passed_apply, dry_run):
+    assert record["monday_validation_snapshot_status"] == "fresh", record
+    assert record["monday_validation_snapshot_summary"] == "total=1 promotable=1 blocked=0 stale=0", record
+    assert record["monday_validation_summary_lines"] == [
+        "monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current"
+    ], record
+    assert record["monday_validation_action_lines"] == [], record
 PY
 
 python3 "$QUERY_PATH" handoff-report \
