@@ -50,6 +50,7 @@ LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
     "monday_local_mission_packet",
+    "monday_local_operator_day_packet",
 )
 LOCAL_VALIDATION_FRESHNESS_CHOICES = ("fresh", "stale", "missing")
 LOCAL_VALIDATION_PROMOTABILITY_CHOICES = ("promotable", "blocked")
@@ -1113,11 +1114,129 @@ def build_mission_packet_validation_freshness_record(*, validation_root: Path) -
     )
 
 
+def build_day_packet_validation_freshness_record(*, validation_root: Path) -> LocalValidationFreshnessRecord:
+    latest_path = (validation_root / "monday-local-operator-day-packet.json").resolve()
+    latest_doc = load_optional_json(latest_path)
+    freshness_reasons: list[str] = []
+    promotability_reasons: list[str] = []
+    dependency_states: dict[str, str] = {}
+    stamped_path: Path | None = None
+    promoted_id: str | None = None
+    generated_at_utc: str | None = None
+
+    if latest_doc is not None:
+        promoted_id = str(latest_doc.get("day_packet_id") or "").strip() or None
+        generated_at_utc = str(latest_doc.get("generated_at_utc") or "").strip() or None
+        if promoted_id is None:
+            promotability_reasons.append("missing_day_packet_id")
+        if not isinstance(latest_doc.get("contract_ref"), str) or not str(latest_doc.get("contract_ref")).strip():
+            promotability_reasons.append("missing_contract_ref")
+        latest_packet_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "latest_packet_path")
+        stamped_path = resolve_nested_artifact_path(latest_doc, "artifact_paths", "stamped_packet_path")
+        if latest_packet_path != latest_path:
+            freshness_reasons.append("latest_path_mismatch")
+        day_packet = resolve_nested_value(latest_doc, "day_packet")
+        if not isinstance(day_packet, dict):
+            promotability_reasons.append("missing_day_packet")
+        else:
+            required_strings = {
+                "headline": "missing_headline",
+                "mission_objective": "missing_mission_objective",
+                "planner_profile": "missing_planner_profile",
+                "launch_mode": "missing_launch_mode",
+                "local_model_route": "missing_local_model_route",
+                "first_action_command": "missing_first_action_command",
+                "monday_runtime_entrypoint_command": "missing_runtime_entrypoint_command",
+                "rollback_command": "missing_rollback_command",
+                "body_markdown": "missing_body_markdown",
+                "local_validation_snapshot_status": "missing_local_validation_snapshot_status",
+            }
+            for field_name, reason in required_strings.items():
+                value = day_packet.get(field_name)
+                if not isinstance(value, str) or not value.strip():
+                    promotability_reasons.append(reason)
+            attachments = [str(path) for path in list(day_packet.get("attachments") or []) if str(path).strip()]
+            if not attachments:
+                promotability_reasons.append("missing_attachments")
+            source_artifacts = day_packet.get("source_artifacts")
+            if not isinstance(source_artifacts, dict):
+                promotability_reasons.append("missing_source_artifacts")
+            else:
+                mission_state, mission_reason = build_local_validation_dependency_state(
+                    raw_path=source_artifacts.get("mission_packet_path"),
+                    expected_path=validation_root / "monday-local-mission-packet.json",
+                )
+                handoff_state, handoff_reason = build_local_validation_dependency_state(
+                    raw_path=source_artifacts.get("handoff_report_path"),
+                    expected_path=validation_root / "operator-handoff-report.json",
+                )
+                local_state, local_reason = build_local_validation_dependency_state(
+                    raw_path=source_artifacts.get("local_operator_report_path"),
+                    expected_path=validation_root / "monday-local-operator-stack-report.json",
+                )
+                dependency_states["monday_local_mission_packet"] = mission_state
+                dependency_states["operator_handoff_report"] = handoff_state
+                dependency_states["monday_local_operator_stack_report"] = local_state
+                if mission_reason == "dependency_path_missing":
+                    promotability_reasons.append("missing_mission_packet_path")
+                elif mission_reason == "dependency_missing":
+                    promotability_reasons.append("mission_packet_dependency_missing")
+                elif mission_reason == "dependency_stale":
+                    promotability_reasons.append("mission_packet_dependency_stale")
+                if handoff_reason == "dependency_path_missing":
+                    promotability_reasons.append("missing_handoff_report_path")
+                elif handoff_reason == "dependency_missing":
+                    promotability_reasons.append("handoff_dependency_missing")
+                elif handoff_reason == "dependency_stale":
+                    promotability_reasons.append("handoff_dependency_stale")
+                if local_reason == "dependency_path_missing":
+                    promotability_reasons.append("missing_local_operator_report_path")
+                elif local_reason == "dependency_missing":
+                    promotability_reasons.append("local_operator_dependency_missing")
+                elif local_reason == "dependency_stale":
+                    promotability_reasons.append("local_operator_dependency_stale")
+        if stamped_path is not None and stamped_path.exists():
+            stamped_doc = load_optional_json(stamped_path)
+            if stamped_doc is None:
+                freshness_reasons.append("stamped_invalid_json")
+            else:
+                if str(stamped_doc.get("day_packet_id") or "").strip() != (promoted_id or ""):
+                    freshness_reasons.append("stamped_day_packet_id_mismatch")
+                stamped_latest_path = resolve_nested_artifact_path(stamped_doc, "artifact_paths", "latest_packet_path")
+                stamped_stamped_path = resolve_nested_artifact_path(stamped_doc, "artifact_paths", "stamped_packet_path")
+                if stamped_latest_path != latest_path:
+                    freshness_reasons.append("stamped_latest_path_mismatch")
+                if stamped_stamped_path != stamped_path.resolve():
+                    freshness_reasons.append("stamped_path_mismatch")
+
+    freshness_state, promotability_status = classify_local_validation_states(
+        latest_path=latest_path,
+        latest_doc=latest_doc,
+        stamped_path=stamped_path,
+        freshness_reasons=freshness_reasons,
+        promotability_reasons=promotability_reasons,
+        dependency_states=dependency_states,
+    )
+    return LocalValidationFreshnessRecord(
+        artifact_family="monday_local_operator_day_packet",
+        artifact_kind="packet",
+        promoted_id=promoted_id,
+        generated_at_utc=generated_at_utc,
+        freshness_state=freshness_state,
+        promotability_status=promotability_status,
+        latest_path=str(latest_path),
+        stamped_path=None if stamped_path is None else str(stamped_path.resolve()),
+        reasons=freshness_reasons + promotability_reasons,
+        dependency_states=dependency_states,
+    )
+
+
 def discover_local_validation_freshness_records(*, validation_root: Path) -> list[LocalValidationFreshnessRecord]:
     return [
         build_local_operator_validation_freshness_record(validation_root=validation_root),
         build_handoff_validation_freshness_record(validation_root=validation_root),
         build_mission_packet_validation_freshness_record(validation_root=validation_root),
+        build_day_packet_validation_freshness_record(validation_root=validation_root),
     ]
 
 

@@ -130,6 +130,11 @@ Current deliverables:
 - `planningops/artifacts/validation/monday-local-mission-packet.json`
 - `planningops/artifacts/validation/<packet-id>-monday-local-mission-packet.json`
 - mission packets now carry forward local validation freshness/promotability snapshot fields from promoted handoff packets
+- `planningops/contracts/monday-local-operator-day-packet-contract.md`
+- `planningops/scripts/write_monday_local_operator_day_packet.py`
+- `planningops/artifacts/validation/monday-local-operator-day-packet.json`
+- `planningops/artifacts/validation/<day-packet-id>-monday-local-operator-day-packet.json`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py local-validation-freshness` now includes the promoted day packet family in the same promotion lane
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -191,6 +196,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether mission packet promotion should also emit an inbox-ready day packet or stay as a reusable validation-sidecar primitive
-2. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
-3. decide whether the carried local validation snapshot should also be mirrored into a day-level inbox or handoff digest artifact
+1. add a monday-native packet consumer once the repo exposes a mission executor richer than the current runtime smoke entrypoint
+2. decide whether the day packet should stay PlanningOps-owned or also emit a monday-owned inbox payload bridge
+3. add a dedicated query/report surface for the promoted day packet if operators need a packet-first view separate from `handoff-report`
