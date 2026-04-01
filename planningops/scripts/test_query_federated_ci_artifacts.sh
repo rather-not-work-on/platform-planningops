@@ -656,6 +656,7 @@ TRIAGE_REPORT_WITH_CROSS_REPO_VALIDATION_OUTPUT="$TMP_DIR/triage-report-with-cro
 HANDOFF_REPORT_OUTPUT="$TMP_DIR/handoff-report.json"
 HANDOFF_REPORT_ALL_OUTPUT="$TMP_DIR/handoff-report-all.json"
 HANDOFF_REPORT_WITH_MONDAY_VALIDATION_OUTPUT="$TMP_DIR/handoff-report-with-monday-validation.json"
+HANDOFF_REPORT_WITH_CROSS_REPO_PACKET_OUTPUT="$TMP_DIR/handoff-report-with-cross-repo-packet.json"
 HANDOFF_WRITE_OUTPUT="$TMP_DIR/handoff-write.json"
 LOCAL_VALIDATION_OUTPUT="$TMP_DIR/local-validation-freshness.json"
 LOCAL_VALIDATION_BLOCKED_OUTPUT="$TMP_DIR/local-validation-freshness-blocked.json"
@@ -2378,6 +2379,8 @@ assert record["monday_validation_snapshot_status"] == "missing", record
 assert record["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
 assert record["monday_validation_summary_lines"] == [], record
 assert record["monday_validation_action_lines"] == [], record
+assert record["cross_repo_validation_packet_report_id"] is None, record
+assert record["cross_repo_validation_packet_path"] is None, record
 assert record["local_validation_summary_lines"] == [
     "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
     "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
@@ -2413,6 +2416,7 @@ assert "### Snapshot" in record["markdown"], record
 assert "### Local Runtime" in record["markdown"], record
 assert "### Local Validation" in record["markdown"], record
 assert "### Monday Schema Validation" not in record["markdown"], record
+assert "### Cross-Repo Validation Packet" not in record["markdown"], record
 assert "snapshot status: `present`" in record["markdown"], record
 assert "snapshot summary: `total=8 promotable=4 blocked=4 stale=1`" in record["markdown"], record
 assert "### Local Validation Actions" in record["markdown"], record
@@ -2454,6 +2458,8 @@ assert record["monday_validation_snapshot_status"] == "missing", record
 assert record["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
 assert record["monday_validation_summary_lines"] == [], record
 assert record["monday_validation_action_lines"] == [], record
+assert record["cross_repo_validation_packet_report_id"] is None, record
+assert record["cross_repo_validation_packet_path"] is None, record
 assert record["local_validation_summary_lines"] == [
     "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
     "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
@@ -2514,6 +2520,8 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert doc["record"]["monday_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", doc
     assert doc["record"]["monday_validation_summary_lines"] == [], doc
     assert doc["record"]["monday_validation_action_lines"] == [], doc
+    assert doc["record"]["cross_repo_validation_packet_report_id"] is None, doc
+    assert doc["record"]["cross_repo_validation_packet_path"] is None, doc
     assert doc["record"]["local_validation_summary_lines"] == [
         "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
         "operator_handoff_report: freshness=stale promotability=blocked reasons=stamped_missing",
@@ -3937,6 +3945,8 @@ assert record["monday_validation_summary_lines"] == [
 assert record["monday_validation_action_lines"] == [
     "local-validation: repair monday_local_inbox_consumer_schema_validation (freshness=fresh, promotability=blocked, reasons=validation_verdict_fail,validation_errors_present)",
 ], record
+assert record["cross_repo_validation_packet_report_id"] is None, record
+assert record["cross_repo_validation_packet_path"] is None, record
 assert record["local_validation_summary_lines"][-2:] == [
     "monday_local_inbox_bridge_schema_validation: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
     "monday_local_inbox_consumer_schema_validation: freshness=fresh promotability=blocked reasons=validation_verdict_fail,validation_errors_present dependencies=monday_local_inbox_consumer_report=current",
@@ -3948,6 +3958,7 @@ assert record["local_validation_action_lines"][-1] == (
 assert "### Monday Schema Validation" in record["markdown"], record
 assert "snapshot summary: `total=2 promotable=1 blocked=1 stale=0`" in record["markdown"], record
 assert "### Monday Schema Validation Actions" in record["markdown"], record
+assert "### Cross-Repo Validation Packet" not in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" cross-repo-validation-report \
@@ -4095,6 +4106,29 @@ assert record["cross_repo_snapshot_status"] == "present", record
 assert record["monday_source_validation_status"] == "attention", record
 assert record["latest_payload_bridge_id"] == "monday-local-inbox-20260401T084500Z", record
 assert record["latest_consumer_run_id"] == "planningops-local-inbox-consumer-20260401T103000Z", record
+PY
+
+python3 "$QUERY_PATH" handoff-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$HANDOFF_REPORT_WITH_CROSS_REPO_PACKET_OUTPUT"
+
+python3 - <<'PY' "$HANDOFF_REPORT_WITH_CROSS_REPO_PACKET_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
+assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
+assert "### Cross-Repo Validation Packet" in record["markdown"], record
+assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in record["markdown"], record
+assert "detail packet path: `" in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
