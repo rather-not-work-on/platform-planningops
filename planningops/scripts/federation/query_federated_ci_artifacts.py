@@ -344,6 +344,8 @@ class HandoffReportRecord:
     monday_validation_records: list[LocalValidationFreshnessRecord]
     monday_validation_summary_lines: list[str]
     monday_validation_action_lines: list[str]
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
     queue_lines: list[str]
     target_lines: list[str]
     immediate_action_lines: list[str]
@@ -4358,6 +4360,25 @@ def build_handoff_report_record(
         for action in (build_local_validation_action_line(record) for record in monday_validation_records)
         if action is not None
     ]
+    cross_repo_validation_packet_report_id = None
+    cross_repo_validation_packet_path = None
+    cross_repo_validation_record = build_cross_repo_validation_report_record(
+        validation_root=validation_root,
+        consumer_root=consumer_root,
+        monday_validation_root=monday_validation_root,
+    )
+    if (
+        cross_repo_validation_record.cross_repo_action_lines
+        or cross_repo_validation_record.monday_validation_report_action_lines
+    ):
+        packet_record = select_cross_repo_validation_packet_record(
+            records=discover_cross_repo_validation_packet_records(validation_root=validation_root),
+            report_id=None,
+            source_kind="latest",
+        )
+        if packet_record is not None:
+            cross_repo_validation_packet_report_id = packet_record.report_id
+            cross_repo_validation_packet_path = packet_record.report_path
     headline = f"Operator handoff report: {triage_report.headline.removeprefix('Federated CI triage report: ')}"
     immediate_action_lines: list[str] = []
     if triage_report.local_operator_next_step is not None:
@@ -4415,6 +4436,15 @@ def build_handoff_report_record(
                 *[f"{index}. {line}" for index, line in enumerate(monday_validation_action_lines, start=1)],
             ]
         )
+    cross_repo_validation_packet_lines: list[str] = []
+    if cross_repo_validation_packet_report_id is not None:
+        cross_repo_validation_packet_lines.append(
+            f"- detail packet report id: `{cross_repo_validation_packet_report_id}`"
+        )
+    if cross_repo_validation_packet_path is not None:
+        cross_repo_validation_packet_lines.append(f"- detail packet path: `{cross_repo_validation_packet_path}`")
+    if cross_repo_validation_packet_lines:
+        markdown_lines.extend(["", "### Cross-Repo Validation Packet", *cross_repo_validation_packet_lines])
     if local_validation_action_lines:
         markdown_lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
     markdown_lines.extend(["", "### Queue", *[f"- {line}" for line in triage_report.queue_lines]])
@@ -4444,6 +4474,8 @@ def build_handoff_report_record(
         monday_validation_records=monday_validation_records,
         monday_validation_summary_lines=monday_validation_summary_lines,
         monday_validation_action_lines=monday_validation_action_lines,
+        cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=cross_repo_validation_packet_path,
         queue_lines=triage_report.queue_lines,
         target_lines=triage_report.target_lines,
         immediate_action_lines=immediate_action_lines,
@@ -4474,6 +4506,12 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         sections.extend(["monday_validation", *record.monday_validation_summary_lines])
     if record.monday_validation_action_lines:
         sections.extend(["monday_validation_actions", *record.monday_validation_action_lines])
+    if record.cross_repo_validation_packet_report_id is not None:
+        sections.append(
+            f"cross_repo_validation_packet_report_id\t{record.cross_repo_validation_packet_report_id}"
+        )
+    if record.cross_repo_validation_packet_path is not None:
+        sections.append(f"cross_repo_validation_packet_path\t{record.cross_repo_validation_packet_path}")
     if record.local_validation_action_lines:
         sections.extend(["local_validation_actions", *record.local_validation_action_lines])
     sections.extend(["queue", *record.queue_lines, "targets", *record.target_lines, "immediate_actions", *record.immediate_action_lines])

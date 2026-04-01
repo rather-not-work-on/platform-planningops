@@ -193,6 +193,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report` now carry the same cross-repo validation snapshot and monday source validation summary that `triage-feed` already exposes
 - `planningops/scripts/federation/query_federated_ci_artifacts.py cross-repo-validation-packet` now exposes the promoted latest/stamped packet directly from `planningops/artifacts/validation` so operators can read immutable evidence without recomputing source roots
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report` now point summary-first triage surfaces at the promoted `cross-repo-validation-packet` through explicit packet `report_id` and `path` fields so operators can jump to the immutable detail packet without re-expanding source roots
+- `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now points blocking cross-repo validation states at the promoted `cross-repo-validation-packet` through explicit packet `report_id` and `path` fields so operator handoff can jump straight to immutable detail evidence
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -254,6 +255,6 @@ bash scripts/litellm_stack_launcher.sh --mode start
 
 ## Next Natural Packets
 
-1. decide whether `handoff-report` should point to the promoted `cross-repo-validation-packet` explicitly when cross-repo validation is the blocking lane
-2. decide whether the summary-only cross-repo section should stay pointer-only or grow a dedicated actions/details section beyond `cross-repo-validation-packet`
+1. decide whether the summary-only cross-repo section should stay pointer-only or grow a dedicated actions/details section beyond `cross-repo-validation-packet`
+2. decide whether payload-first and apply/result-first operator blockers should also carry the promoted `cross-repo-validation-packet` pointer explicitly instead of relying on snapshot-only linkage
 3. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
