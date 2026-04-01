@@ -470,6 +470,7 @@ HEALTH_SCAN_OUTPUT="$TMP_DIR/health-scan.json"
 HEALTH_SCAN_DEGRADED_OUTPUT="$TMP_DIR/health-scan-degraded.json"
 HEALTH_SUMMARY_OUTPUT="$TMP_DIR/health-summary.json"
 HEALTH_SUMMARY_BLOCKED_OUTPUT="$TMP_DIR/health-summary-blocked.json"
+HEALTH_SUMMARY_RUNTIME_OUTPUT="$TMP_DIR/health-summary-runtime.json"
 RECONCILE_HEALTHY_OUTPUT="$TMP_DIR/reconcile-healthy.json"
 RECONCILE_RESTORED_OUTPUT="$TMP_DIR/reconcile-restored.json"
 RECONCILE_SCAN_OUTPUT="$TMP_DIR/reconcile-scan.json"
@@ -781,6 +782,11 @@ assert runtime["latest_alert_run_id"] == "federated-ci-runtime-gates-20260319-re
 assert runtime["latest_alert_health_status"] == "unknown", runtime
 assert runtime["latest_alert_failed_checks"] == [], runtime
 assert runtime["latest_alert_reasons"] == ["checkpoint_missing", "reconcile_unknown"], runtime
+assert runtime["failure_domain_counts"] == {"runtime": 1}, runtime
+assert runtime["latest_failure_run_id"] == "federated-ci-runtime-gates-20260319-rerun27", runtime
+assert runtime["latest_failure_source_kind"] == "stamped", runtime
+assert runtime["latest_failure_health_status"] == "blocked", runtime
+assert runtime["latest_failure_domains"] == ["runtime"], runtime
 
 assert local["run_count"] == 1, local
 assert local["healthy_count"] == 0, local
@@ -791,6 +797,9 @@ assert local["latest_run_id"] == "federated-ci-local-20260301", local
 assert local["latest_run_health_status"] == "unknown", local
 assert local["latest_alert_run_id"] == "federated-ci-local-20260301", local
 assert local["latest_alert_health_status"] == "unknown", local
+assert local["failure_domain_counts"] == {}, local
+assert local["latest_failure_run_id"] is None, local
+assert local["latest_failure_domains"] == [], local
 PY
 
 python3 "$QUERY_PATH" health-summary \
@@ -810,6 +819,26 @@ records = doc["records"]
 assert len(records) == 1, records
 assert records[0]["family"] == "federated-ci-runtime-gates", records
 assert records[0]["blocked_count"] == 2, records
+PY
+
+python3 "$QUERY_PATH" health-summary \
+  --has-failure-domain runtime \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" >"$HEALTH_SUMMARY_RUNTIME_OUTPUT"
+
+python3 - <<'PY' "$HEALTH_SUMMARY_RUNTIME_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+assert records[0]["family"] == "federated-ci-runtime-gates", records
+assert records[0]["failure_domain_counts"] == {"runtime": 1}, records
+assert records[0]["latest_failure_run_id"] == "federated-ci-runtime-gates-20260319-rerun27", records
 PY
 
 python3 "$QUERY_PATH" reconcile-status \
