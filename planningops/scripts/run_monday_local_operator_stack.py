@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_VALIDATION_ROOT = Path("planningops/artifacts/validation")
 
 
 def now_utc() -> str:
@@ -46,6 +47,11 @@ def resolve_path(base: Path, raw_path: str) -> Path:
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def write_json(path: Path, doc: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
 
 
 def run_command(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
@@ -164,6 +170,11 @@ def main() -> int:
         "--output",
         default=None,
         help="Aggregate output path. Defaults to planningops/runtime-artifacts/local/monday-local-operator-stack/<run-id>.json",
+    )
+    parser.add_argument(
+        "--validation-root",
+        default=str(DEFAULT_VALIDATION_ROOT),
+        help="Validation artifact root for mirrored latest + stamped operator reports.",
     )
     args = parser.parse_args()
 
@@ -285,6 +296,18 @@ def main() -> int:
             reason_code = "monday_local_operator_stack_ok"
             recommended_next_steps.append("Inspect the stamped reports and use the monday direct smoke output as the next handoff evidence.")
 
+    output_path = (
+        Path(args.output)
+        if args.output
+        else repo_root / "planningops" / "runtime-artifacts" / "local" / "monday-local-operator-stack" / f"{args.run_id}.json"
+    )
+    if not output_path.is_absolute():
+        output_path = (repo_root / output_path).resolve()
+
+    validation_root = resolve_path(repo_root, args.validation_root)
+    validation_latest_report_path = validation_root / "monday-local-operator-stack-report.json"
+    validation_stamped_report_path = validation_root / f"{args.run_id}-monday-local-operator-stack-report.json"
+
     report = {
         "generated_at_utc": now_utc(),
         "run_id": args.run_id,
@@ -303,17 +326,16 @@ def main() -> int:
         "stack_smoke": stack_step,
         "direct_smoke": direct_step,
         "recommended_next_steps": recommended_next_steps,
+        "artifact_paths": {
+            "detail_dir": str(base_dir),
+            "runtime_report_path": str(output_path),
+            "validation_latest_report_path": str(validation_latest_report_path),
+            "validation_stamped_report_path": str(validation_stamped_report_path),
+        },
     }
 
-    output_path = (
-        Path(args.output)
-        if args.output
-        else repo_root / "planningops" / "runtime-artifacts" / "local" / "monday-local-operator-stack" / f"{args.run_id}.json"
-    )
-    if not output_path.is_absolute():
-        output_path = (repo_root / output_path).resolve()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(report, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+    for path in {output_path, validation_latest_report_path, validation_stamped_report_path}:
+        write_json(path, report)
 
     print(f"report written: {output_path}")
     print(f"verdict={verdict} reason_code={reason_code}")

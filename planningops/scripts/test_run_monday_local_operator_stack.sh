@@ -85,6 +85,7 @@ PY
 chmod +x "$fake_monday_smoke"
 
 ready_output="$TMP_DIR/ready-output.json"
+validation_root="$TMP_DIR/validation"
 python3 "$SCRIPT_PATH" \
   --workspace-root "$workspace_root" \
   --planningops-runtime-profile-file "$planningops_runtime" \
@@ -93,22 +94,41 @@ python3 "$SCRIPT_PATH" \
   --direct-profile local_ollama \
   --probe-endpoints off \
   --codex-bin "$fake_codex" \
+  --run-id monday-local-operator-stack-ready-test \
   --stack-smoke-script "$fake_stack_smoke" \
   --monday-smoke-script "$fake_monday_smoke" \
+  --validation-root "$validation_root" \
   --output "$ready_output"
 
-python3 - <<'PY' "$ready_output"
+python3 - <<'PY' "$ready_output" "$validation_root"
 import json
 import sys
 from pathlib import Path
 
 report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+validation_root = Path(sys.argv[2])
 assert report["verdict"] == "pass", report
 assert report["reason_code"] == "monday_local_operator_stack_ok", report
+assert report["run_id"] == "monday-local-operator-stack-ready-test", report
 assert report["readiness"]["status"] == "ready", report
 assert report["stack_smoke"]["status"] == "pass", report
 assert report["direct_smoke"]["status"] == "pass", report
 assert report["direct_smoke"]["report_summary"]["profile"] == "local_ollama", report
+artifact_paths = report["artifact_paths"]
+assert Path(artifact_paths["validation_latest_report_path"]).resolve() == (
+    validation_root / "monday-local-operator-stack-report.json"
+).resolve(), report
+assert Path(artifact_paths["validation_stamped_report_path"]).resolve() == (
+    validation_root / "monday-local-operator-stack-ready-test-monday-local-operator-stack-report.json"
+).resolve(), report
+latest_doc = json.loads((validation_root / "monday-local-operator-stack-report.json").resolve().read_text(encoding="utf-8"))
+stamped_doc = json.loads(
+    (validation_root / "monday-local-operator-stack-ready-test-monday-local-operator-stack-report.json")
+    .resolve()
+    .read_text(encoding="utf-8")
+)
+assert latest_doc["run_id"] == "monday-local-operator-stack-ready-test", latest_doc
+assert stamped_doc["run_id"] == "monday-local-operator-stack-ready-test", stamped_doc
 PY
 
 fake_readiness="$TMP_DIR/fake_readiness.py"
@@ -150,21 +170,33 @@ python3 "$SCRIPT_PATH" \
   --direct-profile local_ollama \
   --probe-endpoints off \
   --codex-bin "$fake_codex" \
+  --run-id monday-local-operator-stack-bootstrap-test \
   --readiness-script "$fake_readiness" \
   --stack-smoke-script "$fake_stack_smoke" \
   --monday-smoke-script "$fake_monday_smoke" \
+  --validation-root "$validation_root" \
   --output "$bootstrap_output"
 
-python3 - <<'PY' "$bootstrap_output"
+python3 - <<'PY' "$bootstrap_output" "$validation_root"
 import json
 import sys
 from pathlib import Path
 
 report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+validation_root = Path(sys.argv[2])
 assert report["verdict"] == "pass", report
+assert report["run_id"] == "monday-local-operator-stack-bootstrap-test", report
 assert report["readiness"]["status"] == "bootstrap_required", report
 assert report["stack_smoke"]["status"] == "skipped", report
 assert report["direct_smoke"]["status"] == "pass", report
+latest_doc = json.loads((validation_root / "monday-local-operator-stack-report.json").resolve().read_text(encoding="utf-8"))
+stamped_doc = json.loads(
+    (validation_root / "monday-local-operator-stack-bootstrap-test-monday-local-operator-stack-report.json")
+    .resolve()
+    .read_text(encoding="utf-8")
+)
+assert latest_doc["run_id"] == "monday-local-operator-stack-bootstrap-test", latest_doc
+assert stamped_doc["run_id"] == "monday-local-operator-stack-bootstrap-test", stamped_doc
 PY
 
 blocked_readiness="$TMP_DIR/blocked_readiness.py"
@@ -207,24 +239,36 @@ python3 "$SCRIPT_PATH" \
   --direct-profile local_ollama \
   --probe-endpoints off \
   --codex-bin "$fake_codex" \
+  --run-id monday-local-operator-stack-blocked-test \
   --readiness-script "$blocked_readiness" \
   --stack-smoke-script "$fake_stack_smoke" \
   --monday-smoke-script "$fake_monday_smoke" \
+  --validation-root "$validation_root" \
   --output "$blocked_output"
 status=$?
 set -e
 test "$status" -ne 0
 
-python3 - <<'PY' "$blocked_output"
+python3 - <<'PY' "$blocked_output" "$validation_root"
 import json
 import sys
 from pathlib import Path
 
 report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+validation_root = Path(sys.argv[2])
 assert report["verdict"] == "fail", report
+assert report["run_id"] == "monday-local-operator-stack-blocked-test", report
 assert report["reason_code"] == "readiness_blocked", report
 assert report["stack_smoke"]["status"] == "skipped", report
 assert report["direct_smoke"]["status"] == "skipped", report
+latest_doc = json.loads((validation_root / "monday-local-operator-stack-report.json").resolve().read_text(encoding="utf-8"))
+stamped_doc = json.loads(
+    (validation_root / "monday-local-operator-stack-blocked-test-monday-local-operator-stack-report.json")
+    .resolve()
+    .read_text(encoding="utf-8")
+)
+assert latest_doc["run_id"] == "monday-local-operator-stack-blocked-test", latest_doc
+assert stamped_doc["run_id"] == "monday-local-operator-stack-blocked-test", stamped_doc
 PY
 
 echo "monday local operator stack contract ok"
