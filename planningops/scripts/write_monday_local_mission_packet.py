@@ -99,6 +99,28 @@ def build_cross_repo_validation_snapshot(
     )
 
 
+def should_promote_cross_repo_primary_action(
+    *,
+    immediate_actions: list[str],
+    cross_repo_validation_action_line: str | None,
+    cross_repo_validation_packet_report_id: str | None,
+    cross_repo_validation_packet_path: str | None,
+) -> bool:
+    if cross_repo_validation_action_line is None:
+        return False
+    if cross_repo_validation_packet_report_id is None or cross_repo_validation_packet_path is None:
+        return False
+    if any(action.startswith("local-runtime:") for action in immediate_actions):
+        return False
+    if any(action.startswith("local-validation:") for action in immediate_actions):
+        return False
+    return True
+
+
+def prepend_once(values: list[str], item: str) -> list[str]:
+    return [item, *[value for value in values if value != item]]
+
+
 def build_mission_objective(handoff_record: dict) -> str:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     if target_lines:
@@ -221,13 +243,6 @@ def main() -> int:
     immediate_actions = [str(line) for line in list(handoff_record.get("immediate_action_lines") or []) if str(line).strip()]
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     mission_objective = build_mission_objective(handoff_record)
-    primary_action = immediate_actions[0] if immediate_actions else (target_lines[0] if target_lines else mission_objective)
-    cross_repo_validation_packet_report_id = normalize_optional_string(
-        handoff_record.get("cross_repo_validation_packet_report_id")
-    )
-    cross_repo_validation_packet_path = normalize_optional_string(
-        handoff_record.get("cross_repo_validation_packet_path")
-    )
     (
         local_validation_snapshot_status,
         local_validation_records,
@@ -242,6 +257,20 @@ def main() -> int:
         monday_source_validation_report_lines,
         cross_repo_validation_action_lines,
     ) = build_cross_repo_validation_snapshot(handoff_record)
+    cross_repo_validation_packet_report_id = normalize_optional_string(
+        handoff_record.get("cross_repo_validation_packet_report_id")
+    )
+    cross_repo_validation_packet_path = normalize_optional_string(
+        handoff_record.get("cross_repo_validation_packet_path")
+    )
+    if should_promote_cross_repo_primary_action(
+        immediate_actions=immediate_actions,
+        cross_repo_validation_action_line=cross_repo_validation_action_line,
+        cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=cross_repo_validation_packet_path,
+    ):
+        immediate_actions = prepend_once(immediate_actions, cross_repo_validation_action_line)
+    primary_action = immediate_actions[0] if immediate_actions else (target_lines[0] if target_lines else mission_objective)
 
     expected_evidence_outputs = [
         str(latest_packet_path.resolve()),

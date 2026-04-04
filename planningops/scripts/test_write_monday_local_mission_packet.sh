@@ -17,6 +17,10 @@ LEGACY_HANDOFF_REPORT="$VALIDATION_DIR/operator-handoff-report-legacy.json"
 LEGACY_OUTPUT_PATH="$TMP_DIR/mission-packet-legacy-output.json"
 LEGACY_STDOUT_PATH="$TMP_DIR/mission-packet-legacy-stdout.json"
 LEGACY_PACKET_ID="monday-local-mission-20260401T080100Z"
+STEERED_HANDOFF_REPORT="$VALIDATION_DIR/operator-handoff-report-steered.json"
+STEERED_OUTPUT_PATH="$TMP_DIR/mission-packet-steered-output.json"
+STEERED_STDOUT_PATH="$TMP_DIR/mission-packet-steered-stdout.json"
+STEERED_PACKET_ID="monday-local-mission-20260401T080200Z"
 
 mkdir -p "$VALIDATION_DIR"
 
@@ -305,6 +309,79 @@ assert mission["monday_source_validation_report_lines"] == [], mission
 assert mission["cross_repo_validation_action_lines"] == [], mission
 assert mission["cross_repo_validation_packet_report_id"] is None, mission
 assert mission["cross_repo_validation_packet_path"] is None, mission
+PY
+
+cat >"$STEERED_HANDOFF_REPORT" <<'JSON'
+{
+  "generated_at_utc": "2026-04-01T07:02:00+00:00",
+  "report_id": "operator-handoff-20260401T070200Z",
+  "artifact_paths": {
+    "latest_report_path": "/tmp/operator-handoff-report.json",
+    "stamped_report_path": "/tmp/operator-handoff-20260401T070200Z-report.json",
+    "output_path": null
+  },
+  "record": {
+    "source_kind": "stamped",
+    "target_limit": 1,
+    "headline": "Operator handoff report: 1 attention family",
+    "attention_summary": "active=0, lagging=1, clear=0",
+    "newest_failing_summary": "planningops-local-inbox-consumer / planningops-local-inbox-consumer-20260401T103000Z / blocked",
+    "newest_recovered_summary": null,
+    "local_operator_record": null,
+    "local_operator_summary": "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked stack=skipped direct=skipped mode=both reason=readiness_blocked",
+    "local_operator_next_step": null,
+    "queue_lines": [],
+    "target_lines": [
+      "[blocked/current] planningops-local-inbox-consumer -> planningops-local-inbox-consumer-20260401T103000Z domains=launch_request,runtime_report,consumer_report"
+    ],
+    "immediate_action_lines": [
+      "triage-target: [blocked/current] planningops-local-inbox-consumer -> planningops-local-inbox-consumer-20260401T103000Z domains=launch_request,runtime_report,consumer_report"
+    ],
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=5 promotable=3 blocked=2 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+      "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "consumer-report schema verdict=pass errors=0 warnings=0"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ],
+    "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
+    "cross_repo_validation_packet_path": "/tmp/cross-repo-validation-report.json",
+    "markdown": "## Operator Handoff Report"
+  }
+}
+JSON
+
+python3 planningops/scripts/write_monday_local_mission_packet.py \
+  --validation-root "$VALIDATION_DIR" \
+  --handoff-report "$STEERED_HANDOFF_REPORT" \
+  --local-operator-report "$LOCAL_OPERATOR_REPORT" \
+  --packet-id "$STEERED_PACKET_ID" \
+  --output "$STEERED_OUTPUT_PATH" >"$STEERED_STDOUT_PATH"
+
+python3 - <<'PY' "$STEERED_STDOUT_PATH"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+mission = doc["mission_packet"]
+assert mission["mission_objective"] == (
+    "Resolve [blocked/current] planningops-local-inbox-consumer -> "
+    "planningops-local-inbox-consumer-20260401T103000Z domains=launch_request,runtime_report,consumer_report"
+), mission
+assert mission["primary_action"] == (
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+), mission
+assert mission["immediate_actions"][0] == mission["primary_action"], mission
+assert mission["immediate_actions"][1].startswith("triage-target:"), mission
+assert "Start with `cross-repo-validation: repair monday_local_inbox_runtime_report" in mission["mission_prompt"], mission
 PY
 
 echo "write monday local mission packet ok"

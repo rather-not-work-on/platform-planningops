@@ -200,6 +200,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries the same linked packet snapshot, detail lines, monday source validation report lines, and action lines that triage surfaces already expose, while still keeping the immutable `cross-repo-validation-packet` pointer for deep-link evidence
 - `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now preserve the promoted `cross-repo-validation-packet` pointer inside mission/day packet surfaces so packet-only operator flows can reopen immutable cross-repo evidence without routing back through `handoff-report`
 - `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now also carry the linked cross-repo validation snapshot, detail lines, monday source validation report lines, and action lines so mission/day packet-only flows do not lose the same operator context already available on handoff and triage surfaces
+- `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now fail-closed promote `cross_repo_validation_action_line` into mission/day action selection only when no stronger `local-runtime:` or `local-validation:` action already exists and an immutable promoted packet pointer is present
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -262,4 +263,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether mission/day packet surfaces should keep cross-repo validation as supporting context only or allow the linked `cross_repo_validation_action_line` to steer packet headline/primary action selection when monday-local blockers are downstream of cross-repo validation
+2. decide whether promoted cross-repo validation should ever steer `mission_objective` or target ranking itself, or whether action selection is the right ceiling and the packet should stay objective-stable
