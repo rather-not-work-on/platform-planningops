@@ -52,33 +52,34 @@ Top-level required fields:
 3. `mission_packet_id`
 4. `headline`
 5. `mission_objective`
-6. `mission_prompt`
-7. `planner_profile`
-8. `launch_mode`
-9. `local_model_route`
-10. `first_action_command`
-11. `monday_runtime_entrypoint_command`
-12. `rollback_command`
-13. `queue_lines`
-14. `target_lines`
-15. `immediate_actions`
-16. `local_validation_snapshot_status`
-17. `local_validation_records`
-18. `local_validation_summary_lines`
-19. `local_validation_action_lines`
-20. `attachments`
-21. `cross_repo_validation_packet_report_id`
-22. `cross_repo_validation_packet_path`
-23. `cross_repo_validation_snapshot_status`
-24. `cross_repo_validation_snapshot_summary`
-25. `cross_repo_validation_action_line`
-26. `cross_repo_validation_detail_lines`
-27. `monday_source_validation_report_lines`
-28. `cross_repo_validation_action_lines`
-29. `body_markdown`
-30. `source_artifacts.mission_packet_path`
-31. `source_artifacts.handoff_report_path`
-32. `source_artifacts.local_operator_report_path`
+6. `primary_action`
+7. `mission_prompt`
+8. `planner_profile`
+9. `launch_mode`
+10. `local_model_route`
+11. `first_action_command`
+12. `monday_runtime_entrypoint_command`
+13. `rollback_command`
+14. `queue_lines`
+15. `target_lines`
+16. `immediate_actions`
+17. `local_validation_snapshot_status`
+18. `local_validation_records`
+19. `local_validation_summary_lines`
+20. `local_validation_action_lines`
+21. `attachments`
+22. `cross_repo_validation_packet_report_id`
+23. `cross_repo_validation_packet_path`
+24. `cross_repo_validation_snapshot_status`
+25. `cross_repo_validation_snapshot_summary`
+26. `cross_repo_validation_action_line`
+27. `cross_repo_validation_detail_lines`
+28. `monday_source_validation_report_lines`
+29. `cross_repo_validation_action_lines`
+30. `body_markdown`
+31. `source_artifacts.mission_packet_path`
+32. `source_artifacts.handoff_report_path`
+33. `source_artifacts.local_operator_report_path`
 
 Optional fields:
 - `attention_summary`
@@ -95,6 +96,7 @@ Optional fields:
 5. local validation snapshot fields must be copied from the mission packet when present; otherwise the writer may fall back to the promoted handoff snapshot and must mark that fallback explicitly; otherwise it must emit `missing` with empty collections.
 6. when the promoted mission packet already carries a promoted `cross-repo-validation-packet` pointer, the day packet must preserve that immutable `report_id`/`path` pair; only legacy mission packets may fall back to the handoff pointer.
 7. cross-repo validation snapshot/detail/action fields must be copied from the mission packet when present; otherwise the writer may fall back to the promoted handoff snapshot for legacy compatibility; otherwise it must emit `missing`, the zero-summary default, and empty cross-repo detail/action collections.
+8. `primary_action` must be copied from the promoted mission packet without recomputing it. If the copied `primary_action` is a promoted `cross_repo_validation_action_line`, the day packet headline may append that next step but must not rewrite `mission_objective`.
 
 ## Command Rules
 
@@ -130,6 +132,11 @@ Every day packet must also preserve the current cross-repo validation context:
 - `monday_source_validation_report_lines`
 - `cross_repo_validation_action_lines`
 - body-level visibility of the cross-repo snapshot, details, and actions so the next operator step does not need to reopen `handoff-report` just to recover them
+
+Every day packet must also preserve the selected mission action:
+- `primary_action`
+- body-level visibility of the selected action
+- optional headline-level visibility when the selected action was promoted from cross-repo validation
 
 ## Failure Rules
 

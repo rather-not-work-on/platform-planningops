@@ -14,6 +14,10 @@ LOCAL_OPERATOR_REPORT="$VALIDATION_DIR/monday-local-operator-stack-report.json"
 OUTPUT_PATH="$TMP_DIR/day-packet-output.json"
 STDOUT_PATH="$TMP_DIR/day-packet-stdout.json"
 DAY_PACKET_ID="monday-local-day-20260401T083000Z"
+STEERED_MISSION_PACKET="$VALIDATION_DIR/monday-local-mission-packet-steered.json"
+STEERED_OUTPUT_PATH="$TMP_DIR/day-packet-steered-output.json"
+STEERED_STDOUT_PATH="$TMP_DIR/day-packet-steered-stdout.json"
+STEERED_DAY_PACKET_ID="monday-local-day-20260401T083100Z"
 
 mkdir -p "$VALIDATION_DIR"
 
@@ -254,6 +258,7 @@ stamped_doc = json.loads(stamped_path.read_text(encoding="utf-8"))
 contract_text = Path("planningops/contracts/monday-local-operator-day-packet-contract.md").read_text(encoding="utf-8")
 assert "mission_packet_id" in contract_text, contract_text
 assert "first_action_command" in contract_text, contract_text
+assert "primary_action" in contract_text, contract_text
 assert "attachments" in contract_text, contract_text
 assert "local_validation_snapshot_status" in contract_text, contract_text
 assert "body_markdown" in contract_text, contract_text
@@ -275,6 +280,7 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert packet["version"] == "v1", packet
     assert packet["day_packet_id"] == day_packet_id, packet
     assert packet["mission_packet_id"] == "monday-local-mission-20260401T080000Z", packet
+    assert packet["primary_action"] == "local-runtime: Expose Codex and add a direct local LLM profile.", packet
     assert packet["headline"].startswith("Monday local operator day packet: Resolve [active/latest-gap]"), packet
     assert packet["mission_objective"] == (
         "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile"
@@ -336,6 +342,7 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert packet["source_artifacts"]["local_operator_report_path"] == str((validation_dir / "monday-local-operator-stack-report.json").resolve()), packet
     assert "## Monday Local Operator Day Packet" in packet["body_markdown"], packet
     assert "### Commands" in packet["body_markdown"], packet
+    assert "- primary action: local-runtime: Expose Codex and add a direct local LLM profile." in packet["body_markdown"], packet
     assert "### Cross-Repo Validation" in packet["body_markdown"], packet
     assert "### Cross-Repo Validation Packet" in packet["body_markdown"], packet
     assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in packet["body_markdown"], packet
@@ -351,6 +358,60 @@ assert stdout_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).reso
 assert output_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), output_doc
 assert latest_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), latest_doc
 assert stamped_doc["artifact_paths"]["output_path"] == str(Path(sys.argv[2]).resolve()), stamped_doc
+PY
+
+python3 - <<'PY' "$MISSION_PACKET" "$STEERED_MISSION_PACKET" "$VALIDATION_DIR"
+import json
+import sys
+from pathlib import Path
+
+source_path = Path(sys.argv[1])
+target_path = Path(sys.argv[2])
+validation_dir = Path(sys.argv[3]).resolve()
+doc = json.loads(source_path.read_text(encoding="utf-8"))
+doc["packet_id"] = "monday-local-mission-20260401T080200Z"
+doc["artifact_paths"]["stamped_packet_path"] = str(
+    (validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json").resolve()
+)
+doc["mission_packet"]["packet_id"] = "monday-local-mission-20260401T080200Z"
+doc["mission_packet"]["primary_action"] = (
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+)
+doc["mission_packet"]["immediate_actions"] = [
+    doc["mission_packet"]["primary_action"],
+    "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+]
+payload = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
+target_path.write_text(payload, encoding="utf-8")
+(validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json").write_text(payload, encoding="utf-8")
+PY
+
+python3 planningops/scripts/write_monday_local_operator_day_packet.py \
+  --validation-root "$VALIDATION_DIR" \
+  --mission-packet "$STEERED_MISSION_PACKET" \
+  --handoff-report "$HANDOFF_REPORT" \
+  --local-operator-report "$LOCAL_OPERATOR_REPORT" \
+  --day-packet-id "$STEERED_DAY_PACKET_ID" \
+  --output "$STEERED_OUTPUT_PATH" >"$STEERED_STDOUT_PATH"
+
+python3 - <<'PY' "$STEERED_STDOUT_PATH"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+packet = doc["day_packet"]
+assert packet["primary_action"] == (
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+), packet
+assert packet["headline"].startswith(
+    "Monday local operator day packet: Resolve [active/latest-gap]"
+), packet
+assert "| next action: cross-repo-validation: repair monday_local_inbox_runtime_report" in packet["headline"], packet
+assert packet["immediate_actions"][0] == packet["primary_action"], packet
+assert "- primary action: cross-repo-validation: repair monday_local_inbox_runtime_report " in packet["body_markdown"], packet
 PY
 
 echo "write monday local operator day packet ok"

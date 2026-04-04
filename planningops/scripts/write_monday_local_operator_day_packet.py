@@ -159,6 +159,7 @@ def build_body_markdown(
     *,
     headline: str,
     mission_objective: str,
+    primary_action: str,
     planner_profile: str,
     launch_mode: str,
     local_model_route: str,
@@ -188,6 +189,7 @@ def build_body_markdown(
         "### Snapshot",
         f"- headline: {headline}",
         f"- mission objective: {mission_objective}",
+        f"- primary action: {primary_action}",
         f"- planner profile: `{planner_profile}`",
         f"- launch mode: `{launch_mode}`",
         f"- local model route: `{local_model_route}`",
@@ -284,6 +286,7 @@ def main() -> int:
 
     mission_packet_id = require_string(mission_doc.get("packet_id"), "mission packet id")
     mission_objective = require_string(mission_packet.get("mission_objective"), "mission objective")
+    primary_action = require_string(mission_packet.get("primary_action"), "primary action")
     mission_prompt = require_string(mission_packet.get("mission_prompt"), "mission prompt")
     planner_profile = require_string(mission_packet.get("planner_profile"), "planner profile")
     launch_mode = require_string(mission_packet.get("launch_mode"), "launch mode")
@@ -295,6 +298,8 @@ def main() -> int:
     )
     rollback_command = require_string(mission_packet.get("rollback_command"), "rollback command")
     headline = f"Monday local operator day packet: {mission_objective}"
+    if primary_action.startswith("cross-repo-validation:"):
+        headline = f"{headline} | next action: {primary_action}"
 
     queue_lines = normalize_string_list(handoff_record.get("queue_lines"))
     target_lines = normalize_string_list(handoff_record.get("target_lines"))
@@ -353,6 +358,7 @@ def main() -> int:
         "mission_packet_id": mission_packet_id,
         "headline": headline,
         "mission_objective": mission_objective,
+        "primary_action": primary_action,
         "mission_prompt": mission_prompt,
         "attention_summary": str(mission_packet.get("attention_summary") or handoff_record.get("attention_summary") or ""),
         "newest_failing_summary": str(mission_packet.get("newest_failing_summary") or handoff_record.get("newest_failing_summary") or ""),
@@ -383,6 +389,7 @@ def main() -> int:
         "body_markdown": build_body_markdown(
             headline=headline,
             mission_objective=mission_objective,
+            primary_action=primary_action,
             planner_profile=planner_profile,
             launch_mode=launch_mode,
             local_model_route=local_model_route,

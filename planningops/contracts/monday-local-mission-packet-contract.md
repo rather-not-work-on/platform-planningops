@@ -94,6 +94,10 @@ Optional fields:
 5. local validation snapshot fields must be carried forward from the promoted handoff packet when present; otherwise the mission packet must emit `local_validation_snapshot_status=missing` with empty local validation collections.
 6. when the promoted handoff already points at a promoted `cross-repo-validation-packet`, the mission packet must preserve that immutable `report_id`/`path` pair instead of recomputing or rewriting it.
 7. cross-repo validation snapshot/detail/action fields must be carried forward from the promoted handoff packet when present; otherwise the mission packet must emit `cross_repo_validation_snapshot_status=missing`, `cross_repo_validation_snapshot_summary=total=0 promotable=0 blocked=0 stale=0`, and empty cross-repo detail/action collections.
+8. `primary_action` must stay fail-closed:
+   - keep the leading `local-runtime:` action when the promoted handoff already exposes one
+   - otherwise keep the leading `local-validation:` action when the promoted handoff already exposes one
+   - only promote `cross_repo_validation_action_line` to `primary_action` when both of the above are absent and the promoted handoff also carries an immutable `cross-repo-validation-packet` pointer
 
 ## Command Rules
 
@@ -137,6 +141,11 @@ Every packet must also preserve the current cross-repo validation context:
 - `cross_repo_validation_detail_lines`
 - `monday_source_validation_report_lines`
 - `cross_repo_validation_action_lines`
+
+When cross-repo validation becomes the selected next step, the mission packet must:
+- promote `cross_repo_validation_action_line` to `primary_action`
+- put that promoted action first in `immediate_actions`
+- keep `mission_objective` stable so the packet still points at the same target family
 
 ## Failure Rules
 
