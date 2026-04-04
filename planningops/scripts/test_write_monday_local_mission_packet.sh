@@ -182,6 +182,8 @@ assert "monday_source_validation_report_lines" in contract_text, contract_text
 assert "cross_repo_validation_action_lines" in contract_text, contract_text
 assert "cross_repo_validation_packet_report_id" in contract_text, contract_text
 assert "cross_repo_validation_packet_path" in contract_text, contract_text
+assert "cross_repo_validation_steering_scope" in contract_text, contract_text
+assert "cross_repo_validation_primary_action_promoted" in contract_text, contract_text
 
 for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert doc["packet_id"] == packet_id, doc
@@ -198,6 +200,8 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
         "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile"
     ), mission
     assert mission["primary_action"] == "local-runtime: Expose Codex and add a direct local LLM profile.", mission
+    assert mission["cross_repo_validation_steering_scope"] == "none", mission
+    assert mission["cross_repo_validation_primary_action_promoted"] is False, mission
     assert mission["preflight_command"] == (
         "python3 planningops/scripts/run_monday_local_operator_stack.py "
         f"--execution-mode direct --direct-profile local_ollama --probe-endpoints on --run-id {packet_id}"
@@ -309,6 +313,8 @@ assert mission["monday_source_validation_report_lines"] == [], mission
 assert mission["cross_repo_validation_action_lines"] == [], mission
 assert mission["cross_repo_validation_packet_report_id"] is None, mission
 assert mission["cross_repo_validation_packet_path"] is None, mission
+assert mission["cross_repo_validation_steering_scope"] == "none", mission
+assert mission["cross_repo_validation_primary_action_promoted"] is False, mission
 PY
 
 cat >"$STEERED_HANDOFF_REPORT" <<'JSON'
@@ -379,6 +385,8 @@ assert mission["primary_action"] == (
     "cross-repo-validation: repair monday_local_inbox_runtime_report "
     "(freshness=missing, promotability=blocked, reasons=latest_missing)"
 ), mission
+assert mission["cross_repo_validation_steering_scope"] == "primary_action_only", mission
+assert mission["cross_repo_validation_primary_action_promoted"] is True, mission
 assert mission["immediate_actions"][0] == mission["primary_action"], mission
 assert mission["immediate_actions"][1].startswith("triage-target:"), mission
 assert "Start with `cross-repo-validation: repair monday_local_inbox_runtime_report" in mission["mission_prompt"], mission

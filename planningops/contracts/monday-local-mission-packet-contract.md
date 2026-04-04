@@ -55,25 +55,27 @@ Top-level required fields:
 7. `local_model_route`
 8. `source_kind`
 9. `primary_action`
-10. `preflight_command`
-11. `rollback_command`
-12. `expected_evidence_outputs`
-13. `immediate_actions`
-14. `target_lines`
-15. `source_artifacts.handoff_report_path`
-16. `source_artifacts.local_operator_report_path`
-17. `local_validation_snapshot_status`
-18. `local_validation_records`
-19. `local_validation_summary_lines`
-20. `local_validation_action_lines`
-21. `cross_repo_validation_packet_report_id`
-22. `cross_repo_validation_packet_path`
-23. `cross_repo_validation_snapshot_status`
-24. `cross_repo_validation_snapshot_summary`
-25. `cross_repo_validation_action_line`
-26. `cross_repo_validation_detail_lines`
-27. `monday_source_validation_report_lines`
-28. `cross_repo_validation_action_lines`
+10. `cross_repo_validation_steering_scope`
+11. `cross_repo_validation_primary_action_promoted`
+12. `preflight_command`
+13. `rollback_command`
+14. `expected_evidence_outputs`
+15. `immediate_actions`
+16. `target_lines`
+17. `source_artifacts.handoff_report_path`
+18. `source_artifacts.local_operator_report_path`
+19. `local_validation_snapshot_status`
+20. `local_validation_records`
+21. `local_validation_summary_lines`
+22. `local_validation_action_lines`
+23. `cross_repo_validation_packet_report_id`
+24. `cross_repo_validation_packet_path`
+25. `cross_repo_validation_snapshot_status`
+26. `cross_repo_validation_snapshot_summary`
+27. `cross_repo_validation_action_line`
+28. `cross_repo_validation_detail_lines`
+29. `monday_source_validation_report_lines`
+30. `cross_repo_validation_action_lines`
 
 Optional fields:
 - `attention_summary`
@@ -98,6 +100,14 @@ Optional fields:
    - keep the leading `local-runtime:` action when the promoted handoff already exposes one
    - otherwise keep the leading `local-validation:` action when the promoted handoff already exposes one
    - only promote `cross_repo_validation_action_line` to `primary_action` when both of the above are absent and the promoted handoff also carries an immutable `cross-repo-validation-packet` pointer
+9. `cross_repo_validation_steering_scope` must be explicit:
+   - `none` when the packet keeps a stronger local action or has no immutable cross-repo packet pointer
+   - `primary_action_only` only when the selected `primary_action` equals `cross_repo_validation_action_line` and the immutable packet pointer is present
+10. `cross_repo_validation_primary_action_promoted` must be `true` if and only if `cross_repo_validation_steering_scope=primary_action_only`.
+11. cross-repo steering must stop at action selection:
+   - `mission_objective` must remain the promoted handoff objective
+   - target ordering must remain the promoted handoff ordering
+   - the writer must not retarget the packet just because cross-repo validation became the selected next action
 
 ## Command Rules
 
@@ -144,6 +154,8 @@ Every packet must also preserve the current cross-repo validation context:
 
 When cross-repo validation becomes the selected next step, the mission packet must:
 - promote `cross_repo_validation_action_line` to `primary_action`
+- set `cross_repo_validation_steering_scope=primary_action_only`
+- set `cross_repo_validation_primary_action_promoted=true`
 - put that promoted action first in `immediate_actions`
 - keep `mission_objective` stable so the packet still points at the same target family
 

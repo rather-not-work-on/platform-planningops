@@ -121,6 +121,22 @@ def prepend_once(values: list[str], item: str) -> list[str]:
     return [item, *[value for value in values if value != item]]
 
 
+def build_cross_repo_validation_steering(
+    *,
+    primary_action: str,
+    cross_repo_validation_action_line: str | None,
+    cross_repo_validation_packet_report_id: str | None,
+    cross_repo_validation_packet_path: str | None,
+) -> tuple[str, bool]:
+    promoted = (
+        cross_repo_validation_action_line is not None
+        and primary_action == cross_repo_validation_action_line
+        and cross_repo_validation_packet_report_id is not None
+        and cross_repo_validation_packet_path is not None
+    )
+    return ("primary_action_only" if promoted else "none"), promoted
+
+
 def build_mission_objective(handoff_record: dict) -> str:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     if target_lines:
@@ -271,6 +287,14 @@ def main() -> int:
     ):
         immediate_actions = prepend_once(immediate_actions, cross_repo_validation_action_line)
     primary_action = immediate_actions[0] if immediate_actions else (target_lines[0] if target_lines else mission_objective)
+    cross_repo_validation_steering_scope, cross_repo_validation_primary_action_promoted = (
+        build_cross_repo_validation_steering(
+            primary_action=primary_action,
+            cross_repo_validation_action_line=cross_repo_validation_action_line,
+            cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+            cross_repo_validation_packet_path=cross_repo_validation_packet_path,
+        )
+    )
 
     expected_evidence_outputs = [
         str(latest_packet_path.resolve()),
@@ -300,6 +324,8 @@ def main() -> int:
         "local_runtime_summary": str(handoff_record.get("local_operator_summary") or ""),
         "local_runtime_next_step": str(handoff_record.get("local_operator_next_step") or ""),
         "primary_action": primary_action,
+        "cross_repo_validation_steering_scope": cross_repo_validation_steering_scope,
+        "cross_repo_validation_primary_action_promoted": cross_repo_validation_primary_action_promoted,
         "immediate_actions": immediate_actions,
         "target_lines": target_lines,
         "local_validation_snapshot_status": local_validation_snapshot_status,
