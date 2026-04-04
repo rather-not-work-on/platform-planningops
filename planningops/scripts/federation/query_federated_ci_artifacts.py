@@ -50,6 +50,7 @@ LOCAL_OPERATOR_VERDICT_CHOICES = ("pass", "fail", "planned")
 LOCAL_OPERATOR_READINESS_CHOICES = ("ready", "bootstrap_required", "blocked", "unknown")
 LOCAL_OPERATOR_STEP_STATUS_CHOICES = ("pass", "fail", "planned", "skipped", "report_only", "unknown", "missing")
 LOCAL_INBOX_PAYLOAD_SOURCE_CHOICES = ("all", "latest", "stamped")
+LOCAL_PACKET_SOURCE_CHOICES = ("all", "latest", "stamped")
 LOCAL_INBOX_PAYLOAD_STATUS_CHOICES = ("ready", "blocked")
 MONDAY_CONSUMER_MODE_CHOICES = ("dry-run", "apply")
 MONDAY_CONSUMER_VERDICT_CHOICES = ("pass", "fail", "blocked")
@@ -57,6 +58,7 @@ MONDAY_CONSUMER_STATUS_CHOICES = ("ready_to_launch", "blocked")
 MONDAY_VALIDATION_KIND_CHOICES = ("bridge", "consumer-report")
 MONDAY_VALIDATION_VERDICT_CHOICES = ("pass", "fail")
 CROSS_REPO_VALIDATION_PACKET_SOURCE_CHOICES = ("latest", "stamped")
+STEERING_SCOPE_CHOICES = ("none", "primary_action_only")
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -500,6 +502,70 @@ class LocalInboxPayloadRecord:
 
 
 @dataclass(frozen=True)
+class LocalMissionPacketRecord:
+    packet_id: str
+    source_kind: str
+    packet_path: str
+    generated_at_utc: str
+    contract_ref: str | None
+    latest_packet_path: str | None
+    stamped_packet_path: str | None
+    output_path: str | None
+    mission_objective: str | None
+    primary_action: str | None
+    cross_repo_validation_steering_scope: str
+    cross_repo_validation_primary_action_promoted: bool
+    planner_profile: str | None
+    launch_mode: str | None
+    local_model_route: str | None
+    local_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_summary: str | None
+    cross_repo_validation_action_line: str | None
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
+    immediate_actions: list[str]
+    target_lines: list[str]
+    local_validation_action_lines: list[str]
+    cross_repo_validation_action_lines: list[str]
+    cross_repo_validation_detail_lines: list[str]
+    monday_source_validation_report_lines: list[str]
+
+
+@dataclass(frozen=True)
+class LocalDayPacketRecord:
+    day_packet_id: str
+    mission_packet_id: str | None
+    source_kind: str
+    packet_path: str
+    generated_at_utc: str
+    contract_ref: str | None
+    latest_packet_path: str | None
+    stamped_packet_path: str | None
+    output_path: str | None
+    headline: str | None
+    mission_objective: str | None
+    primary_action: str | None
+    cross_repo_validation_steering_scope: str
+    cross_repo_validation_primary_action_promoted: bool
+    planner_profile: str | None
+    launch_mode: str | None
+    local_model_route: str | None
+    local_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_status: str | None
+    cross_repo_validation_snapshot_summary: str | None
+    cross_repo_validation_action_line: str | None
+    cross_repo_validation_packet_report_id: str | None
+    cross_repo_validation_packet_path: str | None
+    immediate_actions: list[str]
+    target_lines: list[str]
+    local_validation_action_lines: list[str]
+    cross_repo_validation_action_lines: list[str]
+    cross_repo_validation_detail_lines: list[str]
+    monday_source_validation_report_lines: list[str]
+
+
+@dataclass(frozen=True)
 class MondayConsumerReportRecord:
     run_id: str
     report_path: str
@@ -861,6 +927,12 @@ def normalize_optional_string(value: Any) -> str | None:
     return normalized or None
 
 
+def normalize_bool(value: Any) -> bool | None:
+    if isinstance(value, bool):
+        return value
+    return None
+
+
 def normalize_string_list(values: Any) -> list[str]:
     return [str(value) for value in list(values or []) if str(value).strip()]
 
@@ -1057,8 +1129,24 @@ def source_kind_for_local_inbox_payload_path(path: Path) -> str:
     return "latest" if path.name == "monday-local-operator-inbox-payload.json" else "stamped"
 
 
+def source_kind_for_local_mission_packet_path(path: Path) -> str:
+    return "latest" if path.name == "monday-local-mission-packet.json" else "stamped"
+
+
+def source_kind_for_local_day_packet_path(path: Path) -> str:
+    return "latest" if path.name == "monday-local-operator-day-packet.json" else "stamped"
+
+
 def is_local_inbox_payload_document(doc: dict[str, Any]) -> bool:
     return isinstance(doc.get("bridge_id"), str) and isinstance(doc.get("payload"), dict)
+
+
+def is_local_mission_packet_document(doc: dict[str, Any]) -> bool:
+    return isinstance(doc.get("packet_id"), str) and isinstance(doc.get("mission_packet"), dict)
+
+
+def is_local_day_packet_document(doc: dict[str, Any]) -> bool:
+    return isinstance(doc.get("day_packet_id"), str) and isinstance(doc.get("day_packet"), dict)
 
 
 def is_monday_consumer_report_document(doc: dict[str, Any]) -> bool:
@@ -1379,6 +1467,415 @@ def filter_local_inbox_payload_records(
             if has_dependency_state in record.dependency_states.values()
         ]
     return filtered
+
+
+def build_local_mission_packet_record(*, packet_path: Path, packet_doc: dict[str, Any]) -> LocalMissionPacketRecord:
+    mission_packet = packet_doc.get("mission_packet") if isinstance(packet_doc.get("mission_packet"), dict) else {}
+    return LocalMissionPacketRecord(
+        packet_id=str(packet_doc.get("packet_id")),
+        source_kind=source_kind_for_local_mission_packet_path(packet_path),
+        packet_path=str(packet_path.resolve()),
+        generated_at_utc=str(packet_doc.get("generated_at_utc") or ""),
+        contract_ref=normalize_optional_string(packet_doc.get("contract_ref")),
+        latest_packet_path=normalize_artifact_path(resolve_nested_value(packet_doc, "artifact_paths", "latest_packet_path")),
+        stamped_packet_path=normalize_artifact_path(resolve_nested_value(packet_doc, "artifact_paths", "stamped_packet_path")),
+        output_path=normalize_artifact_path(resolve_nested_value(packet_doc, "artifact_paths", "output_path")),
+        mission_objective=normalize_optional_string(mission_packet.get("mission_objective")),
+        primary_action=normalize_optional_string(mission_packet.get("primary_action")),
+        cross_repo_validation_steering_scope=(
+            normalize_optional_string(mission_packet.get("cross_repo_validation_steering_scope")) or "none"
+        ),
+        cross_repo_validation_primary_action_promoted=(
+            normalize_bool(mission_packet.get("cross_repo_validation_primary_action_promoted")) or False
+        ),
+        planner_profile=normalize_optional_string(mission_packet.get("planner_profile")),
+        launch_mode=normalize_optional_string(mission_packet.get("launch_mode")),
+        local_model_route=normalize_optional_string(mission_packet.get("local_model_route")),
+        local_validation_snapshot_status=normalize_optional_string(mission_packet.get("local_validation_snapshot_status")),
+        cross_repo_validation_snapshot_status=normalize_optional_string(
+            mission_packet.get("cross_repo_validation_snapshot_status")
+        ),
+        cross_repo_validation_snapshot_summary=normalize_optional_string(
+            mission_packet.get("cross_repo_validation_snapshot_summary")
+        ),
+        cross_repo_validation_action_line=normalize_optional_string(
+            mission_packet.get("cross_repo_validation_action_line")
+        ),
+        cross_repo_validation_packet_report_id=normalize_optional_string(
+            mission_packet.get("cross_repo_validation_packet_report_id")
+        ),
+        cross_repo_validation_packet_path=normalize_optional_string(
+            mission_packet.get("cross_repo_validation_packet_path")
+        ),
+        immediate_actions=normalize_string_list(mission_packet.get("immediate_actions")),
+        target_lines=normalize_string_list(mission_packet.get("target_lines")),
+        local_validation_action_lines=normalize_string_list(mission_packet.get("local_validation_action_lines")),
+        cross_repo_validation_action_lines=normalize_string_list(
+            mission_packet.get("cross_repo_validation_action_lines")
+        ),
+        cross_repo_validation_detail_lines=normalize_string_list(
+            mission_packet.get("cross_repo_validation_detail_lines")
+        ),
+        monday_source_validation_report_lines=normalize_string_list(
+            mission_packet.get("monday_source_validation_report_lines")
+        ),
+    )
+
+
+def discover_local_mission_packet_records(*, validation_root: Path) -> list[LocalMissionPacketRecord]:
+    paths: list[Path] = []
+    latest_path = validation_root / "monday-local-mission-packet.json"
+    if latest_path.exists():
+        paths.append(latest_path)
+    paths.extend(sorted(validation_root.glob("*-monday-local-mission-packet.json")))
+
+    records: list[LocalMissionPacketRecord] = []
+    for path in paths:
+        if path.name.startswith(".") or path.name.startswith("._"):
+            continue
+        try:
+            doc = load_json(path)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not is_local_mission_packet_document(doc):
+            continue
+        records.append(build_local_mission_packet_record(packet_path=path, packet_doc=doc))
+    records.sort(
+        key=lambda record: (
+            record.generated_at_utc,
+            record.packet_id,
+            1 if record.source_kind == "latest" else 0,
+            record.packet_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def filter_local_mission_packet_records(
+    *,
+    records: list[LocalMissionPacketRecord],
+    packet_id_prefix: str | None = None,
+    source_kind: str = "latest",
+    planner_profile: str | None = None,
+    launch_mode: str | None = None,
+    local_model_route: str | None = None,
+    steering_scope: str | None = None,
+    primary_action_promoted: str | None = None,
+) -> list[LocalMissionPacketRecord]:
+    filtered = records
+    if packet_id_prefix:
+        filtered = [record for record in filtered if record.packet_id.startswith(packet_id_prefix)]
+    if source_kind != "all":
+        filtered = [record for record in filtered if record.source_kind == source_kind]
+    if planner_profile:
+        filtered = [record for record in filtered if record.planner_profile == planner_profile]
+    if launch_mode:
+        filtered = [record for record in filtered if record.launch_mode == launch_mode]
+    if local_model_route:
+        filtered = [record for record in filtered if record.local_model_route == local_model_route]
+    if steering_scope:
+        filtered = [record for record in filtered if record.cross_repo_validation_steering_scope == steering_scope]
+    if primary_action_promoted is not None:
+        expected = primary_action_promoted == "yes"
+        filtered = [
+            record for record in filtered if record.cross_repo_validation_primary_action_promoted is expected
+        ]
+    return filtered
+
+
+def render_local_mission_packet_table(records: list[LocalMissionPacketRecord]) -> str:
+    lines = [
+        "packet_id\tsource\tplanner_profile\tlaunch_mode\tlocal_model_route\tsteering_scope\tprimary_action_promoted\tcross_repo_snapshot\tcross_repo_packet_report_id\timmediate_actions\ttargets\tgenerated_at_utc",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.packet_id,
+                    record.source_kind,
+                    str(record.planner_profile or ""),
+                    str(record.launch_mode or ""),
+                    str(record.local_model_route or ""),
+                    record.cross_repo_validation_steering_scope,
+                    "yes" if record.cross_repo_validation_primary_action_promoted else "no",
+                    str(record.cross_repo_validation_snapshot_status or ""),
+                    str(record.cross_repo_validation_packet_report_id or ""),
+                    str(len(record.immediate_actions)),
+                    str(len(record.target_lines)),
+                    record.generated_at_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_local_mission_packet_markdown(records: list[LocalMissionPacketRecord]) -> str:
+    lines = [
+        "| packet_id | source | planner_profile | launch_mode | local_model_route | steering_scope | primary_action_promoted | cross_repo_snapshot | cross_repo_packet_report_id | immediate_actions | targets | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | --- |",
+    ]
+    sections: list[str] = []
+    for record in records:
+        lines.append(
+            f"| `{record.packet_id}` | {record.source_kind} | {record.planner_profile or ''} | "
+            f"{record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{record.cross_repo_validation_steering_scope} | "
+            f"{'yes' if record.cross_repo_validation_primary_action_promoted else 'no'} | "
+            f"{record.cross_repo_validation_snapshot_status or ''} | "
+            f"{record.cross_repo_validation_packet_report_id or ''} | "
+            f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.generated_at_utc} |"
+        )
+        sections.extend(
+            [
+                "",
+                f"## `{record.packet_id}` local mission packet",
+                "",
+                f"- source_kind: `{record.source_kind}`",
+                f"- packet_path: `{record.packet_path}`",
+                f"- mission_objective: `{record.mission_objective or ''}`",
+                f"- primary_action: `{record.primary_action or ''}`",
+                f"- steering_scope: `{record.cross_repo_validation_steering_scope}`",
+                f"- primary_action_promoted: `{'true' if record.cross_repo_validation_primary_action_promoted else 'false'}`",
+                f"- cross_repo_snapshot_status: `{record.cross_repo_validation_snapshot_status or ''}`",
+                f"- cross_repo_snapshot_summary: `{record.cross_repo_validation_snapshot_summary or ''}`",
+            ]
+        )
+        if record.cross_repo_validation_packet_report_id or record.cross_repo_validation_packet_path:
+            sections.extend(["", "### Cross-Repo Validation Packet"])
+            if record.cross_repo_validation_packet_report_id:
+                sections.append(f"- report_id: `{record.cross_repo_validation_packet_report_id}`")
+            if record.cross_repo_validation_packet_path:
+                sections.append(f"- path: `{record.cross_repo_validation_packet_path}`")
+        if record.cross_repo_validation_detail_lines or record.monday_source_validation_report_lines:
+            sections.extend(
+                [
+                    "",
+                    "### Cross-Repo Validation Details",
+                    *[f"- {line}" for line in record.cross_repo_validation_detail_lines],
+                    *[f"- {line}" for line in record.monday_source_validation_report_lines],
+                ]
+            )
+        if record.cross_repo_validation_action_lines:
+            sections.extend(
+                [
+                    "",
+                    "### Cross-Repo Validation Actions",
+                    *[
+                        f"{index}. {line}"
+                        for index, line in enumerate(record.cross_repo_validation_action_lines, start=1)
+                    ],
+                ]
+            )
+    return "\n".join(lines + sections)
+
+
+def build_local_day_packet_record(*, packet_path: Path, packet_doc: dict[str, Any]) -> LocalDayPacketRecord:
+    day_packet = packet_doc.get("day_packet") if isinstance(packet_doc.get("day_packet"), dict) else {}
+    return LocalDayPacketRecord(
+        day_packet_id=str(packet_doc.get("day_packet_id")),
+        mission_packet_id=normalize_optional_string(day_packet.get("mission_packet_id")),
+        source_kind=source_kind_for_local_day_packet_path(packet_path),
+        packet_path=str(packet_path.resolve()),
+        generated_at_utc=str(packet_doc.get("generated_at_utc") or ""),
+        contract_ref=normalize_optional_string(packet_doc.get("contract_ref")),
+        latest_packet_path=normalize_artifact_path(resolve_nested_value(packet_doc, "artifact_paths", "latest_packet_path")),
+        stamped_packet_path=normalize_artifact_path(resolve_nested_value(packet_doc, "artifact_paths", "stamped_packet_path")),
+        output_path=normalize_artifact_path(resolve_nested_value(packet_doc, "artifact_paths", "output_path")),
+        headline=normalize_optional_string(day_packet.get("headline")),
+        mission_objective=normalize_optional_string(day_packet.get("mission_objective")),
+        primary_action=normalize_optional_string(day_packet.get("primary_action")),
+        cross_repo_validation_steering_scope=(
+            normalize_optional_string(day_packet.get("cross_repo_validation_steering_scope")) or "none"
+        ),
+        cross_repo_validation_primary_action_promoted=(
+            normalize_bool(day_packet.get("cross_repo_validation_primary_action_promoted")) or False
+        ),
+        planner_profile=normalize_optional_string(day_packet.get("planner_profile")),
+        launch_mode=normalize_optional_string(day_packet.get("launch_mode")),
+        local_model_route=normalize_optional_string(day_packet.get("local_model_route")),
+        local_validation_snapshot_status=normalize_optional_string(day_packet.get("local_validation_snapshot_status")),
+        cross_repo_validation_snapshot_status=normalize_optional_string(
+            day_packet.get("cross_repo_validation_snapshot_status")
+        ),
+        cross_repo_validation_snapshot_summary=normalize_optional_string(
+            day_packet.get("cross_repo_validation_snapshot_summary")
+        ),
+        cross_repo_validation_action_line=normalize_optional_string(
+            day_packet.get("cross_repo_validation_action_line")
+        ),
+        cross_repo_validation_packet_report_id=normalize_optional_string(
+            day_packet.get("cross_repo_validation_packet_report_id")
+        ),
+        cross_repo_validation_packet_path=normalize_optional_string(
+            day_packet.get("cross_repo_validation_packet_path")
+        ),
+        immediate_actions=normalize_string_list(day_packet.get("immediate_actions")),
+        target_lines=normalize_string_list(day_packet.get("target_lines")),
+        local_validation_action_lines=normalize_string_list(day_packet.get("local_validation_action_lines")),
+        cross_repo_validation_action_lines=normalize_string_list(day_packet.get("cross_repo_validation_action_lines")),
+        cross_repo_validation_detail_lines=normalize_string_list(day_packet.get("cross_repo_validation_detail_lines")),
+        monday_source_validation_report_lines=normalize_string_list(
+            day_packet.get("monday_source_validation_report_lines")
+        ),
+    )
+
+
+def discover_local_day_packet_records(*, validation_root: Path) -> list[LocalDayPacketRecord]:
+    paths: list[Path] = []
+    latest_path = validation_root / "monday-local-operator-day-packet.json"
+    if latest_path.exists():
+        paths.append(latest_path)
+    paths.extend(sorted(validation_root.glob("*-monday-local-operator-day-packet.json")))
+
+    records: list[LocalDayPacketRecord] = []
+    for path in paths:
+        if path.name.startswith(".") or path.name.startswith("._"):
+            continue
+        try:
+            doc = load_json(path)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not is_local_day_packet_document(doc):
+            continue
+        records.append(build_local_day_packet_record(packet_path=path, packet_doc=doc))
+    records.sort(
+        key=lambda record: (
+            record.generated_at_utc,
+            record.day_packet_id,
+            1 if record.source_kind == "latest" else 0,
+            record.packet_path,
+        ),
+        reverse=True,
+    )
+    return records
+
+
+def filter_local_day_packet_records(
+    *,
+    records: list[LocalDayPacketRecord],
+    day_packet_id_prefix: str | None = None,
+    mission_packet_id_prefix: str | None = None,
+    source_kind: str = "latest",
+    planner_profile: str | None = None,
+    launch_mode: str | None = None,
+    local_model_route: str | None = None,
+    steering_scope: str | None = None,
+    primary_action_promoted: str | None = None,
+) -> list[LocalDayPacketRecord]:
+    filtered = records
+    if day_packet_id_prefix:
+        filtered = [record for record in filtered if record.day_packet_id.startswith(day_packet_id_prefix)]
+    if mission_packet_id_prefix:
+        filtered = [
+            record
+            for record in filtered
+            if record.mission_packet_id is not None and record.mission_packet_id.startswith(mission_packet_id_prefix)
+        ]
+    if source_kind != "all":
+        filtered = [record for record in filtered if record.source_kind == source_kind]
+    if planner_profile:
+        filtered = [record for record in filtered if record.planner_profile == planner_profile]
+    if launch_mode:
+        filtered = [record for record in filtered if record.launch_mode == launch_mode]
+    if local_model_route:
+        filtered = [record for record in filtered if record.local_model_route == local_model_route]
+    if steering_scope:
+        filtered = [record for record in filtered if record.cross_repo_validation_steering_scope == steering_scope]
+    if primary_action_promoted is not None:
+        expected = primary_action_promoted == "yes"
+        filtered = [
+            record for record in filtered if record.cross_repo_validation_primary_action_promoted is expected
+        ]
+    return filtered
+
+
+def render_local_day_packet_table(records: list[LocalDayPacketRecord]) -> str:
+    lines = [
+        "day_packet_id\tmission_packet_id\tsource\tplanner_profile\tlaunch_mode\tlocal_model_route\tsteering_scope\tprimary_action_promoted\tcross_repo_snapshot\tcross_repo_packet_report_id\timmediate_actions\ttargets\tgenerated_at_utc",
+    ]
+    for record in records:
+        lines.append(
+            "\t".join(
+                [
+                    record.day_packet_id,
+                    str(record.mission_packet_id or ""),
+                    record.source_kind,
+                    str(record.planner_profile or ""),
+                    str(record.launch_mode or ""),
+                    str(record.local_model_route or ""),
+                    record.cross_repo_validation_steering_scope,
+                    "yes" if record.cross_repo_validation_primary_action_promoted else "no",
+                    str(record.cross_repo_validation_snapshot_status or ""),
+                    str(record.cross_repo_validation_packet_report_id or ""),
+                    str(len(record.immediate_actions)),
+                    str(len(record.target_lines)),
+                    record.generated_at_utc,
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def render_local_day_packet_markdown(records: list[LocalDayPacketRecord]) -> str:
+    lines = [
+        "| day_packet_id | mission_packet_id | source | planner_profile | launch_mode | local_model_route | steering_scope | primary_action_promoted | cross_repo_snapshot | cross_repo_packet_report_id | immediate_actions | targets | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | --- |",
+    ]
+    sections: list[str] = []
+    for record in records:
+        lines.append(
+            f"| `{record.day_packet_id}` | `{record.mission_packet_id or ''}` | {record.source_kind} | "
+            f"{record.planner_profile or ''} | {record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{record.cross_repo_validation_steering_scope} | "
+            f"{'yes' if record.cross_repo_validation_primary_action_promoted else 'no'} | "
+            f"{record.cross_repo_validation_snapshot_status or ''} | "
+            f"{record.cross_repo_validation_packet_report_id or ''} | "
+            f"{len(record.immediate_actions)} | {len(record.target_lines)} | {record.generated_at_utc} |"
+        )
+        sections.extend(
+            [
+                "",
+                f"## `{record.day_packet_id}` local day packet",
+                "",
+                f"- source_kind: `{record.source_kind}`",
+                f"- packet_path: `{record.packet_path}`",
+                f"- headline: `{record.headline or ''}`",
+                f"- mission_objective: `{record.mission_objective or ''}`",
+                f"- primary_action: `{record.primary_action or ''}`",
+                f"- steering_scope: `{record.cross_repo_validation_steering_scope}`",
+                f"- primary_action_promoted: `{'true' if record.cross_repo_validation_primary_action_promoted else 'false'}`",
+                f"- cross_repo_snapshot_status: `{record.cross_repo_validation_snapshot_status or ''}`",
+                f"- cross_repo_snapshot_summary: `{record.cross_repo_validation_snapshot_summary or ''}`",
+            ]
+        )
+        if record.cross_repo_validation_packet_report_id or record.cross_repo_validation_packet_path:
+            sections.extend(["", "### Cross-Repo Validation Packet"])
+            if record.cross_repo_validation_packet_report_id:
+                sections.append(f"- report_id: `{record.cross_repo_validation_packet_report_id}`")
+            if record.cross_repo_validation_packet_path:
+                sections.append(f"- path: `{record.cross_repo_validation_packet_path}`")
+        if record.cross_repo_validation_detail_lines or record.monday_source_validation_report_lines:
+            sections.extend(
+                [
+                    "",
+                    "### Cross-Repo Validation Details",
+                    *[f"- {line}" for line in record.cross_repo_validation_detail_lines],
+                    *[f"- {line}" for line in record.monday_source_validation_report_lines],
+                ]
+            )
+        if record.cross_repo_validation_action_lines:
+            sections.extend(
+                [
+                    "",
+                    "### Cross-Repo Validation Actions",
+                    *[
+                        f"{index}. {line}"
+                        for index, line in enumerate(record.cross_repo_validation_action_lines, start=1)
+                    ],
+                ]
+            )
+    return "\n".join(lines + sections)
 
 
 def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> str:
@@ -6117,6 +6614,37 @@ def parse_args() -> argparse.Namespace:
     local_validation_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     local_validation_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
 
+    local_mission_packet_parser = subparsers.add_parser(
+        "local-mission-packet",
+        help="list promoted monday local mission packets",
+    )
+    local_mission_packet_parser.add_argument("--packet-id-prefix", default=None)
+    local_mission_packet_parser.add_argument("--source-kind", choices=LOCAL_PACKET_SOURCE_CHOICES, default="latest")
+    local_mission_packet_parser.add_argument("--planner-profile", default=None)
+    local_mission_packet_parser.add_argument("--launch-mode", default=None)
+    local_mission_packet_parser.add_argument("--local-model-route", default=None)
+    local_mission_packet_parser.add_argument("--steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    local_mission_packet_parser.add_argument("--primary-action-promoted", choices=["yes", "no"], default=None)
+    local_mission_packet_parser.add_argument("--limit", type=int, default=20)
+    local_mission_packet_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    local_mission_packet_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+
+    local_day_packet_parser = subparsers.add_parser(
+        "local-day-packet",
+        help="list promoted monday local operator day packets",
+    )
+    local_day_packet_parser.add_argument("--day-packet-id-prefix", default=None)
+    local_day_packet_parser.add_argument("--mission-packet-id-prefix", default=None)
+    local_day_packet_parser.add_argument("--source-kind", choices=LOCAL_PACKET_SOURCE_CHOICES, default="latest")
+    local_day_packet_parser.add_argument("--planner-profile", default=None)
+    local_day_packet_parser.add_argument("--launch-mode", default=None)
+    local_day_packet_parser.add_argument("--local-model-route", default=None)
+    local_day_packet_parser.add_argument("--steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    local_day_packet_parser.add_argument("--primary-action-promoted", choices=["yes", "no"], default=None)
+    local_day_packet_parser.add_argument("--limit", type=int, default=20)
+    local_day_packet_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
+    local_day_packet_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
+
     local_inbox_payload_parser = subparsers.add_parser(
         "local-inbox-payload",
         help="list promoted monday local inbox payload bridge artifacts",
@@ -6254,6 +6782,51 @@ def main() -> int:
             print(render_local_validation_freshness_markdown(local_validation_records))
             return 0
         print(render_local_validation_freshness_table(local_validation_records))
+        return 0
+
+    if args.command == "local-mission-packet":
+        mission_packet_records = discover_local_mission_packet_records(validation_root=validation_root)
+        mission_packet_records = filter_local_mission_packet_records(
+            records=mission_packet_records,
+            packet_id_prefix=args.packet_id_prefix,
+            source_kind=args.source_kind,
+            planner_profile=args.planner_profile,
+            launch_mode=args.launch_mode,
+            local_model_route=args.local_model_route,
+            steering_scope=args.steering_scope,
+            primary_action_promoted=args.primary_action_promoted,
+        )
+        mission_packet_records = mission_packet_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in mission_packet_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_local_mission_packet_markdown(mission_packet_records))
+            return 0
+        print(render_local_mission_packet_table(mission_packet_records))
+        return 0
+
+    if args.command == "local-day-packet":
+        day_packet_records = discover_local_day_packet_records(validation_root=validation_root)
+        day_packet_records = filter_local_day_packet_records(
+            records=day_packet_records,
+            day_packet_id_prefix=args.day_packet_id_prefix,
+            mission_packet_id_prefix=args.mission_packet_id_prefix,
+            source_kind=args.source_kind,
+            planner_profile=args.planner_profile,
+            launch_mode=args.launch_mode,
+            local_model_route=args.local_model_route,
+            steering_scope=args.steering_scope,
+            primary_action_promoted=args.primary_action_promoted,
+        )
+        day_packet_records = day_packet_records[: args.limit]
+        if args.format == "json":
+            print(json.dumps({"records": [asdict(record) for record in day_packet_records]}, ensure_ascii=True, indent=2))
+            return 0
+        if args.format == "markdown":
+            print(render_local_day_packet_markdown(day_packet_records))
+            return 0
+        print(render_local_day_packet_table(day_packet_records))
         return 0
 
     if args.command == "local-inbox-payload":
