@@ -68,6 +68,12 @@ Top-level required fields:
 20. `local_validation_action_lines`
 21. `cross_repo_validation_packet_report_id`
 22. `cross_repo_validation_packet_path`
+23. `cross_repo_validation_snapshot_status`
+24. `cross_repo_validation_snapshot_summary`
+25. `cross_repo_validation_action_line`
+26. `cross_repo_validation_detail_lines`
+27. `monday_source_validation_report_lines`
+28. `cross_repo_validation_action_lines`
 
 Optional fields:
 - `attention_summary`
@@ -87,6 +93,7 @@ Optional fields:
 4. `expected_evidence_outputs` must point at deterministic artifact paths that the chosen launch path is expected to refresh.
 5. local validation snapshot fields must be carried forward from the promoted handoff packet when present; otherwise the mission packet must emit `local_validation_snapshot_status=missing` with empty local validation collections.
 6. when the promoted handoff already points at a promoted `cross-repo-validation-packet`, the mission packet must preserve that immutable `report_id`/`path` pair instead of recomputing or rewriting it.
+7. cross-repo validation snapshot/detail/action fields must be carried forward from the promoted handoff packet when present; otherwise the mission packet must emit `cross_repo_validation_snapshot_status=missing`, `cross_repo_validation_snapshot_summary=total=0 promotable=0 blocked=0 stale=0`, and empty cross-repo detail/action collections.
 
 ## Command Rules
 
@@ -122,6 +129,14 @@ When present upstream, every packet must also preserve the promoted cross-repo v
 - immutable `cross_repo_validation_packet_report_id`
 - immutable `cross_repo_validation_packet_path`
 - the packet path must stay reusable as downstream evidence instead of being collapsed into prompt-local prose
+
+Every packet must also preserve the current cross-repo validation context:
+- `cross_repo_validation_snapshot_status`
+- `cross_repo_validation_snapshot_summary`
+- optional `cross_repo_validation_action_line`
+- `cross_repo_validation_detail_lines`
+- `monday_source_validation_report_lines`
+- `cross_repo_validation_action_lines`
 
 ## Failure Rules
 

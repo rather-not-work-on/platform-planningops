@@ -57,6 +57,19 @@ cat >"$MISSION_PACKET" <<'JSON'
       "operator_handoff_report: freshness=fresh promotability=promotable"
     ],
     "local_validation_action_lines": [],
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=5 promotable=3 blocked=2 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+      "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "consumer-report schema verdict=pass errors=0 warnings=0"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ],
     "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
     "cross_repo_validation_packet_path": "VALIDATION_ROOT_PLACEHOLDER/cross-repo-validation-report.json",
     "primary_action": "local-runtime: Expose Codex and add a direct local LLM profile.",
@@ -146,6 +159,18 @@ cat >"$HANDOFF_REPORT" <<'JSON'
       "monday_local_operator_stack_report: freshness=fresh promotability=promotable"
     ],
     "local_validation_action_lines": [],
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=2 promotable=1 blocked=1 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_bridge_schema_validation (freshness=stale, promotability=blocked, reasons=stamped_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_bridge_schema_validation: freshness=stale promotability=blocked reasons=stamped_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "bridge schema verdict=warn errors=0 warnings=1"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_bridge_schema_validation (freshness=stale, promotability=blocked, reasons=stamped_missing)"
+    ],
     "markdown": "## Operator Handoff Report"
   }
 }
@@ -232,6 +257,14 @@ assert "first_action_command" in contract_text, contract_text
 assert "attachments" in contract_text, contract_text
 assert "local_validation_snapshot_status" in contract_text, contract_text
 assert "body_markdown" in contract_text, contract_text
+assert "cross_repo_validation_snapshot_status" in contract_text, contract_text
+assert "cross_repo_validation_snapshot_summary" in contract_text, contract_text
+assert "cross_repo_validation_action_line" in contract_text, contract_text
+assert "cross_repo_validation_detail_lines" in contract_text, contract_text
+assert "monday_source_validation_report_lines" in contract_text, contract_text
+assert "cross_repo_validation_action_lines" in contract_text, contract_text
+assert "cross_repo_validation_packet_report_id" in contract_text, contract_text
+assert "cross_repo_validation_packet_path" in contract_text, contract_text
 
 for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert doc["day_packet_id"] == day_packet_id, doc
@@ -264,6 +297,22 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
         "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
         "operator_handoff_report: freshness=fresh promotability=promotable",
     ], packet
+    assert packet["cross_repo_validation_snapshot_status"] == "present", packet
+    assert packet["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", packet
+    assert packet["cross_repo_validation_action_line"] == (
+        "cross-repo-validation: repair monday_local_inbox_runtime_report "
+        "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ), packet
+    assert packet["cross_repo_validation_detail_lines"] == [
+        "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+        "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing",
+    ], packet
+    assert packet["monday_source_validation_report_lines"] == [
+        "consumer-report schema verdict=pass errors=0 warnings=0",
+    ], packet
+    assert packet["cross_repo_validation_action_lines"] == [
+        "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    ], packet
     assert packet["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", packet
     assert packet["cross_repo_validation_packet_path"] == str((validation_dir / "cross-repo-validation-report.json").resolve()), packet
     assert packet["queue_lines"] == [
@@ -287,7 +336,12 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert packet["source_artifacts"]["local_operator_report_path"] == str((validation_dir / "monday-local-operator-stack-report.json").resolve()), packet
     assert "## Monday Local Operator Day Packet" in packet["body_markdown"], packet
     assert "### Commands" in packet["body_markdown"], packet
+    assert "### Cross-Repo Validation" in packet["body_markdown"], packet
     assert "### Cross-Repo Validation Packet" in packet["body_markdown"], packet
+    assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in packet["body_markdown"], packet
+    assert "### Cross-Repo Validation Details" in packet["body_markdown"], packet
+    assert "- consumer-report schema verdict=pass errors=0 warnings=0" in packet["body_markdown"], packet
+    assert "### Cross-Repo Validation Actions" in packet["body_markdown"], packet
     assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in packet["body_markdown"], packet
     assert str((validation_dir / "cross-repo-validation-report.json").resolve()) in packet["body_markdown"], packet
     assert "### Local Validation" in packet["body_markdown"], packet
