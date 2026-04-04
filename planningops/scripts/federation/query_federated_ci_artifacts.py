@@ -74,6 +74,10 @@ SUMMARY_SOURCE_CHOICES = (
     "cross_repo_validation",
     "triage_target",
 )
+SUMMARY_STEERING_SCOPE_CHOICES = (
+    "none",
+    "selected_next_step_only",
+)
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -341,6 +345,7 @@ class TriageReportRecord:
     headline_source: str
     attention_summary: str
     attention_summary_source: str
+    summary_steering_scope: str
     newest_failing_summary: str
     newest_recovered_summary: str | None
     local_operator_record: LocalOperatorStackRecord | None
@@ -375,6 +380,7 @@ class HandoffReportRecord:
     headline_source: str
     attention_summary: str
     attention_summary_source: str
+    summary_steering_scope: str
     newest_failing_summary: str
     newest_recovered_summary: str | None
     local_operator_record: LocalOperatorStackRecord | None
@@ -1585,6 +1591,17 @@ def matches_summary_source_filter(
     summary_source: str,
 ) -> bool:
     return summary_source_filter is None or summary_source == summary_source_filter
+
+
+def matches_summary_steering_scope_filter(
+    *,
+    summary_steering_scope_filter: str | None,
+    summary_steering_scope: str,
+) -> bool:
+    return (
+        summary_steering_scope_filter is None
+        or summary_steering_scope == summary_steering_scope_filter
+    )
 
 
 def filter_local_inbox_payload_records(
@@ -5413,6 +5430,7 @@ def build_triage_report_record(
         f"active={brief.active_family_count}, lagging={brief.lagging_family_count}, clear={brief.clear_family_count}"
     )
     attention_summary_source = "triage_snapshot"
+    summary_steering_scope = "selected_next_step_only"
     newest_failing_summary = (
         f"{brief.newest_failing_family or 'none'} / {brief.newest_failing_run_id or 'none'} / "
         f"{brief.newest_failing_triage_status or 'none'}"
@@ -5428,6 +5446,7 @@ def build_triage_report_record(
         f"- top target window: `{brief.target_limit}`",
         f"- headline source: `{headline_source}`",
         f"- attention summary source: `{attention_summary_source}`",
+        f"- summary steering scope: `{summary_steering_scope}`",
         f"- attention families: `{brief.attention_family_count}` ({attention_summary})",
         f"- newest failing pointer: `{brief.newest_failing_family or ''}` / `{brief.newest_failing_run_id or ''}` ({brief.newest_failing_triage_status or 'none'})",
     ]
@@ -5521,6 +5540,7 @@ def build_triage_report_record(
         headline_source=headline_source,
         attention_summary=attention_summary,
         attention_summary_source=attention_summary_source,
+        summary_steering_scope=summary_steering_scope,
         newest_failing_summary=newest_failing_summary,
         newest_recovered_summary=newest_recovered_summary,
         local_operator_record=brief.local_operator_record,
@@ -5562,6 +5582,7 @@ def render_triage_report_table(record: TriageReportRecord) -> str:
         f"target_limit\t{record.target_limit}",
         f"attention_summary\t{record.attention_summary}",
         f"attention_summary_source\t{record.attention_summary_source}",
+        f"summary_steering_scope\t{record.summary_steering_scope}",
         f"newest_failing\t{record.newest_failing_summary}",
     ]
     if record.newest_recovered_summary is not None:
@@ -5707,6 +5728,7 @@ def build_handoff_report_record(
     headline = f"Operator handoff report: {triage_report.headline.removeprefix('Federated CI triage report: ')}"
     headline_source = triage_report.headline_source
     attention_summary_source = triage_report.attention_summary_source
+    summary_steering_scope = triage_report.summary_steering_scope
     selected_next_step_source, selected_next_step = build_selected_downstream_next_step(
         local_operator_next_step=triage_report.local_operator_next_step,
         local_validation_action_line=None if not local_validation_action_lines else local_validation_action_lines[0],
@@ -5747,6 +5769,7 @@ def build_handoff_report_record(
         f"- top target window: `{triage_report.target_limit}`",
         f"- headline source: `{headline_source}`",
         f"- attention summary source: `{attention_summary_source}`",
+        f"- summary steering scope: `{summary_steering_scope}`",
         f"- attention families: `{triage_report.attention_summary}`",
         f"- newest failing pointer: {triage_report.newest_failing_summary}",
     ]
@@ -5873,6 +5896,7 @@ def build_handoff_report_record(
         headline_source=headline_source,
         attention_summary=triage_report.attention_summary,
         attention_summary_source=attention_summary_source,
+        summary_steering_scope=summary_steering_scope,
         newest_failing_summary=triage_report.newest_failing_summary,
         newest_recovered_summary=triage_report.newest_recovered_summary,
         local_operator_record=triage_report.local_operator_record,
@@ -5927,6 +5951,7 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         f"target_limit\t{record.target_limit}",
         f"attention_summary\t{record.attention_summary}",
         f"attention_summary_source\t{record.attention_summary_source}",
+        f"summary_steering_scope\t{record.summary_steering_scope}",
         f"newest_failing\t{record.newest_failing_summary}",
     ]
     if record.newest_recovered_summary is not None:
@@ -7237,6 +7262,11 @@ def parse_args() -> argparse.Namespace:
         choices=SELECTED_NEXT_STEP_SOURCE_CHOICES,
         default=None,
     )
+    triage_report_parser.add_argument(
+        "--summary-steering-scope",
+        choices=SUMMARY_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
     triage_report_parser.add_argument("--headline-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
     triage_report_parser.add_argument("--attention-summary-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
     triage_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
@@ -7262,6 +7292,11 @@ def parse_args() -> argparse.Namespace:
     handoff_report_parser.add_argument(
         "--selected-next-step-source",
         choices=SELECTED_NEXT_STEP_SOURCE_CHOICES,
+        default=None,
+    )
+    handoff_report_parser.add_argument(
+        "--summary-steering-scope",
+        choices=SUMMARY_STEERING_SCOPE_CHOICES,
         default=None,
     )
     handoff_report_parser.add_argument("--headline-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
@@ -8042,6 +8077,11 @@ def main() -> int:
             selected_next_step_source=record.selected_next_step_source,
         ):
             record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.summary_steering_scope,
+            summary_steering_scope=record.summary_steering_scope,
+        ):
+            record = None
         if record is not None and not matches_summary_source_filter(
             summary_source_filter=args.headline_source,
             summary_source=record.headline_source,
@@ -8091,6 +8131,11 @@ def main() -> int:
         if record is not None and not matches_selected_next_step_source_filter(
             selected_next_step_source_filter=args.selected_next_step_source,
             selected_next_step_source=record.selected_next_step_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.summary_steering_scope,
+            summary_steering_scope=record.summary_steering_scope,
         ):
             record = None
         if record is not None and not matches_summary_source_filter(
