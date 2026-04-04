@@ -4426,6 +4426,10 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is False, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
 assert record["cross_repo_validation_snapshot_status"] == "present", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
 assert record["monday_source_validation_status"] == "attention", record
@@ -4453,6 +4457,10 @@ assert record["cross_repo_validation_action_lines"] == [
 assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
 assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
 assert "### Cross-Repo Validation" in record["markdown"], record
+assert "mission packet steering scope: `none`" in record["markdown"], record
+assert "mission packet primary action promoted: `false`" in record["markdown"], record
+assert "day packet steering scope: `none`" in record["markdown"], record
+assert "day packet primary action promoted: `false`" in record["markdown"], record
 assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in record["markdown"], record
 assert "monday source validation summary: `total=2 pass=1 fail=1 errors=2 warnings=1`" in record["markdown"], record
 assert "### Cross-Repo Validation Packet" in record["markdown"], record
@@ -4463,6 +4471,50 @@ assert "detail packet path: `" in record["markdown"], record
 assert "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing" in record["markdown"], record
 assert "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes" in record["markdown"], record
 assert "1. local-validation: repair monday_local_inbox_runtime_report (freshness=fresh, promotability=blocked, reasons=source_artifact_missing)" in record["markdown"], record
+PY
+
+HANDOFF_REPORT_STEERING_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" handoff-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --mission-packet-steering-scope none \
+  --day-packet-primary-action-promoted no >"$HANDOFF_REPORT_STEERING_FILTER_OUTPUT"
+
+python3 - <<'PY' "$HANDOFF_REPORT_STEERING_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
+PY
+
+HANDOFF_REPORT_STEERING_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" handoff-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --mission-packet-steering-scope primary_action_only >"$HANDOFF_REPORT_STEERING_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$HANDOFF_REPORT_STEERING_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
 PY
 
 python3 "$QUERY_PATH" local-inbox-payload \
