@@ -666,6 +666,10 @@ LOCAL_VALIDATION_WITH_CONSUMER_OUTPUT="$TMP_DIR/local-validation-freshness-with-
 LOCAL_VALIDATION_WITH_CROSS_REPO_REPORT_OUTPUT="$TMP_DIR/local-validation-freshness-with-cross-repo-report.json"
 LOCAL_VALIDATION_CROSS_REPO_REPORT_OUTPUT="$TMP_DIR/local-validation-cross-repo-report.json"
 LOCAL_VALIDATION_RUNTIME_BLOCKED_OUTPUT="$TMP_DIR/local-validation-runtime-blocked.json"
+LOCAL_MISSION_PACKET_OUTPUT="$TMP_DIR/local-mission-packet.json"
+LOCAL_MISSION_PACKET_STEERED_OUTPUT="$TMP_DIR/local-mission-packet-steered.json"
+LOCAL_DAY_PACKET_OUTPUT="$TMP_DIR/local-day-packet.json"
+LOCAL_DAY_PACKET_STEERED_OUTPUT="$TMP_DIR/local-day-packet-steered.json"
 LOCAL_INBOX_PAYLOAD_OUTPUT="$TMP_DIR/local-inbox-payload.json"
 LOCAL_INBOX_PAYLOAD_ALL_OUTPUT="$TMP_DIR/local-inbox-payload-all.json"
 LOCAL_INBOX_PAYLOAD_FILTERED_OUTPUT="$TMP_DIR/local-inbox-payload-filtered.json"
@@ -1964,6 +1968,23 @@ cat >"$VALIDATION_DIR/monday-local-mission-packet.json" <<'JSON'
     "local_runtime_summary": "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked stack=skipped direct=skipped mode=both reason=readiness_blocked",
     "local_runtime_next_step": "Expose Codex and add a direct local LLM profile.",
     "primary_action": "local-runtime: Expose Codex and add a direct local LLM profile.",
+    "cross_repo_validation_steering_scope": "none",
+    "cross_repo_validation_primary_action_promoted": false,
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=5 promotable=3 blocked=2 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+      "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "consumer-report schema verdict=pass errors=0 warnings=0"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ],
+    "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
+    "cross_repo_validation_packet_path": "VALIDATION_ROOT_PLACEHOLDER/cross-repo-validation-report.json",
     "immediate_actions": [
       "local-runtime: Expose Codex and add a direct local LLM profile."
     ],
@@ -1997,11 +2018,36 @@ doc["mission_packet"]["expected_evidence_outputs"] = [
     str((validation_dir / "monday-local-mission-packet.json").resolve()),
     str((validation_dir / "monday-local-mission-20260401T080000Z-monday-local-mission-packet.json").resolve()),
 ]
+doc["mission_packet"]["cross_repo_validation_packet_path"] = str(
+    (validation_dir / "cross-repo-validation-report.json").resolve()
+)
 doc["mission_packet"]["source_artifacts"]["handoff_report_path"] = str((validation_dir / "operator-handoff-report.json").resolve())
 doc["mission_packet"]["source_artifacts"]["local_operator_report_path"] = str((validation_dir / "monday-local-operator-stack-report.json").resolve())
 payload = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
 path.write_text(payload, encoding="utf-8")
 (validation_dir / "monday-local-mission-20260401T080000Z-monday-local-mission-packet.json").write_text(payload, encoding="utf-8")
+
+steered_doc = json.loads(payload)
+steered_doc["generated_at_utc"] = "2026-04-01T08:02:00+00:00"
+steered_doc["packet_id"] = "monday-local-mission-20260401T080200Z"
+steered_doc["artifact_paths"]["stamped_packet_path"] = str(
+    (validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json").resolve()
+)
+steered_doc["mission_packet"]["packet_id"] = "monday-local-mission-20260401T080200Z"
+steered_doc["mission_packet"]["primary_action"] = (
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+)
+steered_doc["mission_packet"]["cross_repo_validation_steering_scope"] = "primary_action_only"
+steered_doc["mission_packet"]["cross_repo_validation_primary_action_promoted"] = True
+steered_doc["mission_packet"]["immediate_actions"] = [
+    steered_doc["mission_packet"]["primary_action"],
+    "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+]
+(validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json").write_text(
+    json.dumps(steered_doc, ensure_ascii=True, indent=2) + "\n",
+    encoding="utf-8",
+)
 PY
 
 cat >"$VALIDATION_DIR/monday-local-operator-day-packet.json" <<'JSON'
@@ -2020,6 +2066,9 @@ cat >"$VALIDATION_DIR/monday-local-operator-day-packet.json" <<'JSON'
     "mission_packet_id": "monday-local-mission-20260401T080000Z",
     "headline": "Monday local operator day packet: Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
     "mission_objective": "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+    "primary_action": "local-runtime: Expose Codex and add a direct local LLM profile.",
+    "cross_repo_validation_steering_scope": "none",
+    "cross_repo_validation_primary_action_promoted": false,
     "mission_prompt": "Use monday planner profile `local_ollama` via `direct_local_ollama`.",
     "planner_profile": "local_ollama",
     "launch_mode": "direct",
@@ -2040,6 +2089,21 @@ cat >"$VALIDATION_DIR/monday-local-operator-day-packet.json" <<'JSON'
       "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)",
       "local-validation: repair monday_local_mission_packet (freshness=fresh, promotability=blocked, reasons=missing_rollback_command)"
     ],
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=5 promotable=3 blocked=2 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+      "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "consumer-report schema verdict=pass errors=0 warnings=0"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ],
+    "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
+    "cross_repo_validation_packet_path": "VALIDATION_ROOT_PLACEHOLDER/cross-repo-validation-report.json",
     "queue_lines": [
       "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1"
     ],
@@ -2080,12 +2144,44 @@ doc["day_packet"]["attachments"] = [
     str((validation_dir / "operator-handoff-report.json").resolve()),
     str((validation_dir / "monday-local-operator-stack-report.json").resolve()),
 ]
+doc["day_packet"]["cross_repo_validation_packet_path"] = str(
+    (validation_dir / "cross-repo-validation-report.json").resolve()
+)
 doc["day_packet"]["source_artifacts"]["mission_packet_path"] = str((validation_dir / "monday-local-mission-packet.json").resolve())
 doc["day_packet"]["source_artifacts"]["handoff_report_path"] = str((validation_dir / "operator-handoff-report.json").resolve())
 doc["day_packet"]["source_artifacts"]["local_operator_report_path"] = str((validation_dir / "monday-local-operator-stack-report.json").resolve())
 payload = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
 path.write_text(payload, encoding="utf-8")
 (validation_dir / "monday-local-day-20260401T083000Z-monday-local-operator-day-packet.json").write_text(payload, encoding="utf-8")
+
+steered_doc = json.loads(payload)
+steered_doc["generated_at_utc"] = "2026-04-01T08:31:00+00:00"
+steered_doc["day_packet_id"] = "monday-local-day-20260401T083100Z"
+steered_doc["artifact_paths"]["stamped_packet_path"] = str(
+    (validation_dir / "monday-local-day-20260401T083100Z-monday-local-operator-day-packet.json").resolve()
+)
+steered_doc["day_packet"]["day_packet_id"] = "monday-local-day-20260401T083100Z"
+steered_doc["day_packet"]["mission_packet_id"] = "monday-local-mission-20260401T080200Z"
+steered_doc["day_packet"]["primary_action"] = (
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+)
+steered_doc["day_packet"]["cross_repo_validation_steering_scope"] = "primary_action_only"
+steered_doc["day_packet"]["cross_repo_validation_primary_action_promoted"] = True
+steered_doc["day_packet"]["headline"] = (
+    "Monday local operator day packet: Resolve [active/latest-gap] federated-ci-local -> "
+    "federated-ci-local-20260301 domains=checkpoint,readiness,reconcile | next action: "
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+)
+steered_doc["day_packet"]["immediate_actions"] = [
+    steered_doc["day_packet"]["primary_action"],
+    "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+]
+(validation_dir / "monday-local-day-20260401T083100Z-monday-local-operator-day-packet.json").write_text(
+    json.dumps(steered_doc, ensure_ascii=True, indent=2) + "\n",
+    encoding="utf-8",
+)
 PY
 
 cat >"$VALIDATION_DIR/monday-local-operator-inbox-payload.json" <<'JSON'
@@ -2992,6 +3088,23 @@ cat >"$VALIDATION_DIR/monday-local-mission-packet.json" <<'JSON'
     "local_runtime_summary": "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked stack=skipped direct=skipped mode=both reason=readiness_blocked",
     "local_runtime_next_step": "Expose Codex and add a direct local LLM profile.",
     "primary_action": "local-runtime: Expose Codex and add a direct local LLM profile.",
+    "cross_repo_validation_steering_scope": "none",
+    "cross_repo_validation_primary_action_promoted": false,
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=5 promotable=3 blocked=2 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+      "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "consumer-report schema verdict=pass errors=0 warnings=0"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ],
+    "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
+    "cross_repo_validation_packet_path": "VALIDATION_ROOT_PLACEHOLDER/cross-repo-validation-report.json",
     "immediate_actions": [
       "local-runtime: Expose Codex and add a direct local LLM profile."
     ],
@@ -3025,6 +3138,9 @@ doc["mission_packet"]["expected_evidence_outputs"] = [
     str((validation_dir / "monday-local-mission-packet.json").resolve()),
     str((validation_dir / "monday-local-mission-20260401T080000Z-monday-local-mission-packet.json").resolve()),
 ]
+doc["mission_packet"]["cross_repo_validation_packet_path"] = str(
+    (validation_dir / "cross-repo-validation-report.json").resolve()
+)
 doc["mission_packet"]["source_artifacts"]["handoff_report_path"] = str((validation_dir / "operator-handoff-report.json").resolve())
 doc["mission_packet"]["source_artifacts"]["local_operator_report_path"] = str((validation_dir / "monday-local-operator-stack-report.json").resolve())
 path.write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
@@ -3032,6 +3148,119 @@ path.write_text(json.dumps(doc, ensure_ascii=True, indent=2) + "\n", encoding="u
     json.dumps(doc, ensure_ascii=True, indent=2) + "\n",
     encoding="utf-8",
 )
+
+steered_doc = json.loads(path.read_text(encoding="utf-8"))
+steered_doc["generated_at_utc"] = "2026-04-01T08:02:00+00:00"
+steered_doc["packet_id"] = "monday-local-mission-20260401T080200Z"
+steered_doc["artifact_paths"]["stamped_packet_path"] = str(
+    (validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json").resolve()
+)
+steered_doc["mission_packet"]["packet_id"] = "monday-local-mission-20260401T080200Z"
+steered_doc["mission_packet"]["primary_action"] = (
+    "cross-repo-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+)
+steered_doc["mission_packet"]["cross_repo_validation_steering_scope"] = "primary_action_only"
+steered_doc["mission_packet"]["cross_repo_validation_primary_action_promoted"] = True
+steered_doc["mission_packet"]["immediate_actions"] = [
+    steered_doc["mission_packet"]["primary_action"],
+    "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
+]
+(validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json").write_text(
+    json.dumps(steered_doc, ensure_ascii=True, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+
+python3 "$QUERY_PATH" local-mission-packet \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_MISSION_PACKET_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_MISSION_PACKET_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["packet_id"] == "monday-local-mission-20260401T080000Z", record
+assert record["source_kind"] == "latest", record
+assert record["primary_action"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
+assert record["cross_repo_validation_steering_scope"] == "none", record
+assert record["cross_repo_validation_primary_action_promoted"] is False, record
+assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
+assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
+assert record["cross_repo_validation_snapshot_status"] == "present", record
+PY
+
+python3 "$QUERY_PATH" local-mission-packet \
+  --source-kind stamped \
+  --steering-scope primary_action_only \
+  --primary-action-promoted yes \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_MISSION_PACKET_STEERED_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_MISSION_PACKET_STEERED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["packet_id"] == "monday-local-mission-20260401T080200Z", record
+assert record["source_kind"] == "stamped", record
+assert record["cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["cross_repo_validation_primary_action_promoted"] is True, record
+assert record["primary_action"].startswith("cross-repo-validation: repair monday_local_inbox_runtime_report"), record
+PY
+
+python3 "$QUERY_PATH" local-day-packet \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_DAY_PACKET_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_DAY_PACKET_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["day_packet_id"] == "monday-local-day-20260401T083000Z", record
+assert record["source_kind"] == "latest", record
+assert record["cross_repo_validation_steering_scope"] == "none", record
+assert record["cross_repo_validation_primary_action_promoted"] is False, record
+assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
+assert record["headline"].startswith("Monday local operator day packet: Resolve [active/latest-gap]"), record
+PY
+
+python3 "$QUERY_PATH" local-day-packet \
+  --source-kind stamped \
+  --steering-scope primary_action_only \
+  --primary-action-promoted yes \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_DAY_PACKET_STEERED_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_DAY_PACKET_STEERED_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["day_packet_id"] == "monday-local-day-20260401T083100Z", record
+assert record["source_kind"] == "stamped", record
+assert record["cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["cross_repo_validation_primary_action_promoted"] is True, record
+assert "| next action: cross-repo-validation: repair monday_local_inbox_runtime_report" in record["headline"], record
+assert record["primary_action"].startswith("cross-repo-validation: repair monday_local_inbox_runtime_report"), record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
