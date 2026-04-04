@@ -198,6 +198,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload|monday-consumer-report` now point current blocking payload-first and apply/result-first records at the promoted `cross-repo-validation-packet` through explicit packet `report_id` and `path` fields instead of relying on snapshot-only linkage
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-inbox-payload|monday-consumer-report` now also carry the linked packet's dedicated cross-repo detail lines and action lines in their markdown/json surfaces so operators can stay in payload-first or apply/result-first views without reopening the promoted packet immediately
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries the same linked packet snapshot, detail lines, monday source validation report lines, and action lines that triage surfaces already expose, while still keeping the immutable `cross-repo-validation-packet` pointer for deep-link evidence
+- `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now preserve the promoted `cross-repo-validation-packet` pointer inside mission/day packet surfaces so packet-only operator flows can reopen immutable cross-repo evidence without routing back through `handoff-report`
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -260,4 +261,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether mission/day packet surfaces need a direct pointer to the promoted `cross-repo-validation-packet` or whether handoff, triage, payload-first, and apply/result-first entrypoints are sufficient
+2. decide whether mission/day packet surfaces should stay pointer-only for promoted `cross-repo-validation-packet` evidence or also inline packet detail/action sections the way triage, payload-first, apply/result-first, and handoff now do
