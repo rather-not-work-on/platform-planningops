@@ -201,6 +201,7 @@ Current deliverables:
 - `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now preserve the promoted `cross-repo-validation-packet` pointer inside mission/day packet surfaces so packet-only operator flows can reopen immutable cross-repo evidence without routing back through `handoff-report`
 - `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now also carry the linked cross-repo validation snapshot, detail lines, monday source validation report lines, and action lines so mission/day packet-only flows do not lose the same operator context already available on handoff and triage surfaces
 - `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now fail-closed promote `cross_repo_validation_action_line` into mission/day action selection only when no stronger `local-runtime:` or `local-validation:` action already exists and an immutable promoted packet pointer is present
+- `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now emit explicit `cross_repo_validation_steering_scope` and `cross_repo_validation_primary_action_promoted` fields so downstream packet readers can see that cross-repo validation may steer selected action but does not rewrite `mission_objective` or target ranking
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -263,4 +264,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether promoted cross-repo validation should ever steer `mission_objective` or target ranking itself, or whether action selection is the right ceiling and the packet should stay objective-stable
+2. decide whether mission/day packet query surfaces need to expose `cross_repo_validation_steering_scope` directly, or whether packet-local visibility is enough and downstream surfaces should keep reopening the promoted packet when they need the policy detail

@@ -77,6 +77,8 @@ cat >"$MISSION_PACKET" <<'JSON'
     "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
     "cross_repo_validation_packet_path": "VALIDATION_ROOT_PLACEHOLDER/cross-repo-validation-report.json",
     "primary_action": "local-runtime: Expose Codex and add a direct local LLM profile.",
+    "cross_repo_validation_steering_scope": "none",
+    "cross_repo_validation_primary_action_promoted": false,
     "immediate_actions": [
       "local-runtime: Expose Codex and add a direct local LLM profile."
     ],
@@ -270,6 +272,8 @@ assert "monday_source_validation_report_lines" in contract_text, contract_text
 assert "cross_repo_validation_action_lines" in contract_text, contract_text
 assert "cross_repo_validation_packet_report_id" in contract_text, contract_text
 assert "cross_repo_validation_packet_path" in contract_text, contract_text
+assert "cross_repo_validation_steering_scope" in contract_text, contract_text
+assert "cross_repo_validation_primary_action_promoted" in contract_text, contract_text
 
 for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert doc["day_packet_id"] == day_packet_id, doc
@@ -281,6 +285,8 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert packet["day_packet_id"] == day_packet_id, packet
     assert packet["mission_packet_id"] == "monday-local-mission-20260401T080000Z", packet
     assert packet["primary_action"] == "local-runtime: Expose Codex and add a direct local LLM profile.", packet
+    assert packet["cross_repo_validation_steering_scope"] == "none", packet
+    assert packet["cross_repo_validation_primary_action_promoted"] is False, packet
     assert packet["headline"].startswith("Monday local operator day packet: Resolve [active/latest-gap]"), packet
     assert packet["mission_objective"] == (
         "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile"
@@ -346,6 +352,8 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert "### Cross-Repo Validation" in packet["body_markdown"], packet
     assert "### Cross-Repo Validation Packet" in packet["body_markdown"], packet
     assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in packet["body_markdown"], packet
+    assert "steering scope: `none`" in packet["body_markdown"], packet
+    assert "primary action promoted: `false`" in packet["body_markdown"], packet
     assert "### Cross-Repo Validation Details" in packet["body_markdown"], packet
     assert "- consumer-report schema verdict=pass errors=0 warnings=0" in packet["body_markdown"], packet
     assert "### Cross-Repo Validation Actions" in packet["body_markdown"], packet
@@ -378,6 +386,8 @@ doc["mission_packet"]["primary_action"] = (
     "cross-repo-validation: repair monday_local_inbox_runtime_report "
     "(freshness=missing, promotability=blocked, reasons=latest_missing)"
 )
+doc["mission_packet"]["cross_repo_validation_steering_scope"] = "primary_action_only"
+doc["mission_packet"]["cross_repo_validation_primary_action_promoted"] = True
 doc["mission_packet"]["immediate_actions"] = [
     doc["mission_packet"]["primary_action"],
     "triage-target: [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
@@ -406,12 +416,16 @@ assert packet["primary_action"] == (
     "cross-repo-validation: repair monday_local_inbox_runtime_report "
     "(freshness=missing, promotability=blocked, reasons=latest_missing)"
 ), packet
+assert packet["cross_repo_validation_steering_scope"] == "primary_action_only", packet
+assert packet["cross_repo_validation_primary_action_promoted"] is True, packet
 assert packet["headline"].startswith(
     "Monday local operator day packet: Resolve [active/latest-gap]"
 ), packet
 assert "| next action: cross-repo-validation: repair monday_local_inbox_runtime_report" in packet["headline"], packet
 assert packet["immediate_actions"][0] == packet["primary_action"], packet
 assert "- primary action: cross-repo-validation: repair monday_local_inbox_runtime_report " in packet["body_markdown"], packet
+assert "steering scope: `primary_action_only`" in packet["body_markdown"], packet
+assert "primary action promoted: `true`" in packet["body_markdown"], packet
 PY
 
 echo "write monday local operator day packet ok"

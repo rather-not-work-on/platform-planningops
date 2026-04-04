@@ -72,6 +72,12 @@ def normalize_optional_string(raw_value: object) -> str | None:
     return None
 
 
+def normalize_bool(raw_value: object) -> bool | None:
+    if isinstance(raw_value, bool):
+        return raw_value
+    return None
+
+
 def dedupe_preserve_order(values: list[str]) -> list[str]:
     deduped: list[str] = []
     seen: set[str] = set()
@@ -155,6 +161,28 @@ def build_cross_repo_validation_snapshot(
     return "missing", "total=0 promotable=0 blocked=0 stale=0", None, [], [], []
 
 
+def build_cross_repo_validation_steering(
+    *,
+    mission_packet: dict,
+    primary_action: str,
+    cross_repo_validation_action_line: str | None,
+    cross_repo_validation_packet_report_id: str | None,
+    cross_repo_validation_packet_path: str | None,
+) -> tuple[str, bool]:
+    scope = normalize_optional_string(mission_packet.get("cross_repo_validation_steering_scope"))
+    promoted = normalize_bool(mission_packet.get("cross_repo_validation_primary_action_promoted"))
+    if scope is not None:
+        return scope, promoted if promoted is not None else scope == "primary_action_only"
+
+    derived_promoted = (
+        cross_repo_validation_action_line is not None
+        and primary_action == cross_repo_validation_action_line
+        and cross_repo_validation_packet_report_id is not None
+        and cross_repo_validation_packet_path is not None
+    )
+    return ("primary_action_only" if derived_promoted else "none"), derived_promoted
+
+
 def build_body_markdown(
     *,
     headline: str,
@@ -172,6 +200,8 @@ def build_body_markdown(
     local_validation_action_lines: list[str],
     cross_repo_validation_snapshot_status: str,
     cross_repo_validation_snapshot_summary: str,
+    cross_repo_validation_steering_scope: str,
+    cross_repo_validation_primary_action_promoted: bool,
     cross_repo_validation_action_line: str | None,
     cross_repo_validation_detail_lines: list[str],
     monday_source_validation_report_lines: list[str],
@@ -212,6 +242,8 @@ def build_body_markdown(
             "### Cross-Repo Validation",
             f"- snapshot status: `{cross_repo_validation_snapshot_status}`",
             f"- snapshot summary: `{cross_repo_validation_snapshot_summary}`",
+            f"- steering scope: `{cross_repo_validation_steering_scope}`",
+            f"- primary action promoted: `{str(cross_repo_validation_primary_action_promoted).lower()}`",
         ]
     )
     if cross_repo_validation_action_line is not None:
@@ -298,8 +330,6 @@ def main() -> int:
     )
     rollback_command = require_string(mission_packet.get("rollback_command"), "rollback command")
     headline = f"Monday local operator day packet: {mission_objective}"
-    if primary_action.startswith("cross-repo-validation:"):
-        headline = f"{headline} | next action: {primary_action}"
 
     queue_lines = normalize_string_list(handoff_record.get("queue_lines"))
     target_lines = normalize_string_list(handoff_record.get("target_lines"))
@@ -321,6 +351,15 @@ def main() -> int:
         monday_source_validation_report_lines,
         cross_repo_validation_action_lines,
     ) = build_cross_repo_validation_snapshot(mission_packet=mission_packet, handoff_record=handoff_record)
+    cross_repo_validation_steering_scope, cross_repo_validation_primary_action_promoted = build_cross_repo_validation_steering(
+        mission_packet=mission_packet,
+        primary_action=primary_action,
+        cross_repo_validation_action_line=cross_repo_validation_action_line,
+        cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+        cross_repo_validation_packet_path=cross_repo_validation_packet_path,
+    )
+    if cross_repo_validation_primary_action_promoted:
+        headline = f"{headline} | next action: {primary_action}"
     local_validation_snapshot_status, local_validation_records, local_validation_summary_lines, local_validation_action_lines = (
         build_local_validation_snapshot(mission_packet=mission_packet, handoff_record=handoff_record)
     )
@@ -359,6 +398,8 @@ def main() -> int:
         "headline": headline,
         "mission_objective": mission_objective,
         "primary_action": primary_action,
+        "cross_repo_validation_steering_scope": cross_repo_validation_steering_scope,
+        "cross_repo_validation_primary_action_promoted": cross_repo_validation_primary_action_promoted,
         "mission_prompt": mission_prompt,
         "attention_summary": str(mission_packet.get("attention_summary") or handoff_record.get("attention_summary") or ""),
         "newest_failing_summary": str(mission_packet.get("newest_failing_summary") or handoff_record.get("newest_failing_summary") or ""),
@@ -402,6 +443,8 @@ def main() -> int:
             local_validation_action_lines=local_validation_action_lines,
             cross_repo_validation_snapshot_status=cross_repo_validation_snapshot_status,
             cross_repo_validation_snapshot_summary=cross_repo_validation_snapshot_summary,
+            cross_repo_validation_steering_scope=cross_repo_validation_steering_scope,
+            cross_repo_validation_primary_action_promoted=cross_repo_validation_primary_action_promoted,
             cross_repo_validation_action_line=cross_repo_validation_action_line,
             cross_repo_validation_detail_lines=cross_repo_validation_detail_lines,
             monday_source_validation_report_lines=monday_source_validation_report_lines,
