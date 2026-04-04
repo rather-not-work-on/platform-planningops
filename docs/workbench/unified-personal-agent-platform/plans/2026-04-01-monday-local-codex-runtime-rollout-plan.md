@@ -204,6 +204,7 @@ Current deliverables:
 - `planningops/scripts/write_monday_local_mission_packet.py|write_monday_local_operator_day_packet.py` now emit explicit `cross_repo_validation_steering_scope` and `cross_repo_validation_primary_action_promoted` fields so downstream packet readers can see that cross-repo validation may steer selected action but does not rewrite `mission_objective` or target ranking
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-mission-packet|local-day-packet` now expose latest/stamped mission/day packet records directly, including `cross_repo_validation_steering_scope`, `cross_repo_validation_primary_action_promoted`, packet source kind, and immutable cross-repo packet linkage so operators can audit action-only steering without reopening raw packet JSON
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report|local-inbox-payload|monday-consumer-report` now mirror mission/day steering metadata directly so summary-first, payload-first, and apply/result-first operator surfaces can see whether cross-repo validation only steered `primary_action` without reopening the dedicated mission/day packet queries
+- `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report|local-inbox-payload|monday-consumer-report` now accept explicit mission/day steering filters so operators can isolate `none` vs `primary_action_only` and promoted vs non-promoted downstream states without reopening packet-local surfaces
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -266,4 +267,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether downstream surfaces need explicit filters for mission/day steering metadata, or whether the new mirrored visibility plus `local-mission-packet|local-day-packet` query surfaces are enough and filtering should stay packet-local
+2. decide whether mirrored steering metadata should stay query-only/filter-only on downstream surfaces, or whether it should also steer downstream summary selection and ranking beyond the current packet-local policy boundary

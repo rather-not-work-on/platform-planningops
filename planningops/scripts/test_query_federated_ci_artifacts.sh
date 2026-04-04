@@ -4824,6 +4824,122 @@ assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in re
 assert "detail packet path: `" in record["markdown"], record
 PY
 
+LOCAL_INBOX_PAYLOAD_STEERING_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" local-inbox-payload \
+  --source-kind latest \
+  --mission-packet-steering-scope none \
+  --mission-packet-primary-action-promoted no \
+  --day-packet-steering-scope none \
+  --day-packet-primary-action-promoted no \
+  --format json \
+  --validation-root "$VALIDATION_DIR" >"$LOCAL_INBOX_PAYLOAD_STEERING_FILTER_OUTPUT"
+
+python3 - <<'PY' "$LOCAL_INBOX_PAYLOAD_STEERING_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["bridge_id"] == "monday-local-inbox-20260401T084500Z", record
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is False, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
+PY
+
+MONDAY_CONSUMER_STEERING_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" monday-consumer-report \
+  --mission-packet-steering-scope primary_action_only \
+  --mission-packet-primary-action-promoted yes \
+  --day-packet-steering-scope primary_action_only \
+  --day-packet-primary-action-promoted yes \
+  --format json \
+  --validation-root "$VALIDATION_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" >"$MONDAY_CONSUMER_STEERING_FILTER_OUTPUT"
+
+python3 - <<'PY' "$MONDAY_CONSUMER_STEERING_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 1, records
+record = records[0]
+assert record["run_id"] == "planningops-local-inbox-consumer-20260401T103000Z", record
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is True, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is True, record
+PY
+
+TRIAGE_FEED_STEERING_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-feed \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --mission-packet-steering-scope none \
+  --day-packet-primary-action-promoted no >"$TRIAGE_FEED_STEERING_FILTER_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_FEED_STEERING_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
+PY
+
+TRIAGE_BRIEF_STEERING_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --mission-packet-steering-scope primary_action_only >"$TRIAGE_BRIEF_STEERING_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_STEERING_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
+PY
+
+TRIAGE_REPORT_STEERING_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --day-packet-primary-action-promoted yes >"$TRIAGE_REPORT_STEERING_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_REPORT_STEERING_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
+PY
+
 python3 "$QUERY_PATH" local-validation-freshness \
   --artifact-family monday_local_inbox_runtime_report \
   --promotability-status blocked \
