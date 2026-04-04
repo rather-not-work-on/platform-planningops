@@ -3653,14 +3653,14 @@ JSON
 cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/launch-request.json" <<JSON
 {
   "source_bridge_id": "monday-local-inbox-20260401T084500Z",
-  "source_day_packet_id": "monday-local-day-20260401T083000Z",
-  "source_mission_packet_id": "monday-local-mission-20260401T080000Z",
+  "source_day_packet_id": "monday-local-day-20260401T083100Z",
+  "source_mission_packet_id": "monday-local-mission-20260401T080200Z",
   "mission_objective": "Resolve [active/latest-gap] federated-ci-local -> federated-ci-local-20260301 domains=checkpoint,readiness,reconcile",
   "planner_profile": "local_ollama",
   "launch_mode": "direct",
   "local_model_route": "direct_local_ollama",
-  "first_action_command": "python3 planningops/scripts/run_monday_local_operator_stack.py --execution-mode direct --direct-profile local_ollama --probe-endpoints on --run-id monday-local-mission-20260401T080000Z",
-  "monday_runtime_entrypoint_command": "cd ../monday && python3 scripts/run_local_runtime_smoke.py --profile local_ollama --run-id monday-local-mission-20260401T080000Z",
+  "first_action_command": "python3 planningops/scripts/run_monday_local_operator_stack.py --execution-mode direct --direct-profile local_ollama --probe-endpoints on --run-id monday-local-mission-20260401T080200Z",
+  "monday_runtime_entrypoint_command": "cd ../monday && python3 scripts/run_local_runtime_smoke.py --profile local_ollama --run-id monday-local-mission-20260401T080200Z",
   "rollback_command": "cd ../platform-provider-gateway && bash scripts/litellm_stack_launcher.sh --mode start",
   "recommended_wait_minutes": 5,
   "needs_human_attention": true,
@@ -3684,8 +3684,8 @@ cat >"$MONDAY_CONSUMER_DIR/planningops-local-inbox-consumer-20260401T103000Z/lau
     "local_ollama"
   ],
   "source_artifacts": {
-    "day_packet_path": "$VALIDATION_DIR/monday-local-operator-day-packet.json",
-    "mission_packet_path": "$VALIDATION_DIR/monday-local-mission-packet.json",
+    "day_packet_path": "$VALIDATION_DIR/monday-local-day-20260401T083100Z-monday-local-operator-day-packet.json",
+    "mission_packet_path": "$VALIDATION_DIR/monday-local-mission-20260401T080200Z-monday-local-mission-packet.json",
     "handoff_report_path": "$VALIDATION_DIR/operator-handoff-report.json",
     "local_operator_report_path": "$VALIDATION_DIR/monday-local-operator-stack-report.json"
   }
@@ -4480,6 +4480,10 @@ records = doc["records"]
 latest, stamped_current, stamped_old = records
 
 for record in (latest, stamped_current):
+    assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+    assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is False, record
+    assert record["day_packet_cross_repo_validation_steering_scope"] == "none", record
+    assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
     assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
     assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
     assert record["cross_repo_validation_detail_lines"] == [
@@ -4501,6 +4505,10 @@ for record in (latest, stamped_current):
 
 assert stamped_old["cross_repo_validation_packet_report_id"] is None, stamped_old
 assert stamped_old["cross_repo_validation_packet_path"] is None, stamped_old
+assert stamped_old["mission_packet_cross_repo_validation_steering_scope"] == "none", stamped_old
+assert stamped_old["mission_packet_cross_repo_validation_primary_action_promoted"] is False, stamped_old
+assert stamped_old["day_packet_cross_repo_validation_steering_scope"] == "none", stamped_old
+assert stamped_old["day_packet_cross_repo_validation_primary_action_promoted"] is False, stamped_old
 assert stamped_old["cross_repo_validation_detail_lines"] == [], stamped_old
 assert stamped_old["monday_source_validation_report_lines"] == [], stamped_old
 assert stamped_old["cross_repo_validation_action_lines"] == [], stamped_old
@@ -4518,6 +4526,10 @@ import sys
 
 markdown = Path(sys.argv[1]).read_text(encoding="utf-8")
 assert "### Cross-Repo Validation Details: `monday-local-inbox-20260401T084500Z`" in markdown, markdown
+assert "mission packet steering scope: `none`" in markdown, markdown
+assert "mission packet primary action promoted: `false`" in markdown, markdown
+assert "day packet steering scope: `none`" in markdown, markdown
+assert "day packet primary action promoted: `false`" in markdown, markdown
 assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in markdown, markdown
 assert "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing" in markdown, markdown
 assert "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes" in markdown, markdown
@@ -4539,6 +4551,10 @@ doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 records = doc["records"]
 blocked, passed_apply, dry_run = records
 
+assert blocked["mission_packet_cross_repo_validation_steering_scope"] == "primary_action_only", blocked
+assert blocked["mission_packet_cross_repo_validation_primary_action_promoted"] is True, blocked
+assert blocked["day_packet_cross_repo_validation_steering_scope"] == "primary_action_only", blocked
+assert blocked["day_packet_cross_repo_validation_primary_action_promoted"] is True, blocked
 assert blocked["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", blocked
 assert blocked["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), blocked
 assert blocked["cross_repo_validation_detail_lines"] == [
@@ -4559,6 +4575,10 @@ assert blocked["cross_repo_validation_action_lines"] == [
 ], blocked
 
 for record in (passed_apply, dry_run):
+    assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+    assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is False, record
+    assert record["day_packet_cross_repo_validation_steering_scope"] == "none", record
+    assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
     assert record["cross_repo_validation_packet_report_id"] is None, record
     assert record["cross_repo_validation_packet_path"] is None, record
     assert record["cross_repo_validation_detail_lines"] == [], record
@@ -4579,6 +4599,10 @@ import sys
 
 markdown = Path(sys.argv[1]).read_text(encoding="utf-8")
 assert "### Cross-Repo Validation Details: `planningops-local-inbox-consumer-20260401T103000Z`" in markdown, markdown
+assert "mission packet steering scope: `primary_action_only`" in markdown, markdown
+assert "mission packet primary action promoted: `true`" in markdown, markdown
+assert "day packet steering scope: `primary_action_only`" in markdown, markdown
+assert "day packet primary action promoted: `true`" in markdown, markdown
 assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in markdown, markdown
 assert "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing" in markdown, markdown
 assert "source: consumer-report: verdict=fail errors=2 warnings=1 artifact_exists=yes schema_exists=yes" in markdown, markdown
@@ -4662,6 +4686,10 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is False, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
 assert record["cross_repo_validation_snapshot_status"] == "present", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
 assert record["monday_source_validation_status"] == "attention", record
@@ -4706,6 +4734,10 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is False, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "none", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is False, record
 assert record["cross_repo_validation_snapshot_status"] == "present", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", record
 assert record["monday_source_validation_status"] == "attention", record
@@ -4777,6 +4809,10 @@ assert record["cross_repo_validation_action_lines"] == [
 assert record["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", record
 assert record["cross_repo_validation_packet_path"].endswith("/cross-repo-validation-report.json"), record
 assert "### Cross-Repo Validation" in record["markdown"], record
+assert "mission packet steering scope: `none`" in record["markdown"], record
+assert "mission packet primary action promoted: `false`" in record["markdown"], record
+assert "day packet steering scope: `none`" in record["markdown"], record
+assert "day packet primary action promoted: `false`" in record["markdown"], record
 assert "snapshot summary: `total=5 promotable=3 blocked=2 stale=0`" in record["markdown"], record
 assert "monday source validation summary: `total=2 pass=1 fail=1 errors=2 warnings=1`" in record["markdown"], record
 assert "### Cross-Repo Validation Details" in record["markdown"], record

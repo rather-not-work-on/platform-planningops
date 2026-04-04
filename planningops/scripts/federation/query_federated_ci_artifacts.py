@@ -266,6 +266,10 @@ class TriageFeedRecord:
     queue_records: list[TriageQueueRecord]
     target_records: list[TriageTargetRecord]
     local_operator_record: LocalOperatorStackRecord | None
+    mission_packet_cross_repo_validation_steering_scope: str | None
+    mission_packet_cross_repo_validation_primary_action_promoted: bool | None
+    day_packet_cross_repo_validation_steering_scope: str | None
+    day_packet_cross_repo_validation_primary_action_promoted: bool | None
     cross_repo_validation_snapshot_status: str | None
     cross_repo_validation_snapshot_summary: str | None
     monday_source_validation_status: str | None
@@ -294,6 +298,10 @@ class TriageBriefRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    mission_packet_cross_repo_validation_steering_scope: str | None
+    mission_packet_cross_repo_validation_primary_action_promoted: bool | None
+    day_packet_cross_repo_validation_steering_scope: str | None
+    day_packet_cross_repo_validation_primary_action_promoted: bool | None
     cross_repo_validation_snapshot_status: str | None
     cross_repo_validation_snapshot_summary: str | None
     monday_source_validation_status: str | None
@@ -319,6 +327,10 @@ class TriageReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    mission_packet_cross_repo_validation_steering_scope: str | None
+    mission_packet_cross_repo_validation_primary_action_promoted: bool | None
+    day_packet_cross_repo_validation_steering_scope: str | None
+    day_packet_cross_repo_validation_primary_action_promoted: bool | None
     cross_repo_validation_snapshot_status: str | None
     cross_repo_validation_snapshot_summary: str | None
     monday_source_validation_status: str | None
@@ -477,6 +489,10 @@ class LocalInboxPayloadRecord:
     planner_profile: str | None
     launch_mode: str | None
     local_model_route: str | None
+    mission_packet_cross_repo_validation_steering_scope: str | None
+    mission_packet_cross_repo_validation_primary_action_promoted: bool | None
+    day_packet_cross_repo_validation_steering_scope: str | None
+    day_packet_cross_repo_validation_primary_action_promoted: bool | None
     local_validation_snapshot_status: str | None
     monday_validation_snapshot_status: str
     monday_validation_snapshot_summary: str
@@ -579,6 +595,10 @@ class MondayConsumerReportRecord:
     planner_profile: str | None
     launch_mode: str | None
     local_model_route: str | None
+    mission_packet_cross_repo_validation_steering_scope: str | None
+    mission_packet_cross_repo_validation_primary_action_promoted: bool | None
+    day_packet_cross_repo_validation_steering_scope: str | None
+    day_packet_cross_repo_validation_primary_action_promoted: bool | None
     local_validation_snapshot_status: str | None
     monday_validation_snapshot_status: str
     monday_validation_snapshot_summary: str
@@ -1305,6 +1325,8 @@ def build_local_inbox_payload_record(
     bridge_id = str(payload_doc.get("bridge_id"))
     payload = payload_doc.get("payload") if isinstance(payload_doc.get("payload"), dict) else {}
     source_artifacts = payload.get("source_artifacts") if isinstance(payload.get("source_artifacts"), dict) else {}
+    mission_packet_record = load_local_mission_packet_record_for_path(source_artifacts.get("mission_packet_path"))
+    day_packet_record = load_local_day_packet_record_for_path(source_artifacts.get("day_packet_path"))
     dependency_states: dict[str, str] = {}
     dependency_states["monday_local_operator_day_packet"] = build_local_validation_dependency_state(
         raw_path=source_artifacts.get("day_packet_path"),
@@ -1370,6 +1392,20 @@ def build_local_inbox_payload_record(
         planner_profile=normalize_optional_string(payload.get("planner_profile")),
         launch_mode=normalize_optional_string(payload.get("launch_mode")),
         local_model_route=normalize_optional_string(payload.get("local_model_route")),
+        mission_packet_cross_repo_validation_steering_scope=(
+            None if mission_packet_record is None else mission_packet_record.cross_repo_validation_steering_scope
+        ),
+        mission_packet_cross_repo_validation_primary_action_promoted=(
+            None
+            if mission_packet_record is None
+            else mission_packet_record.cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_cross_repo_validation_steering_scope=(
+            None if day_packet_record is None else day_packet_record.cross_repo_validation_steering_scope
+        ),
+        day_packet_cross_repo_validation_primary_action_promoted=(
+            None if day_packet_record is None else day_packet_record.cross_repo_validation_primary_action_promoted
+        ),
         local_validation_snapshot_status=normalize_optional_string(payload.get("local_validation_snapshot_status")),
         monday_validation_snapshot_status=monday_validation_snapshot_status,
         monday_validation_snapshot_summary=monday_validation_snapshot_summary,
@@ -1751,6 +1787,42 @@ def discover_local_day_packet_records(*, validation_root: Path) -> list[LocalDay
     return records
 
 
+def load_local_mission_packet_record_for_path(raw_path: Any) -> LocalMissionPacketRecord | None:
+    packet_path = resolve_artifact_path(raw_path)
+    if packet_path is None:
+        return None
+    packet_doc = load_optional_json(packet_path)
+    if packet_doc is None or not is_local_mission_packet_document(packet_doc):
+        return None
+    return build_local_mission_packet_record(packet_path=packet_path, packet_doc=packet_doc)
+
+
+def load_local_day_packet_record_for_path(raw_path: Any) -> LocalDayPacketRecord | None:
+    packet_path = resolve_artifact_path(raw_path)
+    if packet_path is None:
+        return None
+    packet_doc = load_optional_json(packet_path)
+    if packet_doc is None or not is_local_day_packet_document(packet_doc):
+        return None
+    return build_local_day_packet_record(packet_path=packet_path, packet_doc=packet_doc)
+
+
+def select_latest_local_mission_packet_record(*, validation_root: Path) -> LocalMissionPacketRecord | None:
+    records = discover_local_mission_packet_records(validation_root=validation_root)
+    for record in records:
+        if record.source_kind == "latest":
+            return record
+    return records[0] if records else None
+
+
+def select_latest_local_day_packet_record(*, validation_root: Path) -> LocalDayPacketRecord | None:
+    records = discover_local_day_packet_records(validation_root=validation_root)
+    for record in records:
+        if record.source_kind == "latest":
+            return record
+    return records[0] if records else None
+
+
 def filter_local_day_packet_records(
     *,
     records: list[LocalDayPacketRecord],
@@ -1880,7 +1952,7 @@ def render_local_day_packet_markdown(records: list[LocalDayPacketRecord]) -> str
 
 def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> str:
     lines = [
-        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tvalidation_snapshot\tmonday_validation_snapshot\tcross_repo_packet_report_id\tcross_repo_packet_path\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
+        "bridge_id\tsource\tstatus\tattention\tmessage_class\tretry_mode\tplanner_profile\tlaunch_mode\tlocal_model_route\tmission_packet_steering_scope\tmission_packet_primary_action_promoted\tday_packet_steering_scope\tday_packet_primary_action_promoted\tvalidation_snapshot\tmonday_validation_snapshot\tcross_repo_packet_report_id\tcross_repo_packet_path\tdependencies\timmediate_actions\ttargets\tattachments\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -1899,6 +1971,22 @@ def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> 
                     str(record.planner_profile or ""),
                     str(record.launch_mode or ""),
                     str(record.local_model_route or ""),
+                    str(record.mission_packet_cross_repo_validation_steering_scope or ""),
+                    (
+                        ""
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "yes"
+                            if record.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "no"
+                        )
+                    ),
+                    str(record.day_packet_cross_repo_validation_steering_scope or ""),
+                    (
+                        ""
+                        if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("yes" if record.day_packet_cross_repo_validation_primary_action_promoted else "no")
+                    ),
                     str(record.local_validation_snapshot_status or ""),
                     record.monday_validation_snapshot_status,
                     str(record.cross_repo_validation_packet_report_id or ""),
@@ -1916,8 +2004,8 @@ def render_local_inbox_payload_table(records: list[LocalInboxPayloadRecord]) -> 
 
 def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) -> str:
     lines = [
-        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | validation_snapshot | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
+        "| bridge_id | source | status | attention | message_class | retry_mode | planner_profile | launch_mode | local_model_route | mission_packet_steering_scope | mission_packet_primary_action_promoted | day_packet_steering_scope | day_packet_primary_action_promoted | validation_snapshot | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | dependencies | immediate_actions | targets | attachments | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
     ]
     sections: list[str] = []
     for record in records:
@@ -1926,6 +2014,10 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
             f"{'' if record.needs_human_attention is None else ('yes' if record.needs_human_attention else 'no')} | "
             f"{record.message_class_hint or ''} | {record.retry_mode or ''} | {record.planner_profile or ''} | "
             f"{record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{record.mission_packet_cross_repo_validation_steering_scope or ''} | "
+            f"{'' if record.mission_packet_cross_repo_validation_primary_action_promoted is None else ('yes' if record.mission_packet_cross_repo_validation_primary_action_promoted else 'no')} | "
+            f"{record.day_packet_cross_repo_validation_steering_scope or ''} | "
+            f"{'' if record.day_packet_cross_repo_validation_primary_action_promoted is None else ('yes' if record.day_packet_cross_repo_validation_primary_action_promoted else 'no')} | "
             f"{record.local_validation_snapshot_status or ''} | "
             f"{record.monday_validation_snapshot_status} | "
             f"{record.cross_repo_validation_packet_report_id or ''} | "
@@ -1935,6 +2027,30 @@ def render_local_inbox_payload_markdown(records: list[LocalInboxPayloadRecord]) 
             f"{record.generated_at_utc} |"
         )
         detail_lines: list[str] = []
+        if record.mission_packet_cross_repo_validation_steering_scope is not None:
+            detail_lines.append(
+                f"- mission packet steering scope: `{record.mission_packet_cross_repo_validation_steering_scope}`"
+            )
+        if record.mission_packet_cross_repo_validation_primary_action_promoted is not None:
+            detail_lines.append(
+                "- mission packet primary action promoted: `"
+                + (
+                    "true"
+                    if record.mission_packet_cross_repo_validation_primary_action_promoted
+                    else "false"
+                )
+                + "`"
+            )
+        if record.day_packet_cross_repo_validation_steering_scope is not None:
+            detail_lines.append(
+                f"- day packet steering scope: `{record.day_packet_cross_repo_validation_steering_scope}`"
+            )
+        if record.day_packet_cross_repo_validation_primary_action_promoted is not None:
+            detail_lines.append(
+                "- day packet primary action promoted: `"
+                + ("true" if record.day_packet_cross_repo_validation_primary_action_promoted else "false")
+                + "`"
+            )
         if record.cross_repo_validation_packet_report_id is not None:
             detail_lines.append(
                 f"- detail packet report id: `{record.cross_repo_validation_packet_report_id}`"
@@ -1979,6 +2095,11 @@ def build_monday_consumer_report_record(
 ) -> MondayConsumerReportRecord:
     artifact_paths = report_doc.get("artifact_paths") if isinstance(report_doc.get("artifact_paths"), dict) else {}
     launch_request = report_doc.get("launch_request") if isinstance(report_doc.get("launch_request"), dict) else {}
+    source_artifacts = (
+        launch_request.get("source_artifacts") if isinstance(launch_request.get("source_artifacts"), dict) else {}
+    )
+    mission_packet_record = load_local_mission_packet_record_for_path(source_artifacts.get("mission_packet_path"))
+    day_packet_record = load_local_day_packet_record_for_path(source_artifacts.get("day_packet_path"))
     runtime_input_overrides = (
         launch_request.get("runtime_input_overrides") if isinstance(launch_request.get("runtime_input_overrides"), dict) else {}
     )
@@ -2045,6 +2166,20 @@ def build_monday_consumer_report_record(
         planner_profile=normalize_optional_string(launch_request.get("planner_profile")),
         launch_mode=normalize_optional_string(launch_request.get("launch_mode")),
         local_model_route=normalize_optional_string(launch_request.get("local_model_route")),
+        mission_packet_cross_repo_validation_steering_scope=(
+            None if mission_packet_record is None else mission_packet_record.cross_repo_validation_steering_scope
+        ),
+        mission_packet_cross_repo_validation_primary_action_promoted=(
+            None
+            if mission_packet_record is None
+            else mission_packet_record.cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_cross_repo_validation_steering_scope=(
+            None if day_packet_record is None else day_packet_record.cross_repo_validation_steering_scope
+        ),
+        day_packet_cross_repo_validation_primary_action_promoted=(
+            None if day_packet_record is None else day_packet_record.cross_repo_validation_primary_action_promoted
+        ),
         local_validation_snapshot_status=normalize_optional_string(launch_request.get("local_validation_snapshot_status")),
         monday_validation_snapshot_status=monday_validation_snapshot_status,
         monday_validation_snapshot_summary=monday_validation_snapshot_summary,
@@ -2155,7 +2290,7 @@ def filter_monday_consumer_report_records(
 
 def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\tmonday_validation_snapshot\tcross_repo_packet_report_id\tcross_repo_packet_path\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
+        "run_id\tmode\tverdict\treason_code\tconsumer_status\tcan_launch\tplanner_profile\tlaunch_mode\tlocal_model_route\tmission_packet_steering_scope\tmission_packet_primary_action_promoted\tday_packet_steering_scope\tday_packet_primary_action_promoted\tmonday_validation_snapshot\tcross_repo_packet_report_id\tcross_repo_packet_path\thas_runtime_overrides\toverride_kinds\texecution_attempted\texecution_exit_code\truntime_report_verdict\thas_runtime_report\tblock_reasons\tgenerated_at_utc",
     ]
     for record in records:
         lines.append(
@@ -2170,6 +2305,22 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
                     str(record.planner_profile or ""),
                     str(record.launch_mode or ""),
                     str(record.local_model_route or ""),
+                    str(record.mission_packet_cross_repo_validation_steering_scope or ""),
+                    (
+                        ""
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "yes"
+                            if record.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "no"
+                        )
+                    ),
+                    str(record.day_packet_cross_repo_validation_steering_scope or ""),
+                    (
+                        ""
+                        if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("yes" if record.day_packet_cross_repo_validation_primary_action_promoted else "no")
+                    ),
                     record.monday_validation_snapshot_status,
                     str(record.cross_repo_validation_packet_report_id or ""),
                     str(record.cross_repo_validation_packet_path or ""),
@@ -2193,8 +2344,8 @@ def render_monday_consumer_report_table(records: list[MondayConsumerReportRecord
 
 def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRecord]) -> str:
     lines = [
-        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
+        "| run_id | mode | verdict | reason_code | consumer_status | can_launch | planner_profile | launch_mode | local_model_route | mission_packet_steering_scope | mission_packet_primary_action_promoted | day_packet_steering_scope | day_packet_primary_action_promoted | monday_validation_snapshot | cross_repo_packet_report_id | cross_repo_packet_path | has_runtime_overrides | override_kinds | execution_attempted | execution_exit_code | runtime_report_verdict | has_runtime_report | block_reasons | generated_at_utc |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
     ]
     sections: list[str] = []
     for record in records:
@@ -2203,6 +2354,10 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{record.consumer_status or ''} | "
             f"{'' if record.can_launch is None else ('yes' if record.can_launch else 'no')} | "
             f"{record.planner_profile or ''} | {record.launch_mode or ''} | {record.local_model_route or ''} | "
+            f"{record.mission_packet_cross_repo_validation_steering_scope or ''} | "
+            f"{'' if record.mission_packet_cross_repo_validation_primary_action_promoted is None else ('yes' if record.mission_packet_cross_repo_validation_primary_action_promoted else 'no')} | "
+            f"{record.day_packet_cross_repo_validation_steering_scope or ''} | "
+            f"{'' if record.day_packet_cross_repo_validation_primary_action_promoted is None else ('yes' if record.day_packet_cross_repo_validation_primary_action_promoted else 'no')} | "
             f"{record.monday_validation_snapshot_status} | "
             f"{record.cross_repo_validation_packet_report_id or ''} | "
             f"{record.cross_repo_validation_packet_path or ''} | "
@@ -2215,6 +2370,30 @@ def render_monday_consumer_report_markdown(records: list[MondayConsumerReportRec
             f"{', '.join(record.block_reasons)} | {record.generated_at_utc} |"
         )
         detail_lines: list[str] = []
+        if record.mission_packet_cross_repo_validation_steering_scope is not None:
+            detail_lines.append(
+                f"- mission packet steering scope: `{record.mission_packet_cross_repo_validation_steering_scope}`"
+            )
+        if record.mission_packet_cross_repo_validation_primary_action_promoted is not None:
+            detail_lines.append(
+                "- mission packet primary action promoted: `"
+                + (
+                    "true"
+                    if record.mission_packet_cross_repo_validation_primary_action_promoted
+                    else "false"
+                )
+                + "`"
+            )
+        if record.day_packet_cross_repo_validation_steering_scope is not None:
+            detail_lines.append(
+                f"- day packet steering scope: `{record.day_packet_cross_repo_validation_steering_scope}`"
+            )
+        if record.day_packet_cross_repo_validation_primary_action_promoted is not None:
+            detail_lines.append(
+                "- day packet primary action promoted: `"
+                + ("true" if record.day_packet_cross_repo_validation_primary_action_promoted else "false")
+                + "`"
+            )
         if record.cross_repo_validation_packet_report_id is not None:
             detail_lines.append(
                 f"- detail packet report id: `{record.cross_repo_validation_packet_report_id}`"
@@ -4527,6 +4706,10 @@ def build_triage_feed_record(
         source_kind=source_kind,
     )[:target_limit]
     local_operator_record = None
+    mission_packet_cross_repo_validation_steering_scope = None
+    mission_packet_cross_repo_validation_primary_action_promoted = None
+    day_packet_cross_repo_validation_steering_scope = None
+    day_packet_cross_repo_validation_primary_action_promoted = None
     cross_repo_validation_snapshot_status = None
     cross_repo_validation_snapshot_summary = None
     monday_source_validation_status = None
@@ -4539,6 +4722,22 @@ def build_triage_feed_record(
     cross_repo_validation_packet_path = None
     if family is None and run_id_prefix is None and local_records is not None:
         local_operator_record = select_latest_local_operator_stack_record(local_records)
+        latest_mission_packet_record = select_latest_local_mission_packet_record(validation_root=validation_root)
+        latest_day_packet_record = select_latest_local_day_packet_record(validation_root=validation_root)
+        if latest_mission_packet_record is not None:
+            mission_packet_cross_repo_validation_steering_scope = (
+                latest_mission_packet_record.cross_repo_validation_steering_scope
+            )
+            mission_packet_cross_repo_validation_primary_action_promoted = (
+                latest_mission_packet_record.cross_repo_validation_primary_action_promoted
+            )
+        if latest_day_packet_record is not None:
+            day_packet_cross_repo_validation_steering_scope = (
+                latest_day_packet_record.cross_repo_validation_steering_scope
+            )
+            day_packet_cross_repo_validation_primary_action_promoted = (
+                latest_day_packet_record.cross_repo_validation_primary_action_promoted
+            )
         cross_repo_validation_record = build_cross_repo_validation_report_record(
             validation_root=validation_root,
             consumer_root=consumer_root,
@@ -4575,6 +4774,14 @@ def build_triage_feed_record(
         queue_records=queue_records,
         target_records=target_records,
         local_operator_record=local_operator_record,
+        mission_packet_cross_repo_validation_steering_scope=mission_packet_cross_repo_validation_steering_scope,
+        mission_packet_cross_repo_validation_primary_action_promoted=(
+            mission_packet_cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_cross_repo_validation_steering_scope=day_packet_cross_repo_validation_steering_scope,
+        day_packet_cross_repo_validation_primary_action_promoted=(
+            day_packet_cross_repo_validation_primary_action_promoted
+        ),
         cross_repo_validation_snapshot_status=cross_repo_validation_snapshot_status,
         cross_repo_validation_snapshot_summary=cross_repo_validation_snapshot_summary,
         monday_source_validation_status=monday_source_validation_status,
@@ -4598,6 +4805,28 @@ def render_triage_feed_table(record: TriageFeedRecord) -> str:
     if record.cross_repo_validation_snapshot_status is not None:
         sections.extend(
             [
+                f"mission_packet_cross_repo_validation_steering_scope\t{record.mission_packet_cross_repo_validation_steering_scope or ''}",
+                (
+                    "mission_packet_cross_repo_validation_primary_action_promoted\t"
+                    + (
+                        ""
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "yes"
+                            if record.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "no"
+                        )
+                    )
+                ),
+                f"day_packet_cross_repo_validation_steering_scope\t{record.day_packet_cross_repo_validation_steering_scope or ''}",
+                (
+                    "day_packet_cross_repo_validation_primary_action_promoted\t"
+                    + (
+                        ""
+                        if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("yes" if record.day_packet_cross_repo_validation_primary_action_promoted else "no")
+                    )
+                ),
                 f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
                 f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary or ''}",
                 f"monday_source_validation_status\t{record.monday_source_validation_status or ''}",
@@ -4652,6 +4881,30 @@ def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
         cross_repo_lines = [
             "### Cross-Repo Validation",
             "",
+            f"- mission packet steering scope: `{record.mission_packet_cross_repo_validation_steering_scope or ''}`",
+            (
+                "- mission packet primary action promoted: `"
+                + (
+                    ""
+                    if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                    else (
+                        "true"
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted
+                        else "false"
+                    )
+                )
+                + "`"
+            ),
+            f"- day packet steering scope: `{record.day_packet_cross_repo_validation_steering_scope or ''}`",
+            (
+                "- day packet primary action promoted: `"
+                + (
+                    ""
+                    if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                    else ("true" if record.day_packet_cross_repo_validation_primary_action_promoted else "false")
+                )
+                + "`"
+            ),
             f"- snapshot status: `{record.cross_repo_validation_snapshot_status}`",
             f"- snapshot summary: `{record.cross_repo_validation_snapshot_summary or ''}`",
             f"- monday source validation status: `{record.monday_source_validation_status or ''}`",
@@ -4769,6 +5022,16 @@ def build_triage_brief_record(
         local_operator_record=feed.local_operator_record,
         local_operator_summary=build_local_operator_summary(feed.local_operator_record),
         local_operator_next_step=build_local_operator_next_step(feed.local_operator_record),
+        mission_packet_cross_repo_validation_steering_scope=(
+            feed.mission_packet_cross_repo_validation_steering_scope
+        ),
+        mission_packet_cross_repo_validation_primary_action_promoted=(
+            feed.mission_packet_cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_cross_repo_validation_steering_scope=feed.day_packet_cross_repo_validation_steering_scope,
+        day_packet_cross_repo_validation_primary_action_promoted=(
+            feed.day_packet_cross_repo_validation_primary_action_promoted
+        ),
         cross_repo_validation_snapshot_status=feed.cross_repo_validation_snapshot_status,
         cross_repo_validation_snapshot_summary=feed.cross_repo_validation_snapshot_summary,
         monday_source_validation_status=feed.monday_source_validation_status,
@@ -4804,6 +5067,28 @@ def render_triage_brief_table(record: TriageBriefRecord) -> str:
     if record.cross_repo_validation_snapshot_status is not None:
         sections.extend(
             [
+                f"mission_packet_cross_repo_validation_steering_scope\t{record.mission_packet_cross_repo_validation_steering_scope or ''}",
+                (
+                    "mission_packet_cross_repo_validation_primary_action_promoted\t"
+                    + (
+                        ""
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "yes"
+                            if record.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "no"
+                        )
+                    )
+                ),
+                f"day_packet_cross_repo_validation_steering_scope\t{record.day_packet_cross_repo_validation_steering_scope or ''}",
+                (
+                    "day_packet_cross_repo_validation_primary_action_promoted\t"
+                    + (
+                        ""
+                        if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("yes" if record.day_packet_cross_repo_validation_primary_action_promoted else "no")
+                    )
+                ),
                 f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
                 f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary or ''}",
                 f"monday_source_validation_status\t{record.monday_source_validation_status or ''}",
@@ -4855,6 +5140,30 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
             [
                 "",
                 "### Cross-Repo Validation",
+                f"- mission packet steering scope: `{record.mission_packet_cross_repo_validation_steering_scope or ''}`",
+                (
+                    "- mission packet primary action promoted: `"
+                    + (
+                        ""
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "true"
+                            if record.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "false"
+                        )
+                    )
+                    + "`"
+                ),
+                f"- day packet steering scope: `{record.day_packet_cross_repo_validation_steering_scope or ''}`",
+                (
+                    "- day packet primary action promoted: `"
+                    + (
+                        ""
+                        if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("true" if record.day_packet_cross_repo_validation_primary_action_promoted else "false")
+                    )
+                    + "`"
+                ),
                 f"- snapshot status: `{record.cross_repo_validation_snapshot_status}`",
                 f"- snapshot summary: `{record.cross_repo_validation_snapshot_summary or ''}`",
                 f"- monday source validation status: `{record.monday_source_validation_status or ''}`",
@@ -4952,6 +5261,30 @@ def build_triage_report_record(
             [
                 "",
                 "### Cross-Repo Validation",
+                f"- mission packet steering scope: `{brief.mission_packet_cross_repo_validation_steering_scope or ''}`",
+                (
+                    "- mission packet primary action promoted: `"
+                    + (
+                        ""
+                        if brief.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "true"
+                            if brief.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "false"
+                        )
+                    )
+                    + "`"
+                ),
+                f"- day packet steering scope: `{brief.day_packet_cross_repo_validation_steering_scope or ''}`",
+                (
+                    "- day packet primary action promoted: `"
+                    + (
+                        ""
+                        if brief.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("true" if brief.day_packet_cross_repo_validation_primary_action_promoted else "false")
+                    )
+                    + "`"
+                ),
                 f"- snapshot status: `{brief.cross_repo_validation_snapshot_status}`",
                 f"- snapshot summary: `{brief.cross_repo_validation_snapshot_summary or ''}`",
                 f"- monday source validation status: `{brief.monday_source_validation_status or ''}`",
@@ -5006,6 +5339,16 @@ def build_triage_report_record(
         local_operator_record=brief.local_operator_record,
         local_operator_summary=brief.local_operator_summary,
         local_operator_next_step=brief.local_operator_next_step,
+        mission_packet_cross_repo_validation_steering_scope=(
+            brief.mission_packet_cross_repo_validation_steering_scope
+        ),
+        mission_packet_cross_repo_validation_primary_action_promoted=(
+            brief.mission_packet_cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_cross_repo_validation_steering_scope=brief.day_packet_cross_repo_validation_steering_scope,
+        day_packet_cross_repo_validation_primary_action_promoted=(
+            brief.day_packet_cross_repo_validation_primary_action_promoted
+        ),
         cross_repo_validation_snapshot_status=brief.cross_repo_validation_snapshot_status,
         cross_repo_validation_snapshot_summary=brief.cross_repo_validation_snapshot_summary,
         monday_source_validation_status=brief.monday_source_validation_status,
@@ -5039,6 +5382,28 @@ def render_triage_report_table(record: TriageReportRecord) -> str:
     if record.cross_repo_validation_snapshot_status is not None:
         sections.extend(
             [
+                f"mission_packet_cross_repo_validation_steering_scope\t{record.mission_packet_cross_repo_validation_steering_scope or ''}",
+                (
+                    "mission_packet_cross_repo_validation_primary_action_promoted\t"
+                    + (
+                        ""
+                        if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+                        else (
+                            "yes"
+                            if record.mission_packet_cross_repo_validation_primary_action_promoted
+                            else "no"
+                        )
+                    )
+                ),
+                f"day_packet_cross_repo_validation_steering_scope\t{record.day_packet_cross_repo_validation_steering_scope or ''}",
+                (
+                    "day_packet_cross_repo_validation_primary_action_promoted\t"
+                    + (
+                        ""
+                        if record.day_packet_cross_repo_validation_primary_action_promoted is None
+                        else ("yes" if record.day_packet_cross_repo_validation_primary_action_promoted else "no")
+                    )
+                ),
                 f"cross_repo_validation_snapshot_status\t{record.cross_repo_validation_snapshot_status}",
                 f"cross_repo_validation_snapshot_summary\t{record.cross_repo_validation_snapshot_summary or ''}",
                 f"monday_source_validation_status\t{record.monday_source_validation_status or ''}",
