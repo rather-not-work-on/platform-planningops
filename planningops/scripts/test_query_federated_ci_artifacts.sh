@@ -5066,6 +5066,48 @@ assert record["selected_next_step"] == (
 ), record
 PY
 
+TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --selected-next-step-source cross_repo_validation >"$TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["selected_next_step_source"] == "cross_repo_validation", record
+PY
+
+TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --selected-next-step-source local_runtime >"$TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
+PY
+
 TRIAGE_REPORT_STEERED_NEXT_STEP_OUTPUT=$(mktemp)
 python3 "$QUERY_PATH" triage-report \
   --format json \
@@ -5098,6 +5140,74 @@ assert (
     "selected next step: local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ) in record["markdown"], record
+PY
+
+TRIAGE_REPORT_SELECTED_NEXT_STEP_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --selected-next-step-source cross_repo_validation >"$TRIAGE_REPORT_SELECTED_NEXT_STEP_FILTER_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_REPORT_SELECTED_NEXT_STEP_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["selected_next_step_source"] == "cross_repo_validation", record
+PY
+
+HANDOFF_REPORT_SELECTED_NEXT_STEP_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" handoff-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --selected-next-step-source local_validation >"$HANDOFF_REPORT_SELECTED_NEXT_STEP_FILTER_OUTPUT"
+
+python3 - <<'PY' "$HANDOFF_REPORT_SELECTED_NEXT_STEP_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["selected_next_step_source"] == "local_validation", record
+assert record["selected_next_step"] == (
+    "local-validation: repair operator_handoff_report "
+    "(freshness=stale, promotability=blocked, reasons=stamped_missing)"
+), record
+PY
+
+HANDOFF_REPORT_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" handoff-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --selected-next-step-source cross_repo_validation >"$HANDOFF_REPORT_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$HANDOFF_REPORT_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \

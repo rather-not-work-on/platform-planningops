@@ -59,6 +59,13 @@ MONDAY_VALIDATION_KIND_CHOICES = ("bridge", "consumer-report")
 MONDAY_VALIDATION_VERDICT_CHOICES = ("pass", "fail")
 CROSS_REPO_VALIDATION_PACKET_SOURCE_CHOICES = ("latest", "stamped")
 STEERING_SCOPE_CHOICES = ("none", "primary_action_only")
+SELECTED_NEXT_STEP_SOURCE_CHOICES = (
+    "none",
+    "local_runtime",
+    "local_validation",
+    "cross_repo_validation",
+    "triage_target",
+)
 LOCAL_VALIDATION_FAMILY_CHOICES = (
     "monday_local_operator_stack_report",
     "operator_handoff_report",
@@ -1550,6 +1557,14 @@ def matches_downstream_steering_filters(
         if day_packet_primary_action_promoted is not expected:
             return False
     return True
+
+
+def matches_selected_next_step_source_filter(
+    *,
+    selected_next_step_source_filter: str | None,
+    selected_next_step_source: str,
+) -> bool:
+    return selected_next_step_source_filter is None or selected_next_step_source == selected_next_step_source_filter
 
 
 def filter_local_inbox_payload_records(
@@ -7156,6 +7171,11 @@ def parse_args() -> argparse.Namespace:
     triage_brief_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     triage_brief_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
     triage_brief_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    triage_brief_parser.add_argument(
+        "--selected-next-step-source",
+        choices=SELECTED_NEXT_STEP_SOURCE_CHOICES,
+        default=None,
+    )
     triage_brief_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     triage_brief_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_brief_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7176,6 +7196,11 @@ def parse_args() -> argparse.Namespace:
     triage_report_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     triage_report_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
     triage_report_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    triage_report_parser.add_argument(
+        "--selected-next-step-source",
+        choices=SELECTED_NEXT_STEP_SOURCE_CHOICES,
+        default=None,
+    )
     triage_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     triage_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7196,6 +7221,11 @@ def parse_args() -> argparse.Namespace:
     handoff_report_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     handoff_report_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
     handoff_report_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    handoff_report_parser.add_argument(
+        "--selected-next-step-source",
+        choices=SELECTED_NEXT_STEP_SOURCE_CHOICES,
+        default=None,
+    )
     handoff_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     handoff_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     handoff_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7926,6 +7956,11 @@ def main() -> int:
             day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
         ):
             record = None
+        if record is not None and not matches_selected_next_step_source_filter(
+            selected_next_step_source_filter=args.selected_next_step_source,
+            selected_next_step_source=record.selected_next_step_source,
+        ):
+            record = None
         if args.format == "json":
             print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
             return 0
@@ -7962,6 +7997,11 @@ def main() -> int:
             day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
         ):
             record = None
+        if record is not None and not matches_selected_next_step_source_filter(
+            selected_next_step_source_filter=args.selected_next_step_source,
+            selected_next_step_source=record.selected_next_step_source,
+        ):
+            record = None
         if args.format == "json":
             print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
             return 0
@@ -7996,6 +8036,11 @@ def main() -> int:
             mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
             day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
             day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        ):
+            record = None
+        if record is not None and not matches_selected_next_step_source_filter(
+            selected_next_step_source_filter=args.selected_next_step_source,
+            selected_next_step_source=record.selected_next_step_source,
         ):
             record = None
         if args.format == "json":
