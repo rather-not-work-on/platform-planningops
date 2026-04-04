@@ -208,6 +208,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries mission/day steering metadata directly and accepts the same steering filters, returning an empty/no-match handoff snapshot when the current report does not satisfy the requested downstream steering state
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report|handoff-report` now expose an explicit downstream `selected_next_step` and `selected_next_step_source`, using the existing fail-closed precedence `local-runtime -> local-validation -> promoted cross-repo validation -> triage-target` so promoted cross-repo validation can steer summary-level next-step selection without changing mission objective or target ranking
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report|handoff-report` now also accept `--selected-next-step-source` so operators can isolate summary surfaces where the currently selected next step is `local_runtime`, `local_validation`, `cross_repo_validation`, `triage_target`, or `none` without reopening packet-local views
+- `planningops/scripts/federation/query_federated_ci_artifacts.py triage-report|handoff-report` now expose explicit `headline_source` and `attention_summary_source` metadata and accept matching filters, making the current `triage_snapshot`-owned summary ceiling query-visible without actually letting cross-repo steering rewrite headline or attention-summary composition
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -270,4 +271,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether `selected_next_step_source` filtering is enough as the operator-facing ceiling, or whether headline/attention summary selection should ever become steering-aware without crossing the current packet-local policy boundary
+2. decide whether explicit `headline_source` / `attention_summary_source` metadata is the right operator-facing ceiling, or whether headline/attention summary selection should ever become steering-aware without crossing the current packet-local policy boundary
