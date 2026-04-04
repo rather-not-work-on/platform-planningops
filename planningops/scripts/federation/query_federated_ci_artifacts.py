@@ -1461,6 +1461,35 @@ def discover_local_inbox_payload_records(*, validation_root: Path) -> list[Local
     return records
 
 
+def matches_downstream_steering_filters(
+    *,
+    mission_packet_steering_scope_filter: str | None = None,
+    mission_packet_primary_action_promoted_filter: str | None = None,
+    day_packet_steering_scope_filter: str | None = None,
+    day_packet_primary_action_promoted_filter: str | None = None,
+    mission_packet_steering_scope: str | None,
+    mission_packet_primary_action_promoted: bool | None,
+    day_packet_steering_scope: str | None,
+    day_packet_primary_action_promoted: bool | None,
+) -> bool:
+    if (
+        mission_packet_steering_scope_filter is not None
+        and mission_packet_steering_scope != mission_packet_steering_scope_filter
+    ):
+        return False
+    if mission_packet_primary_action_promoted_filter is not None:
+        expected = mission_packet_primary_action_promoted_filter == "yes"
+        if mission_packet_primary_action_promoted is not expected:
+            return False
+    if day_packet_steering_scope_filter is not None and day_packet_steering_scope != day_packet_steering_scope_filter:
+        return False
+    if day_packet_primary_action_promoted_filter is not None:
+        expected = day_packet_primary_action_promoted_filter == "yes"
+        if day_packet_primary_action_promoted is not expected:
+            return False
+    return True
+
+
 def filter_local_inbox_payload_records(
     *,
     records: list[LocalInboxPayloadRecord],
@@ -1473,6 +1502,10 @@ def filter_local_inbox_payload_records(
     local_model_route: str | None = None,
     local_validation_snapshot_status: str | None = None,
     has_dependency_state: str | None = None,
+    mission_packet_steering_scope: str | None = None,
+    mission_packet_primary_action_promoted: str | None = None,
+    day_packet_steering_scope: str | None = None,
+    day_packet_primary_action_promoted: str | None = None,
 ) -> list[LocalInboxPayloadRecord]:
     filtered = records
     if bridge_id_prefix:
@@ -1502,6 +1535,20 @@ def filter_local_inbox_payload_records(
             for record in filtered
             if has_dependency_state in record.dependency_states.values()
         ]
+    filtered = [
+        record
+        for record in filtered
+        if matches_downstream_steering_filters(
+            mission_packet_steering_scope_filter=mission_packet_steering_scope,
+            mission_packet_primary_action_promoted_filter=mission_packet_primary_action_promoted,
+            day_packet_steering_scope_filter=day_packet_steering_scope,
+            day_packet_primary_action_promoted_filter=day_packet_primary_action_promoted,
+            mission_packet_steering_scope=record.mission_packet_cross_repo_validation_steering_scope,
+            mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
+            day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
+            day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        )
+    ]
     return filtered
 
 
@@ -2253,6 +2300,10 @@ def filter_monday_consumer_report_records(
     override_kind: str | None = None,
     has_runtime_report: str | None = None,
     execution_attempted: str | None = None,
+    mission_packet_steering_scope: str | None = None,
+    mission_packet_primary_action_promoted: str | None = None,
+    day_packet_steering_scope: str | None = None,
+    day_packet_primary_action_promoted: str | None = None,
 ) -> list[MondayConsumerReportRecord]:
     filtered = records
     if run_id_prefix:
@@ -2285,6 +2336,20 @@ def filter_monday_consumer_report_records(
     if execution_attempted is not None:
         expected = execution_attempted == "yes"
         filtered = [record for record in filtered if record.execution_attempted is expected]
+    filtered = [
+        record
+        for record in filtered
+        if matches_downstream_steering_filters(
+            mission_packet_steering_scope_filter=mission_packet_steering_scope,
+            mission_packet_primary_action_promoted_filter=mission_packet_primary_action_promoted,
+            day_packet_steering_scope_filter=day_packet_steering_scope,
+            day_packet_primary_action_promoted_filter=day_packet_primary_action_promoted,
+            mission_packet_steering_scope=record.mission_packet_cross_repo_validation_steering_scope,
+            mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
+            day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
+            day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        )
+    ]
     return filtered
 
 
@@ -6889,6 +6954,10 @@ def parse_args() -> argparse.Namespace:
     triage_feed_parser.add_argument("--run-id-prefix", default=None)
     triage_feed_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
     triage_feed_parser.add_argument("--target-limit", type=int, default=3)
+    triage_feed_parser.add_argument("--mission-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    triage_feed_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    triage_feed_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    triage_feed_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     triage_feed_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     triage_feed_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_feed_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -6905,6 +6974,10 @@ def parse_args() -> argparse.Namespace:
     triage_brief_parser.add_argument("--run-id-prefix", default=None)
     triage_brief_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
     triage_brief_parser.add_argument("--target-limit", type=int, default=3)
+    triage_brief_parser.add_argument("--mission-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    triage_brief_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    triage_brief_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    triage_brief_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     triage_brief_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     triage_brief_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_brief_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -6921,6 +6994,10 @@ def parse_args() -> argparse.Namespace:
     triage_report_parser.add_argument("--run-id-prefix", default=None)
     triage_report_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
     triage_report_parser.add_argument("--target-limit", type=int, default=3)
+    triage_report_parser.add_argument("--mission-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    triage_report_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    triage_report_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    triage_report_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     triage_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     triage_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7027,6 +7104,10 @@ def parse_args() -> argparse.Namespace:
     local_inbox_payload_parser.add_argument("--local-model-route", default=None)
     local_inbox_payload_parser.add_argument("--local-validation-snapshot-status", default=None)
     local_inbox_payload_parser.add_argument("--has-dependency-state", choices=["current", "stale", "missing"], default=None)
+    local_inbox_payload_parser.add_argument("--mission-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    local_inbox_payload_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    local_inbox_payload_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    local_inbox_payload_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     local_inbox_payload_parser.add_argument("--limit", type=int, default=20)
     local_inbox_payload_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     local_inbox_payload_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7048,6 +7129,10 @@ def parse_args() -> argparse.Namespace:
     monday_consumer_parser.add_argument("--override-kind", choices=["planner_runtime_config", "runtime_profile_file"], default=None)
     monday_consumer_parser.add_argument("--has-runtime-report", choices=["yes", "no"], default=None)
     monday_consumer_parser.add_argument("--execution-attempted", choices=["yes", "no"], default=None)
+    monday_consumer_parser.add_argument("--mission-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    monday_consumer_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    monday_consumer_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    monday_consumer_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     monday_consumer_parser.add_argument("--limit", type=int, default=20)
     monday_consumer_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     monday_consumer_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7207,6 +7292,10 @@ def main() -> int:
             local_model_route=args.local_model_route,
             local_validation_snapshot_status=args.local_validation_snapshot_status,
             has_dependency_state=args.has_dependency_state,
+            mission_packet_steering_scope=args.mission_packet_steering_scope,
+            mission_packet_primary_action_promoted=args.mission_packet_primary_action_promoted,
+            day_packet_steering_scope=args.day_packet_steering_scope,
+            day_packet_primary_action_promoted=args.day_packet_primary_action_promoted,
         )
         inbox_payload_records = inbox_payload_records[: args.limit]
         if args.format == "json":
@@ -7238,6 +7327,10 @@ def main() -> int:
             override_kind=args.override_kind,
             has_runtime_report=args.has_runtime_report,
             execution_attempted=args.execution_attempted,
+            mission_packet_steering_scope=args.mission_packet_steering_scope,
+            mission_packet_primary_action_promoted=args.mission_packet_primary_action_promoted,
+            day_packet_steering_scope=args.day_packet_steering_scope,
+            day_packet_primary_action_promoted=args.day_packet_primary_action_promoted,
         )
         consumer_records = consumer_records[: args.limit]
         if args.format == "json":
@@ -7604,8 +7697,22 @@ def main() -> int:
             source_kind=args.source_kind,
             target_limit=args.target_limit,
         )
+        if not matches_downstream_steering_filters(
+            mission_packet_steering_scope_filter=args.mission_packet_steering_scope,
+            mission_packet_primary_action_promoted_filter=args.mission_packet_primary_action_promoted,
+            day_packet_steering_scope_filter=args.day_packet_steering_scope,
+            day_packet_primary_action_promoted_filter=args.day_packet_primary_action_promoted,
+            mission_packet_steering_scope=record.mission_packet_cross_repo_validation_steering_scope,
+            mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
+            day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
+            day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        ):
+            record = None
         if args.format == "json":
-            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if record is None:
+            print("_No matching triage feed._" if args.format == "markdown" else "no matching triage feed")
             return 0
         if args.format == "markdown":
             print(render_triage_feed_markdown(record))
@@ -7626,8 +7733,22 @@ def main() -> int:
             source_kind=args.source_kind,
             target_limit=args.target_limit,
         )
+        if not matches_downstream_steering_filters(
+            mission_packet_steering_scope_filter=args.mission_packet_steering_scope,
+            mission_packet_primary_action_promoted_filter=args.mission_packet_primary_action_promoted,
+            day_packet_steering_scope_filter=args.day_packet_steering_scope,
+            day_packet_primary_action_promoted_filter=args.day_packet_primary_action_promoted,
+            mission_packet_steering_scope=record.mission_packet_cross_repo_validation_steering_scope,
+            mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
+            day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
+            day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        ):
+            record = None
         if args.format == "json":
-            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if record is None:
+            print("_No matching triage brief._" if args.format == "markdown" else "no matching triage brief")
             return 0
         if args.format == "markdown":
             print(render_triage_brief_markdown(record))
@@ -7648,8 +7769,22 @@ def main() -> int:
             source_kind=args.source_kind,
             target_limit=args.target_limit,
         )
+        if not matches_downstream_steering_filters(
+            mission_packet_steering_scope_filter=args.mission_packet_steering_scope,
+            mission_packet_primary_action_promoted_filter=args.mission_packet_primary_action_promoted,
+            day_packet_steering_scope_filter=args.day_packet_steering_scope,
+            day_packet_primary_action_promoted_filter=args.day_packet_primary_action_promoted,
+            mission_packet_steering_scope=record.mission_packet_cross_repo_validation_steering_scope,
+            mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
+            day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
+            day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        ):
+            record = None
         if args.format == "json":
-            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if record is None:
+            print("_No matching triage report._" if args.format == "markdown" else "no matching triage report")
             return 0
         if args.format == "markdown":
             print(render_triage_report_markdown(record))
