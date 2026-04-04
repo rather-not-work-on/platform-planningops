@@ -69,6 +69,14 @@ def build_local_validation_snapshot(handoff_record: dict) -> tuple[str, list[dic
     return snapshot_status, records, summary_lines, action_lines
 
 
+def normalize_optional_string(raw_value: object) -> str | None:
+    if isinstance(raw_value, str):
+        value = raw_value.strip()
+        if value:
+            return value
+    return None
+
+
 def build_mission_objective(handoff_record: dict) -> str:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     if target_lines:
@@ -192,6 +200,12 @@ def main() -> int:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     mission_objective = build_mission_objective(handoff_record)
     primary_action = immediate_actions[0] if immediate_actions else (target_lines[0] if target_lines else mission_objective)
+    cross_repo_validation_packet_report_id = normalize_optional_string(
+        handoff_record.get("cross_repo_validation_packet_report_id")
+    )
+    cross_repo_validation_packet_path = normalize_optional_string(
+        handoff_record.get("cross_repo_validation_packet_path")
+    )
     (
         local_validation_snapshot_status,
         local_validation_records,
@@ -207,6 +221,8 @@ def main() -> int:
         str((validation_root / "monday-local-operator-stack-report.json").resolve()),
         str((validation_root / f"{packet_id}-monday-local-operator-stack-report.json").resolve()),
     ]
+    if cross_repo_validation_packet_path is not None:
+        expected_evidence_outputs.append(cross_repo_validation_packet_path)
 
     mission_packet = {
         "version": "v1",
@@ -231,6 +247,8 @@ def main() -> int:
         "local_validation_records": local_validation_records,
         "local_validation_summary_lines": local_validation_summary_lines,
         "local_validation_action_lines": local_validation_action_lines,
+        "cross_repo_validation_packet_report_id": cross_repo_validation_packet_report_id,
+        "cross_repo_validation_packet_path": cross_repo_validation_packet_path,
         "preflight_command": preflight_command,
         "monday_runtime_entrypoint_command": monday_runtime_entrypoint_command,
         "rollback_command": rollback_command,

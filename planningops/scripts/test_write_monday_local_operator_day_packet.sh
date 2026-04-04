@@ -57,6 +57,8 @@ cat >"$MISSION_PACKET" <<'JSON'
       "operator_handoff_report: freshness=fresh promotability=promotable"
     ],
     "local_validation_action_lines": [],
+    "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
+    "cross_repo_validation_packet_path": "VALIDATION_ROOT_PLACEHOLDER/cross-repo-validation-report.json",
     "primary_action": "local-runtime: Expose Codex and add a direct local LLM profile.",
     "immediate_actions": [
       "local-runtime: Expose Codex and add a direct local LLM profile."
@@ -93,11 +95,13 @@ doc["mission_packet"]["expected_evidence_outputs"] = [
     str((validation_dir / "monday-local-mission-packet.json").resolve()),
     str((validation_dir / "monday-local-mission-20260401T080000Z-monday-local-mission-packet.json").resolve()),
 ]
+doc["mission_packet"]["cross_repo_validation_packet_path"] = str((validation_dir / "cross-repo-validation-report.json").resolve())
 doc["mission_packet"]["source_artifacts"]["handoff_report_path"] = str((validation_dir / "operator-handoff-report.json").resolve())
 doc["mission_packet"]["source_artifacts"]["local_operator_report_path"] = str((validation_dir / "monday-local-operator-stack-report.json").resolve())
 payload = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
 path.write_text(payload, encoding="utf-8")
 (validation_dir / "monday-local-mission-20260401T080000Z-monday-local-mission-packet.json").write_text(payload, encoding="utf-8")
+(validation_dir / "cross-repo-validation-report.json").write_text("{}\n", encoding="utf-8")
 PY
 
 cat >"$HANDOFF_REPORT" <<'JSON'
@@ -260,6 +264,8 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
         "monday_local_operator_stack_report: freshness=fresh promotability=promotable",
         "operator_handoff_report: freshness=fresh promotability=promotable",
     ], packet
+    assert packet["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", packet
+    assert packet["cross_repo_validation_packet_path"] == str((validation_dir / "cross-repo-validation-report.json").resolve()), packet
     assert packet["queue_lines"] == [
         "active: targets=1 newest=federated-ci-local/federated-ci-local-20260301 domains=checkpoint=1,readiness=1,reconcile=1"
     ], packet
@@ -275,11 +281,15 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert str((validation_dir / "monday-local-mission-packet.json").resolve()) in packet["attachments"], packet
     assert str((validation_dir / "operator-handoff-report.json").resolve()) in packet["attachments"], packet
     assert str((validation_dir / "monday-local-operator-stack-report.json").resolve()) in packet["attachments"], packet
+    assert str((validation_dir / "cross-repo-validation-report.json").resolve()) in packet["attachments"], packet
     assert packet["source_artifacts"]["mission_packet_path"] == str((validation_dir / "monday-local-mission-packet.json").resolve()), packet
     assert packet["source_artifacts"]["handoff_report_path"] == str((validation_dir / "operator-handoff-report.json").resolve()), packet
     assert packet["source_artifacts"]["local_operator_report_path"] == str((validation_dir / "monday-local-operator-stack-report.json").resolve()), packet
     assert "## Monday Local Operator Day Packet" in packet["body_markdown"], packet
     assert "### Commands" in packet["body_markdown"], packet
+    assert "### Cross-Repo Validation Packet" in packet["body_markdown"], packet
+    assert "detail packet report id: `cross-repo-validation-20260401T110000Z`" in packet["body_markdown"], packet
+    assert str((validation_dir / "cross-repo-validation-report.json").resolve()) in packet["body_markdown"], packet
     assert "### Local Validation" in packet["body_markdown"], packet
     assert "### Attachments" in packet["body_markdown"], packet
 

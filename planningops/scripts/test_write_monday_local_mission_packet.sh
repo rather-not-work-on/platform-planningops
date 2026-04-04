@@ -79,6 +79,8 @@ cat >"$HANDOFF_REPORT" <<'JSON'
     "local_validation_action_lines": [
       "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
     ],
+    "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
+    "cross_repo_validation_packet_path": "/tmp/cross-repo-validation-report.json",
     "markdown": "## Operator Handoff Report"
   }
 }
@@ -195,8 +197,11 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert mission["local_validation_action_lines"] == [
         "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
     ], mission
+    assert mission["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", mission
+    assert mission["cross_repo_validation_packet_path"] == "/tmp/cross-repo-validation-report.json", mission
     assert str(latest_path) in mission["expected_evidence_outputs"], mission
     assert str(stamped_path) in mission["expected_evidence_outputs"], mission
+    assert "/tmp/cross-repo-validation-report.json" in mission["expected_evidence_outputs"], mission
     assert any(path.endswith(f"{packet_id}.json") for path in mission["expected_evidence_outputs"]), mission
     assert any(path.endswith(f"{packet_id}-monday-local-operator-stack-report.json") for path in mission["expected_evidence_outputs"]), mission
 
@@ -255,6 +260,8 @@ assert mission["local_validation_snapshot_status"] == "missing", mission
 assert mission["local_validation_records"] == [], mission
 assert mission["local_validation_summary_lines"] == [], mission
 assert mission["local_validation_action_lines"] == [], mission
+assert mission["cross_repo_validation_packet_report_id"] is None, mission
+assert mission["cross_repo_validation_packet_path"] is None, mission
 PY
 
 echo "write monday local mission packet ok"

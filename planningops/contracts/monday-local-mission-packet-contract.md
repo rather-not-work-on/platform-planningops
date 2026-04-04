@@ -66,6 +66,8 @@ Top-level required fields:
 18. `local_validation_records`
 19. `local_validation_summary_lines`
 20. `local_validation_action_lines`
+21. `cross_repo_validation_packet_report_id`
+22. `cross_repo_validation_packet_path`
 
 Optional fields:
 - `attention_summary`
@@ -84,6 +86,7 @@ Optional fields:
 3. `mission_objective` must come from the promoted handoff surface, not from prompt-local inference.
 4. `expected_evidence_outputs` must point at deterministic artifact paths that the chosen launch path is expected to refresh.
 5. local validation snapshot fields must be carried forward from the promoted handoff packet when present; otherwise the mission packet must emit `local_validation_snapshot_status=missing` with empty local validation collections.
+6. when the promoted handoff already points at a promoted `cross-repo-validation-packet`, the mission packet must preserve that immutable `report_id`/`path` pair instead of recomputing or rewriting it.
 
 ## Command Rules
 
@@ -114,6 +117,11 @@ Every packet must also preserve the current local validation snapshot:
 - machine-readable local validation records when the promoted handoff packet already has them
 - operator-facing local validation summary/action lines
 - an explicit missing marker when the upstream handoff packet does not yet provide the snapshot
+
+When present upstream, every packet must also preserve the promoted cross-repo validation packet pointer:
+- immutable `cross_repo_validation_packet_report_id`
+- immutable `cross_repo_validation_packet_path`
+- the packet path must stay reusable as downstream evidence instead of being collapsed into prompt-local prose
 
 ## Failure Rules
 

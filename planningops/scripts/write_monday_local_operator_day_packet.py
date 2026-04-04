@@ -64,6 +64,14 @@ def normalize_local_validation_records(raw_values: object) -> list[dict]:
     return records
 
 
+def normalize_optional_string(raw_value: object) -> str | None:
+    if isinstance(raw_value, str):
+        value = raw_value.strip()
+        if value:
+            return value
+    return None
+
+
 def dedupe_preserve_order(values: list[str]) -> list[str]:
     deduped: list[str] = []
     seen: set[str] = set()
@@ -109,6 +117,8 @@ def build_body_markdown(
     target_lines: list[str],
     immediate_actions: list[str],
     attachments: list[str],
+    cross_repo_validation_packet_report_id: str | None,
+    cross_repo_validation_packet_path: str | None,
 ) -> str:
     lines = [
         "## Monday Local Operator Day Packet",
@@ -132,6 +142,12 @@ def build_body_markdown(
     lines.extend(["", "### Local Validation", *[f"- {line}" for line in local_validation_summary_lines]])
     if local_validation_action_lines:
         lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
+    if cross_repo_validation_packet_report_id is not None or cross_repo_validation_packet_path is not None:
+        lines.extend(["", "### Cross-Repo Validation Packet"])
+        if cross_repo_validation_packet_report_id is not None:
+            lines.append(f"- detail packet report id: `{cross_repo_validation_packet_report_id}`")
+        if cross_repo_validation_packet_path is not None:
+            lines.append(f"- detail packet path: `{cross_repo_validation_packet_path}`")
     lines.extend(["", "### Queue", *[f"- {line}" for line in queue_lines]])
     lines.extend(["", "### Top Targets", *[f"{index}. {line}" for index, line in enumerate(target_lines, start=1)]])
     lines.extend(["", "### Immediate Actions", *[f"{index}. {line}" for index, line in enumerate(immediate_actions, start=1)]])
@@ -194,6 +210,12 @@ def main() -> int:
         normalize_string_list(mission_packet.get("immediate_actions"))
         + normalize_string_list(handoff_record.get("immediate_action_lines"))
     )
+    cross_repo_validation_packet_report_id = normalize_optional_string(
+        mission_packet.get("cross_repo_validation_packet_report_id")
+    ) or normalize_optional_string(handoff_record.get("cross_repo_validation_packet_report_id"))
+    cross_repo_validation_packet_path = normalize_optional_string(
+        mission_packet.get("cross_repo_validation_packet_path")
+    ) or normalize_optional_string(handoff_record.get("cross_repo_validation_packet_path"))
     local_validation_snapshot_status, local_validation_records, local_validation_summary_lines, local_validation_action_lines = (
         build_local_validation_snapshot(mission_packet=mission_packet, handoff_record=handoff_record)
     )
@@ -216,6 +238,8 @@ def main() -> int:
         raw_value = local_operator_artifacts.get(key)
         if isinstance(raw_value, str) and raw_value.strip():
             attachment_candidates.append(str(resolve_path(raw_value).resolve()))
+    if cross_repo_validation_packet_path is not None:
+        attachment_candidates.append(str(resolve_path(cross_repo_validation_packet_path).resolve()))
     attachments = dedupe_preserve_order(attachment_candidates)
     if not attachments:
         raise SystemExit("attachments must not be empty")
@@ -244,6 +268,8 @@ def main() -> int:
         "local_validation_records": local_validation_records,
         "local_validation_summary_lines": local_validation_summary_lines,
         "local_validation_action_lines": local_validation_action_lines,
+        "cross_repo_validation_packet_report_id": cross_repo_validation_packet_report_id,
+        "cross_repo_validation_packet_path": cross_repo_validation_packet_path,
         "queue_lines": queue_lines,
         "target_lines": target_lines,
         "immediate_actions": immediate_actions,
@@ -265,6 +291,8 @@ def main() -> int:
             target_lines=target_lines,
             immediate_actions=immediate_actions,
             attachments=attachments,
+            cross_repo_validation_packet_report_id=cross_repo_validation_packet_report_id,
+            cross_repo_validation_packet_path=cross_repo_validation_packet_path,
         ),
         "source_artifacts": {
             "mission_packet_path": str(mission_packet_path.resolve()),

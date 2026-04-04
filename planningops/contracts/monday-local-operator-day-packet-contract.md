@@ -67,10 +67,12 @@ Top-level required fields:
 18. `local_validation_summary_lines`
 19. `local_validation_action_lines`
 20. `attachments`
-21. `body_markdown`
-22. `source_artifacts.mission_packet_path`
-23. `source_artifacts.handoff_report_path`
-24. `source_artifacts.local_operator_report_path`
+21. `cross_repo_validation_packet_report_id`
+22. `cross_repo_validation_packet_path`
+23. `body_markdown`
+24. `source_artifacts.mission_packet_path`
+25. `source_artifacts.handoff_report_path`
+26. `source_artifacts.local_operator_report_path`
 
 Optional fields:
 - `attention_summary`
@@ -85,6 +87,7 @@ Optional fields:
 3. `headline` must be derivable from the promoted mission objective and remain operator-readable.
 4. `attachments` must include the latest + stamped day packet paths and the source artifact references needed to reopen the launch context.
 5. local validation snapshot fields must be copied from the mission packet when present; otherwise the writer may fall back to the promoted handoff snapshot and must mark that fallback explicitly; otherwise it must emit `missing` with empty collections.
+6. when the promoted mission packet already carries a promoted `cross-repo-validation-packet` pointer, the day packet must preserve that immutable `report_id`/`path` pair; only legacy mission packets may fall back to the handoff pointer.
 
 ## Command Rules
 
@@ -105,6 +108,12 @@ Every day packet must also preserve the current local validation snapshot:
 - operator-facing local validation summary lines
 - operator-facing local validation action lines
 - an explicit snapshot status marker
+
+When present, every day packet must also preserve the promoted cross-repo validation packet pointer:
+- immutable `cross_repo_validation_packet_report_id`
+- immutable `cross_repo_validation_packet_path`
+- attachment reuse of the packet path so operators can reopen the promoted evidence directly from the day packet
+- body-level visibility of the pointer so the deep link survives packet-only handoff flows
 
 ## Failure Rules
 
