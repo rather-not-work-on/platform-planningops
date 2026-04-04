@@ -309,6 +309,11 @@ class TriageFeedRecord:
 class TriageBriefRecord:
     source_kind: str
     target_limit: int
+    headline_source: str
+    headline_steering_scope: str
+    attention_summary_source: str
+    attention_summary_steering_scope: str
+    summary_steering_scope: str
     attention_family_count: int
     active_family_count: int
     lagging_family_count: int
@@ -5205,9 +5210,19 @@ def build_triage_brief_record(
         day_packet_steering_scope=feed.day_packet_cross_repo_validation_steering_scope,
         day_packet_primary_action_promoted=feed.day_packet_cross_repo_validation_primary_action_promoted,
     )
+    headline_source = "triage_snapshot"
+    headline_steering_scope = "none"
+    attention_summary_source = "triage_snapshot"
+    attention_summary_steering_scope = "none"
+    summary_steering_scope = "selected_next_step_only"
     return TriageBriefRecord(
         source_kind=source_kind,
         target_limit=target_limit,
+        headline_source=headline_source,
+        headline_steering_scope=headline_steering_scope,
+        attention_summary_source=attention_summary_source,
+        attention_summary_steering_scope=attention_summary_steering_scope,
+        summary_steering_scope=summary_steering_scope,
         attention_family_count=overview.triage_status_counts.get("active", 0) + overview.triage_status_counts.get("lagging", 0),
         active_family_count=overview.triage_status_counts.get("active", 0),
         lagging_family_count=overview.triage_status_counts.get("lagging", 0),
@@ -5251,6 +5266,11 @@ def render_triage_brief_table(record: TriageBriefRecord) -> str:
     sections = [
         f"source_kind\t{record.source_kind}",
         f"target_limit\t{record.target_limit}",
+        f"headline_source\t{record.headline_source}",
+        f"headline_steering_scope\t{record.headline_steering_scope}",
+        f"attention_summary_source\t{record.attention_summary_source}",
+        f"attention_summary_steering_scope\t{record.attention_summary_steering_scope}",
+        f"summary_steering_scope\t{record.summary_steering_scope}",
         (
             f"attention\tfamilies={record.attention_family_count},active={record.active_family_count},"
             f"lagging={record.lagging_family_count},clear={record.clear_family_count}"
@@ -5320,6 +5340,11 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
         "## Triage Brief",
         f"- source_kind: `{record.source_kind}`",
         f"- top target window: `{record.target_limit}`",
+        f"- headline source: `{record.headline_source}`",
+        f"- headline steering scope: `{record.headline_steering_scope}`",
+        f"- attention summary source: `{record.attention_summary_source}`",
+        f"- attention summary steering scope: `{record.attention_summary_steering_scope}`",
+        f"- summary steering scope: `{record.summary_steering_scope}`",
         (
             f"- attention families: `{record.attention_family_count}` "
             f"(`active={record.active_family_count}`, `lagging={record.lagging_family_count}`, `clear={record.clear_family_count}`)"
@@ -7261,6 +7286,23 @@ def parse_args() -> argparse.Namespace:
         choices=SELECTED_NEXT_STEP_SOURCE_CHOICES,
         default=None,
     )
+    triage_brief_parser.add_argument(
+        "--summary-steering-scope",
+        choices=SUMMARY_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_brief_parser.add_argument("--headline-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_brief_parser.add_argument(
+        "--headline-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_brief_parser.add_argument("--attention-summary-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_brief_parser.add_argument(
+        "--attention-summary-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
     triage_brief_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     triage_brief_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_brief_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -8078,6 +8120,31 @@ def main() -> int:
         if record is not None and not matches_selected_next_step_source_filter(
             selected_next_step_source_filter=args.selected_next_step_source,
             selected_next_step_source=record.selected_next_step_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.summary_steering_scope,
+            summary_steering_scope=record.summary_steering_scope,
+        ):
+            record = None
+        if record is not None and not matches_summary_source_filter(
+            summary_source_filter=args.headline_source,
+            summary_source=record.headline_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.headline_steering_scope,
+            summary_steering_scope=record.headline_steering_scope,
+        ):
+            record = None
+        if record is not None and not matches_summary_source_filter(
+            summary_source_filter=args.attention_summary_source,
+            summary_source=record.attention_summary_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.attention_summary_steering_scope,
+            summary_steering_scope=record.attention_summary_steering_scope,
         ):
             record = None
         if args.format == "json":

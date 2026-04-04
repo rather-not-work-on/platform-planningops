@@ -1687,6 +1687,11 @@ doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
 assert record["source_kind"] == "stamped", record
 assert record["target_limit"] == 3, record
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["attention_family_count"] == 2, record
 assert record["active_family_count"] == 1, record
 assert record["lagging_family_count"] == 1, record
@@ -1739,6 +1744,11 @@ doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
 assert record["source_kind"] == "all", record
 assert record["target_limit"] == 1, record
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["attention_family_count"] == 2, record
 assert record["active_family_count"] == 2, record
 assert record["lagging_family_count"] == 0, record
@@ -5069,6 +5079,11 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["mission_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
 assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is True, record
 assert record["day_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
@@ -5100,6 +5115,11 @@ from pathlib import Path
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
 assert record is not None, doc
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["selected_next_step_source"] == "cross_repo_validation", record
 PY
 
@@ -5115,6 +5135,56 @@ python3 "$QUERY_PATH" triage-brief \
   --selected-next-step-source local_runtime >"$TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT"
 
 python3 - <<'PY' "$TRIAGE_BRIEF_SELECTED_NEXT_STEP_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
+PY
+
+TRIAGE_BRIEF_SUMMARY_COMPONENT_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --summary-steering-scope selected_next_step_only \
+  --headline-source triage_snapshot \
+  --headline-steering-scope none \
+  --attention-summary-source triage_snapshot \
+  --attention-summary-steering-scope none >"$TRIAGE_BRIEF_SUMMARY_COMPONENT_FILTER_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_SUMMARY_COMPONENT_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["summary_steering_scope"] == "selected_next_step_only", record
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+PY
+
+TRIAGE_BRIEF_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" \
+  --headline-steering-scope steering_aware >"$TRIAGE_BRIEF_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT"
 import json
 import sys
 from pathlib import Path
