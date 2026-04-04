@@ -298,6 +298,8 @@ class TriageBriefRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    selected_next_step_source: str
+    selected_next_step: str | None
     mission_packet_cross_repo_validation_steering_scope: str | None
     mission_packet_cross_repo_validation_primary_action_promoted: bool | None
     day_packet_cross_repo_validation_steering_scope: str | None
@@ -327,6 +329,8 @@ class TriageReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    selected_next_step_source: str
+    selected_next_step: str | None
     mission_packet_cross_repo_validation_steering_scope: str | None
     mission_packet_cross_repo_validation_primary_action_promoted: bool | None
     day_packet_cross_repo_validation_steering_scope: str | None
@@ -357,6 +361,8 @@ class HandoffReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    selected_next_step_source: str
+    selected_next_step: str | None
     mission_packet_cross_repo_validation_steering_scope: str | None
     mission_packet_cross_repo_validation_primary_action_promoted: bool | None
     day_packet_cross_repo_validation_steering_scope: str | None
@@ -1134,6 +1140,58 @@ def build_local_operator_next_step(record: LocalOperatorStackRecord | None) -> s
     if record is None or not record.recommended_next_steps:
         return None
     return record.recommended_next_steps[0]
+
+
+def cross_repo_primary_action_promoted(
+    *,
+    mission_packet_steering_scope: str | None,
+    mission_packet_primary_action_promoted: bool | None,
+    day_packet_steering_scope: str | None,
+    day_packet_primary_action_promoted: bool | None,
+) -> bool:
+    return (
+        (
+            mission_packet_steering_scope == "primary_action_only"
+            and mission_packet_primary_action_promoted is True
+        )
+        or (
+            day_packet_steering_scope == "primary_action_only"
+            and day_packet_primary_action_promoted is True
+        )
+    )
+
+
+def build_selected_downstream_next_step(
+    *,
+    local_operator_next_step: str | None,
+    local_validation_action_line: str | None = None,
+    cross_repo_validation_action_line: str | None = None,
+    triage_target_line: str | None = None,
+    mission_packet_steering_scope: str | None,
+    mission_packet_primary_action_promoted: bool | None,
+    day_packet_steering_scope: str | None,
+    day_packet_primary_action_promoted: bool | None,
+) -> tuple[str, str | None]:
+    if local_operator_next_step is not None:
+        return "local_runtime", f"local-runtime: {local_operator_next_step}"
+    if local_validation_action_line is not None:
+        return "local_validation", local_validation_action_line
+    if cross_repo_validation_action_line is not None and cross_repo_primary_action_promoted(
+        mission_packet_steering_scope=mission_packet_steering_scope,
+        mission_packet_primary_action_promoted=mission_packet_primary_action_promoted,
+        day_packet_steering_scope=day_packet_steering_scope,
+        day_packet_primary_action_promoted=day_packet_primary_action_promoted,
+    ):
+        return "cross_repo_validation", cross_repo_validation_action_line
+    if triage_target_line is not None:
+        return "triage_target", f"triage-target: {triage_target_line}"
+    return "none", None
+
+
+def append_unique_action_line(lines: list[str], line: str | None) -> None:
+    if line is None or line in lines:
+        return
+    lines.append(line)
 
 
 def resolve_nested_value(doc: dict[str, Any], *keys: str) -> Any:
@@ -5076,6 +5134,17 @@ def build_triage_brief_record(
         )
         for target in feed.target_records
     ]
+    selected_next_step_source, selected_next_step = build_selected_downstream_next_step(
+        local_operator_next_step=build_local_operator_next_step(feed.local_operator_record),
+        cross_repo_validation_action_line=feed.cross_repo_validation_action_line,
+        triage_target_line=None if not target_lines else target_lines[0],
+        mission_packet_steering_scope=feed.mission_packet_cross_repo_validation_steering_scope,
+        mission_packet_primary_action_promoted=(
+            feed.mission_packet_cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_steering_scope=feed.day_packet_cross_repo_validation_steering_scope,
+        day_packet_primary_action_promoted=feed.day_packet_cross_repo_validation_primary_action_promoted,
+    )
     return TriageBriefRecord(
         source_kind=source_kind,
         target_limit=target_limit,
@@ -5091,6 +5160,8 @@ def build_triage_brief_record(
         local_operator_record=feed.local_operator_record,
         local_operator_summary=build_local_operator_summary(feed.local_operator_record),
         local_operator_next_step=build_local_operator_next_step(feed.local_operator_record),
+        selected_next_step_source=selected_next_step_source,
+        selected_next_step=selected_next_step,
         mission_packet_cross_repo_validation_steering_scope=(
             feed.mission_packet_cross_repo_validation_steering_scope
         ),
@@ -5133,6 +5204,8 @@ def render_triage_brief_table(record: TriageBriefRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.append(f"selected_next_step_source\t{record.selected_next_step_source}")
+    sections.append(f"selected_next_step\t{record.selected_next_step or ''}")
     if record.cross_repo_validation_snapshot_status is not None:
         sections.extend(
             [
@@ -5204,6 +5277,8 @@ def render_triage_brief_markdown(record: TriageBriefRecord) -> str:
         lines.append(f"- local operator: `{record.local_operator_summary}`")
     if record.local_operator_next_step is not None:
         lines.append(f"- local operator next step: {record.local_operator_next_step}")
+    lines.append(f"- selected next step source: `{record.selected_next_step_source}`")
+    lines.append(f"- selected next step: {record.selected_next_step or ''}")
     if record.cross_repo_validation_snapshot_status is not None:
         lines.extend(
             [
@@ -5325,6 +5400,8 @@ def build_triage_report_record(
         markdown_lines.append(f"- local operator: `{brief.local_operator_summary}`")
     if brief.local_operator_next_step is not None:
         markdown_lines.append(f"- local operator next step: {brief.local_operator_next_step}")
+    markdown_lines.append(f"- selected next step source: `{brief.selected_next_step_source}`")
+    markdown_lines.append(f"- selected next step: {brief.selected_next_step or ''}")
     if brief.cross_repo_validation_snapshot_status is not None:
         markdown_lines.extend(
             [
@@ -5408,6 +5485,8 @@ def build_triage_report_record(
         local_operator_record=brief.local_operator_record,
         local_operator_summary=brief.local_operator_summary,
         local_operator_next_step=brief.local_operator_next_step,
+        selected_next_step_source=brief.selected_next_step_source,
+        selected_next_step=brief.selected_next_step,
         mission_packet_cross_repo_validation_steering_scope=(
             brief.mission_packet_cross_repo_validation_steering_scope
         ),
@@ -5448,6 +5527,8 @@ def render_triage_report_table(record: TriageReportRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.append(f"selected_next_step_source\t{record.selected_next_step_source}")
+    sections.append(f"selected_next_step\t{record.selected_next_step or ''}")
     if record.cross_repo_validation_snapshot_status is not None:
         sections.extend(
             [
@@ -5581,15 +5662,36 @@ def build_handoff_report_record(
             cross_repo_validation_packet_report_id = packet_record.report_id
             cross_repo_validation_packet_path = packet_record.report_path
     headline = f"Operator handoff report: {triage_report.headline.removeprefix('Federated CI triage report: ')}"
+    selected_next_step_source, selected_next_step = build_selected_downstream_next_step(
+        local_operator_next_step=triage_report.local_operator_next_step,
+        local_validation_action_line=None if not local_validation_action_lines else local_validation_action_lines[0],
+        cross_repo_validation_action_line=cross_repo_validation_action_line,
+        triage_target_line=None if not triage_report.target_lines else triage_report.target_lines[0],
+        mission_packet_steering_scope=triage_report.mission_packet_cross_repo_validation_steering_scope,
+        mission_packet_primary_action_promoted=(
+            triage_report.mission_packet_cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_steering_scope=triage_report.day_packet_cross_repo_validation_steering_scope,
+        day_packet_primary_action_promoted=triage_report.day_packet_cross_repo_validation_primary_action_promoted,
+    )
     immediate_action_lines: list[str] = []
-    if triage_report.local_operator_next_step is not None:
-        immediate_action_lines.append(f"local-runtime: {triage_report.local_operator_next_step}")
-    if local_validation_action_lines:
-        immediate_action_lines.append(local_validation_action_lines[0])
-    if triage_report.target_lines:
-        immediate_action_lines.append(f"triage-target: {triage_report.target_lines[0]}")
-    if len(triage_report.target_lines) > 1:
-        immediate_action_lines.append(f"follow-up: {triage_report.target_lines[1]}")
+    append_unique_action_line(immediate_action_lines, selected_next_step)
+    append_unique_action_line(
+        immediate_action_lines,
+        None if triage_report.local_operator_next_step is None else f"local-runtime: {triage_report.local_operator_next_step}",
+    )
+    append_unique_action_line(
+        immediate_action_lines,
+        None if not local_validation_action_lines else local_validation_action_lines[0],
+    )
+    append_unique_action_line(
+        immediate_action_lines,
+        None if not triage_report.target_lines else f"triage-target: {triage_report.target_lines[0]}",
+    )
+    append_unique_action_line(
+        immediate_action_lines,
+        None if len(triage_report.target_lines) <= 1 else f"follow-up: {triage_report.target_lines[1]}",
+    )
 
     markdown_lines = [
         "## Operator Handoff Report",
@@ -5610,6 +5712,8 @@ def build_handoff_report_record(
         markdown_lines.append(f"- local operator: `{triage_report.local_operator_summary}`")
     if triage_report.local_operator_next_step is not None:
         markdown_lines.append(f"- local operator next step: {triage_report.local_operator_next_step}")
+    markdown_lines.append(f"- selected next step source: `{selected_next_step_source}`")
+    markdown_lines.append(f"- selected next step: {selected_next_step or ''}")
     markdown_lines.extend(
         [
             "",
@@ -5725,6 +5829,8 @@ def build_handoff_report_record(
         local_operator_record=triage_report.local_operator_record,
         local_operator_summary=triage_report.local_operator_summary,
         local_operator_next_step=triage_report.local_operator_next_step,
+        selected_next_step_source=selected_next_step_source,
+        selected_next_step=selected_next_step,
         mission_packet_cross_repo_validation_steering_scope=(
             triage_report.mission_packet_cross_repo_validation_steering_scope
         ),
@@ -5778,6 +5884,8 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.append(f"selected_next_step_source\t{record.selected_next_step_source}")
+    sections.append(f"selected_next_step\t{record.selected_next_step or ''}")
     sections.append(
         f"mission_packet_cross_repo_validation_steering_scope\t{record.mission_packet_cross_repo_validation_steering_scope or ''}"
     )

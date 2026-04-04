@@ -1700,6 +1700,8 @@ assert record["local_operator_summary"] == (
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
 assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["cross_repo_validation_snapshot_status"] == "missing", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
 assert record["monday_source_validation_status"] == "missing", record
@@ -1748,6 +1750,8 @@ assert record["local_operator_summary"] == (
     "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["cross_repo_validation_snapshot_status"] == "missing", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
 assert record["monday_source_validation_status"] == "missing", record
@@ -1791,6 +1795,8 @@ assert record["local_operator_summary"] == (
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
 assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["cross_repo_validation_snapshot_status"] == "missing", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
 assert record["monday_source_validation_status"] == "missing", record
@@ -1842,6 +1848,8 @@ assert record["local_operator_summary"] == (
     "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["cross_repo_validation_snapshot_status"] == "missing", record
 assert record["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", record
 assert record["monday_source_validation_status"] == "missing", record
@@ -2473,6 +2481,8 @@ assert record["local_operator_summary"] == (
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
 assert record["local_operator_next_step"] == "Expose Codex and add a direct local LLM profile.", record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["local_validation_snapshot_status"] == "present", record
 assert record["local_validation_snapshot_summary"] == "total=8 promotable=4 blocked=4 stale=1", record
 assert record["monday_validation_snapshot_status"] == "missing", record
@@ -2578,6 +2588,8 @@ assert record["local_operator_summary"] == (
     "monday-local-operator-stack-20260401T060524Z verdict=fail readiness=blocked "
     "stack=skipped direct=skipped mode=both reason=readiness_blocked"
 ), record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["local_validation_snapshot_status"] == "present", record
 assert record["local_validation_snapshot_summary"] == "total=8 promotable=4 blocked=4 stale=1", record
 assert record["monday_validation_snapshot_status"] == "missing", record
@@ -2592,6 +2604,8 @@ assert record["cross_repo_validation_action_line"] == (
     "local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ), record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["cross_repo_validation_detail_lines"] == [
     "mirror: monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
     "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
@@ -4438,6 +4452,8 @@ assert record["cross_repo_validation_action_line"] == (
     "local-validation: repair monday_local_inbox_runtime_report "
     "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
 ), record
+assert record["selected_next_step_source"] == "local_runtime", record
+assert record["selected_next_step"] == "local-runtime: Expose Codex and add a direct local LLM profile.", record
 assert record["cross_repo_validation_detail_lines"] == [
     "mirror: monday_local_inbox_launch_request: freshness=fresh promotability=promotable dependencies=monday_local_operator_inbox_payload=current",
     "mirror: monday_local_inbox_runtime_report: freshness=fresh promotability=blocked reasons=source_artifact_missing dependencies=monday_local_operator_inbox_payload=current,monday_local_inbox_launch_request=current",
@@ -4990,6 +5006,98 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert doc["record"] is None, doc
+PY
+
+python3 - <<'PY' "$VALIDATION_DIR" "$LOCAL_OPERATOR_DIR"
+import json
+import sys
+from pathlib import Path
+
+validation_dir = Path(sys.argv[1]).resolve()
+local_root = Path(sys.argv[2]).resolve()
+
+mission_latest_path = validation_dir / "monday-local-mission-packet.json"
+mission_steered_path = validation_dir / "monday-local-mission-20260401T080200Z-monday-local-mission-packet.json"
+day_latest_path = validation_dir / "monday-local-operator-day-packet.json"
+day_steered_path = validation_dir / "monday-local-day-20260401T083100Z-monday-local-operator-day-packet.json"
+
+mission_doc = json.loads(mission_steered_path.read_text(encoding="utf-8"))
+mission_doc["artifact_paths"]["latest_packet_path"] = str(mission_latest_path.resolve())
+mission_doc["artifact_paths"]["stamped_packet_path"] = str(mission_steered_path.resolve())
+mission_latest_path.write_text(json.dumps(mission_doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+
+day_doc = json.loads(day_steered_path.read_text(encoding="utf-8"))
+day_doc["artifact_paths"]["latest_packet_path"] = str(day_latest_path.resolve())
+day_doc["artifact_paths"]["stamped_packet_path"] = str(day_steered_path.resolve())
+day_latest_path.write_text(json.dumps(day_doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+
+local_report_path = local_root / "monday-local-operator-stack-20260401T060524Z.json"
+local_doc = json.loads(local_report_path.read_text(encoding="utf-8"))
+local_doc["recommended_next_steps"] = []
+local_report_path.write_text(json.dumps(local_doc, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+PY
+
+TRIAGE_BRIEF_STEERED_NEXT_STEP_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-brief \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_BRIEF_STEERED_NEXT_STEP_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_BRIEF_STEERED_NEXT_STEP_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is True, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is True, record
+assert record["local_operator_next_step"] is None, record
+assert record["selected_next_step_source"] == "cross_repo_validation", record
+assert record["selected_next_step"] == (
+    "local-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
+), record
+PY
+
+TRIAGE_REPORT_STEERED_NEXT_STEP_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-report \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --local-root "$LOCAL_OPERATOR_DIR" \
+  --consumer-root "$MONDAY_CONSUMER_DIR" \
+  --monday-validation-root "$MONDAY_VALIDATION_DIR" >"$TRIAGE_REPORT_STEERED_NEXT_STEP_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_REPORT_STEERED_NEXT_STEP_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record["mission_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["mission_packet_cross_repo_validation_primary_action_promoted"] is True, record
+assert record["day_packet_cross_repo_validation_steering_scope"] == "primary_action_only", record
+assert record["day_packet_cross_repo_validation_primary_action_promoted"] is True, record
+assert record["local_operator_next_step"] is None, record
+assert record["selected_next_step_source"] == "cross_repo_validation", record
+assert record["selected_next_step"] == (
+    "local-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
+), record
+assert "selected next step source: `cross_repo_validation`" in record["markdown"], record
+assert (
+    "selected next step: local-validation: repair monday_local_inbox_runtime_report "
+    "(freshness=fresh, promotability=blocked, reasons=source_artifact_missing)"
+) in record["markdown"], record
 PY
 
 python3 "$QUERY_PATH" local-validation-freshness \
