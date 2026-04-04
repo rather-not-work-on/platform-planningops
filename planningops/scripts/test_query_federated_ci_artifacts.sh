@@ -1287,6 +1287,11 @@ assert [record["triage_status"] for record in records] == [
 ], records
 
 lagging, active = records
+assert lagging["headline_source"] == "triage_snapshot", lagging
+assert lagging["headline_steering_scope"] == "none", lagging
+assert lagging["attention_summary_source"] == "triage_snapshot", lagging
+assert lagging["attention_summary_steering_scope"] == "none", lagging
+assert lagging["summary_steering_scope"] == "selected_next_step_only", lagging
 assert lagging["family_count"] == 1, lagging
 assert lagging["families"] == ["federated-ci-runtime-gates"], lagging
 assert lagging["newest_family"] == "federated-ci-runtime-gates", lagging
@@ -1297,6 +1302,11 @@ assert lagging["latest_gap_domain_counts"] == {}, lagging
 assert lagging["latest_alert_domain_counts"] == {"checkpoint": 1, "readiness": 1, "reconcile": 1}, lagging
 
 assert active["family_count"] == 1, active
+assert active["headline_source"] == "triage_snapshot", active
+assert active["headline_steering_scope"] == "none", active
+assert active["attention_summary_source"] == "triage_snapshot", active
+assert active["attention_summary_steering_scope"] == "none", active
+assert active["summary_steering_scope"] == "selected_next_step_only", active
 assert active["families"] == ["federated-ci-local"], active
 assert active["newest_family"] == "federated-ci-local", active
 assert active["newest_run_id"] == "federated-ci-local-20260301", active
@@ -1322,6 +1332,11 @@ doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 records = doc["records"]
 assert len(records) == 1, records
 assert records[0]["triage_status"] == "active", records
+assert records[0]["headline_source"] == "triage_snapshot", records
+assert records[0]["headline_steering_scope"] == "none", records
+assert records[0]["attention_summary_source"] == "triage_snapshot", records
+assert records[0]["attention_summary_steering_scope"] == "none", records
+assert records[0]["summary_steering_scope"] == "selected_next_step_only", records
 assert records[0]["families"] == ["federated-ci-local"], records
 PY
 
@@ -1344,6 +1359,11 @@ records = doc["records"]
 assert len(records) == 1, records
 record = records[0]
 assert record["triage_status"] == "active", record
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["family_count"] == 2, record
 assert record["families"] == ["federated-ci-runtime-gates", "federated-ci-local"], record
 assert record["newest_family"] == "federated-ci-runtime-gates", record
@@ -1367,6 +1387,11 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["total_families"] == 2, record
 assert record["triage_status_counts"] == {"active": 1, "lagging": 1}, record
 assert record["alert_alignment_counts"] == {"current": 1, "lagging": 1}, record
@@ -1397,6 +1422,11 @@ from pathlib import Path
 
 doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 record = doc["record"]
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+assert record["summary_steering_scope"] == "selected_next_step_only", record
 assert record["total_families"] == 2, record
 assert record["triage_status_counts"] == {"active": 2}, record
 assert record["alert_alignment_counts"] == {"current": 2}, record
@@ -1411,6 +1441,95 @@ assert record["newest_failing_alert_domains"] == ["readiness", "reconcile"], rec
 assert record["newest_recovered_family"] is None, record
 assert record["newest_recovered_run_id"] is None, record
 assert record["newest_recovered_source_kind"] is None, record
+PY
+
+TRIAGE_SUMMARY_SUMMARY_COMPONENT_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-summary \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --summary-steering-scope selected_next_step_only \
+  --headline-source triage_snapshot \
+  --headline-steering-scope none \
+  --attention-summary-source triage_snapshot \
+  --attention-summary-steering-scope none >"$TRIAGE_SUMMARY_SUMMARY_COMPONENT_FILTER_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_SUMMARY_SUMMARY_COMPONENT_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+records = doc["records"]
+assert len(records) == 2, records
+for record in records:
+    assert record["summary_steering_scope"] == "selected_next_step_only", record
+    assert record["headline_source"] == "triage_snapshot", record
+    assert record["headline_steering_scope"] == "none", record
+    assert record["attention_summary_source"] == "triage_snapshot", record
+    assert record["attention_summary_steering_scope"] == "none", record
+PY
+
+TRIAGE_SUMMARY_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-summary \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --headline-steering-scope steering_aware >"$TRIAGE_SUMMARY_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_SUMMARY_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["records"] == [], doc
+PY
+
+TRIAGE_OVERVIEW_SUMMARY_COMPONENT_FILTER_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-overview \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --summary-steering-scope selected_next_step_only \
+  --headline-source triage_snapshot \
+  --headline-steering-scope none \
+  --attention-summary-source triage_snapshot \
+  --attention-summary-steering-scope none >"$TRIAGE_OVERVIEW_SUMMARY_COMPONENT_FILTER_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_OVERVIEW_SUMMARY_COMPONENT_FILTER_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+record = doc["record"]
+assert record is not None, doc
+assert record["summary_steering_scope"] == "selected_next_step_only", record
+assert record["headline_source"] == "triage_snapshot", record
+assert record["headline_steering_scope"] == "none", record
+assert record["attention_summary_source"] == "triage_snapshot", record
+assert record["attention_summary_steering_scope"] == "none", record
+PY
+
+TRIAGE_OVERVIEW_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT=$(mktemp)
+python3 "$QUERY_PATH" triage-overview \
+  --format json \
+  --ci-root "$CI_DIR" \
+  --validation-root "$VALIDATION_DIR" \
+  --conformance-root "$CONFORMANCE_DIR" \
+  --headline-steering-scope steering_aware >"$TRIAGE_OVERVIEW_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT"
+
+python3 - <<'PY' "$TRIAGE_OVERVIEW_SUMMARY_COMPONENT_FILTER_MISS_OUTPUT"
+import json
+import sys
+from pathlib import Path
+
+doc = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert doc["record"] is None, doc
 PY
 
 python3 "$QUERY_PATH" triage-targets \

@@ -215,6 +215,11 @@ class OperatorTriageRecord:
 @dataclass(frozen=True)
 class TriageSummaryRecord:
     triage_status: str
+    headline_source: str
+    headline_steering_scope: str
+    attention_summary_source: str
+    attention_summary_steering_scope: str
+    summary_steering_scope: str
     family_count: int
     families: list[str]
     newest_family: str
@@ -228,6 +233,11 @@ class TriageSummaryRecord:
 
 @dataclass(frozen=True)
 class TriageOverviewRecord:
+    headline_source: str
+    headline_steering_scope: str
+    attention_summary_source: str
+    attention_summary_steering_scope: str
+    summary_steering_scope: str
     total_families: int
     triage_status_counts: dict[str, int]
     alert_alignment_counts: dict[str, int]
@@ -4495,6 +4505,11 @@ def build_triage_summary_records(
     run_id_prefix: str | None,
     source_kind: str,
 ) -> list[TriageSummaryRecord]:
+    headline_source = "triage_snapshot"
+    headline_steering_scope = "none"
+    attention_summary_source = "triage_snapshot"
+    attention_summary_steering_scope = "none"
+    summary_steering_scope = "selected_next_step_only"
     triage_records = build_operator_triage_records(
         records=records,
         family=family,
@@ -4520,6 +4535,11 @@ def build_triage_summary_records(
         summaries.append(
             TriageSummaryRecord(
                 triage_status=triage_status,
+                headline_source=headline_source,
+                headline_steering_scope=headline_steering_scope,
+                attention_summary_source=attention_summary_source,
+                attention_summary_steering_scope=attention_summary_steering_scope,
+                summary_steering_scope=summary_steering_scope,
                 family_count=len(bucket_records),
                 families=[record.family for record in bucket_records],
                 newest_family=newest.family,
@@ -4537,13 +4557,18 @@ def build_triage_summary_records(
 
 def render_triage_summary_table(records: list[TriageSummaryRecord]) -> str:
     lines = [
-        "triage_status\tfamily_count\tfamilies\tnewest_family\tnewest_run\tnewest_source\talert_alignment_counts\tlatest_gap_domain_counts\tlatest_alert_domain_counts\tnewest_timestamp",
+        "triage_status\theadline_source\theadline_steering_scope\tattention_summary_source\tattention_summary_steering_scope\tsummary_steering_scope\tfamily_count\tfamilies\tnewest_family\tnewest_run\tnewest_source\talert_alignment_counts\tlatest_gap_domain_counts\tlatest_alert_domain_counts\tnewest_timestamp",
     ]
     for record in records:
         lines.append(
             "\t".join(
                 [
                     record.triage_status,
+                    record.headline_source,
+                    record.headline_steering_scope,
+                    record.attention_summary_source,
+                    record.attention_summary_steering_scope,
+                    record.summary_steering_scope,
                     str(record.family_count),
                     ",".join(record.families),
                     record.newest_family,
@@ -4561,12 +4586,14 @@ def render_triage_summary_table(records: list[TriageSummaryRecord]) -> str:
 
 def render_triage_summary_markdown(records: list[TriageSummaryRecord]) -> str:
     lines = [
-        "| triage_status | family_count | families | newest_family | newest_run | newest_source | alert_alignment_counts | latest_gap_domain_counts | latest_alert_domain_counts | newest_timestamp |",
-        "| --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| triage_status | headline_source | headline_steering_scope | attention_summary_source | attention_summary_steering_scope | summary_steering_scope | family_count | families | newest_family | newest_run | newest_source | alert_alignment_counts | latest_gap_domain_counts | latest_alert_domain_counts | newest_timestamp |",
+        "| --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for record in records:
         lines.append(
-            f"| {record.triage_status} | {record.family_count} | {', '.join(record.families)} | "
+            f"| {record.triage_status} | {record.headline_source} | {record.headline_steering_scope} | "
+            f"{record.attention_summary_source} | {record.attention_summary_steering_scope} | "
+            f"{record.summary_steering_scope} | {record.family_count} | {', '.join(record.families)} | "
             f"{record.newest_family} | `{record.newest_run_id}` | {record.newest_run_source_kind} | "
             f"{', '.join(f'{key}={value}' for key, value in record.alert_alignment_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.latest_gap_domain_counts.items())} | "
@@ -4583,6 +4610,11 @@ def build_triage_overview_record(
     run_id_prefix: str | None,
     source_kind: str,
 ) -> TriageOverviewRecord:
+    headline_source = "triage_snapshot"
+    headline_steering_scope = "none"
+    attention_summary_source = "triage_snapshot"
+    attention_summary_steering_scope = "none"
+    summary_steering_scope = "selected_next_step_only"
     triage_records = build_operator_triage_records(
         records=records,
         family=family,
@@ -4605,6 +4637,11 @@ def build_triage_overview_record(
     newest_recovered = next((record for record in triage_records if record.triage_status == "clear"), None)
 
     return TriageOverviewRecord(
+        headline_source=headline_source,
+        headline_steering_scope=headline_steering_scope,
+        attention_summary_source=attention_summary_source,
+        attention_summary_steering_scope=attention_summary_steering_scope,
+        summary_steering_scope=summary_steering_scope,
         total_families=len(triage_records),
         triage_status_counts={key: triage_status_counts[key] for key in sorted(triage_status_counts)},
         alert_alignment_counts={key: alert_alignment_counts[key] for key in sorted(alert_alignment_counts)},
@@ -4627,9 +4664,14 @@ def build_triage_overview_record(
 def render_triage_overview_table(record: TriageOverviewRecord) -> str:
     return "\n".join(
         [
-            "total_families\ttriage_status_counts\talert_alignment_counts\tlatest_gap_domain_counts\tlatest_alert_domain_counts\tnewest_failing_family\tnewest_failing_run\tnewest_failing_source\tnewest_failing_status\tnewest_failing_gap_domains\tnewest_failing_alert_domains\tnewest_recovered_family\tnewest_recovered_run\tnewest_recovered_source",
+            "headline_source\theadline_steering_scope\tattention_summary_source\tattention_summary_steering_scope\tsummary_steering_scope\ttotal_families\ttriage_status_counts\talert_alignment_counts\tlatest_gap_domain_counts\tlatest_alert_domain_counts\tnewest_failing_family\tnewest_failing_run\tnewest_failing_source\tnewest_failing_status\tnewest_failing_gap_domains\tnewest_failing_alert_domains\tnewest_recovered_family\tnewest_recovered_run\tnewest_recovered_source",
             "\t".join(
                 [
+                    record.headline_source,
+                    record.headline_steering_scope,
+                    record.attention_summary_source,
+                    record.attention_summary_steering_scope,
+                    record.summary_steering_scope,
                     str(record.total_families),
                     ",".join(f"{key}={value}" for key, value in record.triage_status_counts.items()),
                     ",".join(f"{key}={value}" for key, value in record.alert_alignment_counts.items()),
@@ -4653,9 +4695,10 @@ def render_triage_overview_table(record: TriageOverviewRecord) -> str:
 def render_triage_overview_markdown(record: TriageOverviewRecord) -> str:
     return "\n".join(
         [
-            "| total_families | triage_status_counts | alert_alignment_counts | latest_gap_domain_counts | latest_alert_domain_counts | newest_failing_family | newest_failing_run | newest_failing_source | newest_failing_status | newest_failing_gap_domains | newest_failing_alert_domains | newest_recovered_family | newest_recovered_run | newest_recovered_source |",
-            "| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-            f"| {record.total_families} | {', '.join(f'{key}={value}' for key, value in record.triage_status_counts.items())} | "
+            "| headline_source | headline_steering_scope | attention_summary_source | attention_summary_steering_scope | summary_steering_scope | total_families | triage_status_counts | alert_alignment_counts | latest_gap_domain_counts | latest_alert_domain_counts | newest_failing_family | newest_failing_run | newest_failing_source | newest_failing_status | newest_failing_gap_domains | newest_failing_alert_domains | newest_recovered_family | newest_recovered_run | newest_recovered_source |",
+            "| --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            f"| {record.headline_source} | {record.headline_steering_scope} | {record.attention_summary_source} | "
+            f"{record.attention_summary_steering_scope} | {record.summary_steering_scope} | {record.total_families} | {', '.join(f'{key}={value}' for key, value in record.triage_status_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.alert_alignment_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.latest_gap_domain_counts.items())} | "
             f"{', '.join(f'{key}={value}' for key, value in record.latest_alert_domain_counts.items())} | "
@@ -7236,6 +7279,23 @@ def parse_args() -> argparse.Namespace:
     triage_summary_parser.add_argument("--triage-status", choices=["clear", "active", "lagging"], default=None)
     triage_summary_parser.add_argument("--has-latest-gap-domain", default=None)
     triage_summary_parser.add_argument("--has-latest-alert-domain", default=None)
+    triage_summary_parser.add_argument(
+        "--summary-steering-scope",
+        choices=SUMMARY_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_summary_parser.add_argument("--headline-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_summary_parser.add_argument(
+        "--headline-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_summary_parser.add_argument("--attention-summary-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_summary_parser.add_argument(
+        "--attention-summary-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
     triage_summary_parser.add_argument("--limit", type=int, default=20)
     triage_summary_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     triage_summary_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
@@ -7249,6 +7309,23 @@ def parse_args() -> argparse.Namespace:
     triage_overview_parser.add_argument("--family", default=None)
     triage_overview_parser.add_argument("--run-id-prefix", default=None)
     triage_overview_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
+    triage_overview_parser.add_argument(
+        "--summary-steering-scope",
+        choices=SUMMARY_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_overview_parser.add_argument("--headline-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_overview_parser.add_argument(
+        "--headline-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_overview_parser.add_argument("--attention-summary-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_overview_parser.add_argument(
+        "--attention-summary-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
     triage_overview_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     triage_overview_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_overview_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -8039,6 +8116,30 @@ def main() -> int:
                 for record in summaries
                 if record.latest_alert_domain_counts.get(args.has_latest_alert_domain, 0) > 0
             ]
+        summaries = [
+            record
+            for record in summaries
+            if matches_summary_steering_scope_filter(
+                summary_steering_scope_filter=args.summary_steering_scope,
+                summary_steering_scope=record.summary_steering_scope,
+            )
+            and matches_summary_source_filter(
+                summary_source_filter=args.headline_source,
+                summary_source=record.headline_source,
+            )
+            and matches_summary_steering_scope_filter(
+                summary_steering_scope_filter=args.headline_steering_scope,
+                summary_steering_scope=record.headline_steering_scope,
+            )
+            and matches_summary_source_filter(
+                summary_source_filter=args.attention_summary_source,
+                summary_source=record.attention_summary_source,
+            )
+            and matches_summary_steering_scope_filter(
+                summary_steering_scope_filter=args.attention_summary_steering_scope,
+                summary_steering_scope=record.attention_summary_steering_scope,
+            )
+        ]
         summaries = summaries[: args.limit]
         if args.format == "json":
             print(json.dumps({"records": [asdict(record) for record in summaries]}, ensure_ascii=True, indent=2))
@@ -8056,8 +8157,36 @@ def main() -> int:
             run_id_prefix=args.run_id_prefix,
             source_kind=args.source_kind,
         )
+        if not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.summary_steering_scope,
+            summary_steering_scope=record.summary_steering_scope,
+        ):
+            record = None
+        if record is not None and not matches_summary_source_filter(
+            summary_source_filter=args.headline_source,
+            summary_source=record.headline_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.headline_steering_scope,
+            summary_steering_scope=record.headline_steering_scope,
+        ):
+            record = None
+        if record is not None and not matches_summary_source_filter(
+            summary_source_filter=args.attention_summary_source,
+            summary_source=record.attention_summary_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.attention_summary_steering_scope,
+            summary_steering_scope=record.attention_summary_steering_scope,
+        ):
+            record = None
         if args.format == "json":
-            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if record is None:
+            print("_No matching triage overview._" if args.format == "markdown" else "no matching triage overview")
             return 0
         if args.format == "markdown":
             print(render_triage_overview_markdown(record))
