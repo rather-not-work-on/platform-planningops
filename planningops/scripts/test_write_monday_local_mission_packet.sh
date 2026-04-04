@@ -79,6 +79,19 @@ cat >"$HANDOFF_REPORT" <<'JSON'
     "local_validation_action_lines": [
       "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
     ],
+    "cross_repo_validation_snapshot_status": "present",
+    "cross_repo_validation_snapshot_summary": "total=5 promotable=3 blocked=2 stale=0",
+    "cross_repo_validation_action_line": "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
+    "cross_repo_validation_detail_lines": [
+      "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+      "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing"
+    ],
+    "monday_source_validation_report_lines": [
+      "consumer-report schema verdict=pass errors=0 warnings=0"
+    ],
+    "cross_repo_validation_action_lines": [
+      "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ],
     "cross_repo_validation_packet_report_id": "cross-repo-validation-20260401T110000Z",
     "cross_repo_validation_packet_path": "/tmp/cross-repo-validation-report.json",
     "markdown": "## Operator Handoff Report"
@@ -157,6 +170,14 @@ assert "local_validation_snapshot_status" in contract_text, contract_text
 assert "local_validation_records" in contract_text, contract_text
 assert "local_validation_summary_lines" in contract_text, contract_text
 assert "local_validation_action_lines" in contract_text, contract_text
+assert "cross_repo_validation_snapshot_status" in contract_text, contract_text
+assert "cross_repo_validation_snapshot_summary" in contract_text, contract_text
+assert "cross_repo_validation_action_line" in contract_text, contract_text
+assert "cross_repo_validation_detail_lines" in contract_text, contract_text
+assert "monday_source_validation_report_lines" in contract_text, contract_text
+assert "cross_repo_validation_action_lines" in contract_text, contract_text
+assert "cross_repo_validation_packet_report_id" in contract_text, contract_text
+assert "cross_repo_validation_packet_path" in contract_text, contract_text
 
 for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     assert doc["packet_id"] == packet_id, doc
@@ -196,6 +217,22 @@ for doc in (stdout_doc, output_doc, latest_doc, stamped_doc):
     ], mission
     assert mission["local_validation_action_lines"] == [
         "local-validation: repair operator_handoff_report (freshness=stale, promotability=blocked, reasons=stamped_missing)"
+    ], mission
+    assert mission["cross_repo_validation_snapshot_status"] == "present", mission
+    assert mission["cross_repo_validation_snapshot_summary"] == "total=5 promotable=3 blocked=2 stale=0", mission
+    assert mission["cross_repo_validation_action_line"] == (
+        "cross-repo-validation: repair monday_local_inbox_runtime_report "
+        "(freshness=missing, promotability=blocked, reasons=latest_missing)"
+    ), mission
+    assert mission["cross_repo_validation_detail_lines"] == [
+        "monday_local_inbox_launch_request: freshness=fresh promotability=promotable",
+        "monday_local_inbox_runtime_report: freshness=missing promotability=blocked reasons=latest_missing",
+    ], mission
+    assert mission["monday_source_validation_report_lines"] == [
+        "consumer-report schema verdict=pass errors=0 warnings=0",
+    ], mission
+    assert mission["cross_repo_validation_action_lines"] == [
+        "cross-repo-validation: repair monday_local_inbox_runtime_report (freshness=missing, promotability=blocked, reasons=latest_missing)",
     ], mission
     assert mission["cross_repo_validation_packet_report_id"] == "cross-repo-validation-20260401T110000Z", mission
     assert mission["cross_repo_validation_packet_path"] == "/tmp/cross-repo-validation-report.json", mission
@@ -260,6 +297,12 @@ assert mission["local_validation_snapshot_status"] == "missing", mission
 assert mission["local_validation_records"] == [], mission
 assert mission["local_validation_summary_lines"] == [], mission
 assert mission["local_validation_action_lines"] == [], mission
+assert mission["cross_repo_validation_snapshot_status"] == "missing", mission
+assert mission["cross_repo_validation_snapshot_summary"] == "total=0 promotable=0 blocked=0 stale=0", mission
+assert mission["cross_repo_validation_action_line"] is None, mission
+assert mission["cross_repo_validation_detail_lines"] == [], mission
+assert mission["monday_source_validation_report_lines"] == [], mission
+assert mission["cross_repo_validation_action_lines"] == [], mission
 assert mission["cross_repo_validation_packet_report_id"] is None, mission
 assert mission["cross_repo_validation_packet_path"] is None, mission
 PY

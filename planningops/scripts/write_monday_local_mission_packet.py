@@ -77,6 +77,28 @@ def normalize_optional_string(raw_value: object) -> str | None:
     return None
 
 
+def build_cross_repo_validation_snapshot(
+    handoff_record: dict,
+) -> tuple[str, str, str | None, list[str], list[str], list[str]]:
+    snapshot_status = normalize_optional_string(handoff_record.get("cross_repo_validation_snapshot_status")) or "missing"
+    snapshot_summary = (
+        normalize_optional_string(handoff_record.get("cross_repo_validation_snapshot_summary"))
+        or "total=0 promotable=0 blocked=0 stale=0"
+    )
+    action_line = normalize_optional_string(handoff_record.get("cross_repo_validation_action_line"))
+    detail_lines = normalize_string_list(handoff_record.get("cross_repo_validation_detail_lines"))
+    monday_source_validation_report_lines = normalize_string_list(handoff_record.get("monday_source_validation_report_lines"))
+    action_lines = normalize_string_list(handoff_record.get("cross_repo_validation_action_lines"))
+    return (
+        snapshot_status,
+        snapshot_summary,
+        action_line,
+        detail_lines,
+        monday_source_validation_report_lines,
+        action_lines,
+    )
+
+
 def build_mission_objective(handoff_record: dict) -> str:
     target_lines = [str(line) for line in list(handoff_record.get("target_lines") or []) if str(line).strip()]
     if target_lines:
@@ -212,6 +234,14 @@ def main() -> int:
         local_validation_summary_lines,
         local_validation_action_lines,
     ) = build_local_validation_snapshot(handoff_record)
+    (
+        cross_repo_validation_snapshot_status,
+        cross_repo_validation_snapshot_summary,
+        cross_repo_validation_action_line,
+        cross_repo_validation_detail_lines,
+        monday_source_validation_report_lines,
+        cross_repo_validation_action_lines,
+    ) = build_cross_repo_validation_snapshot(handoff_record)
 
     expected_evidence_outputs = [
         str(latest_packet_path.resolve()),
@@ -247,6 +277,12 @@ def main() -> int:
         "local_validation_records": local_validation_records,
         "local_validation_summary_lines": local_validation_summary_lines,
         "local_validation_action_lines": local_validation_action_lines,
+        "cross_repo_validation_snapshot_status": cross_repo_validation_snapshot_status,
+        "cross_repo_validation_snapshot_summary": cross_repo_validation_snapshot_summary,
+        "cross_repo_validation_action_line": cross_repo_validation_action_line,
+        "cross_repo_validation_detail_lines": cross_repo_validation_detail_lines,
+        "monday_source_validation_report_lines": monday_source_validation_report_lines,
+        "cross_repo_validation_action_lines": cross_repo_validation_action_lines,
         "cross_repo_validation_packet_report_id": cross_repo_validation_packet_report_id,
         "cross_repo_validation_packet_path": cross_repo_validation_packet_path,
         "preflight_command": preflight_command,

@@ -99,6 +99,62 @@ def build_local_validation_snapshot(*, mission_packet: dict, handoff_record: dic
     return "missing", [], [], []
 
 
+def build_cross_repo_validation_snapshot(
+    *,
+    mission_packet: dict,
+    handoff_record: dict,
+) -> tuple[str, str, str | None, list[str], list[str], list[str]]:
+    snapshot_status = normalize_optional_string(mission_packet.get("cross_repo_validation_snapshot_status"))
+    snapshot_summary = normalize_optional_string(mission_packet.get("cross_repo_validation_snapshot_summary"))
+    action_line = normalize_optional_string(mission_packet.get("cross_repo_validation_action_line"))
+    detail_lines = normalize_string_list(mission_packet.get("cross_repo_validation_detail_lines"))
+    monday_source_validation_report_lines = normalize_string_list(mission_packet.get("monday_source_validation_report_lines"))
+    action_lines = normalize_string_list(mission_packet.get("cross_repo_validation_action_lines"))
+    if (
+        snapshot_status is not None
+        or snapshot_summary is not None
+        or action_line is not None
+        or detail_lines
+        or monday_source_validation_report_lines
+        or action_lines
+    ):
+        return (
+            snapshot_status or "missing",
+            snapshot_summary or "total=0 promotable=0 blocked=0 stale=0",
+            action_line,
+            detail_lines,
+            monday_source_validation_report_lines,
+            action_lines,
+        )
+
+    fallback_status = normalize_optional_string(handoff_record.get("cross_repo_validation_snapshot_status"))
+    fallback_summary = normalize_optional_string(handoff_record.get("cross_repo_validation_snapshot_summary"))
+    fallback_action_line = normalize_optional_string(handoff_record.get("cross_repo_validation_action_line"))
+    fallback_detail_lines = normalize_string_list(handoff_record.get("cross_repo_validation_detail_lines"))
+    fallback_monday_source_validation_report_lines = normalize_string_list(
+        handoff_record.get("monday_source_validation_report_lines")
+    )
+    fallback_action_lines = normalize_string_list(handoff_record.get("cross_repo_validation_action_lines"))
+    if (
+        fallback_status is not None
+        or fallback_summary is not None
+        or fallback_action_line is not None
+        or fallback_detail_lines
+        or fallback_monday_source_validation_report_lines
+        or fallback_action_lines
+    ):
+        return (
+            fallback_status or "carried_from_handoff",
+            fallback_summary or "total=0 promotable=0 blocked=0 stale=0",
+            fallback_action_line,
+            fallback_detail_lines,
+            fallback_monday_source_validation_report_lines,
+            fallback_action_lines,
+        )
+
+    return "missing", "total=0 promotable=0 blocked=0 stale=0", None, [], [], []
+
+
 def build_body_markdown(
     *,
     headline: str,
@@ -113,6 +169,12 @@ def build_body_markdown(
     local_runtime_next_step: str | None,
     local_validation_summary_lines: list[str],
     local_validation_action_lines: list[str],
+    cross_repo_validation_snapshot_status: str,
+    cross_repo_validation_snapshot_summary: str,
+    cross_repo_validation_action_line: str | None,
+    cross_repo_validation_detail_lines: list[str],
+    monday_source_validation_report_lines: list[str],
+    cross_repo_validation_action_lines: list[str],
     queue_lines: list[str],
     target_lines: list[str],
     immediate_actions: list[str],
@@ -142,12 +204,42 @@ def build_body_markdown(
     lines.extend(["", "### Local Validation", *[f"- {line}" for line in local_validation_summary_lines]])
     if local_validation_action_lines:
         lines.extend(["", "### Local Validation Actions", *[f"{index}. {line}" for index, line in enumerate(local_validation_action_lines, start=1)]])
+    lines.extend(
+        [
+            "",
+            "### Cross-Repo Validation",
+            f"- snapshot status: `{cross_repo_validation_snapshot_status}`",
+            f"- snapshot summary: `{cross_repo_validation_snapshot_summary}`",
+        ]
+    )
+    if cross_repo_validation_action_line is not None:
+        lines.append(f"- next action: {cross_repo_validation_action_line}")
     if cross_repo_validation_packet_report_id is not None or cross_repo_validation_packet_path is not None:
         lines.extend(["", "### Cross-Repo Validation Packet"])
         if cross_repo_validation_packet_report_id is not None:
             lines.append(f"- detail packet report id: `{cross_repo_validation_packet_report_id}`")
         if cross_repo_validation_packet_path is not None:
             lines.append(f"- detail packet path: `{cross_repo_validation_packet_path}`")
+    if cross_repo_validation_detail_lines or monday_source_validation_report_lines:
+        lines.extend(
+            [
+                "",
+                "### Cross-Repo Validation Details",
+                *[f"- {line}" for line in cross_repo_validation_detail_lines],
+                *[f"- {line}" for line in monday_source_validation_report_lines],
+            ]
+        )
+    if cross_repo_validation_action_lines:
+        lines.extend(
+            [
+                "",
+                "### Cross-Repo Validation Actions",
+                *[
+                    f"{index}. {line}"
+                    for index, line in enumerate(cross_repo_validation_action_lines, start=1)
+                ],
+            ]
+        )
     lines.extend(["", "### Queue", *[f"- {line}" for line in queue_lines]])
     lines.extend(["", "### Top Targets", *[f"{index}. {line}" for index, line in enumerate(target_lines, start=1)]])
     lines.extend(["", "### Immediate Actions", *[f"{index}. {line}" for index, line in enumerate(immediate_actions, start=1)]])
@@ -216,6 +308,14 @@ def main() -> int:
     cross_repo_validation_packet_path = normalize_optional_string(
         mission_packet.get("cross_repo_validation_packet_path")
     ) or normalize_optional_string(handoff_record.get("cross_repo_validation_packet_path"))
+    (
+        cross_repo_validation_snapshot_status,
+        cross_repo_validation_snapshot_summary,
+        cross_repo_validation_action_line,
+        cross_repo_validation_detail_lines,
+        monday_source_validation_report_lines,
+        cross_repo_validation_action_lines,
+    ) = build_cross_repo_validation_snapshot(mission_packet=mission_packet, handoff_record=handoff_record)
     local_validation_snapshot_status, local_validation_records, local_validation_summary_lines, local_validation_action_lines = (
         build_local_validation_snapshot(mission_packet=mission_packet, handoff_record=handoff_record)
     )
@@ -268,6 +368,12 @@ def main() -> int:
         "local_validation_records": local_validation_records,
         "local_validation_summary_lines": local_validation_summary_lines,
         "local_validation_action_lines": local_validation_action_lines,
+        "cross_repo_validation_snapshot_status": cross_repo_validation_snapshot_status,
+        "cross_repo_validation_snapshot_summary": cross_repo_validation_snapshot_summary,
+        "cross_repo_validation_action_line": cross_repo_validation_action_line,
+        "cross_repo_validation_detail_lines": cross_repo_validation_detail_lines,
+        "monday_source_validation_report_lines": monday_source_validation_report_lines,
+        "cross_repo_validation_action_lines": cross_repo_validation_action_lines,
         "cross_repo_validation_packet_report_id": cross_repo_validation_packet_report_id,
         "cross_repo_validation_packet_path": cross_repo_validation_packet_path,
         "queue_lines": queue_lines,
@@ -287,6 +393,12 @@ def main() -> int:
             local_runtime_next_step=local_runtime_next_step or None,
             local_validation_summary_lines=local_validation_summary_lines,
             local_validation_action_lines=local_validation_action_lines,
+            cross_repo_validation_snapshot_status=cross_repo_validation_snapshot_status,
+            cross_repo_validation_snapshot_summary=cross_repo_validation_snapshot_summary,
+            cross_repo_validation_action_line=cross_repo_validation_action_line,
+            cross_repo_validation_detail_lines=cross_repo_validation_detail_lines,
+            monday_source_validation_report_lines=monday_source_validation_report_lines,
+            cross_repo_validation_action_lines=cross_repo_validation_action_lines,
             queue_lines=queue_lines,
             target_lines=target_lines,
             immediate_actions=immediate_actions,
