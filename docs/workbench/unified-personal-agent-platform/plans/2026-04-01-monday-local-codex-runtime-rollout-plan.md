@@ -2,7 +2,7 @@
 title: plan: Monday Local Codex Runtime Rollout
 type: plan
 date: 2026-04-01
-updated: 2026-04-02
+updated: 2026-04-04
 initiative: unified-personal-agent-platform
 lifecycle: workbench
 status: active
@@ -206,6 +206,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report|local-inbox-payload|monday-consumer-report` now mirror mission/day steering metadata directly so summary-first, payload-first, and apply/result-first operator surfaces can see whether cross-repo validation only steered `primary_action` without reopening the dedicated mission/day packet queries
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report|local-inbox-payload|monday-consumer-report` now accept explicit mission/day steering filters so operators can isolate `none` vs `primary_action_only` and promoted vs non-promoted downstream states without reopening packet-local surfaces
 - `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries mission/day steering metadata directly and accepts the same steering filters, returning an empty/no-match handoff snapshot when the current report does not satisfy the requested downstream steering state
+- `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report|handoff-report` now expose an explicit downstream `selected_next_step` and `selected_next_step_source`, using the existing fail-closed precedence `local-runtime -> local-validation -> promoted cross-repo validation -> triage-target` so promoted cross-repo validation can steer summary-level next-step selection without changing mission objective or target ranking
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -268,4 +269,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether mirrored steering metadata should stay query-only/filter-only even after handoff parity, or whether any downstream summary selection and ranking should eventually become steering-aware beyond the current packet-local policy boundary
+2. decide whether downstream `selected_next_step` should remain the ceiling for cross-repo steering, or whether headline/attention summary selection should ever become steering-aware without crossing the current packet-local policy boundary
