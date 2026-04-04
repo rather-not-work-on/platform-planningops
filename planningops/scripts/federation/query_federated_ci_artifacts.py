@@ -288,6 +288,11 @@ class TriageFeedRecord:
     overview: TriageOverviewRecord
     queue_records: list[TriageQueueRecord]
     target_records: list[TriageTargetRecord]
+    headline_source: str
+    headline_steering_scope: str
+    attention_summary_source: str
+    attention_summary_steering_scope: str
+    summary_steering_scope: str
     local_operator_record: LocalOperatorStackRecord | None
     mission_packet_cross_repo_validation_steering_scope: str | None
     mission_packet_cross_repo_validation_primary_action_promoted: bool | None
@@ -4879,6 +4884,11 @@ def build_triage_feed_record(
     source_kind: str,
     target_limit: int,
 ) -> TriageFeedRecord:
+    headline_source = "triage_snapshot"
+    headline_steering_scope = "none"
+    attention_summary_source = "triage_snapshot"
+    attention_summary_steering_scope = "none"
+    summary_steering_scope = "selected_next_step_only"
     overview = build_triage_overview_record(
         records=records,
         family=family,
@@ -4965,6 +4975,11 @@ def build_triage_feed_record(
         overview=overview,
         queue_records=queue_records,
         target_records=target_records,
+        headline_source=headline_source,
+        headline_steering_scope=headline_steering_scope,
+        attention_summary_source=attention_summary_source,
+        attention_summary_steering_scope=attention_summary_steering_scope,
+        summary_steering_scope=summary_steering_scope,
         local_operator_record=local_operator_record,
         mission_packet_cross_repo_validation_steering_scope=mission_packet_cross_repo_validation_steering_scope,
         mission_packet_cross_repo_validation_primary_action_promoted=(
@@ -4991,6 +5006,11 @@ def render_triage_feed_table(record: TriageFeedRecord) -> str:
     sections = [
         f"source_kind\t{record.source_kind}",
         f"target_limit\t{record.target_limit}",
+        f"headline_source\t{record.headline_source}",
+        f"headline_steering_scope\t{record.headline_steering_scope}",
+        f"attention_summary_source\t{record.attention_summary_source}",
+        f"attention_summary_steering_scope\t{record.attention_summary_steering_scope}",
+        f"summary_steering_scope\t{record.summary_steering_scope}",
         "overview",
         render_triage_overview_table(record.overview),
     ]
@@ -5066,7 +5086,22 @@ def render_triage_feed_table(record: TriageFeedRecord) -> str:
 
 def render_triage_feed_markdown(record: TriageFeedRecord) -> str:
     sections = [
-        f"## Triage Feed\n\n- source_kind: `{record.source_kind}`\n- target_limit: `{record.target_limit}`",
+        (
+            "## Triage Feed\n\n"
+            f"- source_kind: `{record.source_kind}`\n"
+            f"- target_limit: `{record.target_limit}`"
+        ),
+        "\n".join(
+            [
+                "### Summary Steering Policy",
+                "",
+                f"- headline source: `{record.headline_source}`",
+                f"- headline steering scope: `{record.headline_steering_scope}`",
+                f"- attention summary source: `{record.attention_summary_source}`",
+                f"- attention summary steering scope: `{record.attention_summary_steering_scope}`",
+                f"- summary steering scope: `{record.summary_steering_scope}`",
+            ]
+        ),
         "### Overview\n\n" + render_triage_overview_markdown(record.overview),
     ]
     if record.cross_repo_validation_snapshot_status is not None:
@@ -7261,6 +7296,23 @@ def parse_args() -> argparse.Namespace:
     triage_feed_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     triage_feed_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
     triage_feed_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    triage_feed_parser.add_argument(
+        "--summary-steering-scope",
+        choices=SUMMARY_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_feed_parser.add_argument("--headline-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_feed_parser.add_argument(
+        "--headline-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
+    triage_feed_parser.add_argument("--attention-summary-source", choices=SUMMARY_SOURCE_CHOICES, default=None)
+    triage_feed_parser.add_argument(
+        "--attention-summary-steering-scope",
+        choices=SUMMARY_COMPONENT_STEERING_SCOPE_CHOICES,
+        default=None,
+    )
     triage_feed_parser.add_argument("--format", choices=["table", "json", "markdown"], default="table")
     triage_feed_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     triage_feed_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -8079,6 +8131,31 @@ def main() -> int:
             mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
             day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
             day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.summary_steering_scope,
+            summary_steering_scope=record.summary_steering_scope,
+        ):
+            record = None
+        if record is not None and not matches_summary_source_filter(
+            summary_source_filter=args.headline_source,
+            summary_source=record.headline_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.headline_steering_scope,
+            summary_steering_scope=record.headline_steering_scope,
+        ):
+            record = None
+        if record is not None and not matches_summary_source_filter(
+            summary_source_filter=args.attention_summary_source,
+            summary_source=record.attention_summary_source,
+        ):
+            record = None
+        if record is not None and not matches_summary_steering_scope_filter(
+            summary_steering_scope_filter=args.attention_summary_steering_scope,
+            summary_steering_scope=record.attention_summary_steering_scope,
         ):
             record = None
         if args.format == "json":

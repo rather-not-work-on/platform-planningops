@@ -212,6 +212,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-report|handoff-report` now also expose explicit `summary_steering_scope=selected_next_step_only` metadata and accept `--summary-steering-scope`, making the policy boundary itself query-visible while still leaving `headline` and `attention_summary` owned by `triage_snapshot`
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-report|handoff-report` now also expose explicit `headline_steering_scope=none` and `attention_summary_steering_scope=none` metadata with matching filters, making it query-visible that top-line summary components are still fail-closed and not steering-aware even while `selected_next_step` remains policy-steerable
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief` now mirrors the same `headline_source`, `headline_steering_scope`, `attention_summary_source`, `attention_summary_steering_scope`, and `summary_steering_scope` metadata with matching filters so compact summary-first reads can audit the same fail-closed policy boundary without reopening `triage-report`
+- `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed` now mirrors the same summary ceiling metadata and matching filters as `triage-brief`, making the most compact operator overview surface itself an auditable fail-closed summary policy read
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -274,4 +275,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether `triage-brief` is now the right compact audit ceiling for summary steering policy, or whether any further operator surface should mirror the same summary component ceiling metadata beyond `triage-brief|triage-report|handoff-report`
+2. with `triage-feed|triage-brief|triage-report|handoff-report` all mirroring explicit summary component ceiling metadata, decide whether that set is now the operator-facing audit ceiling or whether any other compact surface still needs the same fail-closed summary policy markers
