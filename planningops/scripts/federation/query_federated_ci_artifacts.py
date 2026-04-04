@@ -357,6 +357,10 @@ class HandoffReportRecord:
     local_operator_record: LocalOperatorStackRecord | None
     local_operator_summary: str | None
     local_operator_next_step: str | None
+    mission_packet_cross_repo_validation_steering_scope: str | None
+    mission_packet_cross_repo_validation_primary_action_promoted: bool | None
+    day_packet_cross_repo_validation_steering_scope: str | None
+    day_packet_cross_repo_validation_primary_action_promoted: bool | None
     local_validation_snapshot_status: str
     local_validation_snapshot_summary: str
     local_validation_records: list[LocalValidationFreshnessRecord]
@@ -5637,6 +5641,34 @@ def build_handoff_report_record(
         [
             "",
             "### Cross-Repo Validation",
+            f"- mission packet steering scope: `{triage_report.mission_packet_cross_repo_validation_steering_scope or ''}`",
+            (
+                "- mission packet primary action promoted: `"
+                + (
+                    ""
+                    if triage_report.mission_packet_cross_repo_validation_primary_action_promoted is None
+                    else (
+                        "true"
+                        if triage_report.mission_packet_cross_repo_validation_primary_action_promoted
+                        else "false"
+                    )
+                )
+                + "`"
+            ),
+            f"- day packet steering scope: `{triage_report.day_packet_cross_repo_validation_steering_scope or ''}`",
+            (
+                "- day packet primary action promoted: `"
+                + (
+                    ""
+                    if triage_report.day_packet_cross_repo_validation_primary_action_promoted is None
+                    else (
+                        "true"
+                        if triage_report.day_packet_cross_repo_validation_primary_action_promoted
+                        else "false"
+                    )
+                )
+                + "`"
+            ),
             f"- snapshot status: `{cross_repo_validation_snapshot_status}`",
             f"- snapshot summary: `{cross_repo_validation_snapshot_summary}`",
             f"- monday source validation status: `{monday_source_validation_status}`",
@@ -5693,6 +5725,18 @@ def build_handoff_report_record(
         local_operator_record=triage_report.local_operator_record,
         local_operator_summary=triage_report.local_operator_summary,
         local_operator_next_step=triage_report.local_operator_next_step,
+        mission_packet_cross_repo_validation_steering_scope=(
+            triage_report.mission_packet_cross_repo_validation_steering_scope
+        ),
+        mission_packet_cross_repo_validation_primary_action_promoted=(
+            triage_report.mission_packet_cross_repo_validation_primary_action_promoted
+        ),
+        day_packet_cross_repo_validation_steering_scope=(
+            triage_report.day_packet_cross_repo_validation_steering_scope
+        ),
+        day_packet_cross_repo_validation_primary_action_promoted=(
+            triage_report.day_packet_cross_repo_validation_primary_action_promoted
+        ),
         local_validation_snapshot_status=local_validation_snapshot_status,
         local_validation_snapshot_summary=local_validation_snapshot_summary,
         local_validation_records=local_validation_records,
@@ -5734,6 +5778,32 @@ def render_handoff_report_table(record: HandoffReportRecord) -> str:
         sections.append(f"local_operator\t{record.local_operator_summary}")
     if record.local_operator_next_step is not None:
         sections.append(f"local_operator_next_step\t{record.local_operator_next_step}")
+    sections.append(
+        f"mission_packet_cross_repo_validation_steering_scope\t{record.mission_packet_cross_repo_validation_steering_scope or ''}"
+    )
+    sections.append(
+        "mission_packet_cross_repo_validation_primary_action_promoted\t"
+        + (
+            ""
+            if record.mission_packet_cross_repo_validation_primary_action_promoted is None
+            else (
+                "yes"
+                if record.mission_packet_cross_repo_validation_primary_action_promoted
+                else "no"
+            )
+        )
+    )
+    sections.append(
+        f"day_packet_cross_repo_validation_steering_scope\t{record.day_packet_cross_repo_validation_steering_scope or ''}"
+    )
+    sections.append(
+        "day_packet_cross_repo_validation_primary_action_promoted\t"
+        + (
+            ""
+            if record.day_packet_cross_repo_validation_primary_action_promoted is None
+            else ("yes" if record.day_packet_cross_repo_validation_primary_action_promoted else "no")
+        )
+    )
     sections.append(f"local_validation_snapshot_status\t{record.local_validation_snapshot_status}")
     sections.append(f"local_validation_snapshot_summary\t{record.local_validation_snapshot_summary}")
     sections.extend(["local_validation", *record.local_validation_summary_lines])
@@ -7014,6 +7084,10 @@ def parse_args() -> argparse.Namespace:
     handoff_report_parser.add_argument("--run-id-prefix", default=None)
     handoff_report_parser.add_argument("--source-kind", choices=["all", "stamped", "latest"], default="stamped")
     handoff_report_parser.add_argument("--target-limit", type=int, default=3)
+    handoff_report_parser.add_argument("--mission-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    handoff_report_parser.add_argument("--mission-packet-primary-action-promoted", choices=["yes", "no"], default=None)
+    handoff_report_parser.add_argument("--day-packet-steering-scope", choices=STEERING_SCOPE_CHOICES, default=None)
+    handoff_report_parser.add_argument("--day-packet-primary-action-promoted", choices=["yes", "no"], default=None)
     handoff_report_parser.add_argument("--format", choices=["table", "json", "markdown"], default="markdown")
     handoff_report_parser.add_argument("--ci-root", default=str(DEFAULT_CI_ROOT))
     handoff_report_parser.add_argument("--validation-root", default=str(DEFAULT_VALIDATION_ROOT))
@@ -7805,8 +7879,22 @@ def main() -> int:
             source_kind=args.source_kind,
             target_limit=args.target_limit,
         )
+        if not matches_downstream_steering_filters(
+            mission_packet_steering_scope_filter=args.mission_packet_steering_scope,
+            mission_packet_primary_action_promoted_filter=args.mission_packet_primary_action_promoted,
+            day_packet_steering_scope_filter=args.day_packet_steering_scope,
+            day_packet_primary_action_promoted_filter=args.day_packet_primary_action_promoted,
+            mission_packet_steering_scope=record.mission_packet_cross_repo_validation_steering_scope,
+            mission_packet_primary_action_promoted=record.mission_packet_cross_repo_validation_primary_action_promoted,
+            day_packet_steering_scope=record.day_packet_cross_repo_validation_steering_scope,
+            day_packet_primary_action_promoted=record.day_packet_cross_repo_validation_primary_action_promoted,
+        ):
+            record = None
         if args.format == "json":
-            print(json.dumps({"record": asdict(record)}, ensure_ascii=True, indent=2))
+            print(json.dumps({"record": None if record is None else asdict(record)}, ensure_ascii=True, indent=2))
+            return 0
+        if record is None:
+            print("_No matching handoff report._" if args.format == "markdown" else "no matching handoff report")
             return 0
         if args.format == "markdown":
             print(render_handoff_report_markdown(record))

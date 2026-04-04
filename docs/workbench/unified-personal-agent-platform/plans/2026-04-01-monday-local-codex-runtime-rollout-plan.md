@@ -205,6 +205,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py local-mission-packet|local-day-packet` now expose latest/stamped mission/day packet records directly, including `cross_repo_validation_steering_scope`, `cross_repo_validation_primary_action_promoted`, packet source kind, and immutable cross-repo packet linkage so operators can audit action-only steering without reopening raw packet JSON
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report|local-inbox-payload|monday-consumer-report` now mirror mission/day steering metadata directly so summary-first, payload-first, and apply/result-first operator surfaces can see whether cross-repo validation only steered `primary_action` without reopening the dedicated mission/day packet queries
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-feed|triage-brief|triage-report|local-inbox-payload|monday-consumer-report` now accept explicit mission/day steering filters so operators can isolate `none` vs `primary_action_only` and promoted vs non-promoted downstream states without reopening packet-local surfaces
+- `planningops/scripts/federation/query_federated_ci_artifacts.py handoff-report` now carries mission/day steering metadata directly and accepts the same steering filters, returning an empty/no-match handoff snapshot when the current report does not satisfy the requested downstream steering state
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -267,4 +268,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether mirrored steering metadata should stay query-only/filter-only on downstream surfaces, or whether it should also steer downstream summary selection and ranking beyond the current packet-local policy boundary
+2. decide whether mirrored steering metadata should stay query-only/filter-only even after handoff parity, or whether any downstream summary selection and ranking should eventually become steering-aware beyond the current packet-local policy boundary
