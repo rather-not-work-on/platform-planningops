@@ -209,6 +209,7 @@ Current deliverables:
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report|handoff-report` now expose an explicit downstream `selected_next_step` and `selected_next_step_source`, using the existing fail-closed precedence `local-runtime -> local-validation -> promoted cross-repo validation -> triage-target` so promoted cross-repo validation can steer summary-level next-step selection without changing mission objective or target ranking
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-brief|triage-report|handoff-report` now also accept `--selected-next-step-source` so operators can isolate summary surfaces where the currently selected next step is `local_runtime`, `local_validation`, `cross_repo_validation`, `triage_target`, or `none` without reopening packet-local views
 - `planningops/scripts/federation/query_federated_ci_artifacts.py triage-report|handoff-report` now expose explicit `headline_source` and `attention_summary_source` metadata and accept matching filters, making the current `triage_snapshot`-owned summary ceiling query-visible without actually letting cross-repo steering rewrite headline or attention-summary composition
+- `planningops/scripts/federation/query_federated_ci_artifacts.py triage-report|handoff-report` now also expose explicit `summary_steering_scope=selected_next_step_only` metadata and accept `--summary-steering-scope`, making the policy boundary itself query-visible while still leaving `headline` and `attention_summary` owned by `triage_snapshot`
 
 ### Phase 2. Codex-to-monday handoff packet
 
@@ -271,4 +272,4 @@ bash scripts/litellm_stack_launcher.sh --mode start
 ## Next Natural Packets
 
 1. revisit operator-facing override promotion only if the new override audit signal shows repeated reviewed usage beyond regression coverage
-2. decide whether explicit `headline_source` / `attention_summary_source` metadata is the right operator-facing ceiling, or whether headline/attention summary selection should ever become steering-aware without crossing the current packet-local policy boundary
+2. keep `summary_steering_scope=selected_next_step_only` as the operator-facing ceiling unless repeated audited usage justifies widening actual `headline` / `attention_summary` selection beyond the current `triage_snapshot` ownership boundary
